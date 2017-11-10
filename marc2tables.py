@@ -18,7 +18,7 @@ Created on Fri Oct 13 18:30:30 2017
 
 @author: Etienne Cavalié
 
-Programme d'identification des ARK BnF à partir de numéros FRBNF
+Conversion de fichiers XML ou iso2709 en tableaux pour alignements
 
 """
 
@@ -35,17 +35,59 @@ import webbrowser
 import codecs
 import json
 import noticesbib2arkBnF as bib2ark
+import pymarc as mc
 
-def launch():
-    print("OK")
+
+version = 0.01
+programID = "marc2tables"
+lastupdate = "10/11/2017"
+last_version = [version, False]
+# =============================================================================
+# Gestion des mises à jour
+# =============================================================================
+def download_last_update():
+    url = "https://github.com/Lully/transbiblio"
+    webbrowser.open(url)
+
+
+def iso2tables(entry_filename):
+    with open(entry_filename, 'r', encoding="utf-8") as fh:
+        reader = mc.MARCReader(fh)
+        for record in reader:
+            print(record.title())
+
+
+def xml2tables(entry_filename):
+    with open(entry_filename, 'r', encoding="utf-8") as fh:
+        reader = mc.MARCReader(fh)
+        for record in reader:
+            print(record.title())
+
+def click2help():
+    webbrowser.open("http://bibliotheques.worpdress.com/")
+def annuler(master):
+    master.destroy()
+
+def launch(entry_filename,file_format):
+    if (file_format == 1):
+        iso2tables(entry_filename)
+    else:
+        xml2tables(entry_filename)
+
+
+
+
 
 def formulaire_marc2tables():
+# =============================================================================
+# Structure du formulaire - Cadres
+# =============================================================================
     couleur_fond = "white"
-    couleur_bouton = "#2D4991"
+    couleur_bouton = "#99182D"
     
     master = tk.Tk()
     master.config(padx=30, pady=20,bg=couleur_fond)
-    master.title("Programme d'alignement de données bibliographiques avec la BnF")
+    master.title("Conversion de fichiers de notices Marc en tableaux")
     
     zone_formulaire = tk.Frame(master, bg=couleur_fond)
     zone_formulaire.pack()
@@ -63,18 +105,22 @@ def formulaire_marc2tables():
     cadre_input_type_docs = tk.Frame(cadre_input,bg=couleur_fond)
     cadre_input_type_docs.pack()
     
-    cadre_inter = tk.Frame(master, borderwidth=0, padx=10,bg=couleur_fond)
+    cadre_inter = tk.Frame(zone_formulaire, borderwidth=0, padx=10,bg=couleur_fond)
     cadre_inter.pack(side="left")
     tk.Label(cadre_inter, text=" ",bg=couleur_fond).pack()
-    
+
+#=============================================================================
+#     Formulaire - Fichier en entrée
+# =============================================================================
+ 
     cadre_output = tk.Frame(zone_formulaire, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_output.pack(side="left")
     cadre_output_header = tk.Frame(cadre_output,bg=couleur_fond)
     cadre_output_header.pack()
-    cadre_output_nb_fichier = tk.Frame(cadre_output,bg=couleur_fond)
-    cadre_output_nb_fichier.pack(side="left")
-    cadre_output_id_traitement = tk.Frame(cadre_output, padx=20,bg=couleur_fond)
-    cadre_output_id_traitement.pack(side="left")
+    cadre_output_nom_fichiers = tk.Frame(cadre_output,bg=couleur_fond)
+    cadre_output_nom_fichiers.pack()
+    cadre_output_explications = tk.Frame(cadre_output, padx=20,bg=couleur_fond)
+    cadre_output_explications.pack()
     
     cadre_valider = tk.Frame(zone_formulaire, borderwidth=0, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_valider.pack(side="left")
@@ -82,40 +128,51 @@ def formulaire_marc2tables():
     #définition input URL (u)
     tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée :                                                                                       ", justify="left", font="bold").pack()
     
-    tk.Label(cadre_input_file,bg=couleur_fond, text="Fichier contenant les notices         ").pack(side="left")
+    tk.Label(cadre_input_file,bg=couleur_fond, text="Fichier contenant les notices").pack(side="left")
     entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
     entry_filename.pack(side="left")
     entry_filename.focus_set()
     
-    tk.Label(cadre_input_infos_format,bg=couleur_fond, text="                Séparateur TAB, Encodage UTF-8", justify="left").pack()
     
+    tk.Label(cadre_input_type_docs,bg=couleur_fond, text="\nFormat", anchor="w").pack()
+    file_format = tk.IntVar()
+    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="iso2709", variable=file_format , value=1, justify="left").pack()
+    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Marc XML", variable=file_format , value=2, justify="left").pack()
+    file_format.set(1)
     
-    tk.Label(cadre_input_type_docs,bg=couleur_fond, text="\nType de documents                                                                                                           ", anchor="w").pack()
-    type_doc = tk.IntVar()
-    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Documents imprimés (monographies)\nFormat : Num Not | FRBNF | ARK | ISBN | Titre | Auteur | Date                             ", variable=type_doc , value=1, justify="left").pack()
-    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Audiovisuel (CD / DVD)\nFormat : Num Not | FRBNF | ARK | EAN | N° commercial | Titre | Auteur | Date", variable=type_doc , value=2, justify="left").pack()
-    type_doc.set(1)
+    tk.Label(cadre_input_type_docs, text="\n\n\n", bg=couleur_fond).pack()
     
-    
+# =============================================================================
+#     Formulaire - Fichiers en sortie
+# =============================================================================
+# 
     
     #Choix du format
     tk.Label(cadre_output_header,bg=couleur_fond, fg=couleur_bouton,text="En sortie :                                                                              ", font="bold").pack()
-    file_nb = tk.IntVar()
-    tk.Radiobutton(cadre_output_nb_fichier,bg=couleur_fond, text="1 fichier                                               ", variable=file_nb , value=1, justify="left").pack()
-    tk.Radiobutton(cadre_output_nb_fichier,bg=couleur_fond, text="Plusieurs fichiers \n(Pb / 0 / 1 / plusieurs ARK trouvés)", justify="left", variable=file_nb , value=2).pack()
-    file_nb.set(2)
+    tk.Label(cadre_output_nom_fichiers,bg=couleur_fond, text="Identifiant des fichiers en sortie").pack(side="left")
+    output_ID = tk.Entry(cadre_output_nom_fichiers, width=40, bd=2)
+    output_ID.pack(side="left")
     
     #Ajout (optionnel) d'un identifiant de traitement
-    tk.Label(cadre_output_id_traitement,bg=couleur_fond, text="\n\n\n\n").pack()
-    tk.Label(cadre_output_id_traitement,bg=couleur_fond, text="ID traitement (optionnel)").pack()
-    id_traitement = tk.Entry(cadre_output_id_traitement, width=20, bd=2)
-    id_traitement.pack()
-    tk.Label(cadre_output_id_traitement,bg=couleur_fond, text="\n").pack()
+    message_fichiers_en_sortie = """
+    Le programme va générer plusieurs fichiers, par type de document,
+    en fonction du processus d'alignement avec les données de la BnF et des métadonnées utilisées pour cela :
+    - monographies imprimées
+    - périodiques
+    - audiovisuel (CD/DVD)
+    - autres non identifiés
+    Pour faire cela, il utilise les informations en zones codées dans chaque notice Unimarc
+    
+    """
+    tk.Label(cadre_output_explications,bg=couleur_fond, text=message_fichiers_en_sortie,
+             anchor='nw').pack()
+    
+    
     
     
     #Bouton de validation
     
-    b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", text = "OK", command = launch, borderwidth=5 ,padx=10, pady=10, width=10, height=4)
+    b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", text = "OK", command=lambda: launch(entry_filename.get(),file_format.get()), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
     
     tk.Label(cadre_valider, font="bold", text="", bg=couleur_fond).pack()

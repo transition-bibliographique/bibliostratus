@@ -43,33 +43,43 @@ ponctuation = [".",",",";",":","?","!","%","$","£","€","#","\\","\"","&","~",
 
 def create_reports(id_traitement_code, nb_fichiers_a_produire):
     reports = []
+    stats_report_file_name=id_traitement_code + "-" + "rapport_stats_noticesbib2ark.txt"
+    stats_report_file = open(stats_report_file_name,"w")
+    stats_report_file.write("Nb ARK trouvés\tNb notices concernées\n")
+    
+    report_type_convert_file_name = id_traitement_code + "-" + "NumNotices-TypeConversion.txt"
+    report_type_convert_file = open(report_type_convert_file_name,"w")
+    report_type_convert_file.write("NumNotice\tMéthode pour trouver l'ARK\n")
     if (nb_fichiers_a_produire == 1):
         reports = create_reports_1file(id_traitement_code)
     else:
         reports = create_reports_files(id_traitement_code)
+    reports.append(stats_report_file)
+    reports.append(report_type_convert_file)
     return reports
 
 def create_reports_1file(id_traitement_code):
-    unique_file_results_frbnf_isbn2ark_name = "resultats_frbnf_isbn2ark" + id_traitement_code + ".txt"
-    return [unique_file_results_frbnf_isbn2ark_name]
+    unique_file_results_frbnf_isbn2ark_name = id_traitement_code + "-" + "resultats_noticesbib2arkBnF.txt"
+    unique_file_results_frbnf_isbn2ark = open(unique_file_results_frbnf_isbn2ark_name, "w", encoding="utf-8")
+    return [unique_file_results_frbnf_isbn2ark]
     
 def create_reports_files(id_traitement_code):    
-    print(id_traitement_code)
-    multiple_files_pbFRBNF_ISBN_name = "resultats_Probleme_FRBNF_ISBN" + id_traitement_code + ".txt"
-    multiple_files_0_ark_name = "resultats_0_ark_trouve" + id_traitement_code + ".txt"
-    multiple_files_1_ark_name = "resultats_1_ark_trouve" + id_traitement_code + ".txt"
-    multiple_files_plusieurs_ark_name = "resultats_plusieurs_ark_trouves" + id_traitement_code + ".txt"
-    return [multiple_files_pbFRBNF_ISBN_name,multiple_files_0_ark_name,multiple_files_1_ark_name,multiple_files_plusieurs_ark_name]
+    multiple_files_pbFRBNF_ISBN_name = id_traitement_code + "-resultats_Probleme_FRBNF_ISBN.txt"
+    multiple_files_0_ark_name =  id_traitement_code + "-resultats_0_ark_trouve.txt"
+    multiple_files_1_ark_name =  id_traitement_code + "-resultats_1_ark_trouve.txt"
+    multiple_files_plusieurs_ark_name =  id_traitement_code + "-resultats_plusieurs_ark_trouves.txt"
+    
+    multiple_files_pbFRBNF_ISBN = open(multiple_files_pbFRBNF_ISBN_name, "w", encoding="utf-8")
+    multiple_files_0_ark = open(multiple_files_0_ark_name, "w", encoding="utf-8")
+    multiple_files_1_ark = open(multiple_files_1_ark_name, "w", encoding="utf-8")
+    multiple_files_plusieurs_ark_name = open(multiple_files_plusieurs_ark_name, "w", encoding="utf-8")
+    
+    return [multiple_files_pbFRBNF_ISBN,multiple_files_0_ark,multiple_files_1_ark,multiple_files_plusieurs_ark_name]
 
-#==============================================================================
+
 # Rapport statistique final
-#==============================================================================
 nb_notices_nb_ARK = defaultdict(int)
-stats_report_file = open("rapport_stats_frbnf_isbn2ark.txt","w")
-stats_report_file.write("Nb ARK trouvés\tNb notices concernées\n")
 
-report_type_convert_file = open("NumNotices-TypeConversion.txt","w")
-report_type_convert_file.write("NumNotice\tMéthode pour trouver l'ARK\n")
 
 ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}
 nsOCLC = {"xisbn": "http://worldcat.org/xid/isbn/"}
@@ -286,19 +296,22 @@ def frbnf2ark(NumNot,frbnf,isbn,titre,auteur,date):
     return ark
 
         
-def row2file(nb_fichiers_a_produire,nbARK,NumNot,frbnf,current_ark,ark,isbn,titre,auteur,date,unique_file_results_frbnf_isbn2ark):
-    if (nb_fichiers_a_produire == 1):
-        unique_file_results_frbnf_isbn2ark.write("\t".join([NumNot,str(nbARK),ark,frbnf,current_ark,isbn,titre,auteur,date]) + "\n")
+def row2file(liste_metadonnees,liste_reports):
+    liste_metadonnees_to_report = [str(el) for el in liste_metadonnees]
+    liste_reports[0].write("\t".join(liste_metadonnees_to_report ) + "\n")
 
-def row2files(nb_fichiers_a_produire,nbARK,NumNot,frbnf,current_ark,ark,isbn,titre,auteur,date,multiple_files_pbFRBNF_ISBN,multiple_files_0_ark,multiple_files_1_ark,multiple_files_plusieurs_ark):
+def row2files(liste_metadonnees,liste_reports):
+    liste_metadonnees_to_report = [str(el) for el in liste_metadonnees]
+    nbARK = liste_metadonnees[0]
+    ark = liste_metadonnees[2]
     if (ark == "Pb FRBNF"):
-        multiple_files_pbFRBNF_ISBN.write("\t".join([NumNot,"",ark,frbnf,current_ark,isbn,titre,auteur,date]) + "\n")
+        liste_reports[0].write("\t".join(liste_metadonnees_to_report) + "\n")
     elif (nbARK == 0):
-        multiple_files_0_ark.write("\t".join([NumNot,current_ark,isbn,titre,auteur,date]) + "\n")
+        liste_reports[1].write("\t".join(liste_metadonnees_to_report) + "\n")
     elif (nbARK == 1):
-        multiple_files_1_ark.write("\t".join([NumNot,"1",ark,frbnf,current_ark,isbn,titre,auteur,date]) + "\n")
+        liste_reports[2].write("\t".join(liste_metadonnees_to_report) + "\n")
     else:
-        multiple_files_plusieurs_ark.write("\t".join([NumNot,str(nbARK),ark,frbnf,current_ark,isbn,titre,auteur,date]) + "\n")
+        liste_reports[3].write("\t".join(liste_metadonnees_to_report) + "\n")
         
 def nettoyage_isbn(isbn):
     isbn_nett = isbn.split(";")[0].split(",")[0]
@@ -587,23 +600,9 @@ def controleNoCommercial(NumNot,ark_current,no_commercial,titre,auteur,date,reco
     return ark
 
 
-def monimpr():
-    nb_fichiers_a_produire = file_nb.get()
-    id_traitement_code = id_traitement.get()
-    liste_reports = create_reports(id_traitement_code, nb_fichiers_a_produire)
+def monimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_reports):
     
-    #results2file(nb_fichiers_a_produire)
-    entry_file = entry_filename.get()
-    
-    if (nb_fichiers_a_produire == 1):
-        unique_file_results_frbnf_isbn2ark = open(liste_reports[0],"w")
-    elif (nb_fichiers_a_produire == 2):
-        multiple_files_pbFRBNF_ISBN = open(liste_reports[0],"w")
-        multiple_files_0_ark = open(liste_reports[1],"w")
-        multiple_files_1_ark = open(liste_reports[2],"w")
-        multiple_files_plusieurs_ark = open(liste_reports[3],"w")
-    
-    with open(entry_file, newline='\n',encoding="utf-8") as csvfile:
+    with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter='\t')
         next(entry_file)
         for row in entry_file:
@@ -653,29 +652,18 @@ def monimpr():
                 nb_notices_nb_ARK["Pb FRBNF"] += 1
             else:
                 nb_notices_nb_ARK[nbARK] += 1
-            if (nb_fichiers_a_produire ==  1):
-                row2file(nb_fichiers_a_produire,nbARK,NumNot,frbnf,current_ark,ark,isbn_nett,titre_nett,auteur_nett,date_nett,unique_file_results_frbnf_isbn2ark)
-            elif(nb_fichiers_a_produire ==  2):
-                row2files(nb_fichiers_a_produire,nbARK,NumNot,frbnf,current_ark,ark,isbn_nett,titre_nett,auteur_nett,date_nett,multiple_files_pbFRBNF_ISBN,multiple_files_0_ark,multiple_files_1_ark,multiple_files_plusieurs_ark)
-        fin_traitements()
+            liste_metadonnees = [nbARK,NumNot,ark,frbnf,current_ark,isbn_nett,titre_nett,auteur_nett,date_nett]
+            if (file_nb.get() ==  1):
+                row2file(liste_metadonnees,liste_reports)
+            elif(file_nb.get() ==  2):
+                row2files(liste_metadonnees,liste_reports)
         
-def cddvd():
-    nb_fichiers_a_produire = file_nb.get()
-    id_traitement_code = id_traitement.get()
-    liste_reports = create_reports(id_traitement_code, nb_fichiers_a_produire)
+        
+def cddvd(master, entry_filename, type_doc, file_nb, id_traitement, liste_reports):
     
     #results2file(nb_fichiers_a_produire)
-    entry_file = entry_filename.get()
     
-    if (nb_fichiers_a_produire == 1):
-        unique_file_results_frbnf_isbn2ark = open(liste_reports[0],"w")
-    elif (nb_fichiers_a_produire == 2):
-        multiple_files_pbFRBNF_ISBN = open(liste_reports[0],"w")
-        multiple_files_0_ark = open(liste_reports[1],"w")
-        multiple_files_1_ark = open(liste_reports[2],"w")
-        multiple_files_plusieurs_ark = open(liste_reports[3],"w")
-    
-    with open(entry_file, newline='\n',encoding="utf-8") as csvfile:
+    with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter='\t')
         next(entry_file)
         for row in entry_file:
@@ -731,47 +719,58 @@ def cddvd():
                 nb_notices_nb_ARK["Pb FRBNF"] += 1
             else:
                 nb_notices_nb_ARK[nbARK] += 1
-            if (nb_fichiers_a_produire ==  1):
-                row2file(nb_fichiers_a_produire,nbARK,NumNot,frbnf,current_ark,ark,isbn_nett,titre_nett,auteur_nett,date_nett,unique_file_results_frbnf_isbn2ark)
-            elif(nb_fichiers_a_produire ==  2):
-                row2files(nb_fichiers_a_produire,nbARK,NumNot,frbnf,current_ark,ark,isbn_nett,titre_nett,auteur_nett,date_nett,multiple_files_pbFRBNF_ISBN,multiple_files_0_ark,multiple_files_1_ark,multiple_files_plusieurs_ark)
-        fin_traitements()
+            liste_metadonnees = [nbARK,NumNot,ark,frbnf,current_ark,ean_nett,ean_propre,
+                         no_commercial_propre,titre_nett,auteur_nett,date_nett]
+            if (file_nb.get() ==  1):
+                row2file(liste_metadonnees,liste_reports)
+            elif(file_nb.get() ==  2):
+                row2files(liste_metadonnees,liste_reports)
+        
     
 
-def launch():
+def launch(master, entry_filename, type_doc, file_nb, id_traitement):
+    
+    #results2file(nb_fichiers_a_produire)
+
+    liste_reports = create_reports(id_traitement.get(), file_nb.get())    
+    
     if (type_doc.get() == 1):
-        monimpr()
+        monimpr(master, entry_filename.get(), type_doc, file_nb, id_traitement, liste_reports)
     elif (type_doc.get() == 2):
-        cddvd()
+        cddvd(master, entry_filename.get(), type_doc, file_nb, id_traitement, liste_reports)
     else:
         print("Erreur : type de document non reconnu")
+    
+    fin_traitements(master,liste_reports)
 
 
-def fin_traitements():
-    stats_extraction()
-    typesConversionARK()
+def fin_traitements(master,liste_reports):
+    stats_extraction(liste_reports)
+    typesConversionARK(liste_reports)
     print("Programme terminé")
     master.destroy()
-            
-def stats_extraction():
+
+
+
+def stats_extraction(liste_reports):
     #print(nb_notices_nb_ARK)
     for key in nb_notices_nb_ARK:
-        stats_report_file.write(str(key) + "\t" + str(nb_notices_nb_ARK[key]) + "\n")
+        liste_reports[-2].write(str(key) + "\t" + str(nb_notices_nb_ARK[key]) + "\n")
     if ("Pb FRBNF" in nb_notices_nb_ARK):
         nb_notices_nb_ARK[-1] = nb_notices_nb_ARK.pop('Pb FRBNF')
     """plt.bar(list(nb_notices_nb_ARK.keys()), nb_notices_nb_ARK.values(), color='skyblue')
     plt.show()"""
 
-def typesConversionARK():
+def typesConversionARK(liste_reports):
     for key in NumNotices2methode:
         value = " / ".join(NumNotices2methode[key])
-        report_type_convert_file.write(key + "\t" + value + "\n")
+        liste_reports[-1].write(key + "\t" + value + "\n")
 
 def click2help():
     url = "http://www.bnf.fr/"
     webbrowser.open_new(url)
 
-def annuler():
+def annuler(master):
     master.destroy()
 
 def check_last_compilation():
@@ -872,7 +871,9 @@ def formulaire_noticesbib2arkBnF():
     
     #Bouton de validation
     
-    b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", text = "OK", command = launch, borderwidth=5 ,padx=10, pady=10, width=10, height=4)
+    b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", 
+                  text = "OK", 
+                  command = lambda: launch(master, entry_filename, type_doc, file_nb, id_traitement), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
     
     tk.Label(cadre_valider, font="bold", text="", bg=couleur_fond).pack()
@@ -880,7 +881,7 @@ def formulaire_noticesbib2arkBnF():
     call4help = tk.Button(cadre_valider, text="Besoin d'aide ?", command=click2help, padx=10, pady=1, width=15)
     call4help.pack()
     
-    cancel = tk.Button(cadre_valider, bg=couleur_fond, text="Annuler", command=annuler, padx=10, pady=1, width=15)
+    cancel = tk.Button(cadre_valider, bg=couleur_fond, text="Annuler", command=lambda: annuler(master), padx=10, pady=1, width=15)
     cancel.pack()
     
     tk.Label(zone_commentaires, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()

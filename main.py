@@ -42,9 +42,11 @@ nsSudoc = {"rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#", "bibo":"http://p
 
 def formulaire_main():
     couleur_fond = "white"
-    couleur_bouton = "#99182D"
+    couleur_bouton = "#e1e1e1"
+    
     
     master = tk.Tk()
+    master.config(padx=10,pady=10,bg=couleur_fond)
     master.title("Transition bibliographique - nous voilà !")
     frame1 = tk.Frame(master, highlightthickness=2, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
     frame1.pack(side="left")
@@ -55,7 +57,9 @@ def formulaire_main():
     frame3 = tk.Frame(master, highlightthickness=2, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
     frame3.pack(side="left")
     
-    marc2tableButton = tk.Button(frame1, text = "Convertir un fichier Marc\n en tableaux", command=marc2tables.formulaire_marc2tables, padx=10,pady=10)
+    marc2tableButton = tk.Button(frame1, text = "Convertir un fichier Marc\n en tableaux", 
+                                 command=marc2tables.formulaire_marc2tables, 
+                                 padx=10,pady=10, bg="#99182D",fg="white")
     marc2tableButton.pack()
     
     bib2arkButton = tk.Button(frame2, text = "Aligner ses données (tableaux)\n avec le catalogue BnF", command=bib2ark.formulaire_noticesbib2arkBnF, padx=10,pady=10, bg="#2D4991", fg="white")
