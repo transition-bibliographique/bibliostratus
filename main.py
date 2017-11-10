@@ -55,13 +55,13 @@ def formulaire_main():
     frame3 = tk.Frame(master, highlightthickness=2, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
     frame3.pack(side="left")
     
-    marc2tableButton = tk.Button(frame1, text = "Convertir un fichier Marc en tableaux", command=marc2tables.formulaire_marc2tables, padx=10,pady=10)
+    marc2tableButton = tk.Button(frame1, text = "Convertir un fichier Marc\n en tableaux", command=marc2tables.formulaire_marc2tables, padx=10,pady=10)
     marc2tableButton.pack()
     
-    bib2arkButton = tk.Button(frame2, text = "Aligner ses données (tableaux) avec le catalogue BnF", command=bib2ark.formulaire_noticesbib2arkBnF, padx=10,pady=10, bg="#2D4991", fg="white")
+    bib2arkButton = tk.Button(frame2, text = "Aligner ses données (tableaux)\n avec le catalogue BnF", command=bib2ark.formulaire_noticesbib2arkBnF, padx=10,pady=10, bg="#2D4991", fg="white")
     bib2arkButton.pack()
     
-    ark2recordsButton = tk.Button(frame3, text = "Exporter une liste d'ARK BnF en notices XML", command=ark2records.formulaire_ark2records, padx=10,pady=10)
+    ark2recordsButton = tk.Button(frame3, text = "Exporter une liste d'ARK BnF\n en notices XML", command=ark2records.formulaire_ark2records, padx=10,pady=10)
     ark2recordsButton.pack()
     
     tk.mainloop()
