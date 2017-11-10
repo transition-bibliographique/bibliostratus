@@ -42,6 +42,171 @@ version = 0.01
 programID = "marc2tables"
 lastupdate = "10/11/2017"
 last_version = [version, False]
+
+# =============================================================================
+# Creation des fichiers résultats
+# =============================================================================
+
+def create_file_doc_record(doc_record, id_traitement):
+    filename= "-".join([id_traitement, doc_record]) + ".txt"
+    file = open(filename, "w", encoding="utf-8")
+    return file
+
+# =============================================================================
+# Fonctions de nettoyage
+# =============================================================================
+chiffers = ["0","1","2","3","4","5","6","7","8","9"]
+letters = ["a","b","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
+punctation = [".",",",";",":","?","!","%","$","£","€","#","\\","\"","&","~","{","(","[","`","\\","_","@",")","]","}","=","+","*","\/","<",">",")","}"]
+           
+liste_fichiers = []
+liste_resultats = defaultdict(list)
+              
+doctype = {"a":"texte",
+               "b":"manuscrit",
+               "c":"partition",
+               "d":"partition manuscrite",
+               "e":"carte",
+               "f":"carte manuscrite",
+               "g":"video",
+               "i":"son - non musical",
+               "j":"son - musique",
+               "k":"image, dessin",
+               "l":"ressource électronique",
+               "m":"multimedia",
+               "r":"objet"
+               }
+recordtype = {"a":"analytique",
+               "i":"feuillets mobiles, etc",
+               "m":"monographie",
+               "s":"périodiques",
+               "c":"collection"}
+#suppression des signes de ponctuation
+def clean_punctation(text):
+    for char in punctation:
+        text = text.replace(char, " ")
+    return text
+
+def clean_letters(text):
+    for char in letters:
+        text = text.replace(char, " ")
+    return text
+
+def clean_spaces(text):
+    text = re.sub("\s\s+" , " ", text).strip()
+    return text
+
+def clean_accents_case(text):
+    text = unidecode(text).lower()
+    return text
+# =============================================================================
+# Définition des zones pour chaque élément
+# =============================================================================
+
+def record2doctype(label):
+    return label[6]
+
+def record2recordtype(label):
+    return label[7]
+
+def path2value(record, field_subfield):
+    value = None
+    val_list = []
+    #print(field_subfield)
+    if (field_subfield.find("$")>-1):
+        field = field_subfield.split("$")[0]
+        subfield = field_subfield.split("$")[1]
+        for f in record.get_fields(field): 
+            for subf in f.get_subfields(subfield):
+                val_list.append(subf)
+        if (val_list != []):
+            value = ";".join(val_list)
+    else:
+        if (record[field_subfield] is not None and int(field_subfield) < 10):
+            value = record[field_subfield].data
+    return value
+
+
+
+
+def record2meta(record, liste_elements, alternate_list=[]):
+    zone = []
+    for el in liste_elements:
+        value = path2value(record, el)
+        #print("record2meta : " + el + " / "  + str(value))
+        if (value is not None):
+            zone.append(value)
+    #zone = [path2value(record, el) for el in liste_elements if path2value(record, el) is not None]
+    if (zone == [] and alternate_list != []):
+        for el in alternate_list:
+            value = path2value(record, el)
+            if (value is not None):
+                zone.append(value)
+        #zone = [path2value(record, el) for el in alternate_list if path2value(record, el) is not None]
+    zone = " ".join(zone)
+    #print(zone)
+    return zone
+
+def record2title(f200a_e):
+    title = clean_spaces(f200a_e)
+    title = clean_punctation(title)
+    return title
+
+def record2date(f100,f210d):
+    date = ""
+    if (isinstance(f100[13:17],int) == True):
+        date = f100[13:17]
+    else:
+        date = f210d
+    date = clean_punctation(date)
+    date = clean_letters(date)
+    date = clean_spaces(date)
+    return date
+
+def record2authors(value_fields):
+    authors = clean_spaces(value_fields).strip()
+    authors = clean_punctation(authors)
+    return authors
+    
+def aut2keywords(authors):
+    authors = clean_punctation(authors)
+    liste_authors = authors.split(" ")
+    liste_authors = [el for el in liste_authors if el != ""]
+    authors2keywords = set()
+    for mot in liste_authors:
+        authors2keywords.add(clean_accents_case(mot).strip())
+    authors2keywords = " ".join(list(authors2keywords))
+    return authors2keywords
+
+def record2ark(f033a):
+    ark = ""
+    if (f033a.find("ark:/12148/") > -1):
+        ark = f033a
+    return ark
+
+def record2frbnf(f035a):
+    frbnf = []
+    f035a = f035a.lower().split(";")
+    for f035 in f035a:
+        if (f035.find("frbn")>-1):
+            frbnf.append(f035)
+    frbnf = ";".join(frbnf)
+    return frbnf
+
+def record2isbn(f010a):
+    isbn = f010a
+    return isbn
+
+def record2ean(f038a):
+    ean = f038a
+    return ean
+
+def record2issn(f011a):
+    issn = f011a
+    return issn
+
+def record2id_commercial_aud(f073a):
+    return f073a
 # =============================================================================
 # Gestion des mises à jour
 # =============================================================================
@@ -50,32 +215,93 @@ def download_last_update():
     webbrowser.open(url)
 
 
-def iso2tables(entry_filename):
-    with open(entry_filename, 'r', encoding="utf-8") as fh:
+def iso2tables(entry_filename, id_traitement):
+    with open(entry_filename, 'rb') as fh:
         reader = mc.MARCReader(fh)
         for record in reader:
-            print(record.title())
+            numNot = record2meta(record,["001"])
+            doctype = record2doctype(record.leader)
+            recordtype = record2recordtype(record.leader)
+           
+            title = record2title(
+                        record2meta(record, ["200$a","200$e"])
+                        )
+            authors = record2authors(record2meta(record, [
+                                            "700$a",
+                                            "700$b",
+                                            "710$a",
+                                            "710$b",
+                                            "701$a",
+                                            "701$b",
+                                            "711$a",
+                                            "711$b",
+                                            "702$a",
+                                            "702$b",
+                                            "712$a",
+                                            "712$b"
+                                            ],
+                                ["200$f"])
+                                )
+            authors2keywords = aut2keywords(authors)
+            date = record2date(record2meta(record,["100"]), record2meta(record,["210$d"]))
+            ark = record2ark(record2meta(record,["033$a"]))
+            frbnf = record2frbnf(record2meta(record,["035$a"]))
+            isbn = record2isbn(record2meta(record,["010$a"]))
+            issn = record2isbn(record2meta(record,["011$a"]))
+            ean =  record2ean(record2meta(record,["038$a"]))
+            id_commercial_aud = record2id_commercial_aud(record2meta(record,["073$a"]))
+            
+
+            doc_record = doctype + recordtype
+            doc_record = doc_record.strip()
+            if (doc_record not in liste_fichiers):
+                liste_fichiers.append(doc_record)
+                
+            meta = []
+            if (doc_record == "am"):
+                meta = [numNot,frbnf,ark,isbn,title,authors, date]
+            if (doc_record == "jm"):
+                meta = [numNot,frbnf,ark,ean,id_commercial_aud,title,authors2keywords,date]
+            if (doc_record == "as"):
+                meta = [numNot,frbnf,ark,issn,title,authors, date]
+            print(meta)
+            liste_resultats[doc_record].append(meta)
+    write_reports(id_traitement)
+            
+def write_reports(id_traitement):
+    for doc_record in liste_resultats:
+        file = create_file_doc_record(doc_record, id_traitement)
+        for record in liste_resultats[doc_record]:
+            file.write("\t".join(record) + "\n")
+            
 
 
-def xml2tables(entry_filename):
-    with open(entry_filename, 'r', encoding="utf-8") as fh:
+def xml2tables(entry_filename, id_traitement):
+    file = etree.parse(entry_filename)
+    collection = mc.marcxml.parse_xml(file, strict=False)
+    for record in collection:
+        print(record.title())
+    """with open(entry_filename, 'r', encoding="utf-8") as fh:
         reader = mc.MARCReader(fh)
         for record in reader:
-            print(record.title())
+            print(record.title())"""
 
 def click2help():
     webbrowser.open("http://bibliotheques.worpdress.com/")
 def annuler(master):
     master.destroy()
+    
+def end_of_treatments(master):
+    master.destroy()
 
-def launch(entry_filename,file_format):
+
+def launch(master,entry_filename,file_format, output_ID):
+    
     if (file_format == 1):
-        iso2tables(entry_filename)
+        iso2tables(entry_filename, output_ID)
     else:
-        xml2tables(entry_filename)
-
-
-
+        xml2tables(entry_filename, output_ID)
+    end_of_treatments(master)
 
 
 def formulaire_marc2tables():
@@ -172,7 +398,7 @@ def formulaire_marc2tables():
     
     #Bouton de validation
     
-    b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", text = "OK", command=lambda: launch(entry_filename.get(),file_format.get()), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
+    b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", text = "OK", command=lambda: launch(master,entry_filename.get(),file_format.get(), output_ID.get()), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
     
     tk.Label(cadre_valider, font="bold", text="", bg=couleur_fond).pack()

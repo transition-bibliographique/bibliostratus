@@ -2,6 +2,11 @@
 *.txt
 *.tsv
 *.csv
+*.xml
+*.mrk
+*.mrc
+*.iso2709
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
