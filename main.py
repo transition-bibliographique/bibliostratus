@@ -11,7 +11,7 @@ Created on Fri Oct 13 18:30:30 2017
 
 @author: Etienne Cavalié
 
-Programme d'identification des ARK BnF à partir de numéros FRBNF
+Programme de manipulations de données liées à la Transition bibliographique pour les bibliothèques françaises
 
 """
 
