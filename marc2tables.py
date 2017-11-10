@@ -48,7 +48,7 @@ last_version = [version, False]
 # =============================================================================
 
 def create_file_doc_record(doc_record, id_traitement):
-    filename= "-".join([id_traitement, doc_record]) + ".txt"
+    filename= "-".join([id_traitement, doc_record_type[doc_record]]) + ".txt"
     file = open(filename, "w", encoding="utf-8")
     return file
 
@@ -81,6 +81,13 @@ recordtype = {"a":"analytique",
                "m":"monographie",
                "s":"périodiques",
                "c":"collection"}
+
+doc_record_type = defaultdict(str)
+for doct in doctype:
+    for recordt in recordtype:
+        dcrec = doct + recordt
+        dcrec_libelles = "-".join([doctype[doct],recordtype[recordt]])
+        doc_record_type[dcrec] = dcrec_libelles
 #suppression des signes de ponctuation
 def clean_punctation(text):
     for char in punctation:
@@ -217,91 +224,89 @@ def download_last_update():
 
 def iso2tables(entry_filename, id_traitement):
     with open(entry_filename, 'rb') as fh:
-        reader = mc.MARCReader(fh)
-        for record in reader:
-            numNot = record2meta(record,["001"])
-            doctype = record2doctype(record.leader)
-            recordtype = record2recordtype(record.leader)
-           
-            title = record2title(
-                        record2meta(record, ["200$a","200$e"])
-                        )
-            authors = record2authors(record2meta(record, [
-                                            "700$a",
-                                            "700$b",
-                                            "710$a",
-                                            "710$b",
-                                            "701$a",
-                                            "701$b",
-                                            "711$a",
-                                            "711$b",
-                                            "702$a",
-                                            "702$b",
-                                            "712$a",
-                                            "712$b"
-                                            ],
-                                ["200$f"])
-                                )
-            authors2keywords = aut2keywords(authors)
-            date = record2date(record2meta(record,["100"]), record2meta(record,["210$d"]))
-            ark = record2ark(record2meta(record,["033$a"]))
-            frbnf = record2frbnf(record2meta(record,["035$a"]))
-            isbn = record2isbn(record2meta(record,["010$a"]))
-            issn = record2isbn(record2meta(record,["011$a"]))
-            ean =  record2ean(record2meta(record,["038$a"]))
-            id_commercial_aud = record2id_commercial_aud(record2meta(record,["073$a"]))
-            
+        collection = mc.MARCReader(fh)
+        for record in collection:
+            record2listemetas(record)
+    
 
-            doc_record = doctype + recordtype
-            doc_record = doc_record.strip()
-            if (doc_record not in liste_fichiers):
-                liste_fichiers.append(doc_record)
-                
-            meta = []
-            if (doc_record == "am"):
-                meta = [numNot,frbnf,ark,isbn,title,authors, date]
-            if (doc_record == "jm"):
-                meta = [numNot,frbnf,ark,ean,id_commercial_aud,title,authors2keywords,date]
-            if (doc_record == "as"):
-                meta = [numNot,frbnf,ark,issn,title,authors, date]
-            print(meta)
-            liste_resultats[doc_record].append(meta)
-    write_reports(id_traitement)
+def xml2tables(entry_filename, id_traitement):
+    collection = mc.marcxml.parse_xml_to_array(entry_filename, strict=False)
+    for record in collection:
+        record2listemetas(record)
+
+
+def record2listemetas(record):
+    numNot = record2meta(record,["001"])
+    doctype = record2doctype(record.leader)
+    recordtype = record2recordtype(record.leader)
+   
+    title = record2title(
+                record2meta(record, ["200$a","200$e"])
+                )
+    authors = record2authors(record2meta(record, [
+                                    "700$a",
+                                    "700$b",
+                                    "710$a",
+                                    "710$b",
+                                    "701$a",
+                                    "701$b",
+                                    "711$a",
+                                    "711$b",
+                                    "702$a",
+                                    "702$b",
+                                    "712$a",
+                                    "712$b"
+                                    ],
+                        ["200$f"])
+                        )
+    authors2keywords = aut2keywords(authors)
+    date = record2date(record2meta(record,["100"]), record2meta(record,["210$d"]))
+    ark = record2ark(record2meta(record,["033$a"]))
+    frbnf = record2frbnf(record2meta(record,["035$a"]))
+    isbn = record2isbn(record2meta(record,["010$a"]))
+    issn = record2isbn(record2meta(record,["011$a"]))
+    ean =  record2ean(record2meta(record,["038$a"]))
+    id_commercial_aud = record2id_commercial_aud(record2meta(record,["073$a"]))
+    
+
+    doc_record = doctype + recordtype
+    doc_record = doc_record.strip()
+    if (doc_record not in liste_fichiers):
+        liste_fichiers.append(doc_record)
+        
+    meta = []
+    if (doc_record == "am"):
+        meta = [numNot,frbnf,ark,isbn,title,authors, date]
+    if (doc_record == "jm"):
+        meta = [numNot,frbnf,ark,ean,id_commercial_aud,title,authors2keywords,date]
+    if (doc_record == "as"):
+        meta = [numNot,frbnf,ark,issn,title,authors, date]
+    print(meta)
+    liste_resultats[doc_record].append(meta)
             
 def write_reports(id_traitement):
     for doc_record in liste_resultats:
         file = create_file_doc_record(doc_record, id_traitement)
         for record in liste_resultats[doc_record]:
-            file.write("\t".join(record) + "\n")
-            
+            file.write("\t".join(record) + "\n")            
 
-
-def xml2tables(entry_filename, id_traitement):
-    file = etree.parse(entry_filename)
-    collection = mc.marcxml.parse_xml(file, strict=False)
-    for record in collection:
-        print(record.title())
-    """with open(entry_filename, 'r', encoding="utf-8") as fh:
-        reader = mc.MARCReader(fh)
-        for record in reader:
-            print(record.title())"""
 
 def click2help():
     webbrowser.open("http://bibliotheques.worpdress.com/")
 def annuler(master):
     master.destroy()
     
-def end_of_treatments(master):
+def end_of_treatments(master,id_traitement):
+    write_reports(id_traitement)
     master.destroy()
 
 
 def launch(master,entry_filename,file_format, output_ID):
-    
     if (file_format == 1):
         iso2tables(entry_filename, output_ID)
     else:
         xml2tables(entry_filename, output_ID)
-    end_of_treatments(master)
+    end_of_treatments(master,output_ID)
 
 
 def formulaire_marc2tables():
