@@ -9,8 +9,8 @@ Actuellement quatre programmes sont en cours de développement *et très loin d'
 *ark2record : en entrée un fichier listant des ARK BnF, afin de récupérer les notices bibliographiques (+option avec notices d'autorité) correspondantes. Le format en sortie est pour l'instant du XML. Il devrait y avoir de l'iso2709 à terme.
 *transbiblio : le programme qui encapsule les 3 précédents pour les concevoir comme autant d'étapes dans la transition bibliographique des établissements
 
-Objectif du programme
-==
+Objectifs du programme
+--
 
 Le présupposé de ce projet est que les bibliothèques doivent, à terme, bénéficier de catalogues contenant des notices conformes au modèle FRBR-LRM. 
 Afin d'éviter qu'elles ne transforment leurs notices de manière indépendantes, ou qu'elles achètent les notices transformées à des fournisseurs (ou pire, qu'elles acquièrent des logiciels qui calculent le regroupement de notices en arbres FRBR à la volée), les agences nationales proposent de faciliter la redistribution de leurs notices.
