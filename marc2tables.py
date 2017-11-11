@@ -314,6 +314,7 @@ def formulaire_marc2tables(access_to_network, last_version):
     master = tk.Tk()
     master.config(padx=30, pady=20,bg=couleur_fond)
     master.title("Conversion de fichiers de notices Marc en tableaux")
+    master.iconbitmap(r'favicon.ico')
     
     zone_alert_explications = tk.Frame(master, bg=couleur_fond, pady=10)
     zone_alert_explications.pack()
@@ -422,7 +423,7 @@ def formulaire_marc2tables(access_to_network, last_version):
     call4help = tk.Button(cadre_valider, text="Besoin d'aide ?", command=lambda: main.click2help("https://github.com/Lully/transbiblio"), padx=10, pady=1, width=15)
     call4help.pack()
     
-    cancel = tk.Button(cadre_valider, bg=couleur_fond, text="Annuler", command=main.annuler, padx=10, pady=1, width=15)
+    cancel = tk.Button(cadre_valider, bg=couleur_fond, text="Annuler", command=lambda: main.annuler(master), padx=10, pady=1, width=15)
     cancel.pack()
     
     tk.Label(zone_commentaires, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()

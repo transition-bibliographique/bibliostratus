@@ -12,6 +12,7 @@ import tkinter as tk
 from lxml import etree
 import urllib.parse
 import csv
+import pymarc as mc
 
 
 ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}
@@ -127,6 +128,8 @@ listefieldsLiensAUT = ["100","141","143","144","145",
 def formulaire_ark2records():
     master = tk.Tk()
     master.config(padx=30, pady=20)
+    master.title("Récupérer les notices BnF complètes à partir des ARK")
+    master.iconbitmap(r'favicon.ico')
     
     #définition input URL (u)
     tk.Label(master, text="\nFichier contenant les ARK\n (1 par ligne)", justify="left").pack(side="left")

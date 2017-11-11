@@ -84,6 +84,7 @@ def formulaire_main(access_to_network, last_version):
     master = tk.Tk()
     master.config(padx=10,pady=10,bg=couleur_fond)
     master.title("La Transition bibliographique en chantant nous ouvre...")
+    master.iconbitmap(r'favicon.ico')
     zone_alert_explications = tk.Frame(master, bg=couleur_fond, pady=10)
     zone_alert_explications.pack()
     

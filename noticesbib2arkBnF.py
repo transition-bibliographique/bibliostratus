@@ -778,6 +778,16 @@ def click2help():
 
 def annuler(master):
     master.destroy()
+    
+def check_access_to_network():
+    access_to_network = True
+    try:
+        request.urlopen("http://www.bnf.fr")
+    except error.URLError:
+        print("Pas de réseau internet")
+        access_to_network = False
+    return access_to_network
+
 
 def check_last_compilation(programID):
     programID_last_compilation = 0
@@ -809,6 +819,7 @@ def formulaire_noticesbib2arkBnF(access_to_network, last_version=[0,False]):
     master = tk.Tk()
     master.config(padx=30, pady=20,bg=couleur_fond)
     master.title("Programme d'alignement de données bibliographiques avec la BnF")
+    master.iconbitmap(r'favicon.ico')
     
     zone_alert_explications = tk.Frame(master, bg=couleur_fond, pady=10)
     zone_alert_explications.pack()
@@ -907,7 +918,7 @@ def formulaire_noticesbib2arkBnF(access_to_network, last_version=[0,False]):
     tk.mainloop()
 
 if __name__ == '__main__':
-    access_to_network = main.check_access_to_network()
+    access_to_network = check_access_to_network()
     if(access_to_network is True):
         last_version = check_last_compilation(programID)
     formulaire_noticesbib2arkBnF(access_to_network,last_version)
