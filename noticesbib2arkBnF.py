@@ -23,9 +23,9 @@ import json
 
 #import matplotlib.pyplot as plt
 
-version = 0.5
+version = 0.4
 lastupdate = "10/11/2017"
-programID = "noticesbib2ArkBnF"
+programID = "noticesbib2arkBnF"
 
 ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}
 nsSudoc = {"rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#", "bibo":"http://purl.org/ontology/bibo/", "dc":"http://purl.org/dc/elements/1.1/", "dcterms":"http://purl.org/dc/terms/", "rdafrbr1":"http://rdvocab.info/RDARelationshipsWEMI/", "marcrel":"http://id.loc.gov/vocabulary/relators/", "foaf":"http://xmlns.com/foaf/0.1/", "gr":"http://purl.org/goodrelations/v1#", "owl":"http://www.w3.org/2002/07/owl#", "isbd":"http://iflastandards.info/ns/isbd/elements/", "skos":"http://www.w3.org/2004/02/skos/core#", "rdafrbr2":"http://RDVocab.info/uri/schema/FRBRentitiesRDA/", "rdaelements":"http://rdvocab.info/Elements/", "rdac":"http://rdaregistry.info/Elements/c/", "rdau":"http://rdaregistry.info/Elements/u/", "rdaw":"http://rdaregistry.info/Elements/w/", "rdae":"http://rdaregistry.info/Elements/e/", "rdam":"http://rdaregistry.info/Elements/m/", "rdai":"http://rdaregistry.info/Elements/i/", "sudoc":"http://www.sudoc.fr/ns/", "bnf-onto":"http://data.bnf.fr/ontology/bnf-onto/"}
@@ -786,7 +786,8 @@ def check_last_compilation():
         display_update_button = True
     return [programID_last_compilation,display_update_button]
 
-last_version = check_last_compilation()
+#La vérification de la dernière version n'est faite que si le programme est lancé en standalone
+#last_version = [0,False]
 
 def download_last_update():
     url = "https://drive.google.com/open?id=0B_SuYb5EUx7QcEU5RzZGMzhGR28"
@@ -795,7 +796,7 @@ def download_last_update():
 # Création de la boîte de dialogue
 #==============================================================================
 
-def formulaire_noticesbib2arkBnF():
+def formulaire_noticesbib2arkBnF(last_version=[0,False]):
     couleur_fond = "white"
     couleur_bouton = "#2D4991"
     
@@ -893,4 +894,7 @@ def formulaire_noticesbib2arkBnF():
     tk.mainloop()
 
 if __name__ == '__main__':
-    formulaire_noticesbib2arkBnF()
+    last_version = check_last_compilation()
+    formulaire_noticesbib2arkBnF(last_version)
+    
+
