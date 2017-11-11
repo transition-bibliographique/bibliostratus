@@ -36,7 +36,7 @@ import codecs
 import json
 import noticesbib2arkBnF as bib2ark
 import pymarc as mc
-
+import main as main
 
 version = 0.01
 programID = "marc2tables"
@@ -290,11 +290,6 @@ def write_reports(id_traitement):
         for record in liste_resultats[doc_record]:
             file.write("\t".join(record) + "\n")            
 
-
-def click2help():
-    webbrowser.open("http://bibliotheques.worpdress.com/")
-def annuler(master):
-    master.destroy()
     
 def end_of_treatments(master,id_traitement):
     write_reports(id_traitement)
@@ -309,7 +304,7 @@ def launch(master,entry_filename,file_format, output_ID):
     end_of_treatments(master,output_ID)
 
 
-def formulaire_marc2tables():
+def formulaire_marc2tables(access_to_network, last_version):
 # =============================================================================
 # Structure du formulaire - Cadres
 # =============================================================================
@@ -320,25 +315,32 @@ def formulaire_marc2tables():
     master.config(padx=30, pady=20,bg=couleur_fond)
     master.title("Conversion de fichiers de notices Marc en tableaux")
     
+    zone_alert_explications = tk.Frame(master, bg=couleur_fond, pady=10)
+    zone_alert_explications.pack()
+
     zone_formulaire = tk.Frame(master, bg=couleur_fond)
     zone_formulaire.pack()
     zone_commentaires = tk.Frame(master, bg=couleur_fond, pady=10)
     zone_commentaires.pack()
     
     cadre_input = tk.Frame(zone_formulaire, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
-    cadre_input.pack(side="left")
+    cadre_input.pack(side="left", anchor="w")
     cadre_input_header = tk.Frame(cadre_input,bg=couleur_fond)
-    cadre_input_header.pack()
+    cadre_input_header.pack(anchor="w")
     cadre_input_file = tk.Frame(cadre_input,bg=couleur_fond)
-    cadre_input_file.pack()
+    cadre_input_file.pack(anchor="w")
     cadre_input_infos_format = tk.Frame(cadre_input,bg=couleur_fond)
-    cadre_input_infos_format.pack()
+    cadre_input_infos_format.pack(anchor="w")
     cadre_input_type_docs = tk.Frame(cadre_input,bg=couleur_fond)
-    cadre_input_type_docs.pack()
+    cadre_input_type_docs.pack(anchor="w")
     
     cadre_inter = tk.Frame(zone_formulaire, borderwidth=0, padx=10,bg=couleur_fond)
     cadre_inter.pack(side="left")
     tk.Label(cadre_inter, text=" ",bg=couleur_fond).pack()
+
+    if (access_to_network == False):
+        tk.Label(zone_alert_explications, text=main.errors["no_internet"], 
+                 bg=couleur_fond,  fg="red").pack()
 
 #=============================================================================
 #     Formulaire - Fichier en entrée
@@ -347,11 +349,11 @@ def formulaire_marc2tables():
     cadre_output = tk.Frame(zone_formulaire, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_output.pack(side="left")
     cadre_output_header = tk.Frame(cadre_output,bg=couleur_fond)
-    cadre_output_header.pack()
+    cadre_output_header.pack(anchor="w")
     cadre_output_nom_fichiers = tk.Frame(cadre_output,bg=couleur_fond)
-    cadre_output_nom_fichiers.pack()
+    cadre_output_nom_fichiers.pack(anchor="w")
     cadre_output_explications = tk.Frame(cadre_output, padx=20,bg=couleur_fond)
-    cadre_output_explications.pack()
+    cadre_output_explications.pack(anchor="w")
     
     cadre_valider = tk.Frame(zone_formulaire, borderwidth=0, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_valider.pack(side="left")
@@ -359,16 +361,19 @@ def formulaire_marc2tables():
     #définition input URL (u)
     tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée :                                                                                       ", justify="left", font="bold").pack()
     
-    tk.Label(cadre_input_file,bg=couleur_fond, text="Fichier contenant les notices").pack(side="left")
+    tk.Label(cadre_input_file,bg=couleur_fond, text="Fichier contenant les notices : ").pack(side="left")
     entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
     entry_filename.pack(side="left")
     entry_filename.focus_set()
     
     
-    tk.Label(cadre_input_type_docs,bg=couleur_fond, text="\nFormat", anchor="w").pack()
+    tk.Label(cadre_input_type_docs,bg=couleur_fond, text="\nFormat", 
+             anchor="w", justify="left").pack(anchor="w")
     file_format = tk.IntVar()
-    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="iso2709", variable=file_format , value=1, justify="left").pack()
-    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Marc XML", variable=file_format , value=2, justify="left").pack()
+    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="iso2709", variable=file_format, value=1,
+                   anchor="w",justify="left").pack(anchor="w")
+    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Marc XML", variable=file_format, value=2,
+                   anchor="w", justify="left").pack(anchor="w")
     file_format.set(1)
     
     tk.Label(cadre_input_type_docs, text="\n\n\n", bg=couleur_fond).pack()
@@ -379,8 +384,12 @@ def formulaire_marc2tables():
 # 
     
     #Choix du format
-    tk.Label(cadre_output_header,bg=couleur_fond, fg=couleur_bouton,text="En sortie :                                                                              ", font="bold").pack()
-    tk.Label(cadre_output_nom_fichiers,bg=couleur_fond, text="Identifiant des fichiers en sortie").pack(side="left")
+    tk.Label(cadre_output_header,bg=couleur_fond, fg=couleur_bouton, font="bold", 
+             text="En sortie :", 
+             justify="left").pack()
+    tk.Label(cadre_output_nom_fichiers,bg=couleur_fond, 
+             text="Identifiant des fichiers en sortie : ", 
+             justify="left").pack(side="left")
     output_ID = tk.Entry(cadre_output_nom_fichiers, width=40, bd=2)
     output_ID.pack(side="left")
     
@@ -395,8 +404,10 @@ def formulaire_marc2tables():
     Pour faire cela, il utilise les informations en zones codées dans chaque notice Unimarc
     
     """
-    tk.Label(cadre_output_explications,bg=couleur_fond, text=message_fichiers_en_sortie,
-             anchor='nw').pack()
+    tk.Label(cadre_output_explications,bg=couleur_fond, 
+             text=message_fichiers_en_sortie,
+             justify="left").pack()
+    #explications.pack()
     
     
     
@@ -408,10 +419,10 @@ def formulaire_marc2tables():
     
     tk.Label(cadre_valider, font="bold", text="", bg=couleur_fond).pack()
     
-    call4help = tk.Button(cadre_valider, text="Besoin d'aide ?", command=click2help, padx=10, pady=1, width=15)
+    call4help = tk.Button(cadre_valider, text="Besoin d'aide ?", command=lambda: main.click2help("https://github.com/Lully/transbiblio"), padx=10, pady=1, width=15)
     call4help.pack()
     
-    cancel = tk.Button(cadre_valider, bg=couleur_fond, text="Annuler", command=annuler, padx=10, pady=1, width=15)
+    cancel = tk.Button(cadre_valider, bg=couleur_fond, text="Annuler", command=main.annuler, padx=10, pady=1, width=15)
     cancel.pack()
     
     tk.Label(zone_commentaires, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
@@ -423,5 +434,8 @@ def formulaire_marc2tables():
     tk.mainloop()
 
 if __name__ == '__main__':
-    formulaire_marc2tables()
+    access_to_network = main.check_access_to_network()
+    if(access_to_network is True):
+        last_version = main.check_last_compilation(programID)
+    formulaire_marc2tables(access_to_network,last_version)
 

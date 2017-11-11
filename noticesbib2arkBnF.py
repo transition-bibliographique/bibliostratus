@@ -21,11 +21,17 @@ import webbrowser
 import codecs
 import json
 
+
 #import matplotlib.pyplot as plt
 
-version = 0.4
+version = 0.5
 lastupdate = "10/11/2017"
 programID = "noticesbib2arkBnF"
+
+errors = {
+        "no_internet" : "Attention : Le programme n'a pas d'accès à Internet.\nSi votre navigateur y a accès, vérifiez les paramètres de votre proxy"
+        }
+
 
 ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}
 nsSudoc = {"rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#", "bibo":"http://purl.org/ontology/bibo/", "dc":"http://purl.org/dc/elements/1.1/", "dcterms":"http://purl.org/dc/terms/", "rdafrbr1":"http://rdvocab.info/RDARelationshipsWEMI/", "marcrel":"http://id.loc.gov/vocabulary/relators/", "foaf":"http://xmlns.com/foaf/0.1/", "gr":"http://purl.org/goodrelations/v1#", "owl":"http://www.w3.org/2002/07/owl#", "isbd":"http://iflastandards.info/ns/isbd/elements/", "skos":"http://www.w3.org/2004/02/skos/core#", "rdafrbr2":"http://RDVocab.info/uri/schema/FRBRentitiesRDA/", "rdaelements":"http://rdvocab.info/Elements/", "rdac":"http://rdaregistry.info/Elements/c/", "rdau":"http://rdaregistry.info/Elements/u/", "rdaw":"http://rdaregistry.info/Elements/w/", "rdae":"http://rdaregistry.info/Elements/e/", "rdam":"http://rdaregistry.info/Elements/m/", "rdai":"http://rdaregistry.info/Elements/i/", "sudoc":"http://www.sudoc.fr/ns/", "bnf-onto":"http://data.bnf.fr/ontology/bnf-onto/"}
@@ -767,13 +773,13 @@ def typesConversionARK(liste_reports):
         liste_reports[-1].write(key + "\t" + value + "\n")
 
 def click2help():
-    url = "http://www.bnf.fr/"
+    url = "https://github.com/Lully/transbiblio"
     webbrowser.open_new(url)
 
 def annuler(master):
     master.destroy()
 
-def check_last_compilation():
+def check_last_compilation(programID):
     programID_last_compilation = 0
     display_update_button = False
     url = "https://raw.githubusercontent.com/Lully/bnf-sru/master/last_compilations.json"
@@ -790,19 +796,22 @@ def check_last_compilation():
 #last_version = [0,False]
 
 def download_last_update():
-    url = "https://drive.google.com/open?id=0B_SuYb5EUx7QcEU5RzZGMzhGR28"
+    url = "https://github.com/Lully/transbiblio/blob/master/noticesbib2arkBnF.py"
     webbrowser.open(url)
 #==============================================================================
 # Création de la boîte de dialogue
 #==============================================================================
 
-def formulaire_noticesbib2arkBnF(last_version=[0,False]):
+def formulaire_noticesbib2arkBnF(access_to_network, last_version=[0,False]):
     couleur_fond = "white"
     couleur_bouton = "#2D4991"
     
     master = tk.Tk()
     master.config(padx=30, pady=20,bg=couleur_fond)
     master.title("Programme d'alignement de données bibliographiques avec la BnF")
+    
+    zone_alert_explications = tk.Frame(master, bg=couleur_fond, pady=10)
+    zone_alert_explications.pack()
     
     zone_formulaire = tk.Frame(master, bg=couleur_fond)
     zone_formulaire.pack()
@@ -812,54 +821,58 @@ def formulaire_noticesbib2arkBnF(last_version=[0,False]):
     cadre_input = tk.Frame(zone_formulaire, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_input.pack(side="left")
     cadre_input_header = tk.Frame(cadre_input,bg=couleur_fond)
-    cadre_input_header.pack()
+    cadre_input_header.pack(anchor="w")
     cadre_input_file = tk.Frame(cadre_input,bg=couleur_fond)
-    cadre_input_file.pack()
+    cadre_input_file.pack(anchor="w")
     cadre_input_infos_format = tk.Frame(cadre_input,bg=couleur_fond)
-    cadre_input_infos_format.pack()
+    cadre_input_infos_format.pack(anchor="w")
     cadre_input_type_docs = tk.Frame(cadre_input,bg=couleur_fond)
-    cadre_input_type_docs.pack()
+    cadre_input_type_docs.pack(anchor="w")
     
     cadre_inter = tk.Frame(master, borderwidth=0, padx=10,bg=couleur_fond)
     cadre_inter.pack(side="left")
     tk.Label(cadre_inter, text=" ",bg=couleur_fond).pack()
     
     cadre_output = tk.Frame(zone_formulaire, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
-    cadre_output.pack(side="left")
+    cadre_output.pack(side="left", anchor="w")
     cadre_output_header = tk.Frame(cadre_output,bg=couleur_fond)
-    cadre_output_header.pack()
+    cadre_output_header.pack(anchor="w")
     cadre_output_nb_fichier = tk.Frame(cadre_output,bg=couleur_fond)
-    cadre_output_nb_fichier.pack(side="left")
+    cadre_output_nb_fichier.pack(side="left", anchor="w")
     cadre_output_id_traitement = tk.Frame(cadre_output, padx=20,bg=couleur_fond)
-    cadre_output_id_traitement.pack(side="left")
+    cadre_output_id_traitement.pack(side="left", anchor="w")
     
     cadre_valider = tk.Frame(zone_formulaire, borderwidth=0, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_valider.pack(side="left")
     
-    #définition input URL (u)
-    tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée :                                                                                       ", justify="left", font="bold").pack()
+    if (access_to_network == False):
+        tk.Label(zone_alert_explications, text=errors["no_internet"], 
+             bg=couleur_fond,  fg="red").pack()
     
-    tk.Label(cadre_input_file,bg=couleur_fond, text="Fichier contenant les notices         ").pack(side="left")
+    #définition input URL (u)
+    tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée :", justify="left", font="bold").pack()
+    
+    tk.Label(cadre_input_file,bg=couleur_fond, text="Fichier contenant les notices : ").pack(side="left")
     entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
     entry_filename.pack(side="left")
     entry_filename.focus_set()
     
-    tk.Label(cadre_input_infos_format,bg=couleur_fond, text="                Séparateur TAB, Encodage UTF-8", justify="left").pack()
+    tk.Label(cadre_input_infos_format,bg=couleur_fond, text="Séparateur TAB, Encodage UTF-8", justify="left").pack()
     
     
-    tk.Label(cadre_input_type_docs,bg=couleur_fond, text="\nType de documents                                                                                                           ", anchor="w").pack()
+    tk.Label(cadre_input_type_docs,bg=couleur_fond, text="\nType de documents", anchor="w").pack(anchor="w")
     type_doc = tk.IntVar()
-    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Documents imprimés (monographies)\nFormat : Num Not | FRBNF | ARK | ISBN | Titre | Auteur | Date                             ", variable=type_doc , value=1, justify="left").pack()
-    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Audiovisuel (CD / DVD)\nFormat : Num Not | FRBNF | ARK | EAN | N° commercial | Titre | Auteur | Date", variable=type_doc , value=2, justify="left").pack()
+    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Documents imprimés (monographies)\nFormat : Num Not | FRBNF | ARK | ISBN | Titre | Auteur | Date", variable=type_doc , value=1, justify="left").pack(anchor="w")
+    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Audiovisuel (CD / DVD)\nFormat : Num Not | FRBNF | ARK | EAN | N° commercial | Titre | Auteur | Date", variable=type_doc , value=2, justify="left").pack(anchor="w")
     type_doc.set(1)
     
     
     
     #Choix du format
-    tk.Label(cadre_output_header,bg=couleur_fond, fg=couleur_bouton,text="En sortie :                                                                              ", font="bold").pack()
+    tk.Label(cadre_output_header,bg=couleur_fond, fg=couleur_bouton,text="En sortie :", font="bold").pack(anchor="w")
     file_nb = tk.IntVar()
-    tk.Radiobutton(cadre_output_nb_fichier,bg=couleur_fond, text="1 fichier                                               ", variable=file_nb , value=1, justify="left").pack()
-    tk.Radiobutton(cadre_output_nb_fichier,bg=couleur_fond, text="Plusieurs fichiers \n(Pb / 0 / 1 / plusieurs ARK trouvés)", justify="left", variable=file_nb , value=2).pack()
+    tk.Radiobutton(cadre_output_nb_fichier,bg=couleur_fond, text="1 fichier", variable=file_nb , value=1, justify="left").pack(anchor="w")
+    tk.Radiobutton(cadre_output_nb_fichier,bg=couleur_fond, text="Plusieurs fichiers \n(Pb / 0 / 1 / plusieurs ARK trouvés)", justify="left", variable=file_nb , value=2).pack(anchor="w")
     file_nb.set(2)
     
     #Ajout (optionnel) d'un identifiant de traitement
@@ -894,7 +907,9 @@ def formulaire_noticesbib2arkBnF(last_version=[0,False]):
     tk.mainloop()
 
 if __name__ == '__main__':
-    last_version = check_last_compilation()
-    formulaire_noticesbib2arkBnF(last_version)
+    access_to_network = main.check_access_to_network()
+    if(access_to_network is True):
+        last_version = check_last_compilation(programID)
+    formulaire_noticesbib2arkBnF(access_to_network,last_version)
     
 
