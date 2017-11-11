@@ -1,7 +1,7 @@
-Programmes pour accompagner la Transition bibliographique dans les bibliothèques hors réseau Sudoc
+transbiblio : Programmes pour accompagner la Transition bibliographique dans les bibliothèques françaises
 ==
 
-transbiblio est une expérimentation pour concevoir un ensemble de programmes permettant de s'aligner avec les données bibliographiques de la Bibliothèque nationale de France, afin de pouvoir bénéficier de leurs travaux de FRBRisation de masse.
+transbiblio est une *expérimentation* pour concevoir un ensemble de programmes permettant de s'aligner avec les données bibliographiques de la Bibliothèque nationale de France, afin de pouvoir bénéficier de leurs travaux de FRBRisation de masse.
 
 Actuellement quatre programmes sont en cours de développement *et très loin d'être finalisés* :
 *marc2tables : permet de charger en entrée l'extraction d'un catalogue de bibliothèque en Unimarc (formats iso2709 ou MarcXML). Le programme produit autant de fichiers tabulés (tableaux) qu'il y a de combinaisons Type de document / type de notice. Ces tableaux sont au format attendu pour le 2e programme
