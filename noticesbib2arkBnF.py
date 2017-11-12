@@ -298,7 +298,7 @@ def frbnf2ark(NumNot,frbnf,isbn,titre,auteur,date):
         ark = page.find("//srw:recordIdentifier", namespaces=ns).text
         NumNotices2methode[NumNot].append("FRBNF")
     else:
-        ark = ",".join(page.xpath("//srw:recordIdentifier", namespaces=ns))
+        ark = ",".join([ark.text for ark in page.xpath("//srw:recordIdentifier", namespaces=ns)])
     return ark
 
         
