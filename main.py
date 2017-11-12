@@ -76,6 +76,9 @@ def check_access_to_network():
         access_to_network = False
     return access_to_network
 
+def form_saut_de_ligne(frame, couleur_fond):
+    tk.Label(frame, text="\n", bg=couleur_fond).pack()
+
 def form_generic_frames(title, couleur_fond, couleur_bordure,access_to_network):
 #----------------------------------------------------
 #|                    Frame                         |
