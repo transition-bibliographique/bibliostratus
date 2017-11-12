@@ -450,7 +450,13 @@ def isbn2ark(NumNot,isbn,titre,auteur,date):
 #Si pas de résultats : on convertit l'ISBN en 10 ou 13 et on relance une recherche dans le catalogue BnF
     if (resultatsIsbn2ARK == ""):
         resultatsIsbn2ARK = isbn2sru(NumNot,isbnConverti,titre,auteur,date)
-        
+
+#Si pas de résultats et ISBN 13 : on recherche sur EAN
+    if (resultatsIsbn2ARK == "" and len(isbn)):
+        resultatsIsbn2ARK = ean2ark(NumNot,isbn,titre,auteur,date)
+    if (resultatsIsbn2ARK == "" and len(isbnConverti) == 13):
+        resultatsIsbn2ARK = ean2ark(NumNot,isbnConverti,titre,auteur,date)
+
 #Si pas de résultats : on relance une recherche dans le Sudoc    
     if (resultatsIsbn2ARK == ""):
         resultatsIsbn2ARK = isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur)
@@ -619,11 +625,14 @@ def monimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_repo
             isbn = row[3]
             isbn_nett = nettoyageIsbnPourControle(isbn)
             isbn_propre = nettoyage_isbn(isbn)
-            titre = row[4]
+            ean = row[4]
+            ean_nett = nettoyageIsbnPourControle(ean)
+            ean_propre = nettoyage_isbn(ean)
+            titre = row[5]
             titre_nett= nettoyageTitrePourControle(titre)
-            auteur = row[5]
+            auteur = row[6]
             auteur_nett = nettoyageAuteur(auteur)
-            date = row[6]
+            date = row[7]
             date_nett = nettoyageDate(date)
             #Actualisation de l'ARK à partir de l'ARK
             ark = ""
@@ -638,6 +647,11 @@ def monimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_repo
             #Si plusieurs résultats, contrôle sur l'auteur
             if (ark == "" and isbn_nett != ""):
                 ark = isbn2ark(NumNot,isbn_propre,titre_nett,auteur_nett,date_nett)
+            #A défaut, recherche sur EAN
+            if (ark == "" and ean != ""):
+                ark = ean2ark(NumNot,ean_propre,titre_nett,auteur_nett,date_nett)
+            #A défaut, recherche sur Titre-Auteur-Date
+            
             #A défaut, recherche sur Titre-Auteur-Date
             if (ark == "" and titre != ""):
                 ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,False)
@@ -658,7 +672,7 @@ def monimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_repo
                 nb_notices_nb_ARK["Pb FRBNF"] += 1
             else:
                 nb_notices_nb_ARK[nbARK] += 1
-            liste_metadonnees = [nbARK,NumNot,ark,frbnf,current_ark,isbn_nett,titre_nett,auteur_nett,date_nett]
+            liste_metadonnees = [nbARK,NumNot,ark,frbnf,current_ark,isbn_nett,ean_propre,titre_nett,auteur_nett,date_nett]
             if (file_nb.get() ==  1):
                 row2file(liste_metadonnees,liste_reports)
             elif(file_nb.get() ==  2):
@@ -812,7 +826,7 @@ def download_last_update():
 # Création de la boîte de dialogue
 #==============================================================================
 
-def formulaire_noticesbib2arkBnF(access_to_network, last_version=[0,False]):
+def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False]):
     couleur_fond = "white"
     couleur_bouton = "#2D4991"
     
@@ -859,6 +873,8 @@ def formulaire_noticesbib2arkBnF(access_to_network, last_version=[0,False]):
     if (access_to_network == False):
         tk.Label(zone_alert_explications, text=errors["no_internet"], 
              bg=couleur_fond,  fg="red").pack()
+    tk.Label(zone_alert_explications, text="Attention : format MON IMPR avec une colonne supplémentaire en entrée (EAN)", 
+             bg=couleur_fond,  fg="red").pack()
     
     #définition input URL (u)
     tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée :", justify="left", font="bold").pack()
@@ -873,7 +889,7 @@ def formulaire_noticesbib2arkBnF(access_to_network, last_version=[0,False]):
     
     tk.Label(cadre_input_type_docs,bg=couleur_fond, text="\nType de documents", anchor="w").pack(anchor="w")
     type_doc = tk.IntVar()
-    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Documents imprimés (monographies)\nFormat : Num Not | FRBNF | ARK | ISBN | Titre | Auteur | Date", variable=type_doc , value=1, justify="left").pack(anchor="w")
+    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Documents imprimés (monographies)\nFormat : Num Not | FRBNF | ARK | ISBN | EAN | Titre | Auteur | Date", variable=type_doc , value=1, justify="left").pack(anchor="w")
     tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Audiovisuel (CD / DVD)\nFormat : Num Not | FRBNF | ARK | EAN | N° commercial | Titre | Auteur | Date", variable=type_doc , value=2, justify="left").pack(anchor="w")
     type_doc.set(1)
     
