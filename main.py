@@ -76,38 +76,78 @@ def check_access_to_network():
         access_to_network = False
     return access_to_network
 
-def formulaire_main(access_to_network, last_version):
-    couleur_fond = "white"
-    couleur_bouton = "#e1e1e1"
-    
-    
+def form_generic_frames(title, couleur_fond, couleur_bordure,access_to_network):
+#----------------------------------------------------
+#|                    Frame                         |
+#|            zone_alert_explications               |
+#----------------------------------------------------
+#|                    Frame                         |
+#|             zone_access2programs                 |
+#|                                                  |
+#|              Frame           |       Frame       |
+#|           zone_actions       |  zone_help_cancel |
+#----------------------------------------------------
+#|                    Frame                         |
+#|                  zone_notes                      |
+#----------------------------------------------------
     master = tk.Tk()
     master.config(padx=10,pady=10,bg=couleur_fond)
-    master.title("La Transition bibliographique en chantant nous ouvre...")
+    master.title(title)
     master.iconbitmap(r'favicon.ico')
+    
     zone_alert_explications = tk.Frame(master, bg=couleur_fond, pady=10)
     zone_alert_explications.pack()
     
     zone_access2programs = tk.Frame(master, bg=couleur_fond)
     zone_access2programs.pack()
-    zone_commentaires = tk.Frame(master, bg=couleur_fond, pady=10)
-    zone_commentaires.pack()
+    zone_actions = tk.Frame(zone_access2programs, bg=couleur_fond)
+    zone_actions.pack(side="left")
+    zone_ok_help_cancel = tk.Frame(zone_access2programs, bg=couleur_fond)
+    zone_ok_help_cancel.pack(side="left")
+    zone_notes = tk.Frame(master, bg=couleur_fond, pady=10)
+    zone_notes.pack()
+
+    if (access_to_network == False):
+        tk.Label(zone_alert_explications, text=errors["no_internet"], 
+                 bg=couleur_fond,  fg="red").pack()
+
     
+    return [master,
+            zone_alert_explications,
+            zone_access2programs,
+            zone_actions,
+            zone_ok_help_cancel,
+            zone_notes]
+
+
+def formulaire_main(access_to_network, last_version):
+    couleur_fond = "white"
+    couleur_bouton = "#e1e1e1"
+    
+    [master,
+     zone_alert_explications,
+     zone_access2programs,
+     zone_actions,
+     zone_ok_help_cancel,
+     zone_notes] = form_generic_frames("La Transition bibliographique en chantant nous ouvre...",
+                                      couleur_fond,
+                                      couleur_bouton,access_to_network)
+
     if (access_to_network == False):
         tk.Label(zone_alert_explications, text=errors["no_internet"], 
                  bg=couleur_fond, fg="red").pack()
     
-    frame1 = tk.Frame(zone_access2programs, highlightthickness=2, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
+    frame1 = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
     frame1.pack(side="left")
     
-    frame2 = tk.Frame(zone_access2programs, highlightthickness=2, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
+    frame2 = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
     frame2.pack(side="left")
     
-    frame3 = tk.Frame(zone_access2programs, highlightthickness=2, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
+    frame3 = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
     frame3.pack(side="left")
     
-    frame_help_cancel = tk.Frame(zone_access2programs, bg=couleur_fond, pady=10, padx=10)
-    frame_help_cancel.pack(side="left")
+    frame_help_cancel = tk.Frame(zone_ok_help_cancel, bg=couleur_fond, pady=10, padx=10)
+    frame_help_cancel.pack()
     
     marc2tableButton = tk.Button(frame1, text = "Convertir un fichier Marc\n en tableaux", 
                                  command=marc2tables.formulaire_marc2tables, 
@@ -120,20 +160,20 @@ def formulaire_main(access_to_network, last_version):
     ark2recordsButton = tk.Button(frame3, text = "Exporter une liste d'ARK BnF\n en notices XML", command=ark2records.formulaire_ark2records, padx=10,pady=10)
     ark2recordsButton.pack()
 
-    call4help = tk.Button(frame_help_cancel, text="Besoin d'aide ?", command=lambda: click2help("https://github.com/Lully/transbiblio"), pady=5, padx=5, width=12)
+    call4help = tk.Button(zone_ok_help_cancel, text="Besoin d'aide ?", command=lambda: click2help("https://github.com/Lully/transbiblio"), pady=5, padx=5, width=12)
     call4help.pack()
     
-    tk.Label(frame_help_cancel,text=" ", pady=5, bg=couleur_fond).pack()
+    tk.Label(zone_ok_help_cancel,text=" ", pady=5, bg=couleur_fond).pack()
     
     cancel = tk.Button(frame_help_cancel, bg=couleur_fond, text="Annuler", command=annuler, pady=5, padx=5, width=12)
     cancel.pack()
 
 
-    tk.Label(zone_commentaires, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
+    tk.Label(zone_notes, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
 
     
     if (last_version[1] == True):
-        download_update = tk.Button(zone_commentaires, text = "Télécharger la version " + str(last_version[0]), command=download_last_update)
+        download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(last_version[0]), command=download_last_update)
         download_update.pack()
 
     

@@ -47,6 +47,7 @@ last_version = [version, False]
 # Creation des fichiers résultats
 # =============================================================================
 
+
 def create_file_doc_record(doc_record, id_traitement):
     filename= "-".join([id_traitement, doc_record_type[doc_record]]) + ".txt"
     file = open(filename, "w", encoding="utf-8")
@@ -276,7 +277,7 @@ def record2listemetas(record):
         
     meta = []
     if (doc_record == "am"):
-        meta = [numNot,frbnf,ark,isbn,title,authors, date]
+        meta = [numNot,frbnf,ark,isbn,ean,title,authors, date]
     if (doc_record == "jm"):
         meta = [numNot,frbnf,ark,ean,id_commercial_aud,title,authors2keywords,date]
     if (doc_record == "as"):
@@ -311,20 +312,17 @@ def formulaire_marc2tables(access_to_network, last_version):
     couleur_fond = "white"
     couleur_bouton = "#99182D"
     
-    master = tk.Tk()
-    master.config(padx=30, pady=20,bg=couleur_fond)
-    master.title("Conversion de fichiers de notices Marc en tableaux")
-    master.iconbitmap(r'favicon.ico')
+    [master,
+     zone_alert_explications,
+     zone_access2programs,
+     zone_actions,
+     zone_ok_help_cancel,
+     zone_notes] = main.form_generic_frames("Conversion de fichiers de notices MARC en tableaux",
+                                      couleur_fond,couleur_bouton,
+                                      access_to_network)
     
-    zone_alert_explications = tk.Frame(master, bg=couleur_fond, pady=10)
-    zone_alert_explications.pack()
-
-    zone_formulaire = tk.Frame(master, bg=couleur_fond)
-    zone_formulaire.pack()
-    zone_commentaires = tk.Frame(master, bg=couleur_fond, pady=10)
-    zone_commentaires.pack()
     
-    cadre_input = tk.Frame(zone_formulaire, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
+    cadre_input = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_input.pack(side="left", anchor="w")
     cadre_input_header = tk.Frame(cadre_input,bg=couleur_fond)
     cadre_input_header.pack(anchor="w")
@@ -335,19 +333,16 @@ def formulaire_marc2tables(access_to_network, last_version):
     cadre_input_type_docs = tk.Frame(cadre_input,bg=couleur_fond)
     cadre_input_type_docs.pack(anchor="w")
     
-    cadre_inter = tk.Frame(zone_formulaire, borderwidth=0, padx=10,bg=couleur_fond)
+    cadre_inter = tk.Frame(zone_actions, borderwidth=0, padx=10,bg=couleur_fond)
     cadre_inter.pack(side="left")
     tk.Label(cadre_inter, text=" ",bg=couleur_fond).pack()
 
-    if (access_to_network == False):
-        tk.Label(zone_alert_explications, text=main.errors["no_internet"], 
-                 bg=couleur_fond,  fg="red").pack()
 
 #=============================================================================
 #     Formulaire - Fichier en entrée
 # =============================================================================
  
-    cadre_output = tk.Frame(zone_formulaire, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
+    cadre_output = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_output.pack(side="left")
     cadre_output_header = tk.Frame(cadre_output,bg=couleur_fond)
     cadre_output_header.pack(anchor="w")
@@ -356,11 +351,11 @@ def formulaire_marc2tables(access_to_network, last_version):
     cadre_output_explications = tk.Frame(cadre_output, padx=20,bg=couleur_fond)
     cadre_output_explications.pack(anchor="w")
     
-    cadre_valider = tk.Frame(zone_formulaire, borderwidth=0, relief="groove", height=150, padx=10,bg=couleur_fond)
+    cadre_valider = tk.Frame(zone_ok_help_cancel, borderwidth=0, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_valider.pack(side="left")
     
     #définition input URL (u)
-    tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée :                                                                                       ", justify="left", font="bold").pack()
+    tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée :", justify="left", font="bold").pack(anchor="w")
     
     tk.Label(cadre_input_file,bg=couleur_fond, text="Fichier contenant les notices : ").pack(side="left")
     entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
@@ -426,10 +421,10 @@ def formulaire_marc2tables(access_to_network, last_version):
     cancel = tk.Button(cadre_valider, bg=couleur_fond, text="Annuler", command=lambda: main.annuler(master), padx=10, pady=1, width=15)
     cancel.pack()
     
-    tk.Label(zone_commentaires, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
+    tk.Label(zone_notes, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
     
     if (last_version[1] == True):
-        download_update = tk.Button(zone_commentaires, text = "Télécharger la version " + str(last_version[0]), command=download_last_update)
+        download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(last_version[0]), command=download_last_update)
         download_update.pack()
     
     tk.mainloop()
