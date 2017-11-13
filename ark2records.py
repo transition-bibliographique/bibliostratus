@@ -16,6 +16,7 @@ import csv
 import pymarc as mc
 import main as main
 import os
+import re
 
 
 version = 0.02
@@ -28,6 +29,7 @@ ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2"
 
 listeARK_BIB = []
 listeNNA_AUT = []
+errors_list = []
 
 dict_format_records={
         1:"unimarcxchange",
@@ -99,7 +101,7 @@ def file_create(record_type, format_file, outputID):
             file.write(' xmlns:' + key + '="' + ns[key] + '"')
         file.write(">\n")
     else:
-        filename = id_filename + ".is2709"
+        filename = id_filename + ".iso2709"
         file = mc.MARCWriter(open(filename,"wb"))
     return file
 
@@ -109,7 +111,7 @@ def file_fin(file):
 def XMLrec2isorecord(XMLrec):
     XMLrec = XMLrec.replace("<mxc:","<").replace("</mxc:","</")
     XMLrec = "<collection>" + XMLrec + "</collection>"
-    XMLrec = XMLrec.replace(' xmlns:mxc="info:lc/xmlns/marcxchange-v2" xmlns:srw="http://www.loc.gov/zing/srw/" xmlns="http://catalogue.bnf.fr/namespaces/InterXMarc" xmlns:ixm="http://catalogue.bnf.fr/namespaces/InterXMarc" xmlns:mn="http://catalogue.bnf.fr/namespaces/motsnotices" xmlns:sd="http://www.loc.gov/zing/srw/diagnostic/" format="UNIMARC" id="ark:/12148/cb34719196n" type="Bibliographic"','')
+    XMLrec = re.sub(r"<record[^>]+>",r"<record>",XMLrec)
     filename_temp = "temp.xml"
     file_temp = open(filename_temp,"w",encoding="utf-8")
     file_temp.write(XMLrec)
@@ -118,10 +120,15 @@ def XMLrec2isorecord(XMLrec):
 def record2file(file, XMLrec, format_file):
     #Si sortie en iso2709
     if (format_file == 1):
-        filename_temp = XMLrec2isorecord(XMLrecord2string(XMLrec))
+        XMLrec_str = XMLrecord2string(XMLrec)
+        filename_temp = XMLrec2isorecord(XMLrec_str)
         collection = mc.marcxml.parse_xml_to_array(filename_temp, strict=False)
         for record in collection:
-            file.write(record)
+            try:
+                file.write(record)
+            except UnicodeEncodeError as err:
+                errors_list.append([XMLrec_str, str(err)])
+            #file.write(record)
     #si sortie en XML
     if (format_file == 2):
         record = XMLrecord2string(XMLrec)
@@ -152,10 +159,16 @@ def callback(master, filename, headers, AUTliees, outputID, format_records, form
             file_fin(bib_file)
             if (AUTliees == 1):
                 file_fin(aut_file)
-    fin_traitements(master)
+    fin_traitements(master,outputID)
+
+def errors_file(outputID):
+    errors_file = open(outputID + "-errors.txt", "w", encoding="utf-8")
+    for el in errors_list:
+        errors_file.write(el[1] + "\n" + el[0] + "\n\n")
     
-def fin_traitements(window):
-    print("\n\nProgramme terminé")
+def fin_traitements(window,outputID):
+    if (errors_list != []):
+        errors_file(outputID)
     os.remove("temp.xml")
     window.destroy()
     
