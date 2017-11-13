@@ -58,7 +58,7 @@ def ark2record(ark, type_record, format_BIB, renvoyerNotice=False):
     url = ark2url(ark, type_record, format_BIB)
     try:
         etree.parse(request.urlopen(url))
-    except urllib.URLerror:
+    except urllib.error.URLerror:
         print("Pb d'accès à la notice " + ark)
     record = etree.parse(request.urlopen(url)).xpath("//srw:recordData/mxc:record",namespaces=ns)[0]
     if (renvoyerNotice == True):
@@ -80,7 +80,7 @@ def bib2aut(ark, aut_file, format_BIB, format_file):
                 url = nn2url(nna, "aut", format_BIB)
                 try:
                     etree.parse(request.urlopen(url))
-                except urllib.URLerror:
+                except urllib.error.URLerror:
                     print("Pb d'accès à la notice " + nna)
                 XMLrec = etree.parse(request.urlopen(url)).xpath("//srw:recordData/mxc:record",namespaces=ns)[0]
                 record2file(aut_file, XMLrec, format_file)
