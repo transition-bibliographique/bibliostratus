@@ -15,6 +15,7 @@ from urllib import request, error
 import csv
 import pymarc as mc
 import main as main
+import os
 
 
 version = 0.01
@@ -155,6 +156,7 @@ def callback(master, filename, headers, AUTliees, outputID, format_records, form
     
 def fin_traitements(window):
     print("\n\nProgramme terminé")
+    os.remove("temp.xml")
     window.destroy()
     
 
