@@ -11,6 +11,7 @@ A partir d'un fichier contenant une liste d'ARK de notices biblio, récupérer l
 import tkinter as tk
 from lxml import etree
 import urllib.parse
+from urllib import request, error
 import csv
 import pymarc as mc
 import main as main
@@ -37,27 +38,27 @@ listefieldsLiensAUT = ["100","141","143","144","145",
                        "700","702","703","709","710","712","713","719","731"]
 
 
-def ark2url(ark, type_record, format_records):
+def ark2url(ark, type_record, format_BIB):
     query = type_record + '.ark any "' + ark + '"'
     if (type_record == "aut"):
         query += ' and aut.status any "sparse validated"'
     query = urllib.parse.quote(query)
-    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + "&recordSchema=" + format_records + "&maximumRecords=20&startRecord=1"
+    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + "&recordSchema=" + format_BIB + "&maximumRecords=20&startRecord=1"
     return url
 
-def nn2url(nn, type_record, format_records):
+def nn2url(nn, type_record, format_BIB):
     query = type_record + '.recordid any "' + nn + '"'
     if (type_record == "aut"):
         query += ' and aut.status any "sparse validated"'
     query = urllib.parse.quote(query)
-    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + "&recordSchema=" + format_records + "&maximumRecords=20&startRecord=1"
+    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + "&recordSchema=" + format_BIB + "&maximumRecords=20&startRecord=1"
     return url
 
-def ark2record(ark, type_record, format_record,renvoyerNotice=False):
-    url = ark2url(ark, type_record, format_record)
+def ark2record(ark, type_record, format_BIB, renvoyerNotice=False):
+    url = ark2url(ark, type_record, format_BIB)
     try:
         etree.parse(request.urlopen(url))
-    except URLerror:
+    except urllib.URLerror:
         print("Pb d'accès à la notice " + ark)
     record = etree.parse(request.urlopen(url)).xpath("//srw:recordData/mxc:record",namespaces=ns)[0]
     if (renvoyerNotice == True):
@@ -68,30 +69,27 @@ def XMLrecord2string(record):
     record_str = record_str.replace("b'","").replace("      '","\n").replace("\\n","\n").replace("\\t","\t").replace("\\r","\n")
     return (record_str)
 
-def bib2aut(ark, aut_file, format_records, format_file):
-    bib_record = ark2record(ark, "intermarcxchange", True)
+def bib2aut(ark, aut_file, format_BIB, format_file):
+    bib_record = ark2record(ark, "bib", "intermarcxchange", True)
     for field in listefieldsLiensAUT:
         path = '//mxc:datafield[@tag="' + field + '"]/mxc:subfield[@code="3"]'
-        for datafield in intermarc_record.xpath(path, namespaces=ns):
+        for datafield in bib_record.xpath(path, namespaces=ns):
             nna = datafield.text
             if (nna not in listeNNA_AUT):
                 listeNNA_AUT.append(nna)
-                url = nn2url(nna, "aut", format_records)
+                url = nn2url(nna, "aut", format_BIB)
                 try:
                     etree.parse(request.urlopen(url))
-                except URLerror:
+                except urllib.URLerror:
                     print("Pb d'accès à la notice " + nna)
                 XMLrec = etree.parse(request.urlopen(url)).xpath("//srw:recordData/mxc:record",namespaces=ns)[0]
                 record2file(aut_file, XMLrec, format_file)
 
-def ark2xml(ark, format_BIB):
-    ark2record(ark,format_BIB)
-
-    
+   
 def file_create(record_type, format_file, outputID):
     file = object
     id_filename = "-".join([outputID, record_type])
-    if (format_file == 1):
+    if (format_file == 2):
         filename = id_filename + ".xml"
         file = open(filename, "w", encoding="utf-8")
         file.write("<?xml version='1.0'?>\n")
@@ -107,23 +105,16 @@ def file_create(record_type, format_file, outputID):
 def file_fin(file):
     file.write("</mxc:collection>")
 
-def aut_file_debut():
-    aut_records.write("<?xml version='1.0'?>\n")
-    aut_records.write("<mxc:collection ")
-    for key in ns:
-        aut_records.write(' xmlns:' + key + '="' + ns[key] + '"')
-    aut_records.write(">\n")
-def aut_file_fin():
-    aut_records.write("</mxc:collection>")
-
 def XMLrec2isorecord(XMLrec):
-    return mc.marcxml.parse_xml_to_array(XMLrecord, strict=False)
+    return mc.marcxml.parse_xml_to_array(XMLrec, strict=False)
 
 def record2file(file, XMLrec, format_file):
+    #Si sortie en iso2709
     if (format_file == 1):
-        record = XMLrecord2string(XMLrec)
-    if (format_file == 2):
         record = XMLrec2isorecord(XMLrec)
+    #si sortie en XML
+    if (format_file == 2):
+        record = XMLrecord2string(XMLrec)
     file.write(record)
        
 
@@ -139,20 +130,24 @@ def callback(master, filename, headers, AUTliees, outputID, format_records, form
         for line in entry_file:
             ark = line[0]
             if (ark not in listeARK_BIB):
-                print(ARK)
+                print(ark)
                 listeARK_BIB.append(ark)
-                XMLrec = etree.parse(request.urlopen(ark2url(ark))).xpath("//srw:record/srw:recordData/mxc:record", namespaces=ns)[0]
+                XMLrec = etree.parse(request.urlopen(ark2url(ark, "bib", format_BIB))).xpath("//srw:record/srw:recordData/mxc:record", namespaces=ns)[0]
                 record2file(bib_file, XMLrec, format_file)
                 if (AUTliees == 1):
-                    bib2aut(ark, aut_file, format_records, format_file)
+                    bib2aut(ark, aut_file, format_BIB, format_file)
                 
                     
         if (format_file == 2):
             file_fin(bib_file)
             if (AUTliees == 1):
                 file_fin(aut_file)
+    fin_traitements(master)
+    
+def fin_traitements(window):
     print("\n\nProgramme terminé")
-            
+    window.destroy()
+    
 
 #==============================================================================
 # Création de la boîte de dialogue
