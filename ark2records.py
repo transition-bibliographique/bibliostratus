@@ -106,16 +106,25 @@ def file_fin(file):
     file.write("</mxc:collection>")
 
 def XMLrec2isorecord(XMLrec):
-    return mc.marcxml.parse_xml_to_array(XMLrec, strict=False)
+    XMLrec = XMLrec.replace("<mxc:","<").replace("</mxc:","</")
+    XMLrec = "<collection>" + XMLrec + "</collection>"
+    XMLrec = XMLrec.replace(' xmlns:mxc="info:lc/xmlns/marcxchange-v2" xmlns:srw="http://www.loc.gov/zing/srw/" xmlns="http://catalogue.bnf.fr/namespaces/InterXMarc" xmlns:ixm="http://catalogue.bnf.fr/namespaces/InterXMarc" xmlns:mn="http://catalogue.bnf.fr/namespaces/motsnotices" xmlns:sd="http://www.loc.gov/zing/srw/diagnostic/" format="UNIMARC" id="ark:/12148/cb34719196n" type="Bibliographic"','')
+    filename_temp = "temp.xml"
+    file_temp = open(filename_temp,"w",encoding="utf-8")
+    file_temp.write(XMLrec)
+    return filename_temp
 
 def record2file(file, XMLrec, format_file):
     #Si sortie en iso2709
     if (format_file == 1):
-        record = XMLrec2isorecord(XMLrec)
+        filename_temp = XMLrec2isorecord(XMLrecord2string(XMLrec))
+        collection = mc.marcxml.parse_xml_to_array(filename_temp, strict=False)
+        for record in collection:
+            file.write(record)
     #si sortie en XML
     if (format_file == 2):
         record = XMLrecord2string(XMLrec)
-    file.write(record)
+        file.write(record)
        
 
 def callback(master, filename, headers, AUTliees, outputID, format_records, format_file):
@@ -211,7 +220,7 @@ def formulaire_ark2records(access_to_network=True,last_version=version):
     b = tk.Checkbutton(frame_input_aut, text="Récupérer aussi les notices d'autorité liées", 
                        variable=AUTliees,
                        bg=couleur_fond, justify="left").pack(anchor="w")
-    tk.Label(frame_input_aut, text="\n\n\n\n", bg=couleur_fond).pack()
+    tk.Label(frame_input_aut, text="\n\n\n", bg=couleur_fond).pack()
     
     tk.Label(frame_output_file, text="ID de traitement (facultatif)",
              bg=couleur_fond).pack(side="left", anchor="w")

@@ -10,11 +10,12 @@ Test de création d'un fichier iso2709 à partir de notices MarcXML
 from lxml import etree
 import pymarc as mc
 
-entry_filename = "2rec.xml"
+entry_filename = "temp.xml"
+#entry_filename = "5_rec_unimarc.xml"
 output = mc.MARCWriter(open("2rec.iso2709","wb"))
 
 collection = mc.marcxml.parse_xml_to_array(entry_filename, strict=False)
 for record in collection:
-    print(type(record))
+    print(record)
     #record_Rec = record.as_marc21
     output.write(record)
