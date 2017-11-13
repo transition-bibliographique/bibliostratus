@@ -63,7 +63,7 @@ def check_last_compilation(programID):
         display_update_button = True
     return [programID_last_compilation,display_update_button]
 
-def download_last_update():
+def download_last_update(url="https://github.com/Lully/transbiblio/"):
     url = "https://github.com/Lully/transbiblio/"
     webbrowser.open(url)
 
@@ -153,14 +153,14 @@ def formulaire_main(access_to_network, last_version):
     frame_help_cancel.pack()
     
     marc2tableButton = tk.Button(frame1, text = "Convertir un fichier Marc\n en tableaux", 
-                                 command=marc2tables.formulaire_marc2tables, 
-                                 padx=10,pady=10, bg="#99182D",fg="white")
+                                 command=lambda: marc2tables.formulaire_marc2tables(access_to_network), 
+                                 padx=10,pady=10, bg="#2D4991",fg="white")
     marc2tableButton.pack()
     
-    bib2arkButton = tk.Button(frame2, text = "Aligner ses données (tableaux)\n avec le catalogue BnF", command=bib2ark.formulaire_noticesbib2arkBnF, padx=10,pady=10, bg="#2D4991", fg="white")
+    bib2arkButton = tk.Button(frame2, text = "Aligner ses données (tableaux)\n avec le catalogue BnF", command=bib2ark.formulaire_noticesbib2arkBnF, padx=10,pady=10, bg="#fefefe")
     bib2arkButton.pack()
     
-    ark2recordsButton = tk.Button(frame3, text = "Exporter une liste d'ARK BnF\n en notices XML", command=ark2records.formulaire_ark2records, padx=10,pady=10)
+    ark2recordsButton = tk.Button(frame3, text = "Exporter une liste d'ARK BnF\n en notices XML", command=ark2records.formulaire_ark2records, padx=10,pady=10, bg="#99182D", fg="white")
     ark2recordsButton.pack()
 
     call4help = tk.Button(zone_ok_help_cancel, text="Besoin d'aide ?", command=lambda: click2help("https://github.com/Lully/transbiblio"), pady=5, padx=5, width=12)
@@ -168,7 +168,7 @@ def formulaire_main(access_to_network, last_version):
     
     tk.Label(zone_ok_help_cancel,text=" ", pady=5, bg=couleur_fond).pack()
     
-    cancel = tk.Button(frame_help_cancel, bg=couleur_fond, text="Annuler", command=annuler, pady=5, padx=5, width=12)
+    cancel = tk.Button(frame_help_cancel, text="Annuler", command=annuler, pady=5, padx=5, width=12)
     cancel.pack()
 
 

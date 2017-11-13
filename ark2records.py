@@ -18,7 +18,7 @@ import main as main
 import os
 
 
-version = 0.01
+version = 0.02
 programID = "ark2records"
 lastupdate = "12/11/2017"
 last_version = [version, False]
@@ -59,7 +59,7 @@ def ark2record(ark, type_record, format_BIB, renvoyerNotice=False):
     url = ark2url(ark, type_record, format_BIB)
     try:
         etree.parse(request.urlopen(url))
-    except urllib.error.URLerror:
+    except error.URLerror:
         print("Pb d'accès à la notice " + ark)
     record = etree.parse(request.urlopen(url)).xpath("//srw:recordData/mxc:record",namespaces=ns)[0]
     if (renvoyerNotice == True):
@@ -81,7 +81,7 @@ def bib2aut(ark, aut_file, format_BIB, format_file):
                 url = nn2url(nna, "aut", format_BIB)
                 try:
                     etree.parse(request.urlopen(url))
-                except urllib.error.URLerror:
+                except error.URLerror:
                     print("Pb d'accès à la notice " + nna)
                 XMLrec = etree.parse(request.urlopen(url)).xpath("//srw:recordData/mxc:record",namespaces=ns)[0]
                 record2file(aut_file, XMLrec, format_file)
@@ -166,7 +166,7 @@ def fin_traitements(window):
 
 def formulaire_ark2records(access_to_network=True,last_version=version):
     couleur_fond = "white"
-    couleur_bouton = "#a1a1a1"
+    couleur_bouton = "#99182D"
     
     [master,
      zone_alert_explications,
@@ -262,6 +262,12 @@ def formulaire_ark2records(access_to_network=True,last_version=version):
     cancel = tk.Button(zone_ok_help_cancel, bg=couleur_fond, text="Annuler", command=lambda: main.annuler(master), padx=10, pady=1, width=15)
     cancel.pack()
 
+    tk.Label(zone_notes, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
+
+    
+    if (last_version[1] == True):
+        download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(last_version[0]), command=main.download_last_update)
+        download_update.pack()
     
     tk.mainloop()
     

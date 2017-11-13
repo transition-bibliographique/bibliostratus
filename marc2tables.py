@@ -305,12 +305,13 @@ def launch(master,entry_filename,file_format, output_ID):
     end_of_treatments(master,output_ID)
 
 
-def formulaire_marc2tables(access_to_network, last_version):
+def formulaire_marc2tables(access_to_network=True, last_version=[version, False]):
 # =============================================================================
 # Structure du formulaire - Cadres
 # =============================================================================
     couleur_fond = "white"
-    couleur_bouton = "#99182D"
+    couleur_bouton = "#2D4991"
+    #couleur_bouton = "#99182D"
     
     [master,
      zone_alert_explications,

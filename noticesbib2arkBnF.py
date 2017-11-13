@@ -828,7 +828,7 @@ def download_last_update():
 
 def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False]):
     couleur_fond = "white"
-    couleur_bouton = "#2D4991"
+    couleur_bouton = "#acacac"
     
     master = tk.Tk()
     master.config(padx=30, pady=20,bg=couleur_fond)
