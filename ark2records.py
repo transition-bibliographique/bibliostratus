@@ -27,56 +27,85 @@ ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2"
 listeARK_BIB = []
 listeNNA_AUT = []
 
-def ark2record(ark,format_BIB,renvoyerNotice=False):
-    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.ark%20any%20%22" + urllib.parse.quote(ark) + "%22&recordSchema=" + format_BIB + "&maximumRecords=20&startRecord=1"
-    records = etree.parse(url)
-    for record in records.xpath("//srw:recordData/mxc:record",namespaces=ns):
-        record2file(record)
-    if (renvoyerNotice == True):
-        return records
+dict_format_records={
+        1:"unimarcxchange",
+        2:"unimarcxchange-anl",
+        3:"intermarcxchange",
+        4:"intermarcxchange-anl"}
+listefieldsLiensAUT = ["100","141","143","144","145",
+                       "600","603","606","607","609","610","616","617",
+                       "700","702","703","709","710","712","713","719","731"]
 
-def record2string(record):
+
+def ark2url(ark, type_record, format_records):
+    query = type_record + '.ark any "' + ark + '"'
+    if (type_record == "aut"):
+        query += ' and aut.status any "sparse validated"'
+    query = urllib.parse.quote(query)
+    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + "&recordSchema=" + format_records + "&maximumRecords=20&startRecord=1"
+    return url
+
+def nn2url(nn, type_record, format_records):
+    query = type_record + '.recordid any "' + nn + '"'
+    if (type_record == "aut"):
+        query += ' and aut.status any "sparse validated"'
+    query = urllib.parse.quote(query)
+    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + "&recordSchema=" + format_records + "&maximumRecords=20&startRecord=1"
+    return url
+
+def ark2record(ark, type_record, format_record,renvoyerNotice=False):
+    url = ark2url(ark, type_record, format_record)
+    try:
+        etree.parse(request.urlopen(url))
+    except URLerror:
+        print("Pb d'accès à la notice " + ark)
+    record = etree.parse(request.urlopen(url)).xpath("//srw:recordData/mxc:record",namespaces=ns)[0]
+    if (renvoyerNotice == True):
+        return record
+
+def XMLrecord2string(record):
     record_str = str(etree.tostring(record))
     record_str = record_str.replace("b'","").replace("      '","\n").replace("\\n","\n").replace("\\t","\t").replace("\\r","\n")
     return (record_str)
 
-def record2file(record):
-    record_str = record2string(record)
-    #print(record_str)
-    record_type = record.get("type")
-    if (record_type=="Bibliographic"):
-        bib_records.write(record_str)
-    elif(record_type=="Authority"):
-        aut_records.write(record_str)
-
-def ark2xml_aut(ark,format_BIB,aut_records):
-    ark2record(ark,format_BIB)
-    intermarc_record = ark2record(ark,"intermarcxchange",True)
+def bib2aut(ark, aut_file, format_records, format_file):
+    bib_record = ark2record(ark, "intermarcxchange", True)
     for field in listefieldsLiensAUT:
         path = '//mxc:datafield[@tag="' + field + '"]/mxc:subfield[@code="3"]'
         for datafield in intermarc_record.xpath(path, namespaces=ns):
             nna = datafield.text
             if (nna not in listeNNA_AUT):
                 listeNNA_AUT.append(nna)
-                url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=aut.recordid%20all%20%22" + nna + "%22%20and%20aut.status%20any%20%22sparse%20validated%22&recordSchema=" + format_BIB + "&maximumRecords=20&startRecord=1"
-                records = etree.parse(url)
-                for record in records.xpath("//srw:recordData/mxc:record",namespaces=ns):
-                    record2file(record)
-            
-    
+                url = nn2url(nna, "aut", format_records)
+                try:
+                    etree.parse(request.urlopen(url))
+                except URLerror:
+                    print("Pb d'accès à la notice " + nna)
+                XMLrec = etree.parse(request.urlopen(url)).xpath("//srw:recordData/mxc:record",namespaces=ns)[0]
+                record2file(aut_file, XMLrec, format_file)
 
 def ark2xml(ark, format_BIB):
     ark2record(ark,format_BIB)
+
     
-    
-def bib_file_debut():
-    bib_records.write("<?xml version='1.0'?>\n")
-    bib_records.write("<mxc:collection ")
-    for key in ns:
-        bib_records.write(' xmlns:' + key + '="' + ns[key] + '"')
-    bib_records.write(">\n")
-def bib_file_fin():
-    bib_records.write("</mxc:collection>")
+def file_create(record_type, format_file, outputID):
+    file = object
+    id_filename = "-".join([outputID, record_type])
+    if (format_file == 1):
+        filename = id_filename + ".xml"
+        file = open(filename, "w", encoding="utf-8")
+        file.write("<?xml version='1.0'?>\n")
+        file.write("<mxc:collection ")
+        for key in ns:
+            file.write(' xmlns:' + key + '="' + ns[key] + '"')
+        file.write(">\n")
+    else:
+        filename = id_filename + ".is2709"
+        file = mc.MARCWriter(open(filename,"wb"))
+    return file
+
+def file_fin(file):
+    file.write("</mxc:collection>")
 
 def aut_file_debut():
     aut_records.write("<?xml version='1.0'?>\n")
@@ -87,47 +116,44 @@ def aut_file_debut():
 def aut_file_fin():
     aut_records.write("</mxc:collection>")
 
-def callback(master, filename, AUTliees, outputID, format_records, format_file):
-    format_BIB = ""
-    if (format_records == 1):
-        format_BIB = "unimarcxchange"
-    elif(format_records == 2):
-        format_BIB = "unimarcxchange-anl"
-    elif(format_records == 3):
-        format_BIB = "intermarcxchange"
-    elif(format_records == 4):
-        format_BIB = "intermarcxchange-anl"
+def XMLrec2isorecord(XMLrec):
+    return mc.marcxml.parse_xml_to_array(XMLrecord, strict=False)
+
+def record2file(file, XMLrec, format_file):
+    if (format_file == 1):
+        record = XMLrecord2string(XMLrec)
     if (format_file == 2):
-        bib_file_debut()
+        record = XMLrec2isorecord(XMLrec)
+    file.write(record)
+       
+
+def callback(master, filename, headers, AUTliees, outputID, format_records, format_file):
+    format_BIB = dict_format_records[format_records]
+    bib_file = file_create("bib", format_file, outputID)
     if (AUTliees == 1):
+        aut_file = file_create("aut", format_file, outputID)
+    with open(filename, newline='\n',encoding="utf-8") as csvfile:
+        entry_file = csv.reader(csvfile, delimiter='\t')
+        if (headers == True):
+            next(entry_file, None)
+        for line in entry_file:
+            ark = line[0]
+            if (ark not in listeARK_BIB):
+                print(ARK)
+                listeARK_BIB.append(ark)
+                XMLrec = etree.parse(request.urlopen(ark2url(ark))).xpath("//srw:record/srw:recordData/mxc:record", namespaces=ns)[0]
+                record2file(bib_file, XMLrec, format_file)
+                if (AUTliees == 1):
+                    bib2aut(ark, aut_file, format_records, format_file)
+                
+                    
         if (format_file == 2):
-            aut_file_debut()
-        with open(filename, newline='\n',encoding="utf-8") as csvfile:
-            entry_file = csv.reader(csvfile, delimiter='\t')
-            for line in entry_file:
-                ark = line[0]
-                if (ark not in listeARK_BIB):
-                    listeARK_BIB.append(ark)
-                    print(listeARK_BIB)
-                    ark2xml_aut(ark,format_BIB,aut_records)
-        aut_file_fin()
-    else:
-        with open(filename, newline='\n',encoding="utf-8") as csvfile:
-            entry_file = csv.reader(csvfile, delimiter='\t')
-            for line in entry_file:
-                ark = line[0]
-                if (ark not in listeARK_BIB):
-                    print(ark)
-                    listeARK_BIB.append(ark)
-                    ark2xml(ark,format_BIB)
-    bib_file_fin()
+            file_fin(bib_file)
+            if (AUTliees == 1):
+                file_fin(aut_file)
     print("\n\nProgramme terminé")
             
-bib_records = open("noticesBIB.xml","w", encoding="utf-8")
-aut_records = open("noticesAUT.xml","w", encoding="utf-8")
-listefieldsLiensAUT = ["100","141","143","144","145",
-                       "600","603","606","607","609","610","616","617",
-                       "700","702","703","709","710","712","713","719","731"]
+
 #==============================================================================
 # Création de la boîte de dialogue
 #==============================================================================
@@ -179,6 +205,12 @@ def formulaire_ark2records(access_to_network=True,last_version=version):
     entry_filename.focus_set()
     
     tk.Label(frame_input_aut, text="\n", bg=couleur_fond).pack()
+    #Fichier avec en-têtes ?
+    headers = tk.IntVar()
+    headerButton = tk.Checkbutton(frame_input_aut, text="Mon fichier a des en-têtes de colonne", 
+                       variable=headers,
+                       bg=couleur_fond, justify="left").pack(anchor="w")
+    headers.set(1)
     #notices d'autorité liées
     AUTliees = tk.IntVar()
     b = tk.Checkbutton(frame_input_aut, text="Récupérer aussi les notices d'autorité liées", 
@@ -213,7 +245,7 @@ def formulaire_ark2records(access_to_network=True,last_version=version):
     
     #file_format.focus_set()
     b = tk.Button(zone_ok_help_cancel, text = "OK", 
-                  command = lambda: callback(master, entry_filename.get(), AUTliees.get(), outputID.get(), format_records.get(), format_file.get()), 
+                  command = lambda: callback(master, entry_filename.get(), headers.get(), AUTliees.get(), outputID.get(), format_records.get(), format_file.get()), 
                   width = 15, borderwidth=1, pady=20, fg="white",
                   bg=couleur_bouton)
     b.pack()
