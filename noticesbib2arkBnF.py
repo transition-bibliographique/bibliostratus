@@ -16,7 +16,6 @@ import urllib.error as error
 import csv
 import tkinter as tk
 from collections import defaultdict
-import re
 import webbrowser
 import codecs
 import json

@@ -22,18 +22,13 @@ Conversion de fichiers XML ou iso2709 en tableaux pour alignements
 
 """
 
-from lxml import etree
-from urllib import request
-import urllib.parse
+
 from unidecode import unidecode
 import urllib.error as error
-import csv
 import tkinter as tk
 from collections import defaultdict
 import re
 import webbrowser
-import codecs
-import json
 import noticesbib2arkBnF as bib2ark
 import pymarc as mc
 import main as main
