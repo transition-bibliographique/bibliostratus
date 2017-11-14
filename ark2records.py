@@ -124,6 +124,8 @@ def record2file(file, XMLrec, format_file):
         filename_temp = XMLrec2isorecord(XMLrec_str)
         collection = mc.marcxml.parse_xml_to_array(filename_temp, strict=False)
         for record in collection:
+            record2 = record.force_utf8
+            print(record2)
             try:
                 file.write(record)
             except UnicodeEncodeError as err:
@@ -169,7 +171,8 @@ def errors_file(outputID):
 def fin_traitements(window,outputID):
     if (errors_list != []):
         errors_file(outputID)
-    os.remove("temp.xml")
+    if (os.path.isfile("temp.xml") is True):
+        os.remove("temp.xml")
     window.destroy()
     
 
