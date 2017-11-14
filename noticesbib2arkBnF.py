@@ -390,6 +390,25 @@ def isbn2sru(NumNot,isbn,titre,auteur,date):
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
     return listeARK
 
+#Si l'ISBN n'a été trouvé ni dans l'index ISBN, ni dans l'index EAN
+#on le recherche dans tous les champs (not. les données d'exemplaires, pour des 
+#réimpressions achetées par un département de la Direction des collections de la BnF)
+def isbn_anywhere2sru(NumNot,isbn,titre,auteur,date):
+    urlSRU = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.anywhere%20all%20%22" + isbn + "%22"
+    resultats = etree.parse(urlSRU)
+    listeARK = []
+    for record in resultats.xpath("//srw:record", namespaces=ns):
+        ark_current = record.find("srw:recordIdentifier", namespaces=ns).text
+        recordBNF = etree.parse("http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.ark%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")
+        ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,recordBNF)
+        NumNotices2methode[NumNot].append("ISBN anywhere > ARK")
+        listeARK.append(ark)
+    listeARK = ",".join([ark for ark in listeARK if ark != ""])
+    return listeARK
+
+
+
+
 def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur):
     url = "https://www.sudoc.fr/services/isbn2ppn/" + isbn
     Listeppn = []
@@ -452,10 +471,18 @@ def isbn2ark(NumNot,isbn,titre,auteur,date):
         resultatsIsbn2ARK = isbn2sru(NumNot,isbnConverti,titre,auteur,date)
 
 #Si pas de résultats et ISBN 13 : on recherche sur EAN
-    if (resultatsIsbn2ARK == "" and len(isbn)):
+    if (resultatsIsbn2ARK == "" and len(isbn)==13):
         resultatsIsbn2ARK = ean2ark(NumNot,isbn,titre,auteur,date)
     if (resultatsIsbn2ARK == "" and len(isbnConverti) == 13):
         resultatsIsbn2ARK = ean2ark(NumNot,isbnConverti,titre,auteur,date)
+
+#Si pas de résultats et ISBN 13 : on recherche l'ISBN dans tous les champs (dont les données d'exemplaire)
+    if (resultatsIsbn2ARK == ""):
+        resultatsIsbn2ARK = isbn_anywhere2ark(NumNot,isbn,titre,auteur,date)
+    if (resultatsIsbn2ARK == "" and len(isbnConverti) == 13):
+        resultatsIsbn2ARK = isbn_anywhere2ark(NumNot,isbnConverti,titre,auteur,date)
+
+
 
 #Si pas de résultats : on relance une recherche dans le Sudoc    
     if (resultatsIsbn2ARK == ""):
