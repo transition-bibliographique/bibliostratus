@@ -42,7 +42,7 @@ listefieldsLiensAUT = ["100","141","143","144","145",
 
 
 def ark2url(ark, type_record, format_BIB):
-    query = type_record + '.ark any "' + ark + '"'
+    query = type_record + '.persistentid any "' + ark + '"'
     if (type_record == "aut"):
         query += ' and aut.status any "sparse validated"'
     query = urllib.parse.quote(query)
