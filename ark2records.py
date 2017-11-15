@@ -124,20 +124,23 @@ def record2file(file, XMLrec, format_file):
         filename_temp = XMLrec2isorecord(XMLrec_str)
         collection = mc.marcxml.parse_xml_to_array(filename_temp, strict=False)
         for record in collection:
-            record2 = record.force_utf8
-            print(record2)
             try:
                 file.write(record)
+                print(record)
             except UnicodeEncodeError as err:
                 errors_list.append([XMLrec_str, str(err)])
+                record2 = record.__str__().encode("utf-8").decode("utf-8")
+                print(record2)
+                #file.write(record2)
             #file.write(record)
     #si sortie en XML
     if (format_file == 2):
         record = XMLrecord2string(XMLrec)
         file.write(record)
-       
+
 
 def callback(master, filename, headers, AUTliees, outputID, format_records, format_file):
+    main.generic_input_controls(filename)
     format_BIB = dict_format_records[format_records]
     bib_file = file_create("bib", format_file, outputID)
     if (AUTliees == 1):

@@ -293,6 +293,7 @@ def end_of_treatments(master,id_traitement):
 
 
 def launch(master,entry_filename,file_format, output_ID):
+    main.generic_input_controls(entry_filename)
     if (file_format == 1):
         iso2tables(entry_filename, output_ID)
     else:

@@ -122,6 +122,27 @@ def form_generic_frames(title, couleur_fond, couleur_bordure,access_to_network):
             zone_ok_help_cancel,
             zone_notes]
 
+def generic_input_controls(filename):
+    check_file_name(filename)
+       
+def check_file_name(filename):
+    try:
+        open(filename,"r")
+    except FileNotFoundError:
+        popup_errors("Le fichier " + filename + " n'existe pas")
+
+def popup_errors(text):
+    couleur_fond = "white"
+    couleur_bordure = "red"
+    [master,
+            zone_alert_explications,
+            zone_access2programs,
+            zone_actions,
+            zone_ok_help_cancel,
+            zone_notes] = form_generic_frames("Alerte", couleur_fond, couleur_bordure,True)
+    tk.Label(zone_access2programs, text=text, fg=couleur_bordure, 
+             font="bold", bg=couleur_fond, padx=10, pady=10).pack()
+    
 
 def formulaire_main(access_to_network, last_version):
     couleur_fond = "white"
