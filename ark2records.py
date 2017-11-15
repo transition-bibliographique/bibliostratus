@@ -128,6 +128,10 @@ def record2file(file, XMLrec, format_file):
                 file.write(record)
                 print(record)
             except UnicodeEncodeError as err:
+#==============================================================================
+#                 Gros pataquès insatisfaisant ici : écrire dans le fichier
+#                 iso2709 une notice contenant des caractères non latins (grec, etc.)
+#==============================================================================
                 errors_list.append([XMLrec_str, str(err)])
                 record2 = record.__str__().encode("utf-8").decode("utf-8")
                 print(record2)
