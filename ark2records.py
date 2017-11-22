@@ -17,7 +17,7 @@ import pymarc as mc
 import main as main
 import os
 import re
-
+import codecs
 
 version = 0.02
 programID = "ark2records"
@@ -102,7 +102,8 @@ def file_create(record_type, format_file, outputID):
         file.write(">\n")
     else:
         filename = id_filename + ".iso2709"
-        file = mc.MARCWriter(open(filename,"wb"))
+        #file = mc.MARCWriter(codecs.open(filename,"wb",encoding="utf-8"))
+        file = mc.MARCWriter(open(filename,"w"))
     return file
 
 def file_fin(file):
@@ -140,11 +141,12 @@ def record2file(file, XMLrec, format_file):
 #==============================================================================
 #                 Gros pataquès insatisfaisant ici : écrire dans le fichier
 #                 iso2709 une notice contenant des caractères non latins (grec, etc.)
+#    Relire : https://groups.google.com/forum/#!topic/pymarc/Q444j3vY8LE
 #==============================================================================
-                record_encoding = re_encode(record)
+                #record_encoding = re_encode(record)
                 errors_list.append([XMLrec_str, str(err)])
-                record2 = record.__str__().encode("utf-8").decode("utf-8")
-                
+                record2 = str(record).encode("utf-8").decode("utf-8")
+                print(record2)
                 #file.write(record2)
             #file.write(record)
     #si sortie en XML
