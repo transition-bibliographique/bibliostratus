@@ -42,7 +42,7 @@ last_version = [version, False]
 # =============================================================================
 # Creation des fichiers résultats
 # =============================================================================
-
+popup_filename = []
 
 def create_file_doc_record(doc_record, id_traitement):
     filename= "-".join([id_traitement, doc_record_type[doc_record]]) + ".txt"
@@ -302,7 +302,7 @@ def launch(master,entry_filename,file_format, output_ID):
         xml2tables(entry_filename, output_ID)
     end_of_treatments(master,output_ID)
 
-popup_filename = ""
+
 
 def formulaire_marc2tables(access_to_network=True, last_version=[version, False]):
 # =============================================================================
@@ -328,6 +328,10 @@ def formulaire_marc2tables(access_to_network=True, last_version=[version, False]
     cadre_input_header.pack(anchor="w")
     cadre_input_file = tk.Frame(cadre_input,bg=couleur_fond)
     cadre_input_file.pack(anchor="w")
+    cadre_input_file_name = tk.Frame(cadre_input_file,bg=couleur_fond)
+    cadre_input_file_name.pack(side="left")
+    cadre_input_file_browse = tk.Frame(cadre_input_file,bg=couleur_fond)
+    cadre_input_file_browse.pack(side="left")
     cadre_input_infos_format = tk.Frame(cadre_input,bg=couleur_fond)
     cadre_input_infos_format.pack(anchor="w")
     cadre_input_type_docs = tk.Frame(cadre_input,bg=couleur_fond)
@@ -357,15 +361,13 @@ def formulaire_marc2tables(access_to_network=True, last_version=[version, False]
     #définition input URL (u)
     tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée :", justify="left", font="bold").pack(anchor="w")
     
-    tk.Label(cadre_input_file,bg=couleur_fond, text="Fichier contenant les notices : ").pack(side="left")
+    tk.Label(cadre_input_file_name,bg=couleur_fond, text="Fichier contenant les notices : ").pack(side="left")
     entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
     entry_filename.pack(side="left")
     entry_filename.focus_set()
     
-    #filename = filedialog.askopenfilename(title='Choiisir un fichier')
-    #tk.Label(cadre_input_file, text=filename).pack()
-    #filename_button = tk.Button(cadre_input_file, text="Sélectionner le fichier contenant les notices", command=main.openfile, padx=10, pady=1, width=35)
-    #filename_button.pack()
+    
+    #tk.Button(cadre_input_file_browse, text="Sélectionner le fichier\ncontenant les notices", command=lambda:main.openfile(cadre_input_file_name, popup_filename), width=20).pack()
     
     
     tk.Label(cadre_input_type_docs,bg=couleur_fond, text="\nFormat", 
@@ -396,14 +398,14 @@ def formulaire_marc2tables(access_to_network=True, last_version=[version, False]
     
     #Ajout (optionnel) d'un identifiant de traitement
     message_fichiers_en_sortie = """
-    Le programme va générer plusieurs fichiers, par type de document,
-    en fonction du processus d'alignement avec les données de la BnF et des métadonnées utilisées pour cela :
-    - monographies imprimées
-    - périodiques
-    - audiovisuel (CD/DVD)
-    - autres non identifiés
-    Pour faire cela, il utilise les informations en zones codées dans chaque notice Unimarc
-    
+  Le programme va générer plusieurs fichiers, par type de document,
+  en fonction du processus d'alignement avec les données de la BnF
+  et des métadonnées utilisées pour cela :
+        - monographies imprimées
+        - périodiques
+        - audiovisuel (CD/DVD)
+        - autres non identifiés
+  Pour faire cela, il utilise les informations en zones codées dans chaque notice Unimarc
     """
     tk.Label(cadre_output_explications,bg=couleur_fond, 
              text=message_fichiers_en_sortie,

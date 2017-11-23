@@ -146,9 +146,11 @@ def popup_errors(text):
 
 #popup_filename = ""
     
-def openfile():
-    popup_filename = filedialog.askopenfilename(title='Sélectionner un fichier')
-    return popup_filename
+def openfile(frame,liste,background_color="white"):
+    liste = []
+    liste.append(filedialog.askopenfilename(title='Sélectionner un fichier'))
+    filename_print = liste[0].split("/")[-1].split("\\")[-1]
+    tk.Label(frame,text=filename_print, bg=background_color).pack()
 
 
 def formulaire_main(access_to_network, last_version):
@@ -198,7 +200,7 @@ def formulaire_main(access_to_network, last_version):
     
     tk.Label(zone_ok_help_cancel,text=" ", pady=5, bg=couleur_fond).pack()
     
-    cancel = tk.Button(frame_help_cancel, text="Annuler", command=annuler, pady=5, padx=5, width=12)
+    cancel = tk.Button(frame_help_cancel, text="Annuler", command=lambda: annuler(master), pady=5, padx=5, width=12)
     cancel.pack()
 
 
