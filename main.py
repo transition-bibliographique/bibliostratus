@@ -22,6 +22,7 @@ from unidecode import unidecode
 import urllib.error as error
 import csv
 import tkinter as tk
+from tkinter import filedialog
 from collections import defaultdict
 import re
 import webbrowser
@@ -142,7 +143,13 @@ def popup_errors(text):
             zone_notes] = form_generic_frames("Alerte", couleur_fond, couleur_bordure,True)
     tk.Label(zone_access2programs, text=text, fg=couleur_bordure, 
              font="bold", bg=couleur_fond, padx=10, pady=10).pack()
+
+#popup_filename = ""
     
+def openfile():
+    popup_filename = filedialog.askopenfilename(title='Sélectionner un fichier')
+    return popup_filename
+
 
 def formulaire_main(access_to_network, last_version):
     couleur_fond = "white"
@@ -181,7 +188,9 @@ def formulaire_main(access_to_network, last_version):
     bib2arkButton = tk.Button(frame2, text = "Aligner ses données (tableaux)\n avec le catalogue BnF", command=bib2ark.formulaire_noticesbib2arkBnF, padx=10,pady=10, bg="#fefefe")
     bib2arkButton.pack()
     
-    ark2recordsButton = tk.Button(frame3, text = "Exporter une liste d'ARK BnF\n en notices XML", command=ark2records.formulaire_ark2records, padx=10,pady=10, bg="#99182D", fg="white")
+    ark2recordsButton = tk.Button(frame3, text = "Exporter une liste d'ARK BnF\n en notices XML", 
+                                  command=lambda: ark2records.formulaire_ark2records(access_to_network,[0,False]), 
+                                  padx=10,pady=10, bg="#99182D", fg="white")
     ark2recordsButton.pack()
 
     call4help = tk.Button(zone_ok_help_cancel, text="Besoin d'aide ?", command=lambda: click2help("https://github.com/Lully/transbiblio"), pady=5, padx=5, width=12)

@@ -26,6 +26,7 @@ Conversion de fichiers XML ou iso2709 en tableaux pour alignements
 from unidecode import unidecode
 import urllib.error as error
 import tkinter as tk
+from tkinter import filedialog
 from collections import defaultdict
 import re
 import webbrowser
@@ -293,6 +294,7 @@ def end_of_treatments(master,id_traitement):
 
 
 def launch(master,entry_filename,file_format, output_ID):
+    print(entry_filename)
     main.generic_input_controls(entry_filename)
     if (file_format == 1):
         iso2tables(entry_filename, output_ID)
@@ -300,6 +302,7 @@ def launch(master,entry_filename,file_format, output_ID):
         xml2tables(entry_filename, output_ID)
     end_of_treatments(master,output_ID)
 
+popup_filename = ""
 
 def formulaire_marc2tables(access_to_network=True, last_version=[version, False]):
 # =============================================================================
@@ -359,6 +362,11 @@ def formulaire_marc2tables(access_to_network=True, last_version=[version, False]
     entry_filename.pack(side="left")
     entry_filename.focus_set()
     
+    #filename = filedialog.askopenfilename(title='Choiisir un fichier')
+    #tk.Label(cadre_input_file, text=filename).pack()
+    #filename_button = tk.Button(cadre_input_file, text="Sélectionner le fichier contenant les notices", command=main.openfile, padx=10, pady=1, width=35)
+    #filename_button.pack()
+    
     
     tk.Label(cadre_input_type_docs,bg=couleur_fond, text="\nFormat", 
              anchor="w", justify="left").pack(anchor="w")
@@ -407,7 +415,9 @@ def formulaire_marc2tables(access_to_network=True, last_version=[version, False]
     
     #Bouton de validation
     
-    b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", text = "OK", command=lambda: launch(master,entry_filename.get(),file_format.get(), output_ID.get()), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
+    b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", text = "OK", 
+                  command=lambda: launch(master, popup_filename, file_format.get(), output_ID.get()), 
+                  borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
     
     tk.Label(cadre_valider, font="bold", text="", bg=couleur_fond).pack()
