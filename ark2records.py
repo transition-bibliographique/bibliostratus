@@ -103,7 +103,7 @@ def file_create(record_type, format_file, outputID):
     else:
         filename = id_filename + ".iso2709"
         #file = mc.MARCWriter(codecs.open(filename,"wb",encoding="utf-8"))
-        file = mc.MARCWriter(open(filename,"w"))
+        file = mc.MARCWriter(open(filename,"wb"))
     return file
 
 def file_fin(file):
