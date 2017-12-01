@@ -59,11 +59,14 @@ def nn2url(nn, type_record, format_BIB):
 
 def ark2record(ark, type_record, format_BIB, renvoyerNotice=False):
     url = ark2url(ark, type_record, format_BIB)
+    test = True
     try:
-        etree.parse(request.urlopen(url))
+        page = etree.parse(request.urlopen(url))
     except error.URLerror:
+        test = False
         print("Pb d'accès à la notice " + ark)
-    record = etree.parse(request.urlopen(url)).xpath("//srw:recordData/mxc:record",namespaces=ns)[0]
+    if (test == True):
+        record = page.xpath(".//srw:recordData/mxc:record",namespaces=ns)[0]
     if (renvoyerNotice == True):
         return record
 
@@ -107,7 +110,9 @@ def file_create(record_type, format_file, outputID):
     return file
 
 def file_fin(file):
-    file.write("</mxc:collection>")
+    if (format_file == 2):
+        file.write("</mxc:collection>")
+    file.close()
 
 def XMLrec2isorecord(XMLrec):
     XMLrec = XMLrec.replace("<mxc:","<").replace("</mxc:","</")
@@ -176,10 +181,10 @@ def callback(master, filename, headers, AUTliees, outputID, format_records, form
                     bib2aut(ark, aut_file, format_BIB, format_file)
                 
                     
-        if (format_file == 2):
-            file_fin(bib_file)
-            if (AUTliees == 1):
-                file_fin(aut_file)
+        
+        file_fin(bib_file, format_file)
+        if (AUTliees == 1):
+            file_fin(aut_file, format_file)
     fin_traitements(master,outputID)
 
 def errors_file(outputID):
