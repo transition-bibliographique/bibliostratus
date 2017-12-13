@@ -109,7 +109,7 @@ def file_create(record_type, format_file, outputID):
         file = mc.MARCWriter(open(filename,"wb"))
     return file
 
-def file_fin(file):
+def file_fin(file,format_file):
     if (format_file == 2):
         file.write("</mxc:collection>")
     file.close()
@@ -170,15 +170,20 @@ def callback(master, filename, headers, AUTliees, outputID, format_records, form
         entry_file = csv.reader(csvfile, delimiter='\t')
         if (headers == True):
             next(entry_file, None)
+            j = 0
         for line in entry_file:
+            j = j+1
             ark = line[0]
             if (ark not in listeARK_BIB):
-                print(ark)
+                print(str(j) + ". " + ark)
                 listeARK_BIB.append(ark)
-                XMLrec = etree.parse(request.urlopen(ark2url(ark, "bib", format_BIB))).xpath("//srw:record/srw:recordData/mxc:record", namespaces=ns)[0]
-                record2file(bib_file, XMLrec, format_file)
-                if (AUTliees == 1):
-                    bib2aut(ark, aut_file, format_BIB, format_file)
+                page = etree.parse(request.urlopen(ark2url(ark, "bib", format_BIB)))
+                nbResults = page.find("//srw:numberOfRecords", namespaces=ns).text
+                if (nbResults == "1"):
+                    XMLrec = page.xpath("//srw:record/srw:recordData/mxc:record", namespaces=ns)[0]
+                    record2file(bib_file, XMLrec, format_file)
+                    if (AUTliees == 1):
+                        bib2aut(ark, aut_file, format_BIB, format_file)
                 
                     
         
