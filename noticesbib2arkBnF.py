@@ -23,7 +23,7 @@ import json
 
 #import matplotlib.pyplot as plt
 
-version = 0.7
+version = 0.8
 lastupdate = "10/11/2017"
 programID = "noticesbib2arkBnF"
 
@@ -389,6 +389,8 @@ def isbn2sru(NumNot,isbn,titre,auteur,date):
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
     return listeARK
 
+
+
 #Si l'ISBN n'a été trouvé ni dans l'index ISBN, ni dans l'index EAN
 #on le recherche dans tous les champs (not. les données d'exemplaires, pour des 
 #réimpressions achetées par un département de la Direction des collections de la BnF)
@@ -477,9 +479,9 @@ def isbn2ark(NumNot,isbn,titre,auteur,date):
 
 #Si pas de résultats et ISBN 13 : on recherche l'ISBN dans tous les champs (dont les données d'exemplaire)
     if (resultatsIsbn2ARK == ""):
-        resultatsIsbn2ARK = isbn_anywhere2ark(NumNot,isbn,titre,auteur,date)
+        resultatsIsbn2ARK = isbn_anywhere2sru(NumNot,isbn,titre,auteur,date)
     if (resultatsIsbn2ARK == "" and len(isbnConverti) == 13):
-        resultatsIsbn2ARK = isbn_anywhere2ark(NumNot,isbnConverti,titre,auteur,date)
+        resultatsIsbn2ARK = isbn_anywhere2sru(NumNot,isbnConverti,titre,auteur,date)
 
 
 
@@ -586,11 +588,7 @@ def extract_meta(recordBNF,field_subfield,occ="all",anl=False):
     return value
 
 def url_requete_sru(query,recordSchema="unimarcxchange",maximumRecords="1000",startRecord="1"):
-    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query="
-    + urllib.parse.quote(query) 
-    + "&recordSchema=" + recordSchema 
-    + "&maximumRecords=" + maximumRecords
-    + "&startRecord=" + startRecord
+    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + urllib.parse.quote(query) +"&recordSchema=" + recordSchema + "&maximumRecords=" + maximumRecords + "&startRecord=" + startRecord
     return url
 
 
@@ -604,11 +602,12 @@ def ean2ark(NumNot,ean,titre,auteur,date):
     url = url_requete_sru('bib.ean all "' + ean + '"')
     results = etree.parse(url)
     for record in results.xpath("//srw:recordData",namespaces=ns):
-        ark_current = record.find("srw:recordIdentifier",namespaces=ns).text
-        recordBNF = ark2recordBNF(ark_current)
-        ark = comparaisonTitres(NumNot,ark_current,"",ean,titre,auteur,date,recordBNF)
-        NumNotices2methode[NumNot].append("EAN > ARK")
-        listeARK.append(ark)
+        if (record.find("srw:recordIdentifier",namespaces=ns) is not None):
+            ark_current = record.find("srw:recordIdentifier",namespaces=ns).text
+            recordBNF = ark2recordBNF(ark_current)
+            ark = comparaisonTitres(NumNot,ark_current,"",ean,titre,auteur,date,recordBNF)
+            NumNotices2methode[NumNot].append("EAN > ARK")
+            listeARK.append(ark)
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
     return listeARK
 
