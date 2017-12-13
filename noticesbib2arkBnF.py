@@ -410,7 +410,7 @@ def isbn_anywhere2sru(NumNot,isbn,titre,auteur,date):
 
 
 
-def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur):
+def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date):
     url = "https://www.sudoc.fr/services/isbn2ppn/" + isbn
     Listeppn = []
 
@@ -426,7 +426,7 @@ def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur):
         for ppn in resultats.xpath("//ppn"):
             ppn_val = resultats.find("//ppn").text
             Listeppn.append("PPN" + ppn_val)
-            ark = ppn2ark(NumNot,ppn_val,isbn,titre,auteur)
+            ark = ppn2ark(NumNot,ppn_val,isbn,titre,auteur,date)
         if (ark == ""):
             url = "https://www.sudoc.fr/services/isbn2ppn/" + isbnConverti
             try:
@@ -438,7 +438,7 @@ def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur):
                 for ppn in resultats.xpath("//ppn"):
                     ppn_val = resultats.find("//ppn").text
                     Listeppn.append("PPN" + ppn_val)
-                    ark = ppn2ark(NumNot,ppn_val,isbnConverti,titre,auteur)
+                    ark = ppn2ark(NumNot,ppn_val,isbnConverti,titre,auteur,date)
     #Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK déclaré comme équivalent --> dans ce cas on récupère l'ARK
     Listeppn = ",".join(Listeppn)
     if (ark != ""):
@@ -446,7 +446,7 @@ def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur):
     else:
         return Listeppn
 
-def ppn2ark(NumNot,ppn,isbn,titre,auteur):
+def ppn2ark(NumNot,ppn,isbn,titre,auteur,date):
     record = etree.parse(request.urlopen("http://www.sudoc.fr/" + ppn + ".rdf" ))
     ark = ""
     for sameAs in record.xpath("//owl:sameAs",namespaces=nsSudoc):
@@ -458,7 +458,7 @@ def ppn2ark(NumNot,ppn,isbn,titre,auteur):
         for frbnf in record.xpath("//bnf-onto:FRBNF",namespaces=nsSudoc):
             frbnf_val = frbnf.text
             NumNotices2methode[NumNot].append("ISBN > PPN > FRBNF > ARK")
-            ark = frbnf2ark(NumNot,frbnf_val,isbn,titre,auteur)
+            ark = frbnf2ark(NumNot,frbnf_val,isbn,titre,auteur,date)
     return ark
   
 
@@ -487,7 +487,7 @@ def isbn2ark(NumNot,isbn,titre,auteur,date):
 
 #Si pas de résultats : on relance une recherche dans le Sudoc    
     if (resultatsIsbn2ARK == ""):
-        resultatsIsbn2ARK = isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur)
+        resultatsIsbn2ARK = isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date)
     return resultatsIsbn2ARK
 
 def ark2metas(ark):
