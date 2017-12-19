@@ -382,7 +382,11 @@ def isbn2sru(NumNot,isbn,titre,auteur,date):
     listeARK = []
     for record in resultats.xpath("//srw:record", namespaces=ns):
         ark_current = record.find("srw:recordIdentifier", namespaces=ns).text
-        recordBNF = etree.parse("http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")
+        try:
+            recordBNF = etree.parse("http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")
+        except etree.parseError as err:
+            print(ark_current)
+            print(err)
         ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,recordBNF)
         NumNotices2methode[NumNot].append("ISBN > ARK")
         listeARK.append(ark)
