@@ -14,16 +14,18 @@ import urllib.parse
 from urllib import request, error
 import csv
 import pymarc as mc
-import main as main
 import os
 import re
 import codecs
+import json
+import webbrowser
 
 version = 0.02
 programID = "ark2records"
 lastupdate = "12/11/2017"
 last_version = [version, False]
 
+access_to_network = True
 
 ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}
 
@@ -154,9 +156,92 @@ def record2file(file, XMLrec, format_file):
         record = XMLrecord2string(XMLrec)
         file.write(record)
 
+def generic_input_controls(filename):
+    check_file_name(filename)
+    
+def check_file_name(filename):
+    try:
+        open(filename,"r")
+    except FileNotFoundError:
+        popup_errors("Le fichier " + filename + " n'existe pas")
+
+def popup_errors(text):
+    couleur_fond = "white"
+    couleur_bordure = "red"
+    [master,
+            zone_alert_explications,
+            zone_access2programs,
+            zone_actions,
+            zone_ok_help_cancel,
+            zone_notes] = form_generic_frames("Alerte", couleur_fond, couleur_bordure,True)
+    tk.Label(zone_access2programs, text=text, fg=couleur_bordure, 
+             font="bold", bg=couleur_fond, padx=10, pady=10).pack()
+
+def formulaire_main(access_to_network, last_version):
+    couleur_fond = "white"
+    couleur_bouton = "#e1e1e1"
+    
+    [master,
+     zone_alert_explications,
+     zone_access2programs,
+     zone_actions,
+     zone_ok_help_cancel,
+     zone_notes] = form_generic_frames("La Transition bibliographique en chantant nous ouvre...",
+                                      couleur_fond,
+                                      couleur_bouton,access_to_network)
+
+    if (access_to_network == False):
+        tk.Label(zone_alert_explications, text=errors["no_internet"], 
+                 bg=couleur_fond, fg="red").pack()
+    
+    frame1 = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
+    frame1.pack(side="left")
+    
+    frame2 = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
+    frame2.pack(side="left")
+    
+    frame3 = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
+    frame3.pack(side="left")
+    
+    frame_help_cancel = tk.Frame(zone_ok_help_cancel, bg=couleur_fond, pady=10, padx=10)
+    frame_help_cancel.pack()
+    
+    marc2tableButton = tk.Button(frame1, text = "Convertir un fichier Marc\n en tableaux", 
+                                 command=lambda: marc2tables.formulaire_marc2tables(access_to_network), 
+                                 padx=10,pady=10, bg="#2D4991",fg="white")
+    marc2tableButton.pack()
+    
+    bib2arkButton = tk.Button(frame2, text = "Aligner ses données (tableaux)\n avec le catalogue BnF", command=bib2ark.formulaire_noticesbib2arkBnF, padx=10,pady=10, bg="#fefefe")
+    bib2arkButton.pack()
+    
+    ark2recordsButton = tk.Button(frame3, text = "Exporter une liste d'ARK BnF\n en notices XML", 
+                                  command=lambda: ark2records.formulaire_ark2records(access_to_network,[0,False]), 
+                                  padx=10,pady=10, bg="#99182D", fg="white")
+    ark2recordsButton.pack()
+
+    call4help = tk.Button(zone_ok_help_cancel, text="Besoin d'aide ?", command=lambda: click2help("https://github.com/Lully/transbiblio"), pady=5, padx=5, width=12)
+    call4help.pack()
+    
+    tk.Label(zone_ok_help_cancel,text=" ", pady=5, bg=couleur_fond).pack()
+    
+    cancel = tk.Button(frame_help_cancel, text="Annuler", command=lambda: annuler(master), pady=5, padx=5, width=12)
+    cancel.pack()
+
+
+    tk.Label(zone_notes, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
+
+    
+    if (last_version[1] == True):
+        download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(last_version[0]), command=download_last_update)
+        download_update.pack()
+
+    
+    tk.mainloop()
+    
+
 
 def callback(master, filename, headers, AUTliees, outputID, format_records, format_file):
-    main.generic_input_controls(filename)
+    generic_input_controls(filename)
     format_BIB = dict_format_records[format_records]
     bib_file = file_create("bib", format_file, outputID)
     if (AUTliees == 1):
@@ -193,7 +278,31 @@ def fin_traitements(window,outputID):
     if (os.path.isfile("temp.xml") is True):
         os.remove("temp.xml")
     window.destroy()
+
+
+def check_last_compilation(programID):
+    programID_last_compilation = 0
+    display_update_button = False
+    url = "https://raw.githubusercontent.com/Lully/bnf-sru/master/last_compilations.json"
+    last_compilations = request.urlopen(url)
+    reader = codecs.getreader("utf-8")
+    last_compilations = json.load(reader(last_compilations))["last_compilations"][0]
+    if (programID in last_compilations):
+        programID_last_compilation = last_compilations[programID]
+    if (programID_last_compilation > version):
+        display_update_button = True
+    return [programID_last_compilation,display_update_button]
+   
+
+def click2help(url):
+    webbrowser.open(url)
+def annuler(master):
+    master.destroy()
     
+def form_saut_de_ligne(frame, couleur_fond):
+    tk.Label(frame, text="\n", bg=couleur_fond).pack()
+
+
 
 #==============================================================================
 # Création de la boîte de dialogue
@@ -208,7 +317,7 @@ def formulaire_ark2records(access_to_network=True,last_version=version):
      zone_access2programs,
      zone_actions,
      zone_ok_help_cancel,
-     zone_notes] = main.form_generic_frames("Récupérer les notices complètes de la BnF à partir d'une liste d'ARK",
+     zone_notes] = form_generic_frames("Récupérer les notices complètes de la BnF à partir d'une liste d'ARK",
                                       couleur_fond,couleur_bouton,
                                       access_to_network)
     
@@ -291,24 +400,69 @@ def formulaire_ark2records(access_to_network=True,last_version=version):
                   bg=couleur_bouton)
     b.pack()
     
-    main.form_saut_de_ligne(zone_ok_help_cancel, couleur_fond)
-    call4help = tk.Button(zone_ok_help_cancel, text="Besoin d'aide ?", command=lambda: main.click2help("https://github.com/Lully/transbiblio"), padx=10, pady=1, width=15)
+    form_saut_de_ligne(zone_ok_help_cancel, couleur_fond)
+    call4help = tk.Button(zone_ok_help_cancel, text="Besoin d'aide ?", command=lambda: click2help("https://github.com/Lully/transbiblio"), padx=10, pady=1, width=15)
     call4help.pack()    
-    cancel = tk.Button(zone_ok_help_cancel, bg=couleur_fond, text="Annuler", command=lambda: main.annuler(master), padx=10, pady=1, width=15)
+    cancel = tk.Button(zone_ok_help_cancel, bg=couleur_fond, text="Annuler", command=lambda: annuler(master), padx=10, pady=1, width=15)
     cancel.pack()
 
     tk.Label(zone_notes, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
 
     
     if (last_version[1] == True):
-        download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(last_version[0]), command=main.download_last_update)
+        download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(last_version[0]), command=download_last_update)
         download_update.pack()
     
     tk.mainloop()
+
+def download_last_update(url="https://github.com/Lully/transbiblio/"):
+    url = "https://github.com/Lully/transbiblio/"
+    webbrowser.open(url)
+
+def form_generic_frames(title, couleur_fond, couleur_bordure,access_to_network):
+#----------------------------------------------------
+#|                    Frame                         |
+#|            zone_alert_explications               |
+#----------------------------------------------------
+#|                    Frame                         |
+#|             zone_access2programs                 |
+#|                                                  |
+#|              Frame           |       Frame       |
+#|           zone_actions       |  zone_help_cancel |
+#----------------------------------------------------
+#|                    Frame                         |
+#|                  zone_notes                      |
+#----------------------------------------------------
+    master = tk.Tk()
+    master.config(padx=10,pady=10,bg=couleur_fond)
+    master.title(title)
     
+    zone_alert_explications = tk.Frame(master, bg=couleur_fond, pady=10)
+    zone_alert_explications.pack()
+    
+    zone_access2programs = tk.Frame(master, bg=couleur_fond)
+    zone_access2programs.pack()
+    zone_actions = tk.Frame(zone_access2programs, bg=couleur_fond)
+    zone_actions.pack(side="left")
+    zone_ok_help_cancel = tk.Frame(zone_access2programs, bg=couleur_fond)
+    zone_ok_help_cancel.pack(side="left")
+    zone_notes = tk.Frame(master, bg=couleur_fond, pady=10)
+    zone_notes.pack()
+
+    if (access_to_network == False):
+        tk.Label(zone_alert_explications, text=errors["no_internet"], 
+                 bg=couleur_fond,  fg="red").pack()
+
+    
+    return [master,
+            zone_alert_explications,
+            zone_access2programs,
+            zone_actions,
+            zone_ok_help_cancel,
+            zone_notes]
+
 
 if __name__ == '__main__':
-    access_to_network = main.check_access_to_network()
-    if(access_to_network is True):
-        last_version = main.check_last_compilation(programID)
-    formulaire_ark2records(access_to_network,last_version)
+    #if(access_to_network is True):
+    #    last_version = check_last_compilation(programID)
+    formulaire_ark2records(True,[0.02, False])
