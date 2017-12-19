@@ -105,7 +105,6 @@ def file_create(record_type, format_file, outputID):
         file.write(">\n")
     else:
         filename = id_filename + ".iso2709"
-        #file = mc.MARCWriter(codecs.open(filename,"wb",encoding="utf-8"))
         file = mc.MARCWriter(open(filename,"wb"))
     return file
 
@@ -123,15 +122,6 @@ def XMLrec2isorecord(XMLrec):
     file_temp.write(XMLrec)
     return filename_temp
 
-#test fonction de réencodage correct en UTF-8
-def re_encode(record):
-    record_reencode = record.as_dict()
-    for field in record_reencode:
-        if (subfields in field):
-            for subfield in subfields:
-                val = "subfield"
-    print(record_reencode)
-        #print(field.get_subfields.__str__)
 
 def record2file(file, XMLrec, format_file):
     #Si sortie en iso2709
@@ -144,17 +134,7 @@ def record2file(file, XMLrec, format_file):
             try:
                 file.write(record)
             except UnicodeEncodeError as err:
-#==============================================================================
-#                 Gros pataquès insatisfaisant ici : écrire dans le fichier
-#                 iso2709 une notice contenant des caractères non latins (grec, etc.)
-#    Relire : https://groups.google.com/forum/#!topic/pymarc/Q444j3vY8LE
-#==============================================================================
-                #record_encoding = re_encode(record)
                 errors_list.append([XMLrec_str, str(err)])
-                record2 = str(record).encode("utf-8").decode("utf-8")
-                print(record2)
-                #file.write(record2)
-            #file.write(record)
     #si sortie en XML
     if (format_file == 2):
         record = XMLrecord2string(XMLrec)
@@ -185,9 +165,6 @@ def callback(master, filename, headers, AUTliees, outputID, format_records, form
                     record2file(bib_file, XMLrec, format_file)
                     if (AUTliees == 1):
                         bib2aut(ark, aut_file, format_BIB, format_file)
-                
-                    
-        
         file_fin(bib_file, format_file)
         if (AUTliees == 1):
             file_fin(aut_file, format_file)
