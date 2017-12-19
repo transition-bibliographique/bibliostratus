@@ -177,7 +177,7 @@ def nettoyageAuteur(auteur,justeunmot=True):
 def nettoyageDate(date):
     date = unidecode(date.lower())
     for lettre in lettres:
-        date.replace(lettre,"")
+        date = date.replace(lettre,"")
     for signe in ponctuation:
         date = date.split(signe)
         date = " ".join(annee for annee in date if annee != "")
