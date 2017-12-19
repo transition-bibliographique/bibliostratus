@@ -23,7 +23,7 @@ import json
 
 #import matplotlib.pyplot as plt
 
-version = 0.8
+version = 0.9
 lastupdate = "10/11/2017"
 programID = "noticesbib2arkBnF"
 
