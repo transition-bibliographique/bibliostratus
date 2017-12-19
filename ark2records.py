@@ -140,6 +140,7 @@ def record2file(file, XMLrec, format_file):
         filename_temp = XMLrec2isorecord(XMLrec_str)
         collection = mc.marcxml.parse_xml_to_array(filename_temp, strict=False)
         for record in collection:
+            record.force_utf8 = True
             try:
                 file.write(record)
             except UnicodeEncodeError as err:
@@ -170,7 +171,7 @@ def callback(master, filename, headers, AUTliees, outputID, format_records, form
         entry_file = csv.reader(csvfile, delimiter='\t')
         if (headers == True):
             next(entry_file, None)
-            j = 0
+        j = 0
         for line in entry_file:
             j = j+1
             ark = line[0]
