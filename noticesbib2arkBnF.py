@@ -121,9 +121,32 @@ def nettoyageTitrePourRecherche(titre):
     titre = nettoyageAuteur(titre,False)
     return titre
     
+def nettoyage_lettresISBN(isbn):
+    isbn = isbn.lower()
+    prefix = isbn[:-1]
+    cle = isbn[-1]
+    for lettre in lettres:
+        prefix = prefix.replace(lettre, "")
+    if (cle == "0" 
+        or cle == "1" 
+        or cle == "2" 
+        or cle == "3" 
+        or cle == "4" 
+        or cle == "5"
+        or cle == "6"
+        or cle == "7"
+        or cle == "8"
+        or cle == "9"):
+        cle = cle
+    elif (cle == "x"):
+        cle = "X"
+    else:
+        cle = ""
+    return prefix+cle
 
 def nettoyageIsbnPourControle(isbn):
     isbn = nettoyage(isbn)
+    isbn = nettoyage_lettresISBN(isbn)
     if (len(isbn) < 10):
         isbn = ""
     elif (isbn[0:3] == "978" or isbn[0:3] == "979"):
