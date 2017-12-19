@@ -925,8 +925,11 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
     if (access_to_network == False):
         tk.Label(zone_alert_explications, text=errors["no_internet"], 
              bg=couleur_fond,  fg="red").pack()
-    tk.Label(zone_alert_explications, text="Attention : format MON IMPR avec une colonne supplémentaire en entrée (EAN)", 
-             bg=couleur_fond,  fg="red").pack()
+#==============================================================================
+# Message d'alerte dans le formulaire si besoin
+#==============================================================================
+#    tk.Label(zone_alert_explications, text="Attention : format MON IMPR avec une colonne supplémentaire en entrée (EAN)", 
+#             bg=couleur_fond,  fg="red").pack()
     
     #définition input URL (u)
     tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée :", justify="left", font="bold").pack()
