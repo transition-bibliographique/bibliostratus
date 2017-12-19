@@ -22,7 +22,7 @@ import codecs
 version = 0.02
 programID = "ark2records"
 lastupdate = "12/11/2017"
-last_version = [version, False]
+#last_version = [version, False]
 
 
 ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}
@@ -141,7 +141,7 @@ def record2file(file, XMLrec, format_file):
         file.write(record)
 
 
-def callback(master, filename, headers, AUTliees, outputID, format_records, format_file):
+def callback(master, filename, headers, AUTliees, outputID, format_records=1, format_file=1):
     main.generic_input_controls(filename)
     format_BIB = dict_format_records[format_records]
     bib_file = file_create("bib", format_file, outputID)
@@ -187,7 +187,7 @@ def fin_traitements(window,outputID):
 # Création de la boîte de dialogue
 #==============================================================================
 
-def formulaire_ark2records(access_to_network=True,last_version=version):
+def formulaire_ark2records(access_to_network=True,last_version=[version,False]):
     couleur_fond = "white"
     couleur_bouton = "#99182D"
     
@@ -254,12 +254,12 @@ def formulaire_ark2records(access_to_network=True,last_version=version):
     
     #Choix du format
     tk.Label(frame_output_options_marc, text="Notices à récupérer en :").pack(anchor="nw")
-    format_records = tk.IntVar()
-    tk.Radiobutton(frame_output_options_marc, text="Unimarc", variable=format_records , value=1, bg=couleur_fond).pack(anchor="nw")
-    tk.Radiobutton(frame_output_options_marc, text="Unimarc avec ANL", justify="left", variable=format_records , value=2,bg=couleur_fond).pack(anchor="nw")
-    tk.Radiobutton(frame_output_options_marc, text="Intermarc", justify="left", variable=format_records , value=3,bg=couleur_fond).pack(anchor="nw")
-    tk.Radiobutton(frame_output_options_marc, text="Intermarc avec ANL", justify="left", variable=format_records , value=4,bg=couleur_fond).pack(anchor="nw")
-    format_records.set(1)
+    format_records_choice = tk.IntVar()
+    tk.Radiobutton(frame_output_options_marc, text="Unimarc", variable=format_records_choice, value=1, bg=couleur_fond).pack(anchor="nw")
+    tk.Radiobutton(frame_output_options_marc, text="Unimarc avec ANL", justify="left", variable=format_records_choice, value=2,bg=couleur_fond).pack(anchor="nw")
+    tk.Radiobutton(frame_output_options_marc, text="Intermarc", justify="left", variable=format_records_choice , value=3, bg=couleur_fond).pack(anchor="nw")
+    tk.Radiobutton(frame_output_options_marc, text="Intermarc avec ANL", justify="left", variable=format_records_choice , value=4, bg=couleur_fond).pack(anchor="nw")
+    format_records_choice.set(1)
 
     tk.Label(frame_output_options_inter, text="\t", bg=couleur_fond).pack(side="left")
 
@@ -274,7 +274,7 @@ def formulaire_ark2records(access_to_network=True,last_version=version):
     
     #file_format.focus_set()
     b = tk.Button(zone_ok_help_cancel, text = "OK", 
-                  command = lambda: callback(master, entry_filename.get(), headers.get(), AUTliees.get(), outputID.get(), format_records.get(), format_file.get()), 
+                  command = lambda: callback(master, entry_filename.get(), headers.get(), AUTliees.get(), outputID.get(), format_records_choice.get(), format_file.get()), 
                   width = 15, borderwidth=1, pady=20, fg="white",
                   bg=couleur_bouton)
     b.pack()
@@ -299,4 +299,4 @@ if __name__ == '__main__':
     access_to_network = main.check_access_to_network()
     if(access_to_network is True):
         last_version = main.check_last_compilation(programID)
-    formulaire_ark2records(access_to_network,last_version)
+    formulaire_ark2records(access_to_network,[version, False])

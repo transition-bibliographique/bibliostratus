@@ -123,7 +123,7 @@ def nettoyageTitrePourRecherche(titre):
     
 def nettoyage_lettresISBN(isbn):
     isbn = isbn.lower()
-    prefix = isbn[:-1]
+    prefix = isbn[0:-1]
     cle = isbn[-1]
     for lettre in lettres:
         prefix = prefix.replace(lettre, "")
@@ -146,7 +146,8 @@ def nettoyage_lettresISBN(isbn):
 
 def nettoyageIsbnPourControle(isbn):
     isbn = nettoyage(isbn)
-    isbn = nettoyage_lettresISBN(isbn)
+    if (isbn != ""):
+        isbn = nettoyage_lettresISBN(isbn)
     if (len(isbn) < 10):
         isbn = ""
     elif (isbn[0:3] == "978" or isbn[0:3] == "979"):
@@ -231,20 +232,23 @@ def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordB
     if (titre != "" and titreBNF != ""):
         if (titre == titreBNF):
             ark = ark_current
-            NumNotices2methode[NumNot].append("N° sys FRBNF ou Titre-Auteur-Date + contrôle Titre")
+            NumNotices2methode[NumNot].append("N° sys FRBNF ou ISBN ou Titre-Auteur-Date + contrôle Titre")
             if (len(titre) < 5):
                 ark += "[titre court]"
         elif(titre[0:round(len(titre)/2)] == titreBNF[0:round(len(titre)/2)]):
             ark = ark_current
-            NumNotices2methode[NumNot].append("N° sys FRBNF ou Titre-Auteur-Date + contrôle Titre")
+            NumNotices2methode[NumNot].append("N° sys FRBNF ou ISBN ou Titre-Auteur-Date + contrôle Titre")
             if (round(len(titre)/2)<10):
                 ark += "[demi-titre" + "-" + str(round(len(titre)/2)) + "caractères]"
         elif(titre.find(titreBNF) > -1):
-            NumNotices2methode[NumNot].append("N° sys FRBNF ou Titre-Auteur-Date + contrôle Titre BNF contenu dans titre initial")
+            NumNotices2methode[NumNot].append("N° sys FRBNF ou ISBN ou Titre-Auteur-Date + contrôle Titre BNF contenu dans titre initial")
             ark = ark_current
         elif (titreBNF.find(titre) > -1):
-            NumNotices2methode[NumNot].append("N° sys FRBNF ou Titre-Auteur-Date + contrôle Titre initial contenu dans titre BNF")
+            NumNotices2methode[NumNot].append("N° sys FRBNF ou ISBN ou Titre-Auteur-Date + contrôle Titre initial contenu dans titre BNF")
             ark = ark_current
+    elif (titre == ""):
+        ark = ark_current
+        NumNotices2methode[NumNot].append("N° sys FRBNF ou ISBN ou Titre-Auteur-Date + pas de titre initial")
     return ark
             
     
@@ -439,6 +443,7 @@ def isbn_anywhere2sru(NumNot,isbn,titre,auteur,date):
 
 def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date):
     url = "https://www.sudoc.fr/services/isbn2ppn/" + isbn
+    print(url)
     Listeppn = []
 
     #page = etree.parse(url)
