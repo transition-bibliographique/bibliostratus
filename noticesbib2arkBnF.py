@@ -23,7 +23,7 @@ import json
 
 #import matplotlib.pyplot as plt
 
-version = 0.9
+version = 0.91
 lastupdate = "10/11/2017"
 programID = "noticesbib2arkBnF"
 
@@ -204,12 +204,12 @@ def relancerNNBAuteur(NumNot,systemid,isbn,titre,auteur,date):
 #Quand on a trouvé l'ancien numéro système dans une notice BnF : 
 #on compare l'ISBN de la notice de la Bibliothèque avec celui de la BnF pour voir si ça colle
 #à défaut, on compare les titres (puis demi-titres)
-def comparerBibBnf(NumNot,ark_current,systemid,isbn,titre,auteur,date):
+def comparerBibBnf(NumNot,ark_current,systemid,isbn,titre,auteur,date,origineComparaison):
     ark = ""
     recordBNF = etree.parse("http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")
     ark =  comparaisonIsbn(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF)
     if (ark == ""):
-        ark = comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF)
+        ark = comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison)
     return ark
 
 def comparaisonIsbn(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF):
@@ -223,7 +223,7 @@ def comparaisonIsbn(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF
             NumNotices2methode[NumNot].append("N° sys FRBNF + contrôle ISBN")
     return ark
 
-def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF):
+def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison):
     ark = ""
     titreBNF = ""
     if (recordBNF.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='a']", namespaces=ns) is not None):
@@ -232,23 +232,23 @@ def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordB
     if (titre != "" and titreBNF != ""):
         if (titre == titreBNF):
             ark = ark_current
-            NumNotices2methode[NumNot].append("N° sys FRBNF ou ISBN ou Titre-Auteur-Date + contrôle Titre")
+            NumNotices2methode[NumNot].append(origineComparaison + " + contrôle Titre")
             if (len(titre) < 5):
                 ark += "[titre court]"
         elif(titre[0:round(len(titre)/2)] == titreBNF[0:round(len(titre)/2)]):
             ark = ark_current
-            NumNotices2methode[NumNot].append("N° sys FRBNF ou ISBN ou Titre-Auteur-Date + contrôle Titre")
+            NumNotices2methode[NumNot].append(origineComparaison + " + contrôle Titre")
             if (round(len(titre)/2)<10):
                 ark += "[demi-titre" + "-" + str(round(len(titre)/2)) + "caractères]"
         elif(titre.find(titreBNF) > -1):
-            NumNotices2methode[NumNot].append("N° sys FRBNF ou ISBN ou Titre-Auteur-Date + contrôle Titre BNF contenu dans titre initial")
+            NumNotices2methode[NumNot].append(origineComparaison + " + contrôle Titre BNF contenu dans titre initial")
             ark = ark_current
         elif (titreBNF.find(titre) > -1):
-            NumNotices2methode[NumNot].append("N° sys FRBNF ou ISBN ou Titre-Auteur-Date + contrôle Titre initial contenu dans titre BNF")
+            NumNotices2methode[NumNot].append(origineComparaison + " + contrôle Titre initial contenu dans titre BNF")
             ark = ark_current
     elif (titre == ""):
         ark = ark_current
-        NumNotices2methode[NumNot].append("N° sys FRBNF ou ISBN ou Titre-Auteur-Date + pas de titre initial")
+        NumNotices2methode[NumNot].append(origineComparaison + " + pas de titre initial")
     return ark
             
     
@@ -270,7 +270,7 @@ def systemid2ark(NumNot,systemid,tronque,isbn,titre,auteur,date):
                     if (zone9XX.find("mxc:subfield[@code='a']", namespaces=ns).text is not None):
                         if (zone9XX.find("mxc:subfield[@code='a']", namespaces=ns).text == systemid):
                             #print(zone9XX.get("tag"))
-                            listeARK.append(comparerBibBnf(NumNot,ark_current,systemid,isbn,titre,auteur,date))
+                            listeARK.append(comparerBibBnf(NumNot,ark_current,systemid,isbn,titre,auteur,date, "Ancien n° notice"))
     listeARK = ",".join([ark1 for ark1 in listeARK if ark1 != ''])
     
 #Si pas de réponse, on fait la recherche SystemID + Auteur
@@ -296,7 +296,7 @@ def rechercheNNB(NumNot,nnb,isbn,titre,auteur,date):
         page = etree.parse(url)
         for record in page.xpath("//srw:records/srw:record", namespaces=ns):
             ark_current = record.find("srw:recordIdentifier",namespaces=ns).text
-            ark = comparerBibBnf(NumNot,ark_current,nnb,isbn,titre,auteur,date)
+            ark = comparerBibBnf(NumNot,ark_current,nnb,isbn,titre,auteur,date,"Numéro de notice")
     return ark
 
 #Si le FRBNF n'a pas été trouvé, on le recherche comme numéro système -> pour ça on extrait le n° système
@@ -414,7 +414,7 @@ def isbn2sru(NumNot,isbn,titre,auteur,date):
         except etree.parseError as err:
             print(ark_current)
             print(err)
-        ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,recordBNF)
+        ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,recordBNF,"ISBN")
         NumNotices2methode[NumNot].append("ISBN > ARK")
         listeARK.append(ark)
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
@@ -432,7 +432,7 @@ def isbn_anywhere2sru(NumNot,isbn,titre,auteur,date):
     for record in resultats.xpath("//srw:record", namespaces=ns):
         ark_current = record.find("srw:recordIdentifier", namespaces=ns).text
         recordBNF = etree.parse("http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")
-        ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,recordBNF)
+        ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,recordBNF,"ISBN dans toute la notice")
         NumNotices2methode[NumNot].append("ISBN anywhere > ARK")
         listeARK.append(ark)
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
@@ -582,16 +582,18 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,anywhere=False):
             url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.anywhere%20all%20%22" + urllib.parse.quote(titre_propre) + "%20" + urllib.parse.quote(auteur) + "%20" + urllib.parse.quote(date_nett) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
         #print(url)
         results = etree.parse(url)
+        index = ""
         if (results.find("//srw:numberOfRecords", namespaces=ns) == "0"):
             url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.title%20all%20%22" + urllib.parse.quote(titre_propre) + "%22%20and%20bib.author%20all%20%22" + urllib.parse.quote(auteur_nett) + "%22%20and%20bib.date%20all%20%22" + urllib.parse.quote(date_nett) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
             if (anywhere == True):
                 url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.anywhere%20all%20%22" + urllib.parse.quote(titre_propre) + "%20" + urllib.parse.quote(auteur_nett) + "%20" + urllib.parse.quote(date_nett) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
+                index = " dans toute la notice"
             results = etree.parse(url)
         for record in results.xpath("//srw:recordIdentifier",namespaces=ns):
             ark_current = record.text
             #print(NumNot + " : " + ark_current)
             recordBNF = etree.parse("http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")
-            ark.append(comparaisonTitres(NumNot,ark_current,"","",nettoyageTitrePourControle(titre),auteur,date_nett,recordBNF))
+            ark.append(comparaisonTitres(NumNot,ark_current,"","",nettoyageTitrePourControle(titre),auteur,date_nett,recordBNF,"Titre-Auteur-Date" + index))
             methode = "Titre-Auteur-Date"
             if (auteur == "-" and date_nett == "-"):
                 methode = "Titre"
@@ -637,7 +639,7 @@ def ean2ark(NumNot,ean,titre,auteur,date):
         if (record.find("srw:recordIdentifier",namespaces=ns) is not None):
             ark_current = record.find("srw:recordIdentifier",namespaces=ns).text
             recordBNF = ark2recordBNF(ark_current)
-            ark = comparaisonTitres(NumNot,ark_current,"",ean,titre,auteur,date,recordBNF)
+            ark = comparaisonTitres(NumNot,ark_current,"",ean,titre,auteur,date,recordBNF, "EAN")
             NumNotices2methode[NumNot].append("EAN > ARK")
             listeARK.append(ark)
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
