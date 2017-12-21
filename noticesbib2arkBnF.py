@@ -23,7 +23,7 @@ import json
 
 #import matplotlib.pyplot as plt
 
-version = 0.91
+version = 0.92
 lastupdate = "10/11/2017"
 programID = "noticesbib2arkBnF"
 
@@ -31,6 +31,7 @@ errors = {
         "no_internet" : "Attention : Le programme n'a pas d'accès à Internet.\nSi votre navigateur y a accès, vérifiez les paramètres de votre proxy"
         }
 
+url_access_pbs = []
 
 ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}
 nsSudoc = {"rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#", "bibo":"http://purl.org/ontology/bibo/", "dc":"http://purl.org/dc/elements/1.1/", "dcterms":"http://purl.org/dc/terms/", "rdafrbr1":"http://rdvocab.info/RDARelationshipsWEMI/", "marcrel":"http://id.loc.gov/vocabulary/relators/", "foaf":"http://xmlns.com/foaf/0.1/", "gr":"http://purl.org/goodrelations/v1#", "owl":"http://www.w3.org/2002/07/owl#", "isbd":"http://iflastandards.info/ns/isbd/elements/", "skos":"http://www.w3.org/2004/02/skos/core#", "rdafrbr2":"http://RDVocab.info/uri/schema/FRBRentitiesRDA/", "rdaelements":"http://rdvocab.info/Elements/", "rdac":"http://rdaregistry.info/Elements/c/", "rdau":"http://rdaregistry.info/Elements/u/", "rdaw":"http://rdaregistry.info/Elements/w/", "rdae":"http://rdaregistry.info/Elements/e/", "rdam":"http://rdaregistry.info/Elements/m/", "rdai":"http://rdaregistry.info/Elements/i/", "sudoc":"http://www.sudoc.fr/ns/", "bnf-onto":"http://data.bnf.fr/ontology/bnf-onto/"}
@@ -435,11 +436,13 @@ def testURLetreeParse(url):
     except etree.XMLSyntaxError as err:
         print(url)
         print(err)
+        url_access_pbs.append([url,"etree.XMLSyntaxError"])
         test = False
     except etree.parseError as err:
         print(url)
         print(err)
         test = False
+        url_access_pbs.append([url,"etree.parseError"])
     return (test,resultat)
 
 
@@ -450,6 +453,7 @@ def testURLurlopen(url):
         resultat = request.urlopen(url)
     except etree.XMLSyntaxError:
         test = False
+        url_access_pbs.append([url,"etree.XMLSyntaxError"])
     return (test,resultat)
 
 #Si l'ISBN n'a été trouvé ni dans l'index ISBN, ni dans l'index EAN
@@ -761,11 +765,12 @@ def monimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_repo
         row2file(header_columns,liste_reports)
     elif(file_nb.get() ==  2):
         row2files(header_columns,liste_reports)
-    
+    n = 0
     with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter='\t')
         next(entry_file)
         for row in entry_file:
+            n += 1
             #print(row)
             NumNot = row[0]
             frbnf = row[1]
@@ -804,15 +809,9 @@ def monimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_repo
             if (ark == "" and titre != ""):
                 ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,False)
                 #print("1." + NumNot + " : " + ark)
-                """print(titre)
-                print(titre_nett)
-                print(auteur)
-                print(auteur_nett)
-                print(date)
-                print(date_nett)"""
             if (ark == "" and titre != ""):
                 ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,True)
-            print(NumNot + " : " + ark)
+            print(str(n) + ". " + NumNot + " : " + ark)
             nbARK = len(ark.split(","))
             if (ark == ""):
                 nbARK = 0   
@@ -923,6 +922,7 @@ def launch(master, entry_filename, type_doc, file_nb, meta_bib, id_traitement):
 
 def fin_traitements(master,liste_reports):
     stats_extraction(liste_reports)
+    url_access_pbs_report(liste_reports)
     typesConversionARK(liste_reports)
     print("Programme terminé")
     master.destroy()
@@ -937,6 +937,12 @@ def stats_extraction(liste_reports):
         nb_notices_nb_ARK[-1] = nb_notices_nb_ARK.pop('Pb FRBNF')
     """plt.bar(list(nb_notices_nb_ARK.keys()), nb_notices_nb_ARK.values(), color='skyblue')
     plt.show()"""
+
+def url_access_pbs_report(liste_reports):
+    if (len(url_access_pbs) > 0):
+        liste_reports[-2].write("\n\nProblème d'accès à certaines URL :\nURL\tType de problème\n")
+        for pb in liste_reports[-2]:
+            liste_reports[-2].write("\t".join(pb) + "\n")
 
 def typesConversionARK(liste_reports):
     for key in NumNotices2methode:
