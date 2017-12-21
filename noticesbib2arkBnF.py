@@ -671,7 +671,7 @@ def controleNoCommercial(NumNot,ark_current,no_commercial,titre,auteur,date,reco
     return ark
 
 
-def monimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_reports):
+def monimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_reports, meta_bib):
     
     with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter='\t')
@@ -738,7 +738,7 @@ def monimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_repo
                 row2files(liste_metadonnees,liste_reports)
         
         
-def cddvd(master, entry_filename, type_doc, file_nb, id_traitement, liste_reports):
+def cddvd(master, entry_filename, type_doc, file_nb, id_traitement, liste_reports, meta_bib):
     
     #results2file(nb_fichiers_a_produire)
     
@@ -807,16 +807,16 @@ def cddvd(master, entry_filename, type_doc, file_nb, id_traitement, liste_report
         
     
 
-def launch(master, entry_filename, type_doc, file_nb, id_traitement):
+def launch(master, entry_filename, type_doc, file_nb, meta_bib, id_traitement):
     
     #results2file(nb_fichiers_a_produire)
 
     liste_reports = create_reports(id_traitement.get(), file_nb.get())    
     
     if (type_doc.get() == 1):
-        monimpr(master, entry_filename.get(), type_doc, file_nb, id_traitement, liste_reports)
+        monimpr(master, entry_filename.get(), type_doc, file_nb, id_traitement, liste_reports, meta_bib.get())
     elif (type_doc.get() == 2):
-        cddvd(master, entry_filename.get(), type_doc, file_nb, id_traitement, liste_reports)
+        cddvd(master, entry_filename.get(), type_doc, file_nb, id_traitement, liste_reports, meta_bib.get())
     else:
         print("Erreur : type de document non reconnu")
     
@@ -964,6 +964,16 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
     tk.Radiobutton(cadre_output_nb_fichier,bg=couleur_fond, text="Plusieurs fichiers \n(Pb / 0 / 1 / plusieurs ARK trouvés)", justify="left", variable=file_nb , value=2).pack(anchor="w")
     file_nb.set(2)
     
+    #Récupérer les métadonnées BIB (dublin core)
+    
+    meta_bib = tk.IntVar()
+    meta_bib_check = tk.Checkbutton(cadre_output_nb_fichier, bg=couleur_fond, 
+                       text="(en test) Récupérer les métadonnées\nbibliographiques BnF [Dublin Core]", 
+                       variable=meta_bib)
+    meta_bib_check.pack()
+
+
+    
     #Ajout (optionnel) d'un identifiant de traitement
     tk.Label(cadre_output_id_traitement,bg=couleur_fond, text="\n\n\n\n").pack()
     tk.Label(cadre_output_id_traitement,bg=couleur_fond, text="ID traitement (optionnel)").pack()
@@ -972,11 +982,12 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
     tk.Label(cadre_output_id_traitement,bg=couleur_fond, text="\n").pack()
     
     
+    
     #Bouton de validation
     
     b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", 
                   text = "OK", 
-                  command = lambda: launch(master, entry_filename, type_doc, file_nb, id_traitement), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
+                  command = lambda: launch(master, entry_filename, type_doc, file_nb, meta_bib, id_traitement), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
     
     tk.Label(cadre_valider, font="bold", text="", bg=couleur_fond).pack()
