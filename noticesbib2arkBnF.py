@@ -420,22 +420,40 @@ def isbn2sru(NumNot,isbn,titre,auteur,date):
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
     return listeARK
 
+def testURLetreeParse(url):
+    test = True
+    resultat = ""
+    try:
+        resultat = etree.parse(request.urlopen(url))
+    except etree.XMLSyntaxError:
+        test = False
+    return (test,resultat)
 
+
+def testURLurlopen(url):
+    test = True
+    resultat = ""
+    try:
+        resultat = request.urlopen(url)
+    except etree.XMLSyntaxError:
+        test = False
+    return (test,resultat)
 
 #Si l'ISBN n'a été trouvé ni dans l'index ISBN, ni dans l'index EAN
 #on le recherche dans tous les champs (not. les données d'exemplaires, pour des 
 #réimpressions achetées par un département de la Direction des collections de la BnF)
 def isbn_anywhere2sru(NumNot,isbn,titre,auteur,date):
     urlSRU = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.anywhere%20all%20%22" + isbn + "%22"
-    resultats = etree.parse(urlSRU)
-    listeARK = []
-    for record in resultats.xpath("//srw:record", namespaces=ns):
-        ark_current = record.find("srw:recordIdentifier", namespaces=ns).text
-        recordBNF = etree.parse("http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")
-        ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,recordBNF,"ISBN dans toute la notice")
-        #NumNotices2methode[NumNot].append("ISBN anywhere > ARK")
-        listeARK.append(ark)
-    listeARK = ",".join([ark for ark in listeARK if ark != ""])
+    test,resultat = testURLetreeParse(urlSRU)
+    if (test == True):
+        listeARK = []
+        for record in resultat.xpath("//srw:record", namespaces=ns):
+            ark_current = record.find("srw:recordIdentifier", namespaces=ns).text
+            recordBNF = etree.parse("http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")
+            ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,recordBNF,"ISBN dans toute la notice")
+            #NumNotices2methode[NumNot].append("ISBN anywhere > ARK")
+            listeARK.append(ark)
+        listeARK = ",".join([ark for ark in listeARK if ark != ""])
     return listeARK
 
 
