@@ -415,7 +415,7 @@ def isbn2sru(NumNot,isbn,titre,auteur,date):
             print(ark_current)
             print(err)
         ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,recordBNF,"ISBN")
-        NumNotices2methode[NumNot].append("ISBN > ARK")
+        #NumNotices2methode[NumNot].append("ISBN > ARK")
         listeARK.append(ark)
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
     return listeARK
@@ -433,7 +433,7 @@ def isbn_anywhere2sru(NumNot,isbn,titre,auteur,date):
         ark_current = record.find("srw:recordIdentifier", namespaces=ns).text
         recordBNF = etree.parse("http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")
         ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,recordBNF,"ISBN dans toute la notice")
-        NumNotices2methode[NumNot].append("ISBN anywhere > ARK")
+        #NumNotices2methode[NumNot].append("ISBN anywhere > ARK")
         listeARK.append(ark)
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
     return listeARK
@@ -443,7 +443,6 @@ def isbn_anywhere2sru(NumNot,isbn,titre,auteur,date):
 
 def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date):
     url = "https://www.sudoc.fr/services/isbn2ppn/" + isbn
-    print(url)
     Listeppn = []
 
     #page = etree.parse(url)
@@ -494,9 +493,13 @@ def ppn2ark(NumNot,ppn,isbn,titre,auteur,date):
     return ark
   
 
-def isbn2ark(NumNot,isbn,titre,auteur,date):
+def isbn2ark(NumNot,isbn_init,isbn,titre,auteur,date):
+    #Recherche sur l'ISBN tel que saisi dans la source
+    
+    resultatsIsbn2ARK = isbn2sru(NumNot,isbn_init,titre,auteur,date)
     #Requête sur l'ISBN dans le SRU, avec contrôle sur Titre ou auteur
-    resultatsIsbn2ARK = isbn2sru(NumNot,isbn,titre,auteur,date)
+    if (resultatsIsbn2ARK == ""):
+        resultatsIsbn2ARK = isbn2sru(NumNot,isbn,titre,auteur,date)
 
     isbnConverti = conversionIsbn(isbn)
 #Si pas de résultats : on convertit l'ISBN en 10 ou 13 et on relance une recherche dans le catalogue BnF
@@ -522,27 +525,34 @@ def isbn2ark(NumNot,isbn,titre,auteur,date):
         resultatsIsbn2ARK = isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date)
     return resultatsIsbn2ARK
 
-def ark2metas(ark):
+def ark2metas(ark, unidecode=True):
     record = etree.parse("http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20any%20%22" + urllib.parse.quote(ark) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")
     titre = ""
     premierauteurPrenom = ""
     premierauteurNom = ""
     tousauteurs = ""
+    date = ""
     if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='a']", namespaces=ns) is not None):
-        titre = unidecode(record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='a']", namespaces=ns).text)
+        titre = record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='a']", namespaces=ns).text
     if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='e']", namespaces=ns) is not None):
-        titre = titre + ", " + unidecode(record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='e']", namespaces=ns).text)
+        titre = titre + ", " + record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='e']", namespaces=ns).text
     if (record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='a']", namespaces=ns) is not None):
-        premierauteurNom = unidecode(record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='a']", namespaces=ns).text)
-    if (record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='m']", namespaces=ns) is not None):
-        premierauteurPrenom = unidecode(record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='m']", namespaces=ns).text)
+        premierauteurNom = record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='a']", namespaces=ns).text
+    if (record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='b']", namespaces=ns) is not None):
+        premierauteurPrenom = record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='b']", namespaces=ns).text
     if (premierauteurNom  == ""):
         if (record.find("//mxc:datafield[@tag='710']/mxc:subfield[@code='a']", namespaces=ns) is not None):
-            premierauteurNom = unidecode(record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='a']", namespaces=ns).text)
+            premierauteurNom = record.find("//mxc:datafield[@tag='710']/mxc:subfield[@code='a']", namespaces=ns).text
     if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='f']", namespaces=ns) is not None):
-        tousauteurs = unidecode(record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='f']", namespaces=ns).text)
+        tousauteurs = record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='f']", namespaces=ns).text
+    if (record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='d']", namespaces=ns) is not None):
+        date = record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='d']", namespaces=ns).text
+    metas = [titre,premierauteurPrenom,premierauteurNom,tousauteurs,date]
+    if (unidecode == True):
+        metas = [unidecode(meta) for meta in metas]
+    return metas
 
-    return [titre,premierauteurPrenom,premierauteurNom,tousauteurs]
+
     
 def ppn2metas(ppn):
     record = etree.parse(request.urlopen("https://www.sudoc.fr/" + ppn + ".rdf"))
@@ -670,8 +680,41 @@ def controleNoCommercial(NumNot,ark_current,no_commercial,titre,auteur,date,reco
             NumNotices2methode[NumNot].append("N° sys FRBNF + contrôle No commercial")
     return ark
 
+#Si on a coché "Récupérer les données bibliographiques" : ouverture de la notice BIB de l'ARK et renvoie d'une liste de métadonnées
+def ark2metadc(ark):
+#Attention : la variable 'ark' peut contenir plusieurs ark séparés par des virgules
+    listeARK = ark.split(",")
+
+    #On récupére tous les titres de chaque ARK, puis tous les auteurs
+    titlesList = []
+    PremierAuteurPrenomList = []
+    PremierAuteurNomList = []
+    tousAuteursList = []
+    dateList = []
+    for ark in listeARK:
+        metas_ark = ark2metas(ark,False)
+        titlesList.append(metas_ark[0])
+        PremierAuteurPrenomList.append(metas_ark[1])
+        PremierAuteurNomList.append(metas_ark[2])
+        tousAuteursList.append(metas_ark[3])
+        dateList.append(metas_ark[4])
+    titlesList = "|".join(titlesList)
+    PremierAuteurPrenomList = "|".join(PremierAuteurPrenomList)
+    PremierAuteurNomList = "|".join(PremierAuteurNomList)
+    tousAuteursList = "|".join(tousAuteursList)
+    dateList = "|".join(dateList)
+    metas = [titlesList,PremierAuteurPrenomList,PremierAuteurNomList,tousAuteursList,dateList]
+    return metas
+        
 
 def monimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_reports, meta_bib):
+    header_columns = ["nbARK","NumNot","ark","frbnf","ark","isbn_nett","ean_propre","titre","auteur","date"]
+    if (meta_bib == 1):
+        header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
+    if (file_nb.get() ==  1):
+        row2file(header_columns,liste_reports)
+    elif(file_nb.get() ==  2):
+        row2files(header_columns,liste_reports)
     
     with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter='\t')
@@ -705,7 +748,7 @@ def monimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_repo
             #A défaut, recherche sur ISBN
             #Si plusieurs résultats, contrôle sur l'auteur
             if (ark == "" and isbn_nett != ""):
-                ark = isbn2ark(NumNot,isbn_propre,titre_nett,auteur_nett,date_nett)
+                ark = isbn2ark(NumNot,isbn,isbn_propre,titre_nett,auteur_nett,date_nett)
             #A défaut, recherche sur EAN
             if (ark == "" and ean != ""):
                 ark = ean2ark(NumNot,ean_propre,titre_nett,auteur_nett,date_nett)
@@ -731,7 +774,9 @@ def monimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_repo
                 nb_notices_nb_ARK["Pb FRBNF"] += 1
             else:
                 nb_notices_nb_ARK[nbARK] += 1
-            liste_metadonnees = [nbARK,NumNot,ark,frbnf,current_ark,isbn_nett,ean_propre,titre_nett,auteur_nett,date_nett]
+            liste_metadonnees = [nbARK,NumNot,ark,frbnf,current_ark,isbn_nett,ean_propre,titre,auteur,date]
+            if (meta_bib == 1):
+                liste_metadonnees.extend(ark2metadc(ark))
             if (file_nb.get() ==  1):
                 row2file(liste_metadonnees,liste_reports)
             elif(file_nb.get() ==  2):
@@ -739,7 +784,13 @@ def monimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_repo
         
         
 def cddvd(master, entry_filename, type_doc, file_nb, id_traitement, liste_reports, meta_bib):
-    
+    header_columns = ["nbARK","NumNot","ark","frbnf","ark","ean_nett","ean_propre","no_commercial_propre","titre","auteur","date"]
+    if (meta_bib == 1):
+        header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
+    if (file_nb.get() ==  1):
+        row2file(header_columns,liste_reports)
+    elif(file_nb.get() ==  2):
+        row2files(header_columns,liste_reports)
     #results2file(nb_fichiers_a_produire)
     
     with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
@@ -799,7 +850,9 @@ def cddvd(master, entry_filename, type_doc, file_nb, id_traitement, liste_report
             else:
                 nb_notices_nb_ARK[nbARK] += 1
             liste_metadonnees = [nbARK,NumNot,ark,frbnf,current_ark,ean_nett,ean_propre,
-                         no_commercial_propre,titre_nett,auteur_nett,date_nett]
+                         no_commercial_propre,titre,auteur,date]
+            if (meta_bib == 1):
+                liste_metadonnees.extend(ark2metadc(ark))
             if (file_nb.get() ==  1):
                 row2file(liste_metadonnees,liste_reports)
             elif(file_nb.get() ==  2):
@@ -808,7 +861,6 @@ def cddvd(master, entry_filename, type_doc, file_nb, id_traitement, liste_report
     
 
 def launch(master, entry_filename, type_doc, file_nb, meta_bib, id_traitement):
-    
     #results2file(nb_fichiers_a_produire)
 
     liste_reports = create_reports(id_traitement.get(), file_nb.get())    
@@ -965,12 +1017,12 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
     file_nb.set(2)
     
     #Récupérer les métadonnées BIB (dublin core)
-    
+    tk.Label(cadre_output_nb_fichier,bg=couleur_fond, fg=couleur_bouton, text="\n").pack()    
     meta_bib = tk.IntVar()
     meta_bib_check = tk.Checkbutton(cadre_output_nb_fichier, bg=couleur_fond, 
-                       text="(en test) Récupérer les métadonnées\nbibliographiques BnF [Dublin Core]", 
-                       variable=meta_bib)
-    meta_bib_check.pack()
+                       text="Récupérer les métadonnées\nbibliographiques BnF [Dublin Core]", 
+                       variable=meta_bib, justify="left")
+    meta_bib_check.pack(anchor="w")
 
 
     
