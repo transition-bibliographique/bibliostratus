@@ -165,10 +165,6 @@ def formulaire_main(access_to_network, last_version):
      zone_notes] = form_generic_frames("La Transition bibliographique en chantant nous ouvre...",
                                       couleur_fond,
                                       couleur_bouton,access_to_network)
-
-    if (access_to_network == False):
-        tk.Label(zone_alert_explications, text=errors["no_internet"], 
-                 bg=couleur_fond, fg="red").pack()
     
     frame1 = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
     frame1.pack(side="left")
@@ -187,7 +183,7 @@ def formulaire_main(access_to_network, last_version):
                                  padx=10,pady=10, bg="#2D4991",fg="white")
     marc2tableButton.pack()
     
-    bib2arkButton = tk.Button(frame2, text = "Aligner ses données (tableaux)\n avec le catalogue BnF", command=bib2ark.formulaire_noticesbib2arkBnF, padx=10,pady=10, bg="#fefefe")
+    bib2arkButton = tk.Button(frame2, text = "Aligner ses données (tableaux)\n avec le catalogue BnF", command=lambda: bib2ark.formulaire_noticesbib2arkBnF(access_to_network,[0,False]), padx=10,pady=10, bg="#fefefe")
     bib2arkButton.pack()
     
     ark2recordsButton = tk.Button(frame3, text = "Exporter une liste d'ARK BnF\n en notices XML", 
@@ -217,6 +213,7 @@ def formulaire_main(access_to_network, last_version):
 
 if __name__ == '__main__':
     access_to_network = check_access_to_network()
+    last_version = [0,False]
     if(access_to_network is True):
         last_version = check_last_compilation(programID)
     formulaire_main(access_to_network, last_version)

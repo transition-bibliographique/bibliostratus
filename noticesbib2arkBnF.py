@@ -93,11 +93,12 @@ nsSudoc = {"rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#", "bibo":"http://p
 #fonction de mise à jour de l'ARK s'il existe un ARK
 def ark2ark(NumNot,ark):
     url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
-    page = etree.parse(url)
+    (test,page) = testURLetreeParse(url)
     nv_ark = ""
-    if (page.find("//srw:recordIdentifier", namespaces=ns) is not None):
-        nv_ark = page.find("//srw:recordIdentifier", namespaces=ns).text
-        NumNotices2methode[NumNot].append("Actualisation ARK")
+    if (test == True):
+        if (page.find("//srw:recordIdentifier", namespaces=ns) is not None):
+            nv_ark = page.find("//srw:recordIdentifier", namespaces=ns).text
+            NumNotices2methode[NumNot].append("Actualisation ARK")
     return nv_ark
 
 #nettoyage des chaines de caractères (titres, auteurs, isbn) : suppression ponctuation, espaces (pour les titres et ISBN) et diacritiques
@@ -191,11 +192,12 @@ def relancerNNBAuteur(NumNot,systemid,isbn,titre,auteur,date):
     listeArk = []
     if (auteur != "" and auteur is not None):
         urlSRU = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.author%20all%20%22" + urllib.parse.quote(auteur) + "%22and%20bib.otherid%20all%20%22" + systemid + "%22&recordSchema=unimarcxchange&maximumRecords=1000&startRecord=1"
-        pageSRU = etree.parse(urlSRU)
-        for record in pageSRU.xpath("//srw:records/srw:record", namespaces=ns):
-            ark = record.find("srw:recordIdentifier", namespaces=ns).text
-            NumNotices2methode[NumNot].append("N° sys FRBNF + Auteur")
-            listeArk.append(ark)
+        (test,pageSRU) = testURLetreeParse(urlSRU)
+        if (test == True):
+            for record in pageSRU.xpath("//srw:records/srw:record", namespaces=ns):
+                ark = record.find("srw:recordIdentifier", namespaces=ns).text
+                NumNotices2methode[NumNot].append("N° sys FRBNF + Auteur")
+                listeArk.append(ark)
     listeArk = ",".join(listeArk)
     return listeArk
         
@@ -206,10 +208,12 @@ def relancerNNBAuteur(NumNot,systemid,isbn,titre,auteur,date):
 #à défaut, on compare les titres (puis demi-titres)
 def comparerBibBnf(NumNot,ark_current,systemid,isbn,titre,auteur,date,origineComparaison):
     ark = ""
-    recordBNF = etree.parse("http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")
-    ark =  comparaisonIsbn(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF)
-    if (ark == ""):
-        ark = comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison)
+    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
+    (test,recordBNF) = testURLetreeParse(url)
+    if (test == True):
+        ark =  comparaisonIsbn(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF)
+        if (ark == ""):
+            ark = comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison)
     return ark
 
 def comparaisonIsbn(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF):
@@ -258,19 +262,20 @@ def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordB
 def systemid2ark(NumNot,systemid,tronque,isbn,titre,auteur,date):
     url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.otherid%20all%20%22" + systemid + "%22&recordSchema=intermarcxchange&maximumRecords=1000&startRecord=1"
     #url = "http://catalogueservice.bnf.fr/SRU?version=1.2&operation=searchRetrieve&query=NumNotice%20any%20%22" + systemid + "%22&recordSchema=InterXMarc_Complet&maximumRecords=1000&startRecord=1"
-    page = etree.parse(url)
     listeARK = []
-    for record in page.xpath("//srw:records/srw:record", namespaces=ns):
-        ark_current = record.find("srw:recordIdentifier",namespaces=ns).text
-        for zone9XX in record.xpath("srw:recordData/mxc:record/mxc:datafield", namespaces=ns):
-            #print(ark_current)
-            tag = zone9XX.get("tag")
-            if (tag[0:1] =="9"):
-                if (zone9XX.find("mxc:subfield[@code='a']", namespaces=ns) is not None):
-                    if (zone9XX.find("mxc:subfield[@code='a']", namespaces=ns).text is not None):
-                        if (zone9XX.find("mxc:subfield[@code='a']", namespaces=ns).text == systemid):
-                            #print(zone9XX.get("tag"))
-                            listeARK.append(comparerBibBnf(NumNot,ark_current,systemid,isbn,titre,auteur,date, "Ancien n° notice"))
+    (test,page) = testURLetreeParse(url)
+    if (test == True):
+        for record in page.xpath("//srw:records/srw:record", namespaces=ns):
+            ark_current = record.find("srw:recordIdentifier",namespaces=ns).text
+            for zone9XX in record.xpath("srw:recordData/mxc:record/mxc:datafield", namespaces=ns):
+                #print(ark_current)
+                tag = zone9XX.get("tag")
+                if (tag[0:1] =="9"):
+                    if (zone9XX.find("mxc:subfield[@code='a']", namespaces=ns) is not None):
+                        if (zone9XX.find("mxc:subfield[@code='a']", namespaces=ns).text is not None):
+                            if (zone9XX.find("mxc:subfield[@code='a']", namespaces=ns).text == systemid):
+                                #print(zone9XX.get("tag"))
+                                listeARK.append(comparerBibBnf(NumNot,ark_current,systemid,isbn,titre,auteur,date, "Ancien n° notice"))
     listeARK = ",".join([ark1 for ark1 in listeARK if ark1 != ''])
     
 #Si pas de réponse, on fait la recherche SystemID + Auteur
@@ -293,10 +298,11 @@ def rechercheNNB(NumNot,nnb,isbn,titre,auteur,date):
         ark = "Pb FRBNF"
     elif (int(nnb) > 30000000 and int(nnb) < 50000000):
         url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.recordid%20any%20%22" + nnb + "%22&recordSchema=unimarcxchange&maximumRecords=1000&startRecord=1"
-        page = etree.parse(url)
-        for record in page.xpath("//srw:records/srw:record", namespaces=ns):
-            ark_current = record.find("srw:recordIdentifier",namespaces=ns).text
-            ark = comparerBibBnf(NumNot,ark_current,nnb,isbn,titre,auteur,date,"Numéro de notice")
+        (test,page) = testURLetreeParse(url)
+        if (test == True):
+            for record in page.xpath("//srw:records/srw:record", namespaces=ns):
+                ark_current = record.find("srw:recordIdentifier",namespaces=ns).text
+                ark = comparerBibBnf(NumNot,ark_current,nnb,isbn,titre,auteur,date,"Numéro de notice")
     return ark
 
 #Si le FRBNF n'a pas été trouvé, on le recherche comme numéro système -> pour ça on extrait le n° système
@@ -314,17 +320,19 @@ def oldfrbnf2ark(NumNot,frbnf,isbn,titre,auteur,date):
 
 #Rechercher le FRBNF avec le préfixe    
 def frbnf2ark(NumNot,frbnf,isbn,titre,auteur,date):
-    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.otherid%20all%20%22" + frbnf + "%22&recordSchema=unimarcxchange&maximumRecords=1000&startRecord=1"
-    page = etree.parse(url)
-    nb_resultats = int(page.find("//srw:numberOfRecords", namespaces=ns).text)
     ark = ""
-    if (nb_resultats == 0):
-        ark = oldfrbnf2ark(NumNot,frbnf,isbn,titre,auteur,date)
-    elif (nb_resultats == 1):
-        ark = page.find("//srw:recordIdentifier", namespaces=ns).text
-        NumNotices2methode[NumNot].append("FRBNF")
-    else:
-        ark = ",".join([ark.text for ark in page.xpath("//srw:recordIdentifier", namespaces=ns)])
+    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.otherid%20all%20%22" + frbnf + "%22&recordSchema=unimarcxchange&maximumRecords=1000&startRecord=1"
+    (test,page) = testURLetreeParse(url)
+    if (test == True):
+        nb_resultats = int(page.find("//srw:numberOfRecords", namespaces=ns).text)
+        
+        if (nb_resultats == 0):
+            ark = oldfrbnf2ark(NumNot,frbnf,isbn,titre,auteur,date)
+        elif (nb_resultats == 1):
+            ark = page.find("//srw:recordIdentifier", namespaces=ns).text
+            NumNotices2methode[NumNot].append("FRBNF")
+        else:
+            ark = ",".join([ark.text for ark in page.xpath("//srw:recordIdentifier", namespaces=ns)])
     return ark
 
         
@@ -405,18 +413,17 @@ def check_digit_13(isbn):
 
 def isbn2sru(NumNot,isbn,titre,auteur,date):
     urlSRU = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.isbn%20all%20%22" + isbn + "%22"
-    resultats = etree.parse(urlSRU)
     listeARK = []
-    for record in resultats.xpath("//srw:record", namespaces=ns):
-        ark_current = record.find("srw:recordIdentifier", namespaces=ns).text
-        try:
-            recordBNF = etree.parse("http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")
-        except etree.parseError as err:
-            print(ark_current)
-            print(err)
-        ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,recordBNF,"ISBN")
-        #NumNotices2methode[NumNot].append("ISBN > ARK")
-        listeARK.append(ark)
+    (test,resultats) = testURLetreeParse(urlSRU)
+    if (test == True):
+        for record in resultats.xpath("//srw:record", namespaces=ns):
+            ark_current = record.find("srw:recordIdentifier", namespaces=ns).text
+            recordBNF_url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
+            (test,recordBNF) = testURLetreeParse(recordBNF_url)
+            if (test == True):
+                ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,recordBNF,"ISBN")
+                #NumNotices2methode[NumNot].append("ISBN > ARK")
+                listeARK.append(ark)
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
     return listeARK
 
@@ -425,7 +432,13 @@ def testURLetreeParse(url):
     resultat = ""
     try:
         resultat = etree.parse(request.urlopen(url))
-    except etree.XMLSyntaxError:
+    except etree.XMLSyntaxError as err:
+        print(url)
+        print(err)
+        test = False
+    except etree.parseError as err:
+        print(url)
+        print(err)
         test = False
     return (test,resultat)
 
@@ -445,49 +458,52 @@ def testURLurlopen(url):
 def isbn_anywhere2sru(NumNot,isbn,titre,auteur,date):
     urlSRU = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.anywhere%20all%20%22" + isbn + "%22"
     test,resultat = testURLetreeParse(urlSRU)
+    listeARK = []
     if (test == True):
-        listeARK = []
         for record in resultat.xpath("//srw:record", namespaces=ns):
             ark_current = record.find("srw:recordIdentifier", namespaces=ns).text
-            recordBNF = etree.parse("http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")
-            ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,recordBNF,"ISBN dans toute la notice")
-            #NumNotices2methode[NumNot].append("ISBN anywhere > ARK")
-            listeARK.append(ark)
-        listeARK = ",".join([ark for ark in listeARK if ark != ""])
+            recordBNF_url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
+            (test2,recordBNF) = testURLetreeParse(recordBNF_url)
+            if (test2 == True):
+                ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,recordBNF,"ISBN dans toute la notice")
+                #NumNotices2methode[NumNot].append("ISBN anywhere > ARK")
+                listeARK.append(ark)
+    listeARK = ",".join([ark for ark in listeARK if ark != ""])
     return listeARK
 
+
+def testURLretrieve(url):
+    test = True
+    try:
+        request.urlretrieve(url)
+    except error.HTTPError as err:
+        test = False
+    return test
 
 
 
 def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date):
     url = "https://www.sudoc.fr/services/isbn2ppn/" + isbn
     Listeppn = []
-
-    #page = etree.parse(url)
-    isbnTrouve = True
+    isbnTrouve = testURLretrieve(url)
     ark = ""
-    try:
-        request.urlretrieve(url)
-    except error.HTTPError as err:
-        isbnTrouve = False
     if (isbnTrouve == True):
-        resultats = etree.parse(request.urlopen(url))
-        for ppn in resultats.xpath("//ppn"):
-            ppn_val = resultats.find("//ppn").text
-            Listeppn.append("PPN" + ppn_val)
-            ark = ppn2ark(NumNot,ppn_val,isbn,titre,auteur,date)
-        if (ark == ""):
-            url = "https://www.sudoc.fr/services/isbn2ppn/" + isbnConverti
-            try:
-                request.urlretrieve(url)
-            except error.HTTPError as err:
-                isbnTrouve = False
-            if (isbnTrouve == True):
-                resultats = etree.parse(request.urlopen(url))
-                for ppn in resultats.xpath("//ppn"):
-                    ppn_val = resultats.find("//ppn").text
-                    Listeppn.append("PPN" + ppn_val)
-                    ark = ppn2ark(NumNot,ppn_val,isbnConverti,titre,auteur,date)
+        (test,resultats) = testURLetreeParse(url)
+        if (test == True):
+            for ppn in resultats.xpath("//ppn"):
+                ppn_val = resultats.find("//ppn").text
+                Listeppn.append("PPN" + ppn_val)
+                ark = ppn2ark(NumNot,ppn_val,isbn,titre,auteur,date)
+            if (ark == ""):
+                url = "https://www.sudoc.fr/services/isbn2ppn/" + isbnConverti
+                isbnTrouve = testURLretrieve(url)
+                if (isbnTrouve == True):
+                    (test,resultats) = testURLetreeParse(url)
+                    if (test == True):
+                        for ppn in resultats.xpath("//ppn"):
+                            ppn_val = resultats.find("//ppn").text
+                            Listeppn.append("PPN" + ppn_val)
+                            ark = ppn2ark(NumNot,ppn_val,isbnConverti,titre,auteur,date)
     #Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK déclaré comme équivalent --> dans ce cas on récupère l'ARK
     Listeppn = ",".join(Listeppn)
     if (ark != ""):
@@ -496,13 +512,15 @@ def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date):
         return Listeppn
 
 def ppn2ark(NumNot,ppn,isbn,titre,auteur,date):
-    record = etree.parse(request.urlopen("http://www.sudoc.fr/" + ppn + ".rdf" ))
     ark = ""
-    for sameAs in record.xpath("//owl:sameAs",namespaces=nsSudoc):
-        resource = sameAs.get("{http://www.w3.org/1999/02/22-rdf-syntax-ns#}resource")
-        if (resource.find("ark:/12148/")>0):
-            ark = resource[24:46]
-            NumNotices2methode[NumNot].append("ISBN > PPN > ARK")
+    url = "http://www.sudoc.fr/" + ppn + ".rdf"
+    (test,record) = testURLetreeParse(url)
+    if (test == True):
+        for sameAs in record.xpath("//owl:sameAs",namespaces=nsSudoc):
+            resource = sameAs.get("{http://www.w3.org/1999/02/22-rdf-syntax-ns#}resource")
+            if (resource.find("ark:/12148/")>0):
+                ark = resource[24:46]
+                NumNotices2methode[NumNot].append("ISBN > PPN > ARK")
     if (ark == ""):
         for frbnf in record.xpath("//bnf-onto:FRBNF",namespaces=nsSudoc):
             frbnf_val = frbnf.text
@@ -544,27 +562,29 @@ def isbn2ark(NumNot,isbn_init,isbn,titre,auteur,date):
     return resultatsIsbn2ARK
 
 def ark2metas(ark, unidecode=True):
-    record = etree.parse("http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20any%20%22" + urllib.parse.quote(ark) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")
+    recordBNF_url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20any%20%22" + urllib.parse.quote(ark) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
+    (test,record) = testURLetreeParse(recordBNF_url)
     titre = ""
     premierauteurPrenom = ""
     premierauteurNom = ""
     tousauteurs = ""
     date = ""
-    if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='a']", namespaces=ns) is not None):
-        titre = record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='a']", namespaces=ns).text
-    if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='e']", namespaces=ns) is not None):
-        titre = titre + ", " + record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='e']", namespaces=ns).text
-    if (record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='a']", namespaces=ns) is not None):
-        premierauteurNom = record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='a']", namespaces=ns).text
-    if (record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='b']", namespaces=ns) is not None):
-        premierauteurPrenom = record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='b']", namespaces=ns).text
-    if (premierauteurNom  == ""):
-        if (record.find("//mxc:datafield[@tag='710']/mxc:subfield[@code='a']", namespaces=ns) is not None):
-            premierauteurNom = record.find("//mxc:datafield[@tag='710']/mxc:subfield[@code='a']", namespaces=ns).text
-    if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='f']", namespaces=ns) is not None):
-        tousauteurs = record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='f']", namespaces=ns).text
-    if (record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='d']", namespaces=ns) is not None):
-        date = record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='d']", namespaces=ns).text
+    if (test == True):
+        if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='a']", namespaces=ns) is not None):
+            titre = record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='a']", namespaces=ns).text
+        if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='e']", namespaces=ns) is not None):
+            titre = titre + ", " + record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='e']", namespaces=ns).text
+        if (record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='a']", namespaces=ns) is not None):
+            premierauteurNom = record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='a']", namespaces=ns).text
+        if (record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='b']", namespaces=ns) is not None):
+            premierauteurPrenom = record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='b']", namespaces=ns).text
+        if (premierauteurNom  == ""):
+            if (record.find("//mxc:datafield[@tag='710']/mxc:subfield[@code='a']", namespaces=ns) is not None):
+                premierauteurNom = record.find("//mxc:datafield[@tag='710']/mxc:subfield[@code='a']", namespaces=ns).text
+        if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='f']", namespaces=ns) is not None):
+            tousauteurs = record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='f']", namespaces=ns).text
+        if (record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='d']", namespaces=ns) is not None):
+            date = record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='d']", namespaces=ns).text
     metas = [titre,premierauteurPrenom,premierauteurNom,tousauteurs,date]
     if (unidecode == True):
         metas = [unidecode(meta) for meta in metas]
@@ -573,22 +593,24 @@ def ark2metas(ark, unidecode=True):
 
     
 def ppn2metas(ppn):
-    record = etree.parse(request.urlopen("https://www.sudoc.fr/" + ppn + ".rdf"))
+    url = "https://www.sudoc.fr/" + ppn + ".rdf"
+    (test,record) = testURLetreeParse(url)
     titre = ""
     premierauteurPrenom = ""
     premierauteurNom = ""
     tousauteurs = ""
-    if (record.find("//dc:title",namespaces=nsSudoc) is not None):
-        titre = unidecode(record.find("//dc:title",namespaces=nsSudoc).text).split("[")[0].split("/")[0]
-        tousauteurs = unidecode(record.find("//dc:title",namespaces=nsSudoc).text).split("/")[1]
-        if (titre[0:5] == tousauteurs[0:5]):
-            tousauteurs = ""
-    if (record.find("//marcrel:aut/foaf:Person/foaf:name",namespaces=nsSudoc) is not None):
-        premierauteurNom = unidecode(record.find("//marcrel:aut/foaf:Person/foaf:name",namespaces=nsSudoc).text).split(",")[0]
-        if (record.find("//marcrel:aut/foaf:Person/foaf:name",namespaces=nsSudoc).text.find(",") > 0):
-            premierauteurPrenom = unidecode(record.find("//marcrel:aut/foaf:Person/foaf:name",namespaces=nsSudoc).text).split(",")[1]
-        if (premierauteurPrenom.find("(") > 0):
-            premierauteurPrenom = premierauteurPrenom.split("(")[0]
+    if (test == True):
+        if (record.find("//dc:title",namespaces=nsSudoc) is not None):
+            titre = unidecode(record.find("//dc:title",namespaces=nsSudoc).text).split("[")[0].split("/")[0]
+            tousauteurs = unidecode(record.find("//dc:title",namespaces=nsSudoc).text).split("/")[1]
+            if (titre[0:5] == tousauteurs[0:5]):
+                tousauteurs = ""
+        if (record.find("//marcrel:aut/foaf:Person/foaf:name",namespaces=nsSudoc) is not None):
+            premierauteurNom = unidecode(record.find("//marcrel:aut/foaf:Person/foaf:name",namespaces=nsSudoc).text).split(",")[0]
+            if (record.find("//marcrel:aut/foaf:Person/foaf:name",namespaces=nsSudoc).text.find(",") > 0):
+                premierauteurPrenom = unidecode(record.find("//marcrel:aut/foaf:Person/foaf:name",namespaces=nsSudoc).text).split(",")[1]
+            if (premierauteurPrenom.find("(") > 0):
+                premierauteurPrenom = premierauteurPrenom.split("(")[0]
     return [titre,premierauteurPrenom,premierauteurNom,tousauteurs]
   
 def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,anywhere=False):
@@ -609,27 +631,30 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,anywhere=False):
         if (anywhere == True):
             url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.anywhere%20all%20%22" + urllib.parse.quote(titre_propre) + "%20" + urllib.parse.quote(auteur) + "%20" + urllib.parse.quote(date_nett) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
         #print(url)
-        results = etree.parse(url)
+        (test,results) = testURLetreeParse(url)
         index = ""
         if (results.find("//srw:numberOfRecords", namespaces=ns) == "0"):
             url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.title%20all%20%22" + urllib.parse.quote(titre_propre) + "%22%20and%20bib.author%20all%20%22" + urllib.parse.quote(auteur_nett) + "%22%20and%20bib.date%20all%20%22" + urllib.parse.quote(date_nett) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
             if (anywhere == True):
                 url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.anywhere%20all%20%22" + urllib.parse.quote(titre_propre) + "%20" + urllib.parse.quote(auteur_nett) + "%20" + urllib.parse.quote(date_nett) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
                 index = " dans toute la notice"
-            results = etree.parse(url)
-        for record in results.xpath("//srw:recordIdentifier",namespaces=ns):
-            ark_current = record.text
-            #print(NumNot + " : " + ark_current)
-            recordBNF = etree.parse("http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")
-            ark.append(comparaisonTitres(NumNot,ark_current,"","",nettoyageTitrePourControle(titre),auteur,date_nett,recordBNF,"Titre-Auteur-Date" + index))
-            methode = "Titre-Auteur-Date"
-            if (auteur == "-" and date_nett == "-"):
-                methode = "Titre"
-            elif (auteur == "-"):
-                methode = "Titre-Date"
-            elif (date_nett == "-"):
-                methode = "Titre-Auteur"
-            NumNotices2methode[NumNot].append(methode)
+            (test,results) = testURLetreeParse(url)
+        if (test == True):
+            for record in results.xpath("//srw:recordIdentifier",namespaces=ns):
+                ark_current = record.text
+                #print(NumNot + " : " + ark_current)
+                recordBNF_url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
+                (test,recordBNF) = testURLetreeParse(recordBNF_url)
+                if (test == True):
+                    ark.append(comparaisonTitres(NumNot,ark_current,"","",nettoyageTitrePourControle(titre),auteur,date_nett,recordBNF,"Titre-Auteur-Date" + index))
+                    methode = "Titre-Auteur-Date"
+                    if (auteur == "-" and date_nett == "-"):
+                        methode = "Titre"
+                    elif (auteur == "-"):
+                        methode = "Titre-Date"
+                    elif (date_nett == "-"):
+                        methode = "Titre-Auteur"
+                    NumNotices2methode[NumNot].append(methode)
     ark = ",".join([ark1 for ark1 in ark if ark1 != ""])
     return ark
 
@@ -656,20 +681,22 @@ def url_requete_sru(query,recordSchema="unimarcxchange",maximumRecords="1000",st
 
 def ark2recordBNF(ark,typeRecord="bib"):
     url = url_requete_sru(typeRecord + '.persistentid any "' + ark + '"')
-    recordBNF = etree.parse(url)
-    return recordBNF
+    (test,recordBNF) = testURLetreeParse(url)
+    return (test,recordBNF)
 
 def ean2ark(NumNot,ean,titre,auteur,date):
     listeARK = []
     url = url_requete_sru('bib.ean all "' + ean + '"')
-    results = etree.parse(url)
-    for record in results.xpath("//srw:recordData",namespaces=ns):
-        if (record.find("srw:recordIdentifier",namespaces=ns) is not None):
-            ark_current = record.find("srw:recordIdentifier",namespaces=ns).text
-            recordBNF = ark2recordBNF(ark_current)
-            ark = comparaisonTitres(NumNot,ark_current,"",ean,titre,auteur,date,recordBNF, "EAN")
-            NumNotices2methode[NumNot].append("EAN > ARK")
-            listeARK.append(ark)
+    (test,results) = testURLetreeParse(url)
+    if (test == True):
+        for record in results.xpath("//srw:recordData",namespaces=ns):
+            if (record.find("srw:recordIdentifier",namespaces=ns) is not None):
+                ark_current = record.find("srw:recordIdentifier",namespaces=ns).text
+                (test2,recordBNF) = ark2recordBNF(ark_current)
+                if (test2 ==  True):
+                    ark = comparaisonTitres(NumNot,ark_current,"",ean,titre,auteur,date,recordBNF, "EAN")
+                    NumNotices2methode[NumNot].append("EAN > ARK")
+                    listeARK.append(ark)
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
     return listeARK
 
@@ -678,12 +705,13 @@ def nettoyage_no_commercial(no_commercial_propre):
             
 def no_commercial2ark(NumNot,no_commercial,titre,auteur,date):
     url = url_requete_sru('bib.comref  all "' + no_commercial + '"')
-    results = etree.parse(url)
-    for record in results.xpath("//srw:recordData",namespaces=ns):
-        ark_current = record.find("srw:recordIdentifier",namespaces=ns).text
-        recordBNF = ark2recordBNF(ark_current)
-        ark = controleNoCommercial(NumNot,ark_current,no_commercial,titre,auteur,date,recordBNF)
     ark = ""
+    (test,results) = testURLetreeParse(url)
+    if (test == True):
+        for record in results.xpath("//srw:recordData",namespaces=ns):
+            ark_current = record.find("srw:recordIdentifier",namespaces=ns).text
+            recordBNF = ark2recordBNF(ark_current)
+            ark = controleNoCommercial(NumNot,ark_current,no_commercial,titre,auteur,date,recordBNF)
     return ark
 
 def controleNoCommercial(NumNot,ark_current,no_commercial,titre,auteur,date,recordBNF):
@@ -1078,6 +1106,7 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
 
 if __name__ == '__main__':
     access_to_network = check_access_to_network()
+    last_version = [0,False]
     if(access_to_network is True):
         last_version = check_last_compilation(programID)
     formulaire_noticesbib2arkBnF(access_to_network,last_version)
