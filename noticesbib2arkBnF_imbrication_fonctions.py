@@ -48,11 +48,12 @@ liste_fonctions = {'create_reports' : ['create_reports_1file','create_reports_fi
 }
 		
 def key2list(key,i):
-    sep = i*"\t"
+    sep = i*" " + "|" + 2*"-"
     print(sep + key)
+    indentation = i + round(len(key)/2)+2
     if (key in liste_fonctions):
         for el in liste_fonctions[key]:
-            key2list(el, i+1)
+            key2list(el, indentation)
     else:
         return ""
     
