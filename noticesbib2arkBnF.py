@@ -1006,7 +1006,10 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
     master = tk.Tk()
     master.config(padx=30, pady=20,bg=couleur_fond)
     master.title("Programme d'alignement de données bibliographiques avec la BnF")
-    master.iconbitmap(r'favicon.ico')
+    try:
+        master.iconbitmap(r'favicon.ico')
+    except tk.TclError:
+        favicone = "rien"
     
     zone_alert_explications = tk.Frame(master, bg=couleur_fond, pady=10)
     zone_alert_explications.pack()
