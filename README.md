@@ -19,4 +19,4 @@ Mais pour cela, il faut que chaque bibliothèque ait fait un travail préalable 
 
 Mode d'emploi et tutoriels
 --
-[Voir le wiki](wiki "Consulter les pages du wiki sur Github")
+[Voir le wiki](https://github.com/Lully/transbiblio/wiki "Consulter les pages du wiki sur Github")
