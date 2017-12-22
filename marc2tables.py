@@ -1,19 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Nov 10 09:46:33 2017
-
-@author: BNF0017855
-"""
-
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Nov 10 09:43:05 2017
-
-@author: BNF0017855
-"""
-
-# -*- coding: utf-8 -*-
-"""
 Created on Fri Oct 13 18:30:30 2017
 
 @author: Etienne Cavalié
