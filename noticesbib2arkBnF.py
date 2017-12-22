@@ -229,11 +229,23 @@ def comparaisonIsbn(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF
     return ark
 
 def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison):
+    ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"200$a")
+    if (ark == ""):
+        ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"200$e")
+    if (ark == ""):
+        ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"200$i")
+    if (ark == ""):
+        ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"750$a")
+    return ark
+            
+def comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,sous_zone):
     ark = ""
     titreBNF = ""
-    if (recordBNF.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='a']", namespaces=ns) is not None):
-        if (recordBNF.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='a']", namespaces=ns).text is not None):
-            titreBNF = nettoyage(recordBNF.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='a']", namespaces=ns).text)
+    xpath = "//mxc:datafield[@tag='" + sous_zone.split("$")[0] + "']/mxc:subfield[@code='" + sous_zone.split("$")[1] + "']"
+
+    if (recordBNF.find(xpath, namespaces=ns) is not None):
+        if (recordBNF.find(xpath, namespaces=ns).text is not None):
+            titreBNF = nettoyage(recordBNF.find(xpath, namespaces=ns).text)
     if (titre != "" and titreBNF != ""):
         if (titre == titreBNF):
             ark = ark_current
@@ -255,8 +267,6 @@ def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordB
         ark = ark_current
         NumNotices2methode[NumNot].append(origineComparaison + " + pas de titre initial")
     return ark
-            
-    
 
 #Recherche par n° système. Si le 3e paramètre est "False", c'est qu'on a pris uniquement le FRBNF initial, sans le tronquer. 
 #Dans ce cas, et si 0 résultat pertinent, on relance la recherche avec info tronqué
