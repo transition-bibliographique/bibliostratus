@@ -16,3 +16,7 @@ Objectifs du programme
 Le présupposé de ce projet est que les bibliothèques doivent, à terme, bénéficier de catalogues contenant des notices conformes au modèle FRBR-LRM. 
 Afin d'éviter qu'elles ne transforment leurs notices de manière indépendantes, ou qu'elles achètent les notices transformées à des fournisseurs (ou pire, qu'elles acquièrent des logiciels qui calculent le regroupement de notices en arbres FRBR à la volée), les agences nationales proposent de faciliter la redistribution de leurs notices.
 Mais pour cela, il faut que chaque bibliothèque ait fait un travail préalable d'*alignement* de son catalogue avec la BnF ou l'Abes, pour que chaque notice d'un catalogue local soit "lié" à la notice du réservoir national (catalogue général BnF ou Sudoc)
+
+Mode d'emploi et tutoriels
+--
+[Voir le wiki](https://github.com/Lully/transbiblio/wiki "Consulter les pages du wiki sur Github")
