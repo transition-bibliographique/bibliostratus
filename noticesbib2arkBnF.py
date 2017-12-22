@@ -24,7 +24,7 @@ import json
 #import matplotlib.pyplot as plt
 
 version = 0.92
-lastupdate = "10/11/2017"
+lastupdate = "22/12/2017"
 programID = "noticesbib2arkBnF"
 
 errors = {
