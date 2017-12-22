@@ -448,11 +448,11 @@ def testURLetreeParse(url):
         print(err)
         url_access_pbs.append([url,"etree.XMLSyntaxError"])
         test = False
-    except etree.parseError as err:
+    except etree.ParseError as err:
         print(url)
         print(err)
         test = False
-        url_access_pbs.append([url,"etree.parseError"])
+        url_access_pbs.append([url,"etree.ParseError"])
     return (test,resultat)
 
 
