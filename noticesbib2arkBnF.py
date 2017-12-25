@@ -6,6 +6,10 @@ Created on Fri Oct 13 18:30:30 2017
 
 Programme d'identification des ARK BnF à partir de numéros FRBNF
 
+Reprendre à la fonction issn2ark
+Puis modifier le formulaire pour proposer l'option "Périodiques"
+ + définir les colonnes (date ?)
+
 """
 
 from lxml import etree
@@ -35,6 +39,7 @@ url_access_pbs = []
 
 ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}
 nsSudoc = {"rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#", "bibo":"http://purl.org/ontology/bibo/", "dc":"http://purl.org/dc/elements/1.1/", "dcterms":"http://purl.org/dc/terms/", "rdafrbr1":"http://rdvocab.info/RDARelationshipsWEMI/", "marcrel":"http://id.loc.gov/vocabulary/relators/", "foaf":"http://xmlns.com/foaf/0.1/", "gr":"http://purl.org/goodrelations/v1#", "owl":"http://www.w3.org/2002/07/owl#", "isbd":"http://iflastandards.info/ns/isbd/elements/", "skos":"http://www.w3.org/2004/02/skos/core#", "rdafrbr2":"http://RDVocab.info/uri/schema/FRBRentitiesRDA/", "rdaelements":"http://rdvocab.info/Elements/", "rdac":"http://rdaregistry.info/Elements/c/", "rdau":"http://rdaregistry.info/Elements/u/", "rdaw":"http://rdaregistry.info/Elements/w/", "rdae":"http://rdaregistry.info/Elements/e/", "rdam":"http://rdaregistry.info/Elements/m/", "rdai":"http://rdaregistry.info/Elements/i/", "sudoc":"http://www.sudoc.fr/ns/", "bnf-onto":"http://data.bnf.fr/ontology/bnf-onto/"}
+urlSRUroot = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query="
 
 #Pour chaque notice, on recense la méthode qui a permis de récupérer le ou les ARK
 NumNotices2methode = defaultdict(list)
@@ -93,7 +98,7 @@ nsSudoc = {"rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#", "bibo":"http://p
 
 #fonction de mise à jour de l'ARK s'il existe un ARK
 def ark2ark(NumNot,ark):
-    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
+    url = urlSRUroot + "bib.persistentid%20all%20%22" + urllib.parse.quote(ark) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
     (test,page) = testURLetreeParse(url)
     nv_ark = ""
     if (test == True):
@@ -158,6 +163,16 @@ def nettoyageIsbnPourControle(isbn):
         isbn = isbn[0:10]
     return isbn
 
+def nettoyageIssnPourControle(issn):
+    issn = nettoyage(issn)
+    if (issn != ""):
+        issn = nettoyage_lettresISBN(issn)
+    if (len(issn) < 8):
+        issn = ""
+    else:
+        issn = issn[0:8]
+    return issn
+
 def nettoyageAuteur(auteur,justeunmot=True):
     listeMots = ["par","avec","by","Mr.","M.","Mme","Mrs"]
     for mot in listeMots:
@@ -192,7 +207,7 @@ def nettoyageDate(date):
 def relancerNNBAuteur(NumNot,systemid,isbn,titre,auteur,date):
     listeArk = []
     if (auteur != "" and auteur is not None):
-        urlSRU = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.author%20all%20%22" + urllib.parse.quote(auteur) + "%22and%20bib.otherid%20all%20%22" + systemid + "%22&recordSchema=unimarcxchange&maximumRecords=1000&startRecord=1"
+        urlSRU = urlSRUroot + "bib.author%20all%20%22" + urllib.parse.quote(auteur) + "%22and%20bib.otherid%20all%20%22" + systemid + "%22&recordSchema=unimarcxchange&maximumRecords=1000&startRecord=1"
         (test,pageSRU) = testURLetreeParse(urlSRU)
         if (test == True):
             for record in pageSRU.xpath("//srw:records/srw:record", namespaces=ns):
@@ -575,6 +590,11 @@ def isbn2ark(NumNot,isbn_init,isbn,titre,auteur,date):
         resultatsIsbn2ARK = isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date)
     return resultatsIsbn2ARK
 
+def issn2ark(NumNot,isbn_init,isbn,titre,auteur,date):
+    ark_current = ""
+    return ark_current
+
+
 def ark2metas(ark, unidecode=True):
     recordBNF_url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20any%20%22" + urllib.parse.quote(ark) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
     (test,record) = testURLetreeParse(recordBNF_url)
@@ -912,6 +932,71 @@ def cddvd(master, entry_filename, type_doc, file_nb, id_traitement, liste_report
                 row2file(liste_metadonnees,liste_reports)
             elif(file_nb.get() ==  2):
                 row2files(liste_metadonnees,liste_reports)
+
+#Si option du formulaire = périodiques imprimés
+def perimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_reports, meta_bib):
+    header_columns = ["nbARK","NumNot","ark","frbnf","ark","issn_nett","titre","auteur","date"]
+    if (meta_bib == 1):
+        header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
+    if (file_nb.get() ==  1):
+        row2file(header_columns,liste_reports)
+    elif(file_nb.get() ==  2):
+        row2files(header_columns,liste_reports)
+    n = 0
+    with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
+        entry_file = csv.reader(csvfile, delimiter='\t')
+        next(entry_file)
+        for row in entry_file:
+            n += 1
+            #print(row)
+            NumNot = row[0]
+            frbnf = row[1]
+            current_ark = row[2]
+            issn = row[3]
+            issn_nett = nettoyageIssnPourControle(issn)
+            issn_propre = nettoyage_isbn(issn)
+            titre = row[4]
+            titre_nett= nettoyageTitrePourControle(titre)
+            auteur = row[5]
+            auteur_nett = nettoyageAuteur(auteur)
+            date = row[6]
+            date_nett = nettoyageDate(date)
+            #Actualisation de l'ARK à partir de l'ARK
+            ark = ""
+            if (current_ark != ""):
+                ark = ark2ark(NumNot,current_ark)
+            
+            #A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
+            elif (frbnf != ""):
+                ark = frbnf2ark(NumNot,frbnf,isbn_nett,titre_nett,auteur_nett,date_nett)
+                ark = ",".join(ark1 for ark1 in ark.split(",") if ark1 != '')
+            #A défaut, recherche sur ISBN
+            #Si plusieurs résultats, contrôle sur l'auteur
+            if (ark == "" and issn_nett != ""):
+                ark = issn2ark(NumNot,issn,issn_propre,titre_nett,auteur_nett,date_nett)
+            #A défaut, recherche sur EAN
+            #A défaut, recherche sur Titre-Auteur-Date
+            if (ark == "" and titre != ""):
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,False)
+                #print("1." + NumNot + " : " + ark)
+            if (ark == "" and titre != ""):
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,True)
+            print(str(n) + ". " + NumNot + " : " + ark)
+            nbARK = len(ark.split(","))
+            if (ark == ""):
+                nbARK = 0   
+            if (ark == "Pb FRBNF"):
+                nb_notices_nb_ARK["Pb FRBNF"] += 1
+            else:
+                nb_notices_nb_ARK[nbARK] += 1
+            liste_metadonnees = [nbARK,NumNot,ark,frbnf,current_ark,isbn_nett,ean_propre,titre,auteur,date]
+            if (meta_bib == 1):
+                liste_metadonnees.extend(ark2metadc(ark))
+            if (file_nb.get() ==  1):
+                row2file(liste_metadonnees,liste_reports)
+            elif(file_nb.get() ==  2):
+                row2files(liste_metadonnees,liste_reports)
+
         
     
 
