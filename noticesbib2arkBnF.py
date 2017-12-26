@@ -43,6 +43,9 @@ urlSRUroot = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrie
 
 #Pour chaque notice, on recense la méthode qui a permis de récupérer le ou les ARK
 NumNotices2methode = defaultdict(list)
+#Si on trouve la notice grâce à un autre ISBN : on l'indique dans un dictionnaire qui 
+#est ajouté dans le rapport stat
+NumNotices_conversionISBN = defaultdict(dict)
 
 #Quelques listes de signes à nettoyer
 listeChiffres = ["0","1","2","3","4","5","6","7","8","9"]
@@ -96,9 +99,10 @@ ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2"
 nsOCLC = {"xisbn": "http://worldcat.org/xid/isbn/"}
 nsSudoc = {"rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#", "bibo":"http://purl.org/ontology/bibo/", "dc":"http://purl.org/dc/elements/1.1/", "dcterms":"http://purl.org/dc/terms/", "rdafrbr1":"http://rdvocab.info/RDARelationshipsWEMI/", "marcrel":"http://id.loc.gov/vocabulary/relators/", "foaf":"http://xmlns.com/foaf/0.1/", "gr":"http://purl.org/goodrelations/v1#", "owl":"http://www.w3.org/2002/07/owl#", "isbd":"http://iflastandards.info/ns/isbd/elements/", "skos":"http://www.w3.org/2004/02/skos/core#", "rdafrbr2":"http://RDVocab.info/uri/schema/FRBRentitiesRDA/", "rdaelements":"http://rdvocab.info/Elements/", "rdac":"http://rdaregistry.info/Elements/c/", "rdau":"http://rdaregistry.info/Elements/u/", "rdaw":"http://rdaregistry.info/Elements/w/", "rdae":"http://rdaregistry.info/Elements/e/", "rdam":"http://rdaregistry.info/Elements/m/", "rdai":"http://rdaregistry.info/Elements/i/", "sudoc":"http://www.sudoc.fr/ns/", "bnf-onto":"http://data.bnf.fr/ontology/bnf-onto/"}
 
+
 #fonction de mise à jour de l'ARK s'il existe un ARK
 def ark2ark(NumNot,ark):
-    url = urlSRUroot + "bib.persistentid%20all%20%22" + urllib.parse.quote(ark) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
+    url = url_requete_sru('bib.persistentid all "' + ark + '"')
     (test,page) = testURLetreeParse(url)
     nv_ark = ""
     if (test == True):
@@ -207,7 +211,7 @@ def nettoyageDate(date):
 def relancerNNBAuteur(NumNot,systemid,isbn,titre,auteur,date):
     listeArk = []
     if (auteur != "" and auteur is not None):
-        urlSRU = urlSRUroot + "bib.author%20all%20%22" + urllib.parse.quote(auteur) + "%22and%20bib.otherid%20all%20%22" + systemid + "%22&recordSchema=unimarcxchange&maximumRecords=1000&startRecord=1"
+        urlSRU = url_requete_sru('bib.author all "' + auteur + '" and bib.otherid all "' + systemid + '"')
         (test,pageSRU) = testURLetreeParse(urlSRU)
         if (test == True):
             for record in pageSRU.xpath("//srw:records/srw:record", namespaces=ns):
@@ -224,7 +228,7 @@ def relancerNNBAuteur(NumNot,systemid,isbn,titre,auteur,date):
 #à défaut, on compare les titres (puis demi-titres)
 def comparerBibBnf(NumNot,ark_current,systemid,isbn,titre,auteur,date,origineComparaison):
     ark = ""
-    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
+    url = url_requete_sru('bib.persistentid all "' + ark_current + '"')
     (test,recordBNF) = testURLetreeParse(url)
     if (test == True):
         ark =  comparaisonIsbn(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF)
@@ -235,12 +239,22 @@ def comparerBibBnf(NumNot,ark_current,systemid,isbn,titre,auteur,date,origineCom
 def comparaisonIsbn(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF):
     ark = ""
     isbnBNF = ""
+    sourceID = "ISBN"
+    #Si le FRBNF de la notice source est présent comme ancien numéro de notice 
+    #dans la notice BnF, on compare les ISBN en 010, ou à défaut les EAN
+    #ou à défaut les ISSN (il peut s'agir d'un périodique)
     if (recordBNF.find("//mxc:datafield[@tag='010']/mxc:subfield[@code='a']", namespaces=ns) is not None):
         isbnBNF = nettoyage(recordBNF.find("//mxc:datafield[@tag='010']/mxc:subfield[@code='a']", namespaces=ns).text)
+    elif (recordBNF.find("//mxc:datafield[@tag='038']/mxc:subfield[@code='a']", namespaces=ns) is not None):
+        isbnBNF = nettoyage(recordBNF.find("//mxc:datafield[@tag='038']/mxc:subfield[@code='a']", namespaces=ns).text)
+        sourceID = "EAN"
+    elif (recordBNF.find("//mxc:datafield[@tag='011']/mxc:subfield[@code='a']", namespaces=ns) is not None):
+        isbnBNF = nettoyage(recordBNF.find("//mxc:datafield[@tag='011']/mxc:subfield[@code='a']", namespaces=ns).text)
+        sourceID = "ISSN"
     if (isbn != "" and isbnBNF != ""):
         if (isbn in isbnBNF):
             ark = ark_current
-            NumNotices2methode[NumNot].append("N° sys FRBNF + contrôle ISBN")
+            NumNotices2methode[NumNot].append("N° sys FRBNF + contrôle " + sourceID)
     return ark
 
 def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison):
@@ -286,7 +300,7 @@ def comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,da
 #Recherche par n° système. Si le 3e paramètre est "False", c'est qu'on a pris uniquement le FRBNF initial, sans le tronquer. 
 #Dans ce cas, et si 0 résultat pertinent, on relance la recherche avec info tronqué
 def systemid2ark(NumNot,systemid,tronque,isbn,titre,auteur,date):
-    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.otherid%20all%20%22" + systemid + "%22&recordSchema=intermarcxchange&maximumRecords=1000&startRecord=1"
+    url = url_requete_sru('bib.otherid all "' + systemid + '"')
     #url = "http://catalogueservice.bnf.fr/SRU?version=1.2&operation=searchRetrieve&query=NumNotice%20any%20%22" + systemid + "%22&recordSchema=InterXMarc_Complet&maximumRecords=1000&startRecord=1"
     listeARK = []
     (test,page) = testURLetreeParse(url)
@@ -322,8 +336,8 @@ def rechercheNNB(NumNot,nnb,isbn,titre,auteur,date):
     if (nnb.isdigit() is False):
         #pb_frbnf_source.write("\t".join[NumNot,nnb] + "\n")
         ark = "Pb FRBNF"
-    elif (int(nnb) > 30000000 and int(nnb) < 50000000):
-        url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.recordid%20any%20%22" + nnb + "%22&recordSchema=unimarcxchange&maximumRecords=1000&startRecord=1"
+    elif (30000000 < int(nnb) < 50000000):
+        url = url_requete_sru('bib.recordid any "' + nnb + '"')
         (test,page) = testURLetreeParse(url)
         if (test == True):
             for record in page.xpath("//srw:records/srw:record", namespaces=ns):
@@ -347,7 +361,7 @@ def oldfrbnf2ark(NumNot,frbnf,isbn,titre,auteur,date):
 #Rechercher le FRBNF avec le préfixe    
 def frbnf2ark(NumNot,frbnf,isbn,titre,auteur,date):
     ark = ""
-    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.otherid%20all%20%22" + frbnf + "%22&recordSchema=unimarcxchange&maximumRecords=1000&startRecord=1"
+    url = url_requete_sru('bib.otherid all "' + frbnf + '"')
     (test,page) = testURLetreeParse(url)
     if (test == True):
         nb_resultats = int(page.find("//srw:numberOfRecords", namespaces=ns).text)
@@ -438,13 +452,13 @@ def check_digit_13(isbn):
         return str(r)
 
 def isbn2sru(NumNot,isbn,titre,auteur,date):
-    urlSRU = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.isbn%20all%20%22" + isbn + "%22"
+    urlSRU = url_requete_sru('bib.isbn all "' + isbn + '"')
     listeARK = []
     (test,resultats) = testURLetreeParse(urlSRU)
     if (test == True):
         for record in resultats.xpath("//srw:record", namespaces=ns):
             ark_current = record.find("srw:recordIdentifier", namespaces=ns).text
-            recordBNF_url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
+            recordBNF_url = url_requete_sru('bib.persistentid all "' + ark_current + '"')
             (test,recordBNF) = testURLetreeParse(recordBNF_url)
             if (test == True):
                 ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,recordBNF,"ISBN")
@@ -485,13 +499,13 @@ def testURLurlopen(url):
 #on le recherche dans tous les champs (not. les données d'exemplaires, pour des 
 #réimpressions achetées par un département de la Direction des collections de la BnF)
 def isbn_anywhere2sru(NumNot,isbn,titre,auteur,date):
-    urlSRU = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.anywhere%20all%20%22" + isbn + "%22"
+    urlSRU = url_requete_sru('bib.anywhere all "' + isbn + '"')
     test,resultat = testURLetreeParse(urlSRU)
     listeARK = []
     if (test == True):
         for record in resultat.xpath("//srw:record", namespaces=ns):
             ark_current = record.find("srw:recordIdentifier", namespaces=ns).text
-            recordBNF_url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
+            recordBNF_url = url_requete_sru('bib.persistentid all "' + ark_current)
             (test2,recordBNF) = testURLetreeParse(recordBNF_url)
             if (test2 == True):
                 ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,recordBNF,"ISBN dans toute la notice")
@@ -533,6 +547,8 @@ def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date):
                             ppn_val = resultats.find("//ppn").text
                             Listeppn.append("PPN" + ppn_val)
                             ark = ppn2ark(NumNot,ppn_val,isbnConverti,titre,auteur,date)
+                            if (Listeppn != []):
+                                add_to_conversionIsbn(NumNot,isbn,isbnConverti,True)
     #Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK déclaré comme équivalent --> dans ce cas on récupère l'ARK
     Listeppn = ",".join(Listeppn)
     if (ark != ""):
@@ -556,7 +572,11 @@ def ppn2ark(NumNot,ppn,isbn,titre,auteur,date):
             NumNotices2methode[NumNot].append("ISBN > PPN > FRBNF > ARK")
             ark = frbnf2ark(NumNot,frbnf_val,isbn,titre,auteur,date)
     return ark
-  
+
+def add_to_conversionIsbn(NumNot,isbn_init,isbn_trouve,via_Sudoc=False):
+    NumNotices_conversionISBN[NumNot]["isbn initial"] = isbn_init
+    NumNotices_conversionISBN[NumNot]["isbn trouvé"] = isbn_trouve
+    NumNotices_conversionISBN[NumNot]["via Sudoc"] = str(via_Sudoc)
 
 def isbn2ark(NumNot,isbn_init,isbn,titre,auteur,date):
     #Recherche sur l'ISBN tel que saisi dans la source
@@ -570,33 +590,51 @@ def isbn2ark(NumNot,isbn_init,isbn,titre,auteur,date):
 #Si pas de résultats : on convertit l'ISBN en 10 ou 13 et on relance une recherche dans le catalogue BnF
     if (resultatsIsbn2ARK == ""):
         resultatsIsbn2ARK = isbn2sru(NumNot,isbnConverti,titre,auteur,date)
-
+        if (resultatsIsbn2ARK != ""):
+            add_to_conversionIsbn(NumNot,isbn_init,isbnConverti,False)
 #Si pas de résultats et ISBN 13 : on recherche sur EAN
     if (resultatsIsbn2ARK == "" and len(isbn)==13):
         resultatsIsbn2ARK = ean2ark(NumNot,isbn,titre,auteur,date)
     if (resultatsIsbn2ARK == "" and len(isbnConverti) == 13):
         resultatsIsbn2ARK = ean2ark(NumNot,isbnConverti,titre,auteur,date)
+        if (resultatsIsbn2ARK != ""):
+            add_to_conversionIsbn(NumNot,isbn_init,isbnConverti,False)
 
 #Si pas de résultats et ISBN 13 : on recherche l'ISBN dans tous les champs (dont les données d'exemplaire)
     if (resultatsIsbn2ARK == ""):
         resultatsIsbn2ARK = isbn_anywhere2sru(NumNot,isbn,titre,auteur,date)
     if (resultatsIsbn2ARK == "" and len(isbnConverti) == 13):
         resultatsIsbn2ARK = isbn_anywhere2sru(NumNot,isbnConverti,titre,auteur,date)
-
-
+        if (resultatsIsbn2ARK != ""):
+            add_to_conversionIsbn(NumNot,isbn_init,isbnConverti,False)
 
 #Si pas de résultats : on relance une recherche dans le Sudoc    
     if (resultatsIsbn2ARK == ""):
         resultatsIsbn2ARK = isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date)
     return resultatsIsbn2ARK
 
-def issn2ark(NumNot,isbn_init,isbn,titre,auteur,date):
-    ark_current = ""
-    return ark_current
+def issn2ark(NumNot,issn_init,issn,titre,auteur,date):
+    listeArk  = issn2sru(NumNot,issn_init)
+    if (listeArk == ""):
+        listeArk = issn2sru(NumNot,issn)
+    return listeArk 
 
+def issn2sru(NumNot,issn):
+    url = url_requete_sru('bib.issn all "' + issn + '"')
+    listeArk = []
+    (test,pageSRU) = testURLetreeParse(url)
+    if (test == True):
+        for record in pageSRU.xpath("//srw:records/srw:record", namespaces=ns):
+            ark = record.find("srw:recordIdentifier", namespaces=ns).text
+            typeNotice = record.find("srw:recordData/mxc:record/mxc:leader",namespaces=ns).text[7]
+            if (typeNotice == "s"):
+                NumNotices2methode[NumNot].append("ISSN")
+                listeArk.append(ark)
+    listeArk = ",".join(listeArk)
+    return listeArk
 
 def ark2metas(ark, unidecode=True):
-    recordBNF_url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20any%20%22" + urllib.parse.quote(ark) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
+    recordBNF_url = url_requete_sru('bib.persistentid any "' + ark + '"')
     (test,record) = testURLetreeParse(recordBNF_url)
     titre = ""
     premierauteurPrenom = ""
@@ -647,11 +685,11 @@ def ppn2metas(ppn):
                 premierauteurPrenom = premierauteurPrenom.split("(")[0]
     return [titre,premierauteurPrenom,premierauteurNom,tousauteurs]
   
-def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,anywhere=False):
+def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,typeRecord,anywhere=False):
 #En entrée : le numéro de notice, le titre (qu'il faut nettoyer pour la recherche)
 #L'auteur = zone auteur initiale, ou à défaut auteur_nett
 #date_nett
-    ark = []
+    listeArk = []
     titre_propre = nettoyageTitrePourRecherche(titre)
     #print("titre propre : " + titre_propre)
     if (titre_propre != ""):
@@ -661,36 +699,49 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,anywhere=False):
             date_nett = "-"
         if (auteur_nett == ""):
             auteur_nett = "-"
-        url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.title%20all%20%22" + urllib.parse.quote(titre_propre) + "%22%20and%20bib.author%20all%20%22" + urllib.parse.quote(auteur) + "%22%20and%20bib.date%20all%20%22" + urllib.parse.quote(date_nett) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
+        url = url_requete_sru('bib.title all "' + titre_propre + '" and bib.author all "' + auteur + '" and bib.date all "' + date_nett + '"')
         if (anywhere == True):
-            url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.anywhere%20all%20%22" + urllib.parse.quote(titre_propre) + "%20" + urllib.parse.quote(auteur) + "%20" + urllib.parse.quote(date_nett) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
+            url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur + ' ' + date_nett)
         #print(url)
         (test,results) = testURLetreeParse(url)
         index = ""
         if (results.find("//srw:numberOfRecords", namespaces=ns) == "0"):
-            url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.title%20all%20%22" + urllib.parse.quote(titre_propre) + "%22%20and%20bib.author%20all%20%22" + urllib.parse.quote(auteur_nett) + "%22%20and%20bib.date%20all%20%22" + urllib.parse.quote(date_nett) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
+            url = url_requete_sru('bib.title all "' + titre_propre + '" and bib.author all "' + auteur_nett + '" and bib.date all "' + date_nett + '"')
             if (anywhere == True):
-                url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.anywhere%20all%20%22" + urllib.parse.quote(titre_propre) + "%20" + urllib.parse.quote(auteur_nett) + "%20" + urllib.parse.quote(date_nett) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
+                url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur_nett + ' ' + date_nett + '"')
                 index = " dans toute la notice"
             (test,results) = testURLetreeParse(url)
         if (test == True):
             for record in results.xpath("//srw:recordIdentifier",namespaces=ns):
                 ark_current = record.text
                 #print(NumNot + " : " + ark_current)
-                recordBNF_url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.persistentid%20all%20%22" + urllib.parse.quote(ark_current) + "%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1"
+                recordBNF_url = url_requete_sru('bib.persistentid all "' + ark_current + '"')
                 (test,recordBNF) = testURLetreeParse(recordBNF_url)
                 if (test == True):
-                    ark.append(comparaisonTitres(NumNot,ark_current,"","",nettoyageTitrePourControle(titre),auteur,date_nett,recordBNF,"Titre-Auteur-Date" + index))
-                    methode = "Titre-Auteur-Date"
-                    if (auteur == "-" and date_nett == "-"):
-                        methode = "Titre"
-                    elif (auteur == "-"):
-                        methode = "Titre-Date"
-                    elif (date_nett == "-"):
-                        methode = "Titre-Auteur"
-                    NumNotices2methode[NumNot].append(methode)
-    ark = ",".join([ark1 for ark1 in ark if ark1 != ""])
-    return ark
+                    typeRecord_current = recordBNF.find("//mxc:record/mxc:leader",namespaces=ns).text[7]
+                    if (typeRecord_current == typeRecord):
+                        listeArk.append(comparaisonTitres(NumNot,ark_current,"","",nettoyageTitrePourControle(titre),auteur,date_nett,recordBNF,"Titre-Auteur-Date" + index))
+                        methode = "Titre-Auteur-Date"
+                        if (auteur == "-" and date_nett == "-"):
+                            methode = "Titre"
+                        elif (auteur == "-"):
+                            methode = "Titre-Date"
+                        elif (date_nett == "-"):
+                            methode = "Titre-Auteur"
+                        NumNotices2methode[NumNot].append(methode)
+    listeArk = ",".join(ark for ark in listeArk if ark != "")
+    return listeArk
+
+def checkTypeRecord(ark,typeRecord_attendu):
+    url = url_requete_sru('bib.ark any "' + ark + '"')
+    print(url)
+    ark_checked = ""
+    (test,record) = testURLetreeParse(url)
+    if (test == True):
+        typeRecord = record.find("//srw:recordData/mxc:record/mxc:leader",namespaces=ns).text[7]
+        if (typeRecord == typeRecord_attendu):
+            ark_checked = ark
+    return ark_checked
 
 def extract_meta(recordBNF,field_subfield,occ="all",anl=False):
     assert field_subfield.find("$") == 3
@@ -709,7 +760,7 @@ def extract_meta(recordBNF,field_subfield,occ="all",anl=False):
     return value
 
 def url_requete_sru(query,recordSchema="unimarcxchange",maximumRecords="1000",startRecord="1"):
-    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + urllib.parse.quote(query) +"&recordSchema=" + recordSchema + "&maximumRecords=" + maximumRecords + "&startRecord=" + startRecord
+    url = urlSRUroot + urllib.parse.quote(query) +"&recordSchema=" + recordSchema + "&maximumRecords=" + maximumRecords + "&startRecord=" + startRecord
     return url
 
 
@@ -837,10 +888,10 @@ def monimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_repo
             
             #A défaut, recherche sur Titre-Auteur-Date
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,False)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"m",False)
                 #print("1." + NumNot + " : " + ark)
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,True)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"m",True)
             print(str(n) + ". " + NumNot + " : " + ark)
             nbARK = len(ark.split(","))
             if (ark == ""):
@@ -906,7 +957,7 @@ def cddvd(master, entry_filename, type_doc, file_nb, id_traitement, liste_report
                 
             #A défaut, recherche sur Titre-Auteur-Date
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,False)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"m",False)
                 #print("1." + NumNot + " : " + ark)
                 """print(titre)
                 print(titre_nett)
@@ -915,7 +966,7 @@ def cddvd(master, entry_filename, type_doc, file_nb, id_traitement, liste_report
                 print(date)
                 print(date_nett)"""
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,True)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"m",True)
             print(NumNot + " : " + ark)
             nbARK = len(ark.split(","))
             if (ark == ""):
@@ -968,19 +1019,17 @@ def perimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_repo
             
             #A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
             elif (frbnf != ""):
-                ark = frbnf2ark(NumNot,frbnf,isbn_nett,titre_nett,auteur_nett,date_nett)
+                ark = frbnf2ark(NumNot,frbnf,issn_nett,titre_nett,auteur_nett,date_nett)
                 ark = ",".join(ark1 for ark1 in ark.split(",") if ark1 != '')
-            #A défaut, recherche sur ISBN
-            #Si plusieurs résultats, contrôle sur l'auteur
+            #A défaut, recherche sur ISSN
             if (ark == "" and issn_nett != ""):
                 ark = issn2ark(NumNot,issn,issn_propre,titre_nett,auteur_nett,date_nett)
-            #A défaut, recherche sur EAN
             #A défaut, recherche sur Titre-Auteur-Date
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,False)
-                #print("1." + NumNot + " : " + ark)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"s",False)
+            #A défaut, recherche sur T-A-D tous mots
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,True)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"s",True)
             print(str(n) + ". " + NumNot + " : " + ark)
             nbARK = len(ark.split(","))
             if (ark == ""):
@@ -989,7 +1038,7 @@ def perimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_repo
                 nb_notices_nb_ARK["Pb FRBNF"] += 1
             else:
                 nb_notices_nb_ARK[nbARK] += 1
-            liste_metadonnees = [nbARK,NumNot,ark,frbnf,current_ark,isbn_nett,ean_propre,titre,auteur,date]
+            liste_metadonnees = [nbARK,NumNot,ark,frbnf,current_ark,issn_nett,titre,auteur,date]
             if (meta_bib == 1):
                 liste_metadonnees.extend(ark2metadc(ark))
             if (file_nb.get() ==  1):
@@ -1009,6 +1058,9 @@ def launch(master, entry_filename, type_doc, file_nb, meta_bib, id_traitement):
         monimpr(master, entry_filename.get(), type_doc, file_nb, id_traitement, liste_reports, meta_bib.get())
     elif (type_doc.get() == 2):
         cddvd(master, entry_filename.get(), type_doc, file_nb, id_traitement, liste_reports, meta_bib.get())
+    elif (type_doc.get() == 3):
+        perimpr(master, entry_filename.get(), type_doc, file_nb, id_traitement, liste_reports, meta_bib.get())
+
     else:
         print("Erreur : type de document non reconnu")
     
@@ -1038,6 +1090,14 @@ def url_access_pbs_report(liste_reports):
         liste_reports[-2].write("\n\nProblème d'accès à certaines URL :\nURL\tType de problème\n")
         for pb in liste_reports[-2]:
             liste_reports[-2].write("\t".join(pb) + "\n")
+    if (len(NumNotices_conversionISBN) > 0):
+        liste_reports[-2].write("".join(["\n\n",10*"-","\n"]))
+        for record in NumNotices_conversionISBN:
+            liste_reports[-2].write("\t".join([record,
+                                                NumNotices_conversionISBN[record]["isbn initial"],
+                                                NumNotices_conversionISBN[record]["isbn trouvé"],
+                                                NumNotices_conversionISBN[record]["via Sudoc"],
+                                                ]) + "\n")
 
 def typesConversionARK(liste_reports):
     for key in NumNotices2methode:
@@ -1155,6 +1215,7 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
     type_doc = tk.IntVar()
     tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Documents imprimés (monographies)\nFormat : Num Not | FRBNF | ARK | ISBN | EAN | Titre | Auteur | Date", variable=type_doc , value=1, justify="left").pack(anchor="w")
     tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Audiovisuel (CD / DVD)\nFormat : Num Not | FRBNF | ARK | EAN | N° commercial | Titre | Auteur | Date", variable=type_doc , value=2, justify="left").pack(anchor="w")
+    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Périodiques imprimés\nFormat : Num Not | FRBNF | ARK | ISSN | Titre | Auteur | Date", variable=type_doc , value=3, justify="left").pack(anchor="w")
     type_doc.set(1)
     
     
@@ -1214,5 +1275,3 @@ if __name__ == '__main__':
     if(access_to_network is True):
         last_version = check_last_compilation(programID)
     formulaire_noticesbib2arkBnF(access_to_network,last_version)
-    
-
