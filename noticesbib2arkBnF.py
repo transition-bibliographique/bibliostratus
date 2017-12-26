@@ -1208,14 +1208,14 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
     entry_filename.pack(side="left")
     entry_filename.focus_set()
     
-    tk.Label(cadre_input_infos_format,bg=couleur_fond, text="Séparateur TAB, Encodage UTF-8", justify="left").pack()
+    tk.Label(cadre_input_infos_format,bg=couleur_fond, text=4*"\t"+"Séparateur TAB, Encodage UTF-8", justify="right").pack(anchor="s")
     
     
-    tk.Label(cadre_input_type_docs,bg=couleur_fond, text="\nType de documents", anchor="w").pack(anchor="w")
+    tk.Label(cadre_input_type_docs,bg=couleur_fond, text="\nType de documents", font="Arial 10 bold", anchor="w").pack(anchor="w")
     type_doc = tk.IntVar()
-    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Documents imprimés (monographies)\nFormat : Num Not | FRBNF | ARK | ISBN | EAN | Titre | Auteur | Date", variable=type_doc , value=1, justify="left").pack(anchor="w")
-    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Audiovisuel (CD / DVD)\nFormat : Num Not | FRBNF | ARK | EAN | N° commercial | Titre | Auteur | Date", variable=type_doc , value=2, justify="left").pack(anchor="w")
-    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Périodiques imprimés\nFormat : Num Not | FRBNF | ARK | ISSN | Titre | Auteur | Date", variable=type_doc , value=3, justify="left").pack(anchor="w")
+    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Documents imprimés (monographies)\n(Colonnes : Num Not | FRBNF | ARK | ISBN | EAN | Titre | Auteur | Date)", variable=type_doc , value=1, justify="left").pack(anchor="w")
+    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Audiovisuel (CD / DVD)\n(Num Not | FRBNF | ARK | EAN | N° commercial | Titre | Auteur | Date)", variable=type_doc , value=2, justify="left").pack(anchor="w")
+    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Périodiques imprimés\n(Num Not | FRBNF | ARK | ISSN | Titre | Auteur | Date)", variable=type_doc , value=3, justify="left").pack(anchor="w")
     type_doc.set(1)
     
     
@@ -1234,6 +1234,7 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
                        text="Récupérer les métadonnées\nbibliographiques BnF [Dublin Core]", 
                        variable=meta_bib, justify="left")
     meta_bib_check.pack(anchor="w")
+    tk.Label(cadre_output_nb_fichier,text="\n\n\n", bg=couleur_fond).pack()
 
 
     

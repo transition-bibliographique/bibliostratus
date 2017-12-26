@@ -260,16 +260,18 @@ def record2listemetas(record):
     meta = []
     if (doc_record == "am"):
         meta = [numNot,frbnf,ark,isbn,ean,title,authors, date]
-    if (doc_record == "jm"):
+    elif (doc_record == "jm"):
         meta = [numNot,frbnf,ark,ean,id_commercial_aud,title,authors2keywords,date]
-    if (doc_record == "as"):
-        meta = [numNot,frbnf,ark,issn,title,authors, date]
-    print(meta)
+    elif (doc_record == "as"):
+        meta = [numNot, frbnf, ark, issn, title, authors, date]
+    else:
+        meta = [numNot, frbnf, ark, ean, title, authors, date]
     liste_resultats[doc_record].append(meta)
             
 def write_reports(id_traitement):
     for doc_record in liste_resultats:
         file = create_file_doc_record(doc_record, id_traitement)
+        file.write("\t".join(["NumNotice","FRBNF","ARK","Autres métadonnées..."]) + "\n")
         for record in liste_resultats[doc_record]:
             file.write("\t".join(record) + "\n")            
 
