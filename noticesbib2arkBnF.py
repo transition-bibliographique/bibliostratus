@@ -839,7 +839,7 @@ def ark2metadc(ark):
         
 
 def monimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_reports, meta_bib):
-    header_columns = ["nbARK","NumNot","ark","frbnf","ark","isbn_nett","ean_propre","titre","auteur","date"]
+    header_columns = ["nbARK","NumNot","ark initial","frbnf","ark trouvé","isbn_nett","ean_propre","titre","auteur","date"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
     if (file_nb.get() ==  1):
@@ -910,7 +910,7 @@ def monimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_repo
         
         
 def cddvd(master, entry_filename, type_doc, file_nb, id_traitement, liste_reports, meta_bib):
-    header_columns = ["nbARK","NumNot","ark","frbnf","ark","ean_nett","ean_propre","no_commercial_propre","titre","auteur","date"]
+    header_columns = ["nbARK","NumNot","ark initial","frbnf","ark trouvé","ean_nett","ean_propre","no_commercial_propre","titre","auteur","date"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
     if (file_nb.get() ==  1):
@@ -986,7 +986,7 @@ def cddvd(master, entry_filename, type_doc, file_nb, id_traitement, liste_report
 
 #Si option du formulaire = périodiques imprimés
 def perimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_reports, meta_bib):
-    header_columns = ["nbARK","NumNot","ark","frbnf","ark","issn_nett","titre","auteur","date"]
+    header_columns = ["nbARK","NumNot","ark initial","frbnf","ark trouvé","issn_nett","titre","auteur","date"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
     if (file_nb.get() ==  1):
@@ -1249,8 +1249,8 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
     
     #Bouton de validation
     
-    b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", 
-                  text = "OK", 
+    b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="Arial 10 bold", 
+                  text = "Aligner les\nnotices BIB", 
                   command = lambda: launch(master, entry_filename, type_doc, file_nb, meta_bib, id_traitement), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
     

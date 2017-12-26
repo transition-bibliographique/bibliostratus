@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Nov 10 09:43:05 2017
-
-@author: BNF0017855
-"""
-
-# -*- coding: utf-8 -*-
-"""
 Created on Fri Oct 13 18:30:30 2017
 
 @author: Etienne Cavalié
@@ -29,18 +22,24 @@ import webbrowser
 import codecs
 import json
 import noticesbib2arkBnF as bib2ark
+import noticesaut2arkBnF as aut2ark
 import marc2tables as marc2tables
 import ark2records as ark2records
 
 #import matplotlib.pyplot as plt
 
 version = 0.03
-lastupdate = "11/11/2017"
+lastupdate = "26/12/2017"
 programID = "transbiblio"
 
 ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}
 nsSudoc = {"rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#", "bibo":"http://purl.org/ontology/bibo/", "dc":"http://purl.org/dc/elements/1.1/", "dcterms":"http://purl.org/dc/terms/", "rdafrbr1":"http://rdvocab.info/RDARelationshipsWEMI/", "marcrel":"http://id.loc.gov/vocabulary/relators/", "foaf":"http://xmlns.com/foaf/0.1/", "gr":"http://purl.org/goodrelations/v1#", "owl":"http://www.w3.org/2002/07/owl#", "isbd":"http://iflastandards.info/ns/isbd/elements/", "skos":"http://www.w3.org/2004/02/skos/core#", "rdafrbr2":"http://RDVocab.info/uri/schema/FRBRentitiesRDA/", "rdaelements":"http://rdvocab.info/Elements/", "rdac":"http://rdaregistry.info/Elements/c/", "rdau":"http://rdaregistry.info/Elements/u/", "rdaw":"http://rdaregistry.info/Elements/w/", "rdae":"http://rdaregistry.info/Elements/e/", "rdam":"http://rdaregistry.info/Elements/m/", "rdai":"http://rdaregistry.info/Elements/i/", "sudoc":"http://www.sudoc.fr/ns/", "bnf-onto":"http://data.bnf.fr/ontology/bnf-onto/"}
 urlSRUroot = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query="
+
+chiffers = ["0","1","2","3","4","5","6","7","8","9"]
+letters = ["a","b","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
+punctuation = [".",",",";",":","?","!","%","$","£","€","#","\\","\"","&","~","{","(","[","`","\\","_","@",")","]","}","=","+","*","\/","<",">",")","}"]
+
 
 errors = {
         "no_internet" : "Attention : Le programme n'a pas d'accès à Internet.\nSi votre navigateur y a accès, vérifiez les paramètres de votre proxy"
@@ -76,6 +75,21 @@ def check_access_to_network():
         print("Pas de réseau internet")
         access_to_network = False
     return access_to_network
+
+def clean_string(string,replaceSpaces=False,replaceTirets=False):
+    string = unidecode(string.lower())
+    for sign in punctuation:
+        string = string.replace(sign," ")
+    string = string.replace("'"," ")
+    if (replaceTirets == True):
+        string = string.replace("-"," ")
+    if (replaceSpaces == True):
+        string = string.replace(" ","")
+    string = ' '.join(s for s in string.split() if s != "")
+    string = string.strip()
+    return string
+
+
 
 def form_saut_de_ligne(frame, couleur_fond):
     tk.Label(frame, text="\n", bg=couleur_fond).pack()
@@ -183,15 +197,22 @@ def formulaire_main(access_to_network, last_version):
     
     marc2tableButton = tk.Button(frame1, text = "Convertir un fichier Marc\n en tableaux", 
                                  command=lambda: marc2tables.formulaire_marc2tables(access_to_network), 
-                                 padx=10,pady=10, bg="#2D4991",fg="white")
+                                 padx=10,pady=25, bg="#2D4991",fg="white")
     marc2tableButton.pack()
     
-    bib2arkButton = tk.Button(frame2, text = "Aligner ses données (tableaux)\n avec le catalogue BnF", command=lambda: bib2ark.formulaire_noticesbib2arkBnF(access_to_network,[0,False]), padx=10,pady=10, bg="#fefefe")
+    bib2arkButton = tk.Button(frame2, text = "Aligner ses données  BIB (tableaux)\n avec le catalogue BnF", command=lambda: bib2ark.formulaire_noticesbib2arkBnF(access_to_network,[0,False]), 
+                              padx=10,pady=10, bg="#fefefe", font="Arial 9 bold")
     bib2arkButton.pack()
+    
+    #tk.Label(frame2,bg="white",text="\n").pack()
+    
+    aut2arkButton = tk.Button(frame2, text = "Aligner ses données AUT ", command=lambda: aut2ark.formulaire_noticesaut2arkBnF(access_to_network,[0,False]), 
+                              padx=50,pady=1, bg="#fefefe", font="Arial 8 normal")
+    aut2arkButton.pack()
     
     ark2recordsButton = tk.Button(frame3, text = "Exporter une liste d'ARK BnF\n en notices XML", 
                                   command=lambda: ark2records.formulaire_ark2records(access_to_network,[0,False]), 
-                                  padx=10,pady=10, bg="#99182D", fg="white")
+                                  padx=10,pady=25, bg="#99182D", fg="white")
     ark2recordsButton.pack()
 
 
