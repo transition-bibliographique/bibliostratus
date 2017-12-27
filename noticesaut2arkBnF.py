@@ -18,7 +18,6 @@ import csv
 import tkinter as tk
 from tkinter import filedialog
 from collections import defaultdict
-import re
 import webbrowser
 import codecs
 import json
@@ -93,9 +92,57 @@ def row2files(liste_metadonnees,liste_reports):
         liste_reports[3].write("\t".join(liste_metadonnees_to_report) + "\n")
 
 
+#Si on a coché "Récupérer les données bibliographiques" : ouverture de la notice BIB de l'ARK et renvoie d'une liste de métadonnées
+def ark2metadc(ark):
+#Attention : la variable 'ark' peut contenir plusieurs ark séparés par des virgules
+    listeARK = ark.split(",")
+
+    #On récupére tous les titres de chaque ARK, puis tous les auteurs
+    accesspointList = []
+    accesspoint_complList = []
+    datesList = []
+    for ark in listeARK:
+        metas_ark = ark2metas(ark,False)
+        accesspointList.append(metas_ark[0])
+        accesspoint_complList.append(metas_ark[1])
+        datesList.append(metas_ark[2])
+    accesspointList = "|".join(accesspointList)
+    accesspoint_complList = "|".join(accesspoint_complList)
+    datesList = "|".join(datesList)
+    metas = [accesspointList,accesspoint_complList,datesList]
+    return metas
+
+def ark2metas(ark, unidec=True):
+    recordBNF_url = bib2ark.url_requete_sru('bib.persistentid any "' + ark + '"')
+    (test,record) = bib2ark.testURLetreeParse(recordBNF_url)
+    accesspoint = ""
+    accesspoint_compl = ""
+    dates = ""
+    if (test == True):
+        if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='a']", namespaces=main.ns) is not None):
+            accesspoint = record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='a']", namespaces=main.ns).text
+        if (record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='a']", namespaces=main.ns) is not None):
+            accesspoint = record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='a']", namespaces=main.ns).text
+        if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='b']", namespaces=main.ns) is not None):
+            accesspoint_compl = record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='b']", namespaces=main.ns).text
+        if (record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='b']", namespaces=main.ns) is not None):
+            accesspoint_compl = record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='b']", namespaces=main.ns).text
+
+        if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='f']", namespaces=main.ns) is not None):
+            dates = record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='f']", namespaces=main.ns).text
+        if (record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='f']", namespaces=main.ns) is not None):
+            dates = record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='f']", namespaces=main.ns).text
+
+    metas = [accesspoint,accesspoint_compl,dates]
+    if (unidec == True):
+        metas = [unidecode(meta) for meta in metas]
+    return metas
+
+
+
 
 def align_from_aut(master, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf):
-    header_columns = ["nbARK","NumNot","ark initial","frbnf initial","ark trouvé","Nom","Complément nom","Date début","Date fin"]
+    header_columns = ["nbARK","NumNot","ark initial","frbnf initial","ISNI", "ark trouvé","Nom","Complément nom","Date début","Date fin"]
     if (meta_bnf == 1):
         header_columns.extend(["[BnF] Nom","[BnF] Complément Nom","[BnF] Dates"])
     if (file_nb ==  1):
@@ -128,11 +175,67 @@ def align_from_aut(master, entry_filename, headers, input_data_type, file_nb, id
                 ark_trouve = frbnf2ark(NumNot, ark_init, nom_nett)
             if (ark_trouve == "" and nom != ""):
                 ark_trouve = accesspoint2ark(NumNot, nom_nett, prenom_nett, date_debut, date_fin)
+            print(str(n) + ". " + NumNot + " : " + ark_trouve)
+            nbARK = len(ark_trouve.split(","))
+            if (ark_trouve == ""):
+                nbARK = 0   
+            if (ark_trouve == "Pb FRBNF"):
+                nb_notices_nb_ARK["Pb FRBNF"] += 1
+            else:
+                nb_notices_nb_ARK[nbARK] += 1
+            liste_metadonnees = [nbARK,NumNot,ark_init,frbnf_init,isni,ark_trouve,nom,prenom,date_debut,date_fin]
+            if (meta_bnf == 1):
+                liste_metadonnees.extend(ark2metadc(ark_trouve))
+            if (file_nb.get() ==  1):
+                row2file(liste_metadonnees,liste_reports)
+            elif(file_nb.get() ==  2):
+                row2files(liste_metadonnees,liste_reports)
 
 
 def align_from_bib(master, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf):
-    return None    
-
+    header_columns = ["nbARK","NumNot","ark initial","frbnf initial","ISNI","ark trouvé", "Titre","Nom","Complément nom","date début"]
+    if (meta_bnf == 1):
+        header_columns.extend(["[BnF] Nom","[BnF] Complément Nom","[BnF] Dates"])
+    if (file_nb ==  1):
+        row2file(header_columns,liste_reports)
+    elif(file_nb ==  2):
+        row2files(header_columns,liste_reports)
+    n = 0
+    with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
+        entry_file = csv.reader(csvfile, delimiter='\t')
+        if (headers):
+            next(entry_file)
+        for row in entry_file:
+            n += 1
+            NumNot = row[0]
+            ark_init = row[1]
+            frbnf_init = row[2]
+            isni = row[3]
+            titre = row[4]
+            titre_nett = main.clean_string(titre, False, True)
+            nom = row[5]
+            nom_nett = main.clean_string(nom, False, True)
+            prenom = row[6]
+            prenom_nett = main.clean_string(prenom, False, True)
+            date_debut = row[7]
+            ark_trouve = ""
+            if (ark_trouve == ""):
+                ark_trouve = bib2arkAUT(NumNot, titre_nett, nom_nett, prenom_nett, date_debut)
+            print(str(n) + ". " + NumNot + " : " + ark_trouve)
+            nbARK = len(ark_trouve.split(","))
+            if (ark_trouve == ""):
+                nbARK = 0   
+            if (ark_trouve == "Pb FRBNF"):
+                nb_notices_nb_ARK["Pb FRBNF"] += 1
+            else:
+                nb_notices_nb_ARK[nbARK] += 1
+            liste_metadonnees = [nbARK,NumNot,ark_init,frbnf_init,isni,ark_trouve,nom,prenom,date_debut,titre]
+            if (meta_bnf == 1):
+                liste_metadonnees.extend(ark2metadc(ark_trouve))
+            if (file_nb.get() ==  1):
+                row2file(liste_metadonnees,liste_reports)
+            elif(file_nb.get() ==  2):
+                row2files(liste_metadonnees,liste_reports)
 
 #==============================================================================
 # Fonctions d'alignement
@@ -253,7 +356,25 @@ def accesspoint2ark(NumNot, nom_nett, prenom_nett, date_debut, date_fin):
     listeArk = ",".join(listeArk)
     return listeArk
 
+def bib2arkAUT(NumNot, titre, nom, prenom, date_debut):
+    listeArk = []
+    url = bib2ark.url_requete_sru("".join('bib.title all "',titre,
+                                          '" and bib.author all "',nom," ",prenom))
+    (test,results) = bib2ark.testURLetreeParse(url)
+    if (test):
+        for record in results.xpath("//srw:recordData:mxc:record",namespaces=main.ns):
+            listeArk.extend(extractNNAfromBIB(record,nom,prenom,date_debut))
+    listeArk = ",".join(set(listeArk))
+    return listeArk
 
+def nna2ark(nna):
+    url = bib2ark.url_requete_sru("aut.record any " + nna)
+    ark = ""
+    (test,record)=bib2ark.testURLetreeParse(url)
+    if (test):
+        if (record.find("//srw:recordIdentifier",namespaces=main.ns) is not None):
+            ark = record.find("//srw:recordIdentifier",namespaces=main.ns).text
+    return ark
 
 #==============================================================================
 # Fonctions de comparaison pour contrôle
@@ -285,14 +406,55 @@ def compareAccessPoint(NumNot,ark_current,nna,nom,recordBNF):
             NumNotices2methode[NumNot].append("N° sys FRBNF + contrôle Nom")
     return ark
 
+def extractNNAfromBIB(record,nom,prenom,date_debut):
+    listeNNA = []
+    listeArk = []
+    listeFieldsAuteur = defaultdict(dict)
+    i = 0
+    for field in extractNNAfromBIB.xpath("mxc:datafield",namespaces=main.ns):
+        i += 1
+        if (field.get("tag")[0] == "7"):
+            listeFieldsAuteur[i]["tag"] = field.get("tag") 
+            for subfield in field.xpath("mxc:subfield",namespaces=main.ns):
+                if (subfield.get("code")=="3"):
+                    listeFieldsAuteur[i]["nna"] = subfield.text
+                if (subfield.get("code")=="a"):
+                    listeFieldsAuteur[i]["nom"] = main.clean_string(subfield.text,False,True)
+                if (subfield.get("code")=="b"):
+                    listeFieldsAuteur[i]["prenom"] = main.clean_string(subfield.text,False,True)
+                if (subfield.get("code")=="f"):
+                    listeFieldsAuteur[i]["dates"] = main.clean_string(subfield.text,False,True)
+    for auteur in listeFieldsAuteur:
+        if (nom in listeFieldsAuteur[auteur]["nom"] or listeFieldsAuteur[auteur]["nom"] in nom):
+            if (prenom != "" and "prenom" in listeFieldsAuteur[auteur]):
+                if (prenom in listeFieldsAuteur[auteur][prenom] or listeFieldsAuteur[auteur][prenom in nom]):
+                    if (date_debut != "" and "dates" in listeFieldsAuteur[auteur]):
+                        if (date_debut in listeFieldsAuteur[auteur]["dates"] or listeFieldsAuteur[auteur]["dates"] in date_debut):
+                            listeNNA.append(listeFieldsAuteur[auteur]["nna"])
+                    else:
+                        listeNNA.append(listeFieldsAuteur[auteur]["nna"])
+                elif (date_debut != "" and "dates" in listeFieldsAuteur[auteur]):
+                    if (date_debut in listeFieldsAuteur[auteur]["dates"] or listeFieldsAuteur[auteur]["dates"] in date_debut):
+                        listeNNA.append(listeFieldsAuteur[auteur]["nna"])
+                else:
+                    listeNNA.append(listeFieldsAuteur[auteur]["nna"])
+    for nna in listeNNA:
+        listeArk.append(nna2ark(nna))
+    return listeArk
+
+
+
+#==============================================================================
+# Gestion du formulaire
+#==============================================================================
 
 def launch(master, entry_filename, headers, input_data_type, file_nb, id_traitement, meta_bnf):
     #results2file(nb_fichiers_a_produire)
     liste_reports = create_reports(id_traitement, file_nb)    
     
-    if (input_data_type.get() == 1):
+    if (input_data_type == 1):
         align_from_aut(master, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf)
-    elif (input_data_type.get() == 2):
+    elif (input_data_type == 2):
         align_from_bib(master, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf)
     else:
         main.popup_errors("Format en entrée non défini")
@@ -358,8 +520,8 @@ def formulaire_noticesaut2arkBnF(access_to_network=True, last_version=[0,False])
 
     tk.Label(frame_input_aut,bg=couleur_fond, text="\nType de données en entrée", font="Arial 10 bold", anchor="w").pack(anchor="w")
     input_data_type = tk.IntVar()
-    tk.Radiobutton(frame_input_aut,bg=couleur_fond, text="N° Notice, ARK, FRBNF, ISNI, Nom, Prénom, Date de naissance, Date de mort", variable=input_data_type, value=1, justify="left").pack(anchor="w")
-    tk.Radiobutton(frame_input_aut,bg=couleur_fond, text="N° Notice, ARK, FRBNF, ISNI, Nom, Prénom, Titre", variable=input_data_type, value=2, justify="left").pack(anchor="w")
+    tk.Radiobutton(frame_input_aut,bg=couleur_fond, text="N° Notice AUT, ARK, FRBNF, ISNI, Nom, Prénom, Date de naissance, Date de mort\n(extraction base d'autorités)", variable=input_data_type, value=1, justify="left").pack(anchor="w")
+    tk.Radiobutton(frame_input_aut,bg=couleur_fond, text="N° Notice AUT, ARK, FRBNF, ISNI, Nom, Prénom, Titre\n(extraction base notices bib)", variable=input_data_type, value=2, justify="left").pack(anchor="w")
 
     tk.Label(frame_input_aut,bg=couleur_fond, text="\n").pack()
 
@@ -376,6 +538,10 @@ def formulaire_noticesaut2arkBnF(access_to_network=True, last_version=[0,False])
              bg=couleur_fond).pack(anchor="w")
     outputID = tk.Entry(frame_output_file, bg=couleur_fond)
     outputID.pack(anchor="w")
+
+    tk.Label(frame_output_file, text="\n",
+             bg=couleur_fond).pack(anchor="w")
+
     
     #Récupérer les métadonnées BnF au passage ?
     meta_bnf = tk.IntVar()

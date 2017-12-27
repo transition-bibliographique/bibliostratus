@@ -633,7 +633,7 @@ def issn2sru(NumNot,issn):
     listeArk = ",".join(listeArk)
     return listeArk
 
-def ark2metas(ark, unidecode=True):
+def ark2metas(ark, unidec=True):
     recordBNF_url = url_requete_sru('bib.persistentid any "' + ark + '"')
     (test,record) = testURLetreeParse(recordBNF_url)
     titre = ""
@@ -658,7 +658,7 @@ def ark2metas(ark, unidecode=True):
         if (record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='d']", namespaces=ns) is not None):
             date = record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='d']", namespaces=ns).text
     metas = [titre,premierauteurPrenom,premierauteurNom,tousauteurs,date]
-    if (unidecode == True):
+    if (unidec == True):
         metas = [unidecode(meta) for meta in metas]
     return metas
 
