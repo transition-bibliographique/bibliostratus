@@ -482,6 +482,11 @@ def testURLetreeParse(url):
         print(err)
         test = False
         url_access_pbs.append([url,"etree.ParseError"])
+    except error.URLError as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"urllib.error.URLError"])
     return (test,resultat)
 
 
