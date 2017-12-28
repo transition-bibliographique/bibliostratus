@@ -142,7 +142,8 @@ def ark2metas(ark, unidec=True):
 
 
 def align_from_aut(master, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf):
-    header_columns = ["nbARK","NumNot","ark initial","frbnf initial","ISNI", "ark trouvé","Nom","Complément nom","Date début","Date fin"]
+    """Aligner ses données d'autorité avec les autorités BnF à partir d'une extraction tabulée de la base d'autorités"""
+    header_columns = ["nbARK","NumNot","ark AUT trouvé","ARK AUT initial","frbnf AUT initial","ISNI","Nom","Complément nom","Date début","Date fin"]
     if (meta_bnf == 1):
         header_columns.extend(["[BnF] Nom","[BnF] Complément Nom","[BnF] Dates"])
     if (file_nb ==  1):
@@ -157,24 +158,27 @@ def align_from_aut(master, entry_filename, headers, input_data_type, file_nb, id
         for row in entry_file:
             n += 1
             NumNot = row[0]
-            ark_init = row[1]
-            frbnf_init = row[2]
-            isni = row[3]
-            nom = row[4]
+            NumNotBIB = row[1]
+            ark_aut_init = row[2]
+            frbnf_aut_init = row[3]
+            isni = row[4]
+            nom = row[5]
             nom_nett = main.clean_string(nom, False, True)
-            prenom = row[5]
+            prenom = row[6]
             prenom_nett = main.clean_string(prenom, False, True)
-            date_debut = row[6]
-            date_fin = row[7]
+            date_debut = row[7]
+            date_debut_nett = date_debut
+            date_fin = row[8]
+            date_fin_nett = date_fin
             ark_trouve = ""
-            if (ark_init != ""):
-                ark_trouve = ark2ark(NumNot, ark_init)
+            if (ark_trouve == "" and ark_aut_init != ""):
+                ark_trouve = arkAut2arkAut(NumNot, ark_aut_init)
             if (ark_trouve == "" and isni != ""):
                 ark_trouve = isni2ark(NumNot, isni)
-            if (ark_trouve == "" and frbnf_init != ""):
-                ark_trouve = frbnf2ark(NumNot, ark_init, nom_nett)
+            if (ark_trouve == "" and frbnf_aut_init != ""):
+                ark_trouve = frbnfAut2arkAut(NumNot, frbnf_bib_init, nom_nett, prenom_nett, date_debut_nett)
             if (ark_trouve == "" and nom != ""):
-                ark_trouve = accesspoint2ark(NumNot, nom_nett, prenom_nett, date_debut, date_fin)
+                ark_trouve = accesspoint2arkAut(NumNot, nom_nett, prenom_nett, date_debut_nett, date_fin_nett)
             print(str(n) + ". " + NumNot + " : " + ark_trouve)
             nbARK = len(ark_trouve.split(","))
             if (ark_trouve == ""):
@@ -183,17 +187,19 @@ def align_from_aut(master, entry_filename, headers, input_data_type, file_nb, id
                 nb_notices_nb_ARK["Pb FRBNF"] += 1
             else:
                 nb_notices_nb_ARK[nbARK] += 1
-            liste_metadonnees = [nbARK,NumNot,ark_init,frbnf_init,isni,ark_trouve,nom,prenom,date_debut,date_fin]
+            liste_metadonnees = [nbARK,NumNot,ark_trouve,ark_aut_init,frbnf_aut_init,isni,nom,prenom,date_debut,date_fin]
             if (meta_bnf == 1):
                 liste_metadonnees.extend(ark2metadc(ark_trouve))
             if (file_nb.get() ==  1):
                 row2file(liste_metadonnees,liste_reports)
             elif(file_nb.get() ==  2):
                 row2files(liste_metadonnees,liste_reports)
+    
 
 
 def align_from_bib(master, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf):
-    header_columns = ["nbARK","NumNot","ark initial","frbnf initial","ISNI","ark trouvé", "Titre","Nom","Complément nom","date début"]
+    """Alignement de ses données d'autorité avec les autorités BnF à partir d'une extraction de sa base bibliographique (métadonnées BIB + Nom, prénom et dates de l'auteur)"""
+    header_columns = ["nbARK","NumNot","ark AUT trouvé","ark BIB initial","frbnf BIB initial","Titre","ISNI","Nom","Complément nom","dates Auteur"]
     if (meta_bnf == 1):
         header_columns.extend(["[BnF] Nom","[BnF] Complément Nom","[BnF] Dates"])
     if (file_nb ==  1):
@@ -208,18 +214,32 @@ def align_from_bib(master, entry_filename, headers, input_data_type, file_nb, id
         for row in entry_file:
             n += 1
             NumNot = row[0]
-            ark_init = row[1]
-            frbnf_init = row[2]
-            isni = row[3]
+            NumNotBib = row[1]
+            ark_bib_init = row[2]
+            frbnf_bib_init = row[3]
             titre = row[4]
             titre_nett = main.clean_string(titre, False, True)
-            nom = row[5]
+            isni = row[5]
+            nom = row[6]
             nom_nett = main.clean_string(nom, False, True)
-            prenom = row[6]
+            prenom = row[7]
             prenom_nett = main.clean_string(prenom, False, True)
-            date_debut = row[7]
+            dates_auteur = row[8]
+            dates_auteur_nett = dates_auteur
+            date_debut = dates_auteur
+            if (dates_auteur.find("av")>0):
+                date_debut = dates_auteur[:dates_auteur.find("av")]
+            elif (dates_auteur.find("-")>0):
+                date_debut = dates_auteur[:dates_auteur.find("-")]
+            date_debut = main.clean_string(date_debut,False,True)
             ark_trouve = ""
-            if (ark_trouve == ""):
+            if (ark_trouve == "" and isni != ""):
+                ark_trouve = isni2ark(NumNot, isni)
+            if (ark_trouve == "" and ark_bib_init != ""):
+                ark_trouve = arkBib2arkAut(NumNot, ark_bib_init, nom_nett, prenom_nett, date_debut)
+            if (ark_trouve == "" and frbnf_bib_init != ""):
+                ark_trouve = frbnfBib2arkAut(NumNot, frbnf_bib_init, nom_nett, prenom_nett, date_debut)
+            if (ark_trouve == "" and nom != ""):
                 ark_trouve = bib2arkAUT(NumNot, titre_nett, nom_nett, prenom_nett, date_debut)
             print(str(n) + ". " + NumNot + " : " + ark_trouve)
             nbARK = len(ark_trouve.split(","))
@@ -229,29 +249,42 @@ def align_from_bib(master, entry_filename, headers, input_data_type, file_nb, id
                 nb_notices_nb_ARK["Pb FRBNF"] += 1
             else:
                 nb_notices_nb_ARK[nbARK] += 1
-            liste_metadonnees = [nbARK,NumNot,ark_init,frbnf_init,isni,ark_trouve,nom,prenom,date_debut,titre]
+            liste_metadonnees = [nbARK,NumNot,ark_trouve,NumNotBib,ark_bib_init,frbnf_bib_init,titre,isni,nom,prenom,dates_auteur]
             if (meta_bnf == 1):
                 liste_metadonnees.extend(ark2metadc(ark_trouve))
-            if (file_nb.get() ==  1):
+            if (file_nb ==  1):
                 row2file(liste_metadonnees,liste_reports)
-            elif(file_nb.get() ==  2):
+            elif(file_nb ==  2):
                 row2files(liste_metadonnees,liste_reports)
 
 #==============================================================================
-# Fonctions d'alignement
+# Fonctions d'alignement : recherche sur identifiants, points d'accès ou titre-auteur
 #==============================================================================
-def ark2ark(NumNot,ark):
+def arkAut2arkAut(NumNot,ark):
+    """Actualisation d'un ARK de notice d'autorité"""
     url = bib2ark.url_requete_sru('aut.persistentid all "' + ark + '"')
     (test,page) = bib2ark.testURLetreeParse(url)
     nv_ark = ""
     if (test == True):
-        if (page.find("//srw:recordIdentifier", namespaces=main.ns) is not None):
-            nv_ark = page.find("//srw:recordIdentifier", namespaces=main.ns).text
+        if (page.find("//srw:recordIdentifier", namespaces=ns) is not None):
+            nv_ark = page.find("//srw:recordIdentifier", namespaces=ns).text
             NumNotices2methode[NumNot].append("Actualisation ARK")
     return nv_ark
 
+
+def arkBib2arkAut(NumNot,arkBib, nom, prenom, date_debut):
+    """Identifier un ARK de notice d'autorité à partir d'un ARK de notice BIB + contrôle sur le nom"""
+    url = bib2ark.url_requete_sru('bib.persistentid all "' + arkBib + '"')
+    (test,page) = bib2ark.testURLetreeParse(url)
+    listeArk = ""
+    if (test == True):
+        for record in page.xpath("//srw:recordData:mxc:record",namespaces=main.ns):
+            listeArk.extend(extractARKautfromBIB(record,nom,prenom,date_debut))
+            NumNotices2methode[NumNot].append("ARK notice BIB + contrôle accesspoint")
+    return listeArk
+
 def isni2ark(NumNot, isni):
-    url = bib2ark.url_requete_sru('aut.isni all "' + isni + '"')
+    url = bib2ark.url_requete_sru('aut.isni all "' + isni + '" and aut.status any "sparse validated"')
     (test,page) = bib2ark.testURLetreeParse(url)
     nv_ark = ""
     if (test == True):
@@ -260,7 +293,7 @@ def isni2ark(NumNot, isni):
             NumNotices2methode[NumNot].append("ISNI")
     return nv_ark
 
-def frbnf2ark(NumNot,frbnf,nom):
+def frbnfAut2arkAut(NumNot,frbnf,nom):
     ark = ""
     url = bib2ark.url_requete_sru('aut.otherid all "' + frbnf + '"')
     (test,page) = bib2ark.testURLetreeParse(url)
@@ -274,6 +307,34 @@ def frbnf2ark(NumNot,frbnf,nom):
         else:
             ark = ",".join([ark.text for ark in page.xpath("//srw:recordIdentifier", namespaces=main.ns)])
     return ark
+
+def frbnfBib2arkAut(NumNot,frbnf,nom,prenom,date_debut):
+    """Recherche de l'identifiant d'auteur à partir d'une recherche N° BIB + nom d'auteur :
+        on cherche le n° BIB comme NNB, comme FRBNF ou comme ancien numéro"""
+    listeArk = []
+    systemid_full = frbnf.lower().replace("f","").replace("r","").replace("b","").replace("n","")
+    nnb_possible = systemid_full[0:8]
+    url = bib2ark.url_requete_sru('bib.recordid all "' + nnb_possible + '"')
+    (test,page) = bib2ark.testURLetreeParse(url)
+    if (test == True):
+        for record in page.xpath("//srw:recordData",namespaces=main.ns):
+            listeArk.extend(extractARKautfromBIB(record,nom,prenom,date_debut))
+    if (listeArk == []):
+        url = bib2ark.url_requete_sru('bib.otherid all "' + frbnf + '" and bib.author all "' + nom + '"')
+        (test,page) = bib2ark.testURLetreeParse(url)
+        if (test == True):
+            for record in page.xpath("//srw:recordData",namespaces=main.ns):
+                listeArk.extend(extractARKautfromBIB(record,nom,prenom,date_debut))
+    if (listeArk == []):        
+        systemid1 = systemid_full[0:9]
+        systemid2 = systemid_full[0:8]
+        url = bib2ark.url_requete_sru('bib.otherid any "' + systemid1 + " " + systemid2 + '" and bib.author all "' + nom + '"')
+        (test,page) = bib2ark.testURLetreeParse(url)
+        if (test == True):
+            for record in page.xpath("//srw:recordData",namespaces=main.ns):
+                listeArk.extend(extractARKautfromBIB(record,nom,prenom,date_debut))
+    listeArk = ",".join(set(listeArk))
+    return listeArk
 
 #Si le FRBNF n'a pas été trouvé, on le recherche comme numéro système -> pour ça on extrait le n° système
 def oldfrbnf2ark(NumNot, frbnf, nom):
@@ -345,7 +406,7 @@ def relancerNNA_nomAuteur(NumNot,systemid,nom):
     listeArk = ",".join(listeArk)
     return listeArk
 
-def accesspoint2ark(NumNot, nom_nett, prenom_nett, date_debut, date_fin):
+def accesspoint2arkAut(NumNot, nom_nett, prenom_nett, date_debut, date_fin):
     listeArk = []
     url = bib2ark.url_requete_sru(" ".join(["aut.accesspoint adj", nom_nett, prenom_nett, date_debut]))
     (test,results) = bib2ark.testURLetreeParse(url)
@@ -358,17 +419,17 @@ def accesspoint2ark(NumNot, nom_nett, prenom_nett, date_debut, date_fin):
 
 def bib2arkAUT(NumNot, titre, nom, prenom, date_debut):
     listeArk = []
-    url = bib2ark.url_requete_sru("".join('bib.title all "',titre,
-                                          '" and bib.author all "',nom," ",prenom))
+    url = bib2ark.url_requete_sru("".join(['bib.title all "',titre,
+                                          '" and bib.author all "',nom," ",prenom,'"']))
     (test,results) = bib2ark.testURLetreeParse(url)
     if (test):
-        for record in results.xpath("//srw:recordData:mxc:record",namespaces=main.ns):
-            listeArk.extend(extractNNAfromBIB(record,nom,prenom,date_debut))
+        for record in results.xpath("//srw:recordData/mxc:record",namespaces=main.ns):
+            listeArk.extend(extractARKautfromBIB(record,nom,prenom,date_debut))
     listeArk = ",".join(set(listeArk))
     return listeArk
 
 def nna2ark(nna):
-    url = bib2ark.url_requete_sru("aut.record any " + nna)
+    url = bib2ark.url_requete_sru('aut.recordid any ' + nna + 'and aut.status any "sparse validated"')
     ark = ""
     (test,record)=bib2ark.testURLetreeParse(url)
     if (test):
@@ -389,14 +450,16 @@ def comparerAutBnf(NumNot,ark_current,nna,nom,origineComparaison):
     return ark
 
 def compareAccessPoint(NumNot,ark_current,nna,nom,recordBNF):
+    """Vérifier si deux noms de famille sont identiques. 
+    Contrôle pertinent si on part d'un identifiant (ancien FRBNF par exemple.
+    Sinon, il vaut mieux utiliser compareFullAccessPoint"""
     ark = ""
     accessPointBNF = ""
     #Si le FRBNF de la notice source est présent comme ancien numéro de notice 
     #dans la notice BnF, on compare les noms (100$a ou 110$a)
-    if (recordBNF.find("//mxc:datafield[@tag='100']/mxc:subfield[@code='a']", namespaces=main.ns) is not None):
-        accessPointBNF = main.clean_string(recordBNF.find("//mxc:datafield[@tag='100']/mxc:subfield[@code='a']", namespaces=main.ns).text)
-    elif (recordBNF.find("//mxc:datafield[@tag='110']/mxc:subfield[@code='a']", namespaces=main.ns) is not None):
-        accessPointBNF = main.clean_string(recordBNF.find("//mxc:datafield[@tag='110']/mxc:subfield[@code='a']", namespaces=main.ns).text)
+    accessPointBNF = main.clean_string(extract_subfield(recordBNF,"200","a","all"," "))
+    if (accessPointBNF == ""):
+        accessPointBNF = main.clean_string(extract_subfield(recordBNF,"210","a","all"," "))
     if (nom != "" and accessPointBNF != ""):
         if (nom in accessPointBNF):
             ark = ark_current
@@ -406,12 +469,54 @@ def compareAccessPoint(NumNot,ark_current,nna,nom,recordBNF):
             NumNotices2methode[NumNot].append("N° sys FRBNF + contrôle Nom")
     return ark
 
-def extractNNAfromBIB(record,nom,prenom,date_debut):
+def compareFullAccessPoint(NumNot,ark_current, recordBNF, nom, prenom, date_debut):
+    """Comparaison des noms, puis des prénoms, puis des dates. 
+    Si les dates sont vides, on ne compare que noms et prénoms
+    Si les prénoms sont vides, on ne compare que les noms"""
+    nomBNF = main.clean_string(extract_subfield(recordBNF,"200","a","all"," "))
+    prenomBNF = main.clean_string(extract_subfield(recordBNF,"200","b","all"," "))
+    datesBNF = main.clean_string(extract_subfield(recordBNF,"200","f","all"," "))
+    ark = ""
+    if (nomBNF == ""):
+        nomBNF = extract_subfield(recordBNF,"210","a","all"," ")
+        prenomBNF = extract_subfield(recordBNF,"210","b","all"," ")
+        datesBNF = extract_subfield(recordBNF,"210","f","all"," ")
+    if (nom in nomBNF or nomBNF in nom):
+        if (prenom != ""):
+            if (prenom in prenomBNF or prenomBNF in prenom):
+                if (date_debut != ""):
+                    if (date_debut in datesBNF or datesBNF in date_debut):
+                        ark = ark_current
+                else:
+                    ark = ark_current
+        else:
+            ark = ark_current
+    return ark
+            
+            
+        
+                        
+
+def extract_subfield(record,field,subfield,nb_occ="all",sep="~"):
+    path = ".//mxc:datafield[@tag='" + field + "']/mxc:subfield[@code='" + subfield + "']"
+    listeValues = []
+    if (nb_occ == "first" or nb_occ == 1):
+        if (record.find(path, namespaces=main.ns) is not None and record.find(path, namespaces=main.ns).text is not None):
+            val = record.find(path, namespaces=main.ns).text
+            listeValues.append(val)
+    else:
+        for occ in record.xpath(path, namespaces=main.ns):
+            if (occ.text is not None):
+                listeValues.append(occ.text)
+    listeValues = sep.join(listeValues)
+    return listeValues
+
+def extractARKautfromBIB(record,nom,prenom,date_debut):
     listeNNA = []
     listeArk = []
     listeFieldsAuteur = defaultdict(dict)
     i = 0
-    for field in extractNNAfromBIB.xpath("mxc:datafield",namespaces=main.ns):
+    for field in record.xpath(".//mxc:datafield",namespaces=main.ns):
         i += 1
         if (field.get("tag")[0] == "7"):
             listeFieldsAuteur[i]["tag"] = field.get("tag") 
@@ -424,10 +529,11 @@ def extractNNAfromBIB(record,nom,prenom,date_debut):
                     listeFieldsAuteur[i]["prenom"] = main.clean_string(subfield.text,False,True)
                 if (subfield.get("code")=="f"):
                     listeFieldsAuteur[i]["dates"] = main.clean_string(subfield.text,False,True)
+
     for auteur in listeFieldsAuteur:
         if (nom in listeFieldsAuteur[auteur]["nom"] or listeFieldsAuteur[auteur]["nom"] in nom):
             if (prenom != "" and "prenom" in listeFieldsAuteur[auteur]):
-                if (prenom in listeFieldsAuteur[auteur][prenom] or listeFieldsAuteur[auteur][prenom in nom]):
+                if (prenom in listeFieldsAuteur[auteur]["prenom"] or listeFieldsAuteur[auteur]["prenom"] in prenom):
                     if (date_debut != "" and "dates" in listeFieldsAuteur[auteur]):
                         if (date_debut in listeFieldsAuteur[auteur]["dates"] or listeFieldsAuteur[auteur]["dates"] in date_debut):
                             listeNNA.append(listeFieldsAuteur[auteur]["nna"])
@@ -449,6 +555,7 @@ def extractNNAfromBIB(record,nom,prenom,date_debut):
 #==============================================================================
 
 def launch(master, entry_filename, headers, input_data_type, file_nb, id_traitement, meta_bnf):
+    main.check_file_name(entry_filename)
     #results2file(nb_fichiers_a_produire)
     liste_reports = create_reports(id_traitement, file_nb)    
     
@@ -458,6 +565,9 @@ def launch(master, entry_filename, headers, input_data_type, file_nb, id_traitem
         align_from_bib(master, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf)
     else:
         main.popup_errors("Format en entrée non défini")
+    bib2ark.fin_traitements(master,liste_reports)
+
+
 
 
 def formulaire_noticesaut2arkBnF(access_to_network=True, last_version=[0,False]):
@@ -520,8 +630,13 @@ def formulaire_noticesaut2arkBnF(access_to_network=True, last_version=[0,False])
 
     tk.Label(frame_input_aut,bg=couleur_fond, text="\nType de données en entrée", font="Arial 10 bold", anchor="w").pack(anchor="w")
     input_data_type = tk.IntVar()
-    tk.Radiobutton(frame_input_aut,bg=couleur_fond, text="N° Notice AUT, ARK, FRBNF, ISNI, Nom, Prénom, Date de naissance, Date de mort\n(extraction base d'autorités)", variable=input_data_type, value=1, justify="left").pack(anchor="w")
-    tk.Radiobutton(frame_input_aut,bg=couleur_fond, text="N° Notice AUT, ARK, FRBNF, ISNI, Nom, Prénom, Titre\n(extraction base notices bib)", variable=input_data_type, value=2, justify="left").pack(anchor="w")
+    tk.Radiobutton(frame_input_aut,bg=couleur_fond, 
+                   text="N° Notice AUT, ARK, FRBNF, ISNI, Nom, Prénom, Date de naissance, Date de mort\n(extraction notices d'autorité)", 
+                   variable=input_data_type, value=1, justify="left").pack(anchor="w")
+    tk.Radiobutton(frame_input_aut,bg=couleur_fond, 
+                   text="N° Notice AUT, N° notice BIB, ARK Bib, FRBNF Bib, Titre, ISNI, Nom, Prénom, Dates Auteur,\n(extraction notices bib)", 
+                   variable=input_data_type, value=2, justify="left").pack(anchor="w")
+    input_data_type.set(1)
 
     tk.Label(frame_input_aut,bg=couleur_fond, text="\n").pack()
 
@@ -529,8 +644,10 @@ def formulaire_noticesaut2arkBnF(access_to_network=True, last_version=[0,False])
     
 
     file_nb = tk.IntVar()
-    tk.Radiobutton(frame_output_file,bg=couleur_fond, text="1 fichier", variable=file_nb , value=1, justify="left").pack(anchor="w")
-    tk.Radiobutton(frame_output_file,bg=couleur_fond, text="Plusieurs fichiers \n(Pb / 0 / 1 / plusieurs ARK trouvés)", justify="left", variable=file_nb , value=2).pack(anchor="w")
+    tk.Radiobutton(frame_output_file,bg=couleur_fond, text="1 fichier", 
+                   variable=file_nb , value=1, justify="left").pack(anchor="w")
+    tk.Radiobutton(frame_output_file,bg=couleur_fond, text="Plusieurs fichiers \n(Pb / 0 / 1 / plusieurs ARK trouvés)", 
+                   variable=file_nb, value=2, justify="left").pack(anchor="w")
     file_nb.set(2)
 
 
