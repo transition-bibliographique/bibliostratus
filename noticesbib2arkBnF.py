@@ -571,11 +571,11 @@ def ppn2ark(NumNot,ppn,isbn,titre,auteur,date):
             if (resource.find("ark:/12148/")>0):
                 ark = resource[24:46]
                 NumNotices2methode[NumNot].append("ISBN > PPN > ARK")
-    if (ark == ""):
-        for frbnf in record.xpath("//bnf-onto:FRBNF",namespaces=nsSudoc):
-            frbnf_val = frbnf.text
-            NumNotices2methode[NumNot].append("ISBN > PPN > FRBNF > ARK")
-            ark = frbnf2ark(NumNot,frbnf_val,isbn,titre,auteur,date)
+        if (ark == ""):
+            for frbnf in record.xpath("//bnf-onto:FRBNF",namespaces=nsSudoc):
+                frbnf_val = frbnf.text
+                NumNotices2methode[NumNot].append("ISBN > PPN > FRBNF > ARK")
+                ark = frbnf2ark(NumNot,frbnf_val,isbn,titre,auteur,date)
     return ark
 
 def add_to_conversionIsbn(NumNot,isbn_init,isbn_trouve,via_Sudoc=False):
