@@ -723,17 +723,18 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,typeRecord,anywhere=False)
                 recordBNF_url = url_requete_sru('bib.persistentid all "' + ark_current + '"')
                 (test,recordBNF) = testURLetreeParse(recordBNF_url)
                 if (test == True):
-                    typeRecord_current = recordBNF.find("//mxc:record/mxc:leader",namespaces=ns).text[7]
-                    if (typeRecord_current == typeRecord):
-                        listeArk.append(comparaisonTitres(NumNot,ark_current,"","",nettoyageTitrePourControle(titre),auteur,date_nett,recordBNF,"Titre-Auteur-Date" + index))
-                        methode = "Titre-Auteur-Date"
-                        if (auteur == "-" and date_nett == "-"):
-                            methode = "Titre"
-                        elif (auteur == "-"):
-                            methode = "Titre-Date"
-                        elif (date_nett == "-"):
-                            methode = "Titre-Auteur"
-                        NumNotices2methode[NumNot].append(methode)
+                    if (recordBNF.find("//mxc:record/mxc:leader",namespaces=ns) is not None and recordBNF.find("//mxc:record/mxc:leader",namespaces=ns).text is not None):
+                        typeRecord_current = recordBNF.find("//mxc:record/mxc:leader",namespaces=ns).text[7]
+                        if (typeRecord_current == typeRecord):
+                            listeArk.append(comparaisonTitres(NumNot,ark_current,"","",nettoyageTitrePourControle(titre),auteur,date_nett,recordBNF,"Titre-Auteur-Date" + index))
+                            methode = "Titre-Auteur-Date"
+                            if (auteur == "-" and date_nett == "-"):
+                                methode = "Titre"
+                            elif (auteur == "-"):
+                                methode = "Titre-Date"
+                            elif (date_nett == "-"):
+                                methode = "Titre-Auteur"
+                            NumNotices2methode[NumNot].append(methode)
     listeArk = ",".join(ark for ark in listeArk if ark != "")
     return listeArk
 
