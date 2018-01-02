@@ -487,6 +487,11 @@ def testURLetreeParse(url):
         print(err)
         test = False
         url_access_pbs.append([url,"urllib.error.URLError"])
+    except ConnectionResetError as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"ConnectionResetError"])
     return (test,resultat)
 
 
