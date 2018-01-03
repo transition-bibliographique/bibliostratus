@@ -1099,7 +1099,7 @@ def stats_extraction(liste_reports):
 def url_access_pbs_report(liste_reports):
     if (len(url_access_pbs) > 0):
         liste_reports[-2].write("\n\nProblème d'accès à certaines URL :\nURL\tType de problème\n")
-        for pb in liste_reports[-2]:
+        for pb in url_access_pbs:
             liste_reports[-2].write("\t".join(pb) + "\n")
     if (len(NumNotices_conversionISBN) > 0):
         liste_reports[-2].write("".join(["\n\n",10*"-","\n"]))
