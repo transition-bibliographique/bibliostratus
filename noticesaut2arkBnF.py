@@ -457,9 +457,9 @@ def compareAccessPoint(NumNot,ark_current,nna,nom,recordBNF):
     accessPointBNF = ""
     #Si le FRBNF de la notice source est présent comme ancien numéro de notice 
     #dans la notice BnF, on compare les noms (100$a ou 110$a)
-    accessPointBNF = main.clean_string(extract_subfield(recordBNF,"200","a","all"," "))
+    accessPointBNF = main.clean_string(main.extract_subfield(recordBNF,"200","a","all"," "))
     if (accessPointBNF == ""):
-        accessPointBNF = main.clean_string(extract_subfield(recordBNF,"210","a","all"," "))
+        accessPointBNF = main.clean_string(main.extract_subfield(recordBNF,"210","a","all"," "))
     if (nom != "" and accessPointBNF != ""):
         if (nom in accessPointBNF):
             ark = ark_current
@@ -473,14 +473,14 @@ def compareFullAccessPoint(NumNot,ark_current, recordBNF, nom, prenom, date_debu
     """Comparaison des noms, puis des prénoms, puis des dates. 
     Si les dates sont vides, on ne compare que noms et prénoms
     Si les prénoms sont vides, on ne compare que les noms"""
-    nomBNF = main.clean_string(extract_subfield(recordBNF,"200","a","all"," "))
-    prenomBNF = main.clean_string(extract_subfield(recordBNF,"200","b","all"," "))
-    datesBNF = main.clean_string(extract_subfield(recordBNF,"200","f","all"," "))
+    nomBNF = main.clean_string(main.extract_subfield(recordBNF,"200","a","all"," "))
+    prenomBNF = main.clean_string(main.extract_subfield(recordBNF,"200","b","all"," "))
+    datesBNF = main.clean_string(main.extract_subfield(recordBNF,"200","f","all"," "))
     ark = ""
     if (nomBNF == ""):
-        nomBNF = extract_subfield(recordBNF,"210","a","all"," ")
-        prenomBNF = extract_subfield(recordBNF,"210","b","all"," ")
-        datesBNF = extract_subfield(recordBNF,"210","f","all"," ")
+        nomBNF = main.extract_subfield(recordBNF,"210","a","all"," ")
+        prenomBNF = main.extract_subfield(recordBNF,"210","b","all"," ")
+        datesBNF = main.extract_subfield(recordBNF,"210","f","all"," ")
     if (nom in nomBNF or nomBNF in nom):
         if (prenom != ""):
             if (prenom in prenomBNF or prenomBNF in prenom):
@@ -497,19 +497,6 @@ def compareFullAccessPoint(NumNot,ark_current, recordBNF, nom, prenom, date_debu
         
                         
 
-def extract_subfield(record,field,subfield,nb_occ="all",sep="~"):
-    path = ".//mxc:datafield[@tag='" + field + "']/mxc:subfield[@code='" + subfield + "']"
-    listeValues = []
-    if (nb_occ == "first" or nb_occ == 1):
-        if (record.find(path, namespaces=main.ns) is not None and record.find(path, namespaces=main.ns).text is not None):
-            val = record.find(path, namespaces=main.ns).text
-            listeValues.append(val)
-    else:
-        for occ in record.xpath(path, namespaces=main.ns):
-            if (occ.text is not None):
-                listeValues.append(occ.text)
-    listeValues = sep.join(listeValues)
-    return listeValues
 
 def extractARKautfromBIB(record,nom,prenom,date_debut):
     listeNNA = []

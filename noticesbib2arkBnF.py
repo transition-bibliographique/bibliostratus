@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Fri Oct 13 18:30:30 2017
 
@@ -23,7 +22,7 @@ from collections import defaultdict
 import webbrowser
 import codecs
 import json
-
+import main as main
 
 #import matplotlib.pyplot as plt
 
@@ -243,13 +242,12 @@ def comparaisonIsbn(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF
     #Si le FRBNF de la notice source est présent comme ancien numéro de notice 
     #dans la notice BnF, on compare les ISBN en 010, ou à défaut les EAN
     #ou à défaut les ISSN (il peut s'agir d'un périodique)
-    if (recordBNF.find("//mxc:datafield[@tag='010']/mxc:subfield[@code='a']", namespaces=ns) is not None):
-        isbnBNF = nettoyage(recordBNF.find("//mxc:datafield[@tag='010']/mxc:subfield[@code='a']", namespaces=ns).text)
-    elif (recordBNF.find("//mxc:datafield[@tag='038']/mxc:subfield[@code='a']", namespaces=ns) is not None):
-        isbnBNF = nettoyage(recordBNF.find("//mxc:datafield[@tag='038']/mxc:subfield[@code='a']", namespaces=ns).text)
+    isbnBNF = nettoyage(main.extract_subfield(recordBNF,"010","a",1))
+    if (isbnBNF == ""):
+        isbnBNF = nettoyage(main.extract_subfield(recordBNF,"038","a",1))
         sourceID = "EAN"
-    elif (recordBNF.find("//mxc:datafield[@tag='011']/mxc:subfield[@code='a']", namespaces=ns) is not None):
-        isbnBNF = nettoyage(recordBNF.find("//mxc:datafield[@tag='011']/mxc:subfield[@code='a']", namespaces=ns).text)
+    if (isbnBNF == ""):
+        isbnBNF = nettoyage(main.extract_subfield(recordBNF,"011","a",1))
         sourceID = "ISSN"
     if (isbn != "" and isbnBNF != ""):
         if (isbn in isbnBNF):
@@ -269,12 +267,9 @@ def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordB
             
 def comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,sous_zone):
     ark = ""
-    titreBNF = ""
-    xpath = "//mxc:datafield[@tag='" + sous_zone.split("$")[0] + "']/mxc:subfield[@code='" + sous_zone.split("$")[1] + "']"
-
-    if (recordBNF.find(xpath, namespaces=ns) is not None):
-        if (recordBNF.find(xpath, namespaces=ns).text is not None):
-            titreBNF = nettoyage(recordBNF.find(xpath, namespaces=ns).text)
+    field = sous_zone.split("$")[0]
+    subfield = sous_zone.split("$")[1]
+    titreBNF = main.extract_subfield(recordBNF,field,subfield,1)
     if (titre != "" and titreBNF != ""):
         if (titre == titreBNF):
             ark = ark_current
@@ -347,6 +342,7 @@ def rechercheNNB(NumNot,nnb,isbn,titre,auteur,date):
 
 #Si le FRBNF n'a pas été trouvé, on le recherche comme numéro système -> pour ça on extrait le n° système
 def oldfrbnf2ark(NumNot,frbnf,isbn,titre,auteur,date):
+    """Extrait du FRBNF le numéro système, d'abord sur 9 chiffres, puis sur 8 si besoin, avec un contrôle des résultats sur le contenu du titre ou sur l'auteur"""
     systemid = ""
     if (frbnf[0:5].upper() == "FRBNF"):
         systemid = frbnf[5:14]
@@ -357,9 +353,9 @@ def oldfrbnf2ark(NumNot,frbnf,isbn,titre,auteur,date):
         ark = systemid2ark(NumNot,systemid,False,isbn,titre,auteur,date)
     return ark
 
-
-#Rechercher le FRBNF avec le préfixe    
+ 
 def frbnf2ark(NumNot,frbnf,isbn,titre,auteur,date):
+    """Rechercher le FRBNF avec le préfixe "FRBN" ou "FRBNF". A défaut, lance d'autres fonctions pour lancer la recherche en utilisant uniquement le numéro, soit comme NNB/NNA, soit comme ancien numéro système (en zone 9XX)"""
     ark = ""
     url = url_requete_sru('bib.otherid all "' + frbnf + '"')
     (test,page) = testURLetreeParse(url)
@@ -1088,7 +1084,7 @@ def fin_traitements(master,liste_reports):
 
 
 def stats_extraction(liste_reports):
-    #print(nb_notices_nb_ARK)
+    """Ecriture des rapports de statistiques générales d'alignements"""
     for key in nb_notices_nb_ARK:
         liste_reports[-2].write(str(key) + "\t" + str(nb_notices_nb_ARK[key]) + "\n")
     if ("Pb FRBNF" in nb_notices_nb_ARK):
@@ -1097,6 +1093,7 @@ def stats_extraction(liste_reports):
     plt.show()"""
 
 def url_access_pbs_report(liste_reports):
+    """A la suite des stats générales, liste des erreurs rencontrées (plantage URL) + ISBN différents en entrée et en sortie"""
     if (len(url_access_pbs) > 0):
         liste_reports[-2].write("\n\nProblème d'accès à certaines URL :\nURL\tType de problème\n")
         for pb in url_access_pbs:
@@ -1111,18 +1108,22 @@ def url_access_pbs_report(liste_reports):
                                                 ]) + "\n")
 
 def typesConversionARK(liste_reports):
+    """Dans un rapport spécifique, pour chaque notice en entrée, mention de la méthode d'alignement (ISBN, ISNI, etc.)"""
     for key in NumNotices2methode:
         value = " / ".join(NumNotices2methode[key])
         liste_reports[-1].write(key + "\t" + value + "\n")
 
 def click2help():
+    """Fonction d'ouverture du navigateur pour avoir de l'aide sur le logiciel"""
     url = "https://github.com/Lully/transbiblio"
     webbrowser.open_new(url)
 
 def annuler(master):
+    """Fermeture du formulaire (bouton "Annuler")"""
     master.destroy()
     
 def check_access_to_network():
+    """Vérification d'accès à internet pour le programme (permet notamment d'identifier d'éventuels problèmes de proxy)"""
     access_to_network = True
     try:
         request.urlopen("http://www.bnf.fr")
@@ -1133,6 +1134,7 @@ def check_access_to_network():
 
 
 def check_last_compilation(programID):
+    """Compare pour un programme donné le numéro de version du fichier en cours et la dernière version indiquée comme telle en ligne. Renvoie une liste à deux éléments : n° de la dernière version publiée ; affichage du bouton de téléchargement (True/False)"""
     programID_last_compilation = 0
     display_update_button = False
     url = "https://raw.githubusercontent.com/Lully/bnf-sru/master/last_compilations.json"
@@ -1149,6 +1151,7 @@ def check_last_compilation(programID):
 #last_version = [0,False]
 
 def download_last_update():
+    """Fournit l'URL de téléchargement de la dernière version"""
     url = "https://github.com/Lully/transbiblio/blob/master/noticesbib2arkBnF.py"
     webbrowser.open(url)
 #==============================================================================
@@ -1156,6 +1159,7 @@ def download_last_update():
 #==============================================================================
 
 def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False]):
+    """Affichage du formulaire : disposition des zones, options, etc."""
     couleur_fond = "white"
     couleur_bouton = "#acacac"
     

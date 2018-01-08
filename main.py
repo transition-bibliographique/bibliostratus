@@ -90,6 +90,19 @@ def clean_string(string,replaceSpaces=False,replaceTirets=False):
     return string
 
 
+def extract_subfield(record,field,subfield,nb_occ="all",sep="~"):
+    path = ".//mxc:datafield[@tag='" + field + "']/mxc:subfield[@code='" + subfield + "']"
+    listeValues = []
+    if (nb_occ == "first" or nb_occ == 1):
+        if (record.find(path, namespaces=ns) is not None and record.find(path, namespaces=ns).text is not None):
+            val = record.find(path, namespaces=ns).text
+            listeValues.append(val)
+    else:
+        for occ in record.xpath(path, namespaces=ns):
+            if (occ.text is not None):
+                listeValues.append(occ.text)
+    listeValues = sep.join(listeValues)
+    return listeValues
 
 def form_saut_de_ligne(frame, couleur_fond):
     tk.Label(frame, text="\n", bg=couleur_fond).pack()
