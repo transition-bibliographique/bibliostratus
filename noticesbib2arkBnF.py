@@ -872,19 +872,24 @@ def ark2metadc(ark):
     return metas
         
 
-def monimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_reports, meta_bib):
+def monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
     header_columns = ["nbARK","NumNot","ark initial","frbnf","ark trouvé","isbn_nett","ean_propre","titre","auteur","date"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
-    if (file_nb.get() ==  1):
+    if (file_nb ==  1):
         row2file(header_columns,liste_reports)
-    elif(file_nb.get() ==  2):
+    elif(file_nb ==  2):
         row2files(header_columns,liste_reports)
     n = 0
     with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter='\t')
         next(entry_file)
         for row in entry_file:
+            try:
+                date = row[7]
+            except IndexError:
+                main.popup_errors("Notice n°", row[0], " : Problème de format des données en entrée (nombre de colonnes)")
+                break
             n += 1
             #print(row)
             NumNot = row[0]
@@ -937,19 +942,19 @@ def monimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_repo
             liste_metadonnees = [nbARK,NumNot,ark,frbnf,current_ark,isbn_nett,ean_propre,titre,auteur,date]
             if (meta_bib == 1):
                 liste_metadonnees.extend(ark2metadc(ark))
-            if (file_nb.get() ==  1):
+            if (file_nb ==  1):
                 row2file(liste_metadonnees,liste_reports)
-            elif(file_nb.get() ==  2):
+            elif(file_nb ==  2):
                 row2files(liste_metadonnees,liste_reports)
         
         
-def cddvd(master, entry_filename, type_doc, file_nb, id_traitement, liste_reports, meta_bib):
+def cddvd(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
     header_columns = ["nbARK","NumNot","ark initial","frbnf","ark trouvé","ean_nett","ean_propre","no_commercial_propre","titre","auteur","date"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
-    if (file_nb.get() ==  1):
+    if (file_nb ==  1):
         row2file(header_columns,liste_reports)
-    elif(file_nb.get() ==  2):
+    elif(file_nb ==  2):
         row2files(header_columns,liste_reports)
     #results2file(nb_fichiers_a_produire)
     
@@ -1013,19 +1018,19 @@ def cddvd(master, entry_filename, type_doc, file_nb, id_traitement, liste_report
                          no_commercial_propre,titre,auteur,date]
             if (meta_bib == 1):
                 liste_metadonnees.extend(ark2metadc(ark))
-            if (file_nb.get() ==  1):
+            if (file_nb ==  1):
                 row2file(liste_metadonnees,liste_reports)
-            elif(file_nb.get() ==  2):
+            elif(file_nb ==  2):
                 row2files(liste_metadonnees,liste_reports)
 
 #Si option du formulaire = périodiques imprimés
-def perimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_reports, meta_bib):
+def perimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
     header_columns = ["nbARK","NumNot","ark initial","frbnf","ark trouvé","issn_nett","titre","auteur","date"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
-    if (file_nb.get() ==  1):
+    if (file_nb ==  1):
         row2file(header_columns,liste_reports)
-    elif(file_nb.get() ==  2):
+    elif(file_nb ==  2):
         row2files(header_columns,liste_reports)
     n = 0
     with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
@@ -1075,38 +1080,41 @@ def perimpr(master, entry_filename, type_doc, file_nb, id_traitement, liste_repo
             liste_metadonnees = [nbARK,NumNot,ark,frbnf,current_ark,issn_nett,titre,auteur,date]
             if (meta_bib == 1):
                 liste_metadonnees.extend(ark2metadc(ark))
-            if (file_nb.get() ==  1):
+            if (file_nb ==  1):
                 row2file(liste_metadonnees,liste_reports)
-            elif(file_nb.get() ==  2):
+            elif(file_nb ==  2):
                 row2files(liste_metadonnees,liste_reports)
 
         
     
 
-def launch(master, entry_filename, type_doc, file_nb, meta_bib, id_traitement):
+def launch(form_bib2ark, entry_filename, type_doc_bib, file_nb, meta_bib, id_traitement):
+    main.check_file_name(entry_filename)
     #results2file(nb_fichiers_a_produire)
-
-    liste_reports = create_reports(id_traitement.get(), file_nb.get())    
+    #print("type_doc_bib : ", type_doc_bib)
+    #print("file_nb : ",file_nb)
+    #print("id_traitement : ", id_traitement)
+    liste_reports = create_reports(id_traitement, file_nb)    
     
-    if (type_doc.get() == 1):
-        monimpr(master, entry_filename.get(), type_doc, file_nb, id_traitement, liste_reports, meta_bib.get())
-    elif (type_doc.get() == 2):
-        cddvd(master, entry_filename.get(), type_doc, file_nb, id_traitement, liste_reports, meta_bib.get())
-    elif (type_doc.get() == 3):
-        perimpr(master, entry_filename.get(), type_doc, file_nb, id_traitement, liste_reports, meta_bib.get())
+    if (type_doc_bib == 1):
+        monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib)
+    elif (type_doc_bib == 2):
+        cddvd(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib)
+    elif (type_doc_bib == 3):
+        perimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib)
 
     else:
         print("Erreur : type de document non reconnu")
     
-    fin_traitements(master,liste_reports)
+    fin_traitements(form_bib2ark,liste_reports)
 
 
-def fin_traitements(master,liste_reports):
+def fin_traitements(form_bib2ark,liste_reports):
     stats_extraction(liste_reports)
     url_access_pbs_report(liste_reports)
     typesConversionARK(liste_reports)
     print("Programme terminé")
-    master.destroy()
+    form_bib2ark.destroy()
 
 
 
@@ -1145,9 +1153,9 @@ def click2help():
     url = "https://github.com/Lully/transbiblio"
     webbrowser.open_new(url)
 
-def annuler(master):
+def annuler(form_bib2ark):
     """Fermeture du formulaire (bouton "Annuler")"""
-    master.destroy()
+    form_bib2ark.destroy()
     
 def check_access_to_network():
     """Vérification d'accès à internet pour le programme (permet notamment d'identifier d'éventuels problèmes de proxy)"""
@@ -1190,20 +1198,20 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
     couleur_fond = "white"
     couleur_bouton = "#acacac"
     
-    master = tk.Tk()
-    master.config(padx=30, pady=20,bg=couleur_fond)
-    master.title("Programme d'alignement de données bibliographiques avec la BnF")
+    form_bib2ark = tk.Tk()
+    form_bib2ark.config(padx=30, pady=20,bg=couleur_fond)
+    form_bib2ark.title("Programme d'alignement de données bibliographiques avec la BnF")
     try:
-        master.iconbitmap(r'favicon.ico')
+        form_bib2ark.iconbitmap(r'favicon.ico')
     except tk.TclError:
         favicone = "rien"
     
-    zone_alert_explications = tk.Frame(master, bg=couleur_fond, pady=10)
+    zone_alert_explications = tk.Frame(form_bib2ark, bg=couleur_fond, pady=10)
     zone_alert_explications.pack()
     
-    zone_formulaire = tk.Frame(master, bg=couleur_fond)
+    zone_formulaire = tk.Frame(form_bib2ark, bg=couleur_fond)
     zone_formulaire.pack()
-    zone_commentaires = tk.Frame(master, bg=couleur_fond, pady=10)
+    zone_commentaires = tk.Frame(form_bib2ark, bg=couleur_fond, pady=10)
     zone_commentaires.pack()
     
     cadre_input = tk.Frame(zone_formulaire, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
@@ -1216,8 +1224,14 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
     cadre_input_infos_format.pack(anchor="w")
     cadre_input_type_docs = tk.Frame(cadre_input,bg=couleur_fond)
     cadre_input_type_docs.pack(anchor="w")
+
+    cadre_input_type_docs_zone = tk.Frame(cadre_input_type_docs,bg=couleur_fond)
+    cadre_input_type_docs_zone.pack(anchor="w")
+    cadre_input_type_docs_explications = tk.Frame(cadre_input_type_docs,bg=couleur_fond)
+    cadre_input_type_docs_explications.pack(anchor="w")
     
-    cadre_inter = tk.Frame(master, borderwidth=0, padx=10,bg=couleur_fond)
+
+    cadre_inter = tk.Frame(form_bib2ark, borderwidth=0, padx=10,bg=couleur_fond)
     cadre_inter.pack(side="left")
     tk.Label(cadre_inter, text=" ",bg=couleur_fond).pack()
     
@@ -1227,6 +1241,12 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
     cadre_output_header.pack(anchor="w")
     cadre_output_nb_fichier = tk.Frame(cadre_output,bg=couleur_fond)
     cadre_output_nb_fichier.pack(side="left", anchor="w")
+
+    cadre_output_nb_fichiers_zone = tk.Frame(cadre_output_nb_fichier,bg=couleur_fond)
+    cadre_output_nb_fichiers_zone.pack(anchor="w")
+    cadre_output_nb_fichiers_explications = tk.Frame(cadre_output_nb_fichier,bg=couleur_fond)
+    cadre_output_nb_fichiers_explications.pack(anchor="w")    
+    
     cadre_output_id_traitement = tk.Frame(cadre_output, padx=20,bg=couleur_fond)
     cadre_output_id_traitement.pack(side="left", anchor="w")
     
@@ -1253,39 +1273,58 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
     tk.Label(cadre_input_infos_format,bg=couleur_fond, text=4*"\t"+"Séparateur TAB, Encodage UTF-8", justify="right").pack(anchor="s")
     
     
-    tk.Label(cadre_input_type_docs,bg=couleur_fond, text="\nType de documents", font="Arial 10 bold", anchor="w").pack(anchor="w")
-    type_doc = tk.IntVar()
-    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Documents imprimés (monographies)\n(Colonnes : Num Not | FRBNF | ARK | ISBN | EAN | Titre | Auteur | Date)", variable=type_doc , value=1, justify="left").pack(anchor="w")
-    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Audiovisuel (CD / DVD)\n(Num Not | FRBNF | ARK | EAN | N° commercial | Titre | Auteur | Date)", variable=type_doc , value=2, justify="left").pack(anchor="w")
-    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Périodiques imprimés\n(Num Not | FRBNF | ARK | ISSN | Titre | Auteur | Date)", variable=type_doc , value=3, justify="left").pack(anchor="w")
-    type_doc.set(1)
+    tk.Label(cadre_input_type_docs_zone,bg=couleur_fond, text="Type de documents  ", font="Arial 10 bold", justify="left").pack(anchor="w", side="left")
+    type_doc_bib = tk.Entry(cadre_input_type_docs_zone, width=3, bd=2)
+    type_doc_bib.pack(anchor="w", side="left")
+    tk.Label(cadre_input_type_docs_explications, bg=couleur_fond,text="""1 = Documents imprimés (monographies)\n     (Colonnes : Num Not | FRBNF | ARK | ISBN | EAN | Titre | Auteur | Date)
+2 = Audiovisuel (CD / DVD)\n     (Num Not | FRBNF | ARK | EAN | N° commercial | Titre | Auteur | Date)
+3 = Périodiques imprimés\n     (Num Not | FRBNF | ARK | ISSN | Titre | Auteur | Date)""", 
+                                   justify="left").pack(anchor="w")
+                              
+    #type_doc_bib = tk.IntVar()
+    """tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, 
+                   text="Documents imprimés (monographies)\n(Colonnes : Num Not | FRBNF | ARK | ISBN | EAN | Titre | Auteur | Date)", 
+                   variable=type_doc_bib, value=1, justify="left").pack(anchor="w")
+    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, 
+                   text="Audiovisuel (CD / DVD)\n(Num Not | FRBNF | ARK | EAN | N° commercial | Titre | Auteur | Date)", 
+                   variable=type_doc_bib, value=2, justify="left").pack(anchor="w")
+    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, 
+                   text="Périodiques imprimés\n(Num Not | FRBNF | ARK | ISSN | Titre | Auteur | Date)", 
+                   variable=type_doc_bib, value=3, justify="left").pack(anchor="w")"""
+    
     
     
     
     #Choix du format
     tk.Label(cadre_output_header,bg=couleur_fond, fg=couleur_bouton,text="En sortie :", font="bold").pack(anchor="w")
-    file_nb = tk.IntVar()
-    tk.Radiobutton(cadre_output_nb_fichier,bg=couleur_fond, text="1 fichier", variable=file_nb , value=1, justify="left").pack(anchor="w")
-    tk.Radiobutton(cadre_output_nb_fichier,bg=couleur_fond, text="Plusieurs fichiers \n(Pb / 0 / 1 / plusieurs ARK trouvés)", justify="left", variable=file_nb , value=2).pack(anchor="w")
-    file_nb.set(2)
+    tk.Label(cadre_output_nb_fichiers_zone, bg=couleur_fond, font="Arial 10 bold", text="Nombre de fichiers  ").pack(anchor="w", side="left")
+    file_nb = tk.Entry(cadre_output_nb_fichiers_zone, width=3, bd=2)
+    file_nb.pack(anchor="w", side="left")
+    tk.Label(cadre_output_nb_fichiers_explications, bg=couleur_fond,text="""1 = 1 fichier d'alignements
+2 = Plusieurs fichiers (0 ARK trouvé / 1 ARK / Plusieurs ARK)""",
+                                   justify="left").pack(anchor="w")
+
+
+    """tk.Radiobutton(cadre_output_nb_fichier,bg=couleur_fond, text="1 fichier", variable=file_nb , value=1, justify="left").pack(anchor="w")
+    tk.Radiobutton(cadre_output_nb_fichier,bg=couleur_fond, text="Plusieurs fichiers \n(Pb / 0 / 1 / plusieurs ARK trouvés)", justify="left", variable=file_nb , value=2).pack(anchor="w")"""
     
     #Récupérer les métadonnées BIB (dublin core)
-    tk.Label(cadre_output_nb_fichier,bg=couleur_fond, fg=couleur_bouton, text="\n").pack()    
+    """tk.Label(cadre_output_nb_fichier,bg=couleur_fond, fg=couleur_bouton, text="\n").pack()    
     meta_bib = tk.IntVar()
     meta_bib_check = tk.Checkbutton(cadre_output_nb_fichier, bg=couleur_fond, 
                        text="Récupérer les métadonnées\nbibliographiques BnF [Dublin Core]", 
                        variable=meta_bib, justify="left")
     meta_bib_check.pack(anchor="w")
-    tk.Label(cadre_output_nb_fichier,text="\n\n\n", bg=couleur_fond).pack()
+    tk.Label(cadre_output_nb_fichier,text="\n", bg=couleur_fond).pack()"""
 
 
     
     #Ajout (optionnel) d'un identifiant de traitement
-    tk.Label(cadre_output_id_traitement,bg=couleur_fond, text="\n\n\n\n").pack()
+    tk.Label(cadre_output_id_traitement,bg=couleur_fond, text="\n\n\n").pack()
     tk.Label(cadre_output_id_traitement,bg=couleur_fond, text="ID traitement (optionnel)").pack()
     id_traitement = tk.Entry(cadre_output_id_traitement, width=20, bd=2)
     id_traitement.pack()
-    tk.Label(cadre_output_id_traitement,bg=couleur_fond, text="\n").pack()
+    tk.Label(cadre_output_id_traitement,bg=couleur_fond, text="\n\n\n").pack()
     
     
     
@@ -1293,7 +1332,7 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
     
     b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="Arial 10 bold", 
                   text = "Aligner les\nnotices BIB", 
-                  command = lambda: launch(master, entry_filename, type_doc, file_nb, meta_bib, id_traitement), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
+                  command = lambda: launch(form_bib2ark, entry_filename.get(), int(type_doc_bib.get()), int(file_nb.get()), 1, id_traitement.get()), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
     
     tk.Label(cadre_valider, font="bold", text="", bg=couleur_fond).pack()
@@ -1301,7 +1340,7 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
     call4help = tk.Button(cadre_valider, text="Besoin d'aide ?", command=click2help, padx=10, pady=1, width=15)
     call4help.pack()
     
-    cancel = tk.Button(cadre_valider, bg=couleur_fond, text="Annuler", command=lambda: annuler(master), padx=10, pady=1, width=15)
+    cancel = tk.Button(cadre_valider, bg=couleur_fond, text="Annuler", command=lambda: annuler(form_bib2ark), padx=10, pady=1, width=15)
     cancel.pack()
     
     tk.Label(zone_commentaires, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()

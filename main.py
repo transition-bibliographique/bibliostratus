@@ -213,7 +213,8 @@ def formulaire_main(access_to_network, last_version):
                                  padx=10,pady=25, bg="#2D4991",fg="white")
     marc2tableButton.pack()
     
-    bib2arkButton = tk.Button(frame2, text = "Aligner ses données  BIB (tableaux)\n avec le catalogue BnF", command=lambda: bib2ark.formulaire_noticesbib2arkBnF(access_to_network,[0,False]), 
+    bib2arkButton = tk.Button(frame2, text = "Aligner ses données  BIB (tableaux)\n avec le catalogue BnF", 
+                              command=lambda: bib2ark.formulaire_noticesbib2arkBnF(access_to_network,[0,False]), 
                               padx=10,pady=10, bg="#fefefe", font="Arial 9 bold")
     bib2arkButton.pack()
     
