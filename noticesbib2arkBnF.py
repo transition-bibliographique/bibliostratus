@@ -488,6 +488,11 @@ def testURLetreeParse(url):
         print(err)
         test = False
         url_access_pbs.append([url,"ConnectionResetError"])
+    except TimeoutError as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"TimeoutError"])
     return (test,resultat)
 
 
@@ -496,9 +501,31 @@ def testURLurlopen(url):
     resultat = ""
     try:
         resultat = request.urlopen(url)
-    except etree.XMLSyntaxError:
-        test = False
+    except etree.XMLSyntaxError as err:
+        print(url)
+        print(err)
         url_access_pbs.append([url,"etree.XMLSyntaxError"])
+        test = False
+    except etree.ParseError as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"etree.ParseError"])
+    except error.URLError as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"urllib.error.URLError"])
+    except ConnectionResetError as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"ConnectionResetError"])
+    except TimeoutError as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"TimeoutError"])
     return (test,resultat)
 
 #Si l'ISBN n'a été trouvé ni dans l'index ISBN, ni dans l'index EAN
