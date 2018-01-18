@@ -738,7 +738,7 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,typeRecord,anywhere=False)
         #print(url)
         (test,results) = testURLetreeParse(url)
         index = ""
-        if (results.find("//srw:numberOfRecords", namespaces=ns) == "0"):
+        if (results != "" and results.find("//srw:numberOfRecords", namespaces=ns) == "0"):
             url = url_requete_sru('bib.title all "' + titre_propre + '" and bib.author all "' + auteur_nett + '" and bib.date all "' + date_nett + '"')
             if (anywhere == True):
                 url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur_nett + ' ' + date_nett + '"')
