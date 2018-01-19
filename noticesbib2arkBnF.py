@@ -554,6 +554,8 @@ def testURLretrieve(url):
         request.urlretrieve(url)
     except error.HTTPError as err:
         test = False
+    except error.URLError as err:
+        test = False
     return test
 
 
