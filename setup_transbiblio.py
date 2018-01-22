@@ -5,7 +5,7 @@ from cx_Freeze import setup, Executable
 import os
 
 
-path_anaconda = r"D:\BNF0017855\Programmes\Anaconda2"
+path_anaconda = r"C:\ProgramData\Anaconda3"
 if (path_anaconda[-1] != "\\"):
     path_anaconda = path_anaconda + "\\"
 
