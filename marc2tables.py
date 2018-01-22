@@ -191,6 +191,10 @@ def record2ean(f038a):
     ean = f038a
     return ean
 
+def record2pubPlace(f210a):
+    pubPlace = f210a
+    return pubPlace
+
 def record2issn(f011a):
     issn = f011a
     return issn
@@ -244,6 +248,7 @@ def record2listemetas(record):
                         )
     authors2keywords = aut2keywords(authors)
     date = record2date(record2meta(record,["100"]), record2meta(record,["210$d"]))
+    pubPlace = record2pubPlace(record2meta(record,["210$a"]))
     ark = record2ark(record2meta(record,["033$a"]))
     frbnf = record2frbnf(record2meta(record,["035$a"]))
     isbn = record2isbn(record2meta(record,["010$a"]))
@@ -263,7 +268,7 @@ def record2listemetas(record):
     elif (doc_record == "jm"):
         meta = [numNot,frbnf,ark,ean,id_commercial_aud,title,authors2keywords,date]
     elif (doc_record == "as"):
-        meta = [numNot, frbnf, ark, issn, title, authors, date]
+        meta = [numNot, frbnf, ark, issn, title, authors, date, pubPlace]
     else:
         meta = [numNot, frbnf, ark, ean, title, authors, date]
     liste_resultats[doc_record].append(meta)

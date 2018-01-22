@@ -206,7 +206,15 @@ def nettoyageDate(date):
         date = " ".join(annee for annee in date if annee != "")
     return date
     
-    
+def nettoyagePubPlace(pubPlace) :
+    """Nettoyage du lieu de publication"""
+    pubPlace = unidecode(pubPlace.lower())
+    for chiffre in listeChiffres:
+        pubPlace = pubPlace.replace(chiffre,"")
+    for signe in ponctuation:
+        pubPlace = pubPlace.split(signe)
+        pubPlace = " ".join(mot for mot in pubPlace if mot != "")
+    return pubPlace
 
 #Si la recherche NNB avec comporaison Mots du titre n'a rien donné, on recherche sur N° interne BnF + Auteur (en ne gardant que le mot le plus long du champ Auteur)
 def relancerNNBAuteur(NumNot,systemid,isbn,titre,auteur,date):
@@ -734,7 +742,7 @@ def ppn2metas(ppn):
                 premierauteurPrenom = premierauteurPrenom.split("(")[0]
     return [titre,premierauteurPrenom,premierauteurNom,tousauteurs]
   
-def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,typeRecord,anywhere=False):
+def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,typeRecord,anywhere=False,pubPlace_nett=""):
 #En entrée : le numéro de notice, le titre (qu'il faut nettoyer pour la recherche)
 #L'auteur = zone auteur initiale, ou à défaut auteur_nett
 #date_nett
@@ -748,16 +756,18 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,typeRecord,anywhere=False)
             date_nett = "-"
         if (auteur_nett == ""):
             auteur_nett = "-"
-        url = url_requete_sru('bib.title all "' + titre_propre + '" and bib.author all "' + auteur + '" and bib.date all "' + date_nett + '"')
+        if (pubPlace_nett == ""):
+            pubPlace_nett = "-"
+        url = url_requete_sru('bib.title all "' + titre_propre + '" and bib.author all "' + auteur + '" and bib.date all "' + date_nett + '" and bib.publisher all "' + pubPlace_nett + '"')
         if (anywhere == True):
-            url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur + ' ' + date_nett)
+            url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur + ' ' + date_nett + ' ' + pubPlace_nett + '"')
         #print(url)
         (test,results) = testURLetreeParse(url)
         index = ""
-        if (results != "" and results.find("//srw:numberOfRecords", namespaces=ns) == "0"):
-            url = url_requete_sru('bib.title all "' + titre_propre + '" and bib.author all "' + auteur_nett + '" and bib.date all "' + date_nett + '"')
+        if (results != "" and results.find("//srw:numberOfRecords", namespaces=ns).text == "0"):
+            url = url_requete_sru('bib.title all "' + titre_propre + '" and bib.author all "' + auteur_nett + '" and bib.date all "' + date_nett + '" and bib.publisher all "' + pubPlace_nett + '"')
             if (anywhere == True):
-                url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur_nett + ' ' + date_nett + '"')
+                url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur_nett + ' ' + date_nett + ' ' + pubPlace_nett + '"')
                 index = " dans toute la notice"
             (test,results) = testURLetreeParse(url)
         if (test == True):
@@ -1041,7 +1051,7 @@ def cddvd(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, li
 
 #Si option du formulaire = périodiques imprimés
 def perimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
-    header_columns = ["nbARK","NumNot","ark initial","frbnf","ark trouvé","issn_nett","titre","auteur","date"]
+    header_columns = ["nbARK","NumNot","ark initial","frbnf","ark trouvé","issn_nett","titre","auteur","date","lieu"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
     if (file_nb ==  1):
@@ -1067,6 +1077,8 @@ def perimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
             auteur_nett = nettoyageAuteur(auteur)
             date = row[6]
             date_nett = nettoyageDate(date)
+            pubPlace = row[7]
+            pubPlace_nett = nettoyagePubPlace(pubPlace)
             #Actualisation de l'ARK à partir de l'ARK
             ark = ""
             if (current_ark != ""):
@@ -1081,10 +1093,10 @@ def perimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
                 ark = issn2ark(NumNot,issn,issn_propre,titre_nett,auteur_nett,date_nett)
             #A défaut, recherche sur Titre-Auteur-Date
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"s",False)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"s",False,pubPlace_nett)
             #A défaut, recherche sur T-A-D tous mots
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"s",True)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"s",True,pubPlace_nett)
             print(str(n) + ". " + NumNot + " : " + ark)
             nbARK = len(ark.split(","))
             if (ark == ""):
@@ -1305,7 +1317,7 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
                    text="Audiovisuel (CD / DVD)\n(Num Not | FRBNF | ARK | EAN | N° commercial | Titre | Auteur | Date)", 
                    variable=type_doc_bib, value=2, justify="left").pack(anchor="w")
     tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, 
-                   text="Périodiques imprimés\n(Num Not | FRBNF | ARK | ISSN | Titre | Auteur | Date)", 
+                   text="Périodiques imprimés\n(Num Not | FRBNF | ARK | ISSN | Titre | Auteur | Date | Lieu de publication)", 
                    variable=type_doc_bib, value=3, justify="left").pack(anchor="w")"""
     
     
