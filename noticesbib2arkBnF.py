@@ -1304,11 +1304,48 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
     tk.Label(cadre_input_type_docs_zone,bg=couleur_fond, text="Type de documents  ", font="Arial 10 bold", justify="left").pack(anchor="w", side="left")
     type_doc_bib = tk.Entry(cadre_input_type_docs_zone, width=3, bd=2)
     type_doc_bib.pack(anchor="w", side="left")
-    tk.Label(cadre_input_type_docs_explications, bg=couleur_fond,text="""1 = Documents imprimés (monographies)\n     (Colonnes : Num Not | FRBNF | ARK | ISBN | EAN | Titre | Auteur | Date)
-2 = Audiovisuel (CD / DVD)\n     (Num Not | FRBNF | ARK | EAN | N° commercial | Titre | Auteur | Date)
-3 = Périodiques imprimés\n     (Num Not | FRBNF | ARK | ISSN | Titre | Auteur | Date)""", 
-                                   justify="left").pack(anchor="w")
-                              
+
+    ligne_mon_impr = tk.Frame(cadre_input_type_docs_explications, bg=couleur_fond)
+    ligne_mon_impr.pack(anchor="w")
+    ligne_mon_impr_ligne1 = tk.Frame(ligne_mon_impr, bg=couleur_fond)
+    ligne_mon_impr_ligne1.pack(anchor="w")
+    ligne_mon_impr_ligne2 = tk.Frame(ligne_mon_impr, bg=couleur_fond)
+    ligne_mon_impr_ligne2.pack(anchor="w")
+    tk.Label(ligne_mon_impr_ligne1, bg=couleur_fond, text="1 = Documents imprimés (monographies)", justify="left").pack(anchor="w", side="left")
+    icone_info = tk.PhotoImage(file='img/example.png')
+    monimpr_example_ico = tk.Button(ligne_mon_impr_ligne1, 
+                                    image=icone_info, command=lambda: main.click2help("https://github.com/Lully/transbiblio/blob/master/examples/mon_impr.txt"),
+                                    bd=0, justify="left")
+    monimpr_example_ico.pack(anchor="w", side="left")
+    tk.Label(ligne_mon_impr_ligne2, bg=couleur_fond, text="      (Colonnes : Num Not | FRBNF | ARK | ISBN | EAN | Titre | Auteur | Date)", justify="left").pack(anchor="w")
+
+
+    ligne_adv = tk.Frame(cadre_input_type_docs_explications, bg=couleur_fond)
+    ligne_adv.pack(anchor="w")
+    ligne_adv_ligne1 = tk.Frame(ligne_adv, bg=couleur_fond)
+    ligne_adv_ligne1.pack(anchor="w")
+    ligne_adv_ligne2 = tk.Frame(ligne_adv, bg=couleur_fond)
+    ligne_adv_ligne2.pack(anchor="w")
+    tk.Label(ligne_adv_ligne1, bg=couleur_fond, text="2 = Audiovisuel (CD / DVD)", justify="left").pack(anchor="w", side="left")
+    ligne_adv_example_ico = tk.Button(ligne_adv_ligne1, 
+                                    image=icone_info, command=lambda: main.click2help("https://github.com/Lully/transbiblio/blob/master/examples/adv.txt"),
+                                    bd=0, justify="left")
+    ligne_adv_example_ico.pack(anchor="w", side="left")
+    tk.Label(ligne_adv_ligne2, bg=couleur_fond, text="      (Num Not | FRBNF | ARK | EAN | N° commercial | Titre | Auteur | Date)", justify="left").pack(anchor="w")
+
+    ligne_per = tk.Frame(cadre_input_type_docs_explications, bg=couleur_fond)
+    ligne_per.pack(anchor="w")
+    ligne_per_ligne1 = tk.Frame(ligne_per, bg=couleur_fond)
+    ligne_per_ligne1.pack(anchor="w")
+    ligne_per_ligne2 = tk.Frame(ligne_per, bg=couleur_fond)
+    ligne_per_ligne2.pack(anchor="w")
+    tk.Label(ligne_per_ligne1, bg=couleur_fond, text="3 = Périodiques", justify="left").pack(anchor="w", side="left")
+    ligne_per_example_ico = tk.Button(ligne_per_ligne1, 
+                                    image=icone_info, command=lambda: main.click2help("https://github.com/Lully/transbiblio/blob/master/examples/per.txt"),
+                                    bd=0, justify="left")
+    ligne_per_example_ico.pack(anchor="w", side="left")
+    tk.Label(ligne_per_ligne2, bg=couleur_fond, text="      (Num Not | FRBNF | ARK | ISSN | Titre | Auteur | Date)", justify="left").pack(anchor="w")
+
     #type_doc_bib = tk.IntVar()
     """tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, 
                    text="Documents imprimés (monographies)\n(Colonnes : Num Not | FRBNF | ARK | ISBN | EAN | Titre | Auteur | Date)", 
