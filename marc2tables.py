@@ -288,7 +288,6 @@ def end_of_treatments(master,id_traitement):
 
 def launch(master,entry_filename,file_format, output_ID):
     print(entry_filename)
-    main.generic_input_controls(entry_filename)
     if (file_format == 1):
         iso2tables(entry_filename, output_ID)
     else:
@@ -411,7 +410,7 @@ def formulaire_marc2tables(access_to_network=True, last_version=[version, False]
     #Bouton de validation
     
     b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", text = "OK", 
-                  command=lambda: launch(master, popup_filename, file_format.get(), output_ID.get()), 
+                  command=lambda: launch(master, entry_filename.get(), file_format.get(), output_ID.get()), 
                   borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
     

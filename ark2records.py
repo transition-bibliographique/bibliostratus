@@ -161,10 +161,10 @@ def callback(master, filename, headers, AUTliees, outputID, format_records=1, fo
                 page = etree.parse(request.urlopen(ark2url(ark, "bib", format_BIB)))
                 nbResults = page.find("//srw:numberOfRecords", namespaces=ns).text
                 if (nbResults == "1"):
-                    XMLrec = page.xpath("//srw:record/srw:recordData/mxc:record", namespaces=ns)[0]
-                    record2file(bib_file, XMLrec, format_file)
-                    if (AUTliees == 1):
-                        bib2aut(ark, aut_file, format_BIB, format_file)
+                    for XMLrec in page.xpath("//srw:record/srw:recordData/mxc:record", namespaces=ns):
+                        record2file(bib_file, XMLrec, format_file)
+                        if (AUTliees == 1):
+                            bib2aut(ark, aut_file, format_BIB, format_file)
         file_fin(bib_file, format_file)
         if (AUTliees == 1):
             file_fin(aut_file, format_file)
