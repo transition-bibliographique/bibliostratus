@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Fichier d'installation du script ExtractionCatalogueBnF_code.py."""
 #Commande Windows à utiliser : C:\ProgramData\Anaconda3\python.exe setup_transbiblio.py build
 
