@@ -22,6 +22,7 @@ from collections import defaultdict
 import webbrowser
 import codecs
 import json
+import http.client
 import main as main
 
 #import matplotlib.pyplot as plt
@@ -493,6 +494,11 @@ def testURLetreeParse(url):
         print(err)
         test = False
         url_access_pbs.append([url,"TimeoutError"])
+    except http.client.RemoteDisconnected as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"http.client.RemoteDisconnected"])
     return (test,resultat)
 
 
@@ -526,6 +532,11 @@ def testURLurlopen(url):
         print(err)
         test = False
         url_access_pbs.append([url,"TimeoutError"])
+    except http.client.RemoteDisconnected as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"http.client.RemoteDisconnected"])
     return (test,resultat)
 
 #Si l'ISBN n'a été trouvé ni dans l'index ISBN, ni dans l'index EAN
@@ -555,6 +566,8 @@ def testURLretrieve(url):
     except error.HTTPError as err:
         test = False
     except error.URLError as err:
+        test = False
+    except http.client.RemoteDisconnected as err:
         test = False
     return test
 
