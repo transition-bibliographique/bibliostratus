@@ -1,6 +1,5 @@
 #Fichiers rapport
 *.txt
-*.tsv
 *.csv
 *.xml
 *.mrk
