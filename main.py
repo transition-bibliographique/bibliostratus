@@ -107,7 +107,54 @@ def extract_subfield(record,field,subfield,nb_occ="all",sep="~"):
 def form_saut_de_ligne(frame, couleur_fond):
     tk.Label(frame, text="\n", bg=couleur_fond).pack()
 
-def form_generic_frames(title, couleur_fond, couleur_bordure,access_to_network):
+def form_generic_frames(master,title, couleur_fond, couleur_bordure,access_to_network):
+#----------------------------------------------------
+#|                    Frame                         |
+#|            zone_alert_explications               |
+#----------------------------------------------------
+#|                    Frame                         |
+#|             zone_access2programs                 |
+#|                                                  |
+#|              Frame           |       Frame       |
+#|           zone_actions       |  zone_help_cancel |
+#----------------------------------------------------
+#|                    Frame                         |
+#|                  zone_notes                      |
+#----------------------------------------------------
+    #master = tk.Tk()
+    form = tk.Toplevel(master)
+    form.config(padx=10,pady=10,bg=couleur_fond)
+    form.title(title)
+    try:
+        form.iconbitmap(r'favicon.ico')
+    except tk.TclError:
+        favicone = "rien"
+
+    zone_alert_explications = tk.Frame(form, bg=couleur_fond, pady=10)
+    zone_alert_explications.pack()
+    
+    zone_access2programs = tk.Frame(form, bg=couleur_fond)
+    zone_access2programs.pack()
+    zone_actions = tk.Frame(zone_access2programs, bg=couleur_fond)
+    zone_actions.pack(side="left")
+    zone_ok_help_cancel = tk.Frame(zone_access2programs, bg=couleur_fond)
+    zone_ok_help_cancel.pack(side="left")
+    zone_notes = tk.Frame(form, bg=couleur_fond, pady=10)
+    zone_notes.pack()
+
+    if (access_to_network == False):
+        tk.Label(zone_alert_explications, text=errors["no_internet"], 
+                 bg=couleur_fond,  fg="red").pack()
+
+    
+    return [form,
+            zone_alert_explications,
+            zone_access2programs,
+            zone_actions,
+            zone_ok_help_cancel,
+            zone_notes]
+
+def main_form_frames(title, couleur_fond, couleur_bordure,access_to_network):
 #----------------------------------------------------
 #|                    Frame                         |
 #|            zone_alert_explications               |
@@ -153,6 +200,7 @@ def form_generic_frames(title, couleur_fond, couleur_bordure,access_to_network):
             zone_ok_help_cancel,
             zone_notes]
 
+
 def generic_input_controls(filename):
     check_file_name(filename)
        
@@ -192,7 +240,7 @@ def formulaire_main(access_to_network, last_version):
      zone_access2programs,
      zone_actions,
      zone_ok_help_cancel,
-     zone_notes] = form_generic_frames("La Transition bibliographique en chantant nous ouvre...",
+     zone_notes] = main_form_frames("La Transition bibliographique en chantant nous ouvre...",
                                       couleur_fond,
                                       couleur_bouton,access_to_network)
     
@@ -208,24 +256,31 @@ def formulaire_main(access_to_network, last_version):
     frame_help_cancel = tk.Frame(zone_ok_help_cancel, bg=couleur_fond, pady=10, padx=10)
     frame_help_cancel.pack()
     
+# =============================================================================
+#     1er module : convertir un fichier MARC en tables
+# =============================================================================
     marc2tableButton = tk.Button(frame1, text = "Convertir un fichier Marc\n en tableaux", 
-                                 command=lambda: marc2tables.formulaire_marc2tables(access_to_network), 
+                                 command=lambda: marc2tables.formulaire_marc2tables(master,access_to_network), 
                                  padx=10,pady=25, bg="#2D4991",fg="white")
     marc2tableButton.pack()
     
+# =============================================================================
+#   2e module : aligner ses données bibliographiques ou AUT  
+# =============================================================================
     bib2arkButton = tk.Button(frame2, text = "Aligner ses données  BIB (tableaux)\n avec le catalogue BnF", 
-                              command=lambda: bib2ark.formulaire_noticesbib2arkBnF(access_to_network,[0,False]), 
+                              command=lambda: bib2ark.formulaire_noticesbib2arkBnF(master,access_to_network,[0,False]), 
                               padx=10,pady=10, bg="#fefefe", font="Arial 9 bold")
     bib2arkButton.pack()
-    
-    #tk.Label(frame2,bg="white",text="\n").pack()
-    
-    aut2arkButton = tk.Button(frame2, text = "Aligner ses données AUT ", command=lambda: aut2ark.formulaire_noticesaut2arkBnF(access_to_network,[0,False]), 
+        
+    aut2arkButton = tk.Button(frame2, text = "Aligner ses données AUT ", command=lambda: aut2ark.formulaire_noticesaut2arkBnF(master,access_to_network,[0,False]), 
                               padx=50,pady=1, bg="#fefefe", font="Arial 8 normal")
     aut2arkButton.pack()
-    
+
+# =============================================================================
+#    3e module : exporter des notices à partir d'une liste d'ARK
+# =============================================================================
     ark2recordsButton = tk.Button(frame3, text = "Exporter une liste d'ARK BnF\n en notices XML", 
-                                  command=lambda: ark2records.formulaire_ark2records(access_to_network,[0,False]), 
+                                  command=lambda: ark2records.formulaire_ark2records(master,access_to_network,[0,False]), 
                                   padx=10,pady=25, bg="#99182D", fg="white")
     ark2recordsButton.pack()
 

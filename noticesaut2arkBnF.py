@@ -141,7 +141,7 @@ def ark2metas(ark, unidec=True):
 
 
 
-def align_from_aut(master, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf):
+def align_from_aut(form, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf):
     """Aligner ses données d'autorité avec les autorités BnF à partir d'une extraction tabulée de la base d'autorités"""
     header_columns = ["nbARK","NumNot","ark AUT trouvé","ARK AUT initial","frbnf AUT initial","ISNI","Nom","Complément nom","Date début","Date fin"]
     if (meta_bnf == 1):
@@ -197,7 +197,7 @@ def align_from_aut(master, entry_filename, headers, input_data_type, file_nb, id
     
 
 
-def align_from_bib(master, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf):
+def align_from_bib(form, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf):
     """Alignement de ses données d'autorité avec les autorités BnF à partir d'une extraction de sa base bibliographique (métadonnées BIB + Nom, prénom et dates de l'auteur)"""
     header_columns = ["nbARK","NumNot","ark AUT trouvé","ark BIB initial","frbnf BIB initial","Titre","ISNI","Nom","Complément nom","dates Auteur"]
     if (meta_bnf == 1):
@@ -541,32 +541,32 @@ def extractARKautfromBIB(record,nom,prenom,date_debut):
 # Gestion du formulaire
 #==============================================================================
 
-def launch(master, entry_filename, headers, input_data_type, file_nb, id_traitement, meta_bnf):
+def launch(form, entry_filename, headers, input_data_type, file_nb, id_traitement, meta_bnf):
     main.check_file_name(entry_filename)
     #results2file(nb_fichiers_a_produire)
     liste_reports = create_reports(id_traitement, file_nb)    
     
     if (input_data_type == 1):
-        align_from_aut(master, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf)
+        align_from_aut(form, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf)
     elif (input_data_type == 2):
-        align_from_bib(master, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf)
+        align_from_bib(form, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf)
     else:
         main.popup_errors("Format en entrée non défini")
-    bib2ark.fin_traitements(master,liste_reports)
+    bib2ark.fin_traitements(form,liste_reports)
 
 
 
 
-def formulaire_noticesaut2arkBnF(access_to_network=True, last_version=[0,False]):
+def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,False]):
     couleur_fond = "white"
     couleur_bouton = "#515151"
     
-    [master,
+    [form,
      zone_alert_explications,
      zone_access2programs,
      zone_actions,
      zone_ok_help_cancel,
-     zone_notes] = main.form_generic_frames("Aligner ses données d'autorité avec les notices BnF",
+     zone_notes] = main.form_generic_frames(master,"Aligner ses données d'autorité avec les notices BnF",
                                       couleur_fond,couleur_bouton,
                                       access_to_network)
     
@@ -617,12 +617,15 @@ def formulaire_noticesaut2arkBnF(access_to_network=True, last_version=[0,False])
 
     tk.Label(frame_input_aut,bg=couleur_fond, text="\nType de données en entrée", font="Arial 10 bold", anchor="w").pack(anchor="w")
     input_data_type = tk.IntVar()
-    tk.Radiobutton(frame_input_aut,bg=couleur_fond, 
-                   text="N° Notice AUT, ARK, FRBNF, ISNI, Nom, Prénom, Date de naissance, Date de mort\n(extraction notices d'autorité)", 
-                   variable=input_data_type, value=1, justify="left").pack(anchor="w")
-    tk.Radiobutton(frame_input_aut,bg=couleur_fond, 
-                   text="N° Notice AUT, N° notice BIB, ARK Bib, FRBNF Bib, Titre, ISNI, Nom, Prénom, Dates Auteur,\n(extraction notices bib)", 
-                   variable=input_data_type, value=2, justify="left").pack(anchor="w")
+    bib2ark.radioButton_lienExample(frame_input_aut,input_data_type,1,couleur_fond,
+                            "Liste de notices d'autorité",
+                            "(N° Notice AUT | ARK | FRBNF | ISNI | Nom | Prénom | Date de naissance | Date de mort)",
+                            "https://raw.githubusercontent.com/Lully/transbiblio/master/examples/aut_align_aut.tsv")
+    bib2ark.radioButton_lienExample(frame_input_aut,input_data_type,2,couleur_fond,
+                            "Liste de notices bibliographiques",
+                            "(N° Notice AUT | N° notice BIB | ARK Bib | FRBNF Bib | Titre | ISNI | Nom | Prénom | Dates Auteur)",
+                            "https://raw.githubusercontent.com/Lully/transbiblio/master/examples/aut_align_bib.tsv")
+    
     input_data_type.set(1)
 
     tk.Label(frame_input_aut,bg=couleur_fond, text="\n").pack()
@@ -657,7 +660,7 @@ def formulaire_noticesaut2arkBnF(access_to_network=True, last_version=[0,False])
     
     #file_format.focus_set()
     b = tk.Button(zone_ok_help_cancel, text = "Aligner\nles autorités", 
-                  command = lambda: launch(master, entry_filename.get(), headers.get(), input_data_type.get(), file_nb.get(), outputID.get(), meta_bnf.get()), 
+                  command = lambda: launch(form, entry_filename.get(), headers.get(), input_data_type.get(), file_nb.get(), outputID.get(), meta_bnf.get()), 
                   width = 15, borderwidth=1, pady=40, fg="white",
                   bg=couleur_bouton, font="Arial 10 bold"
                   )
@@ -666,7 +669,7 @@ def formulaire_noticesaut2arkBnF(access_to_network=True, last_version=[0,False])
     main.form_saut_de_ligne(zone_ok_help_cancel, couleur_fond)
     call4help = tk.Button(zone_ok_help_cancel, text="Besoin d'aide ?", command=lambda: main.click2help("https://github.com/Lully/transbiblio"), padx=10, pady=1, width=15)
     call4help.pack()    
-    cancel = tk.Button(zone_ok_help_cancel, bg=couleur_fond, text="Annuler", command=lambda: main.annuler(master), padx=10, pady=1, width=15)
+    cancel = tk.Button(zone_ok_help_cancel, bg=couleur_fond, text="Annuler", command=lambda: main.annuler(form), padx=10, pady=1, width=15)
     cancel.pack()
 
     tk.Label(zone_notes, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
@@ -683,6 +686,6 @@ if __name__ == '__main__':
     last_version = [0,False]
     if(access_to_network is True):
         last_version = main.check_last_compilation(programID)
-    formulaire_noticesaut2arkBnF(access_to_network,last_version)
-    
+    #formulaire_noticesaut2arkBnF(access_to_network,last_version)
+    main.formulaire_main(access_to_network, last_version)
     

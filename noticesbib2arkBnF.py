@@ -23,6 +23,7 @@ from collections import defaultdict
 import webbrowser
 import codecs
 import json
+import base64
 import http.client
 import main as main
 
@@ -1221,12 +1222,29 @@ def download_last_update():
 # Création de la boîte de dialogue
 #==============================================================================
 
-def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False]):
+def radioButton_lienExample(frame,variable_button,val,couleur_fond,text1,text2,link):
+    packButton = tk.Frame(frame, bg=couleur_fond)
+    packButton.pack(anchor="w")
+    line1 = tk.Frame(packButton, bg=couleur_fond)
+    line1.pack(anchor="w")
+    line2 = tk.Frame(packButton, bg=couleur_fond)
+    line2.pack(anchor="w")
+    tk.Radiobutton(line1,bg=couleur_fond, 
+                   text=text1, 
+                   variable=variable_button, value=val, justify="left").pack(anchor="w", side="left")    
+    example_ico = tk.Button(line1, bd=0, justify="left", font="Arial 7 italic",
+                                    text="exemple", command=lambda: main.click2help(link))
+    example_ico.pack(anchor="w", side="left")
+    tk.Label(line2, bg=couleur_fond, text="      "+text2, justify="left").pack(anchor="w")
+
+
+def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,False]):
     """Affichage du formulaire : disposition des zones, options, etc."""
     couleur_fond = "white"
     couleur_bouton = "#acacac"
     
-    form_bib2ark = tk.Tk()
+    form_bib2ark = tk.Toplevel(master)
+    #form_bib2ark = tk.Tk()
     form_bib2ark.config(padx=30, pady=20,bg=couleur_fond)
     form_bib2ark.title("Programme d'alignement de données bibliographiques avec la BnF")
     try:
@@ -1302,84 +1320,45 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
     
     
     tk.Label(cadre_input_type_docs_zone,bg=couleur_fond, text="Type de documents  ", font="Arial 10 bold", justify="left").pack(anchor="w", side="left")
-    type_doc_bib = tk.Entry(cadre_input_type_docs_zone, width=3, bd=2)
-    type_doc_bib.pack(anchor="w", side="left")
 
-    ligne_mon_impr = tk.Frame(cadre_input_type_docs_explications, bg=couleur_fond)
-    ligne_mon_impr.pack(anchor="w")
-    ligne_mon_impr_ligne1 = tk.Frame(ligne_mon_impr, bg=couleur_fond)
-    ligne_mon_impr_ligne1.pack(anchor="w")
-    ligne_mon_impr_ligne2 = tk.Frame(ligne_mon_impr, bg=couleur_fond)
-    ligne_mon_impr_ligne2.pack(anchor="w")
-    tk.Label(ligne_mon_impr_ligne1, bg=couleur_fond, text="1 = Documents imprimés (monographies)", justify="left").pack(anchor="w", side="left")
-    """icone_info = tk.PhotoImage(file='img/example.png')
-    monimpr_example_ico = tk.Button(ligne_mon_impr_ligne1, bd=0, justify="left",
-                                    image=icone_info, command=lambda: main.click2help("https://raw.githubusercontent.com/Lully/transbiblio/master/examples/mon_impr.tsv"))
-    monimpr_example_ico.pack(anchor="w", side="left")"""
-    tk.Label(ligne_mon_impr_ligne2, bg=couleur_fond, text="      (Colonnes : Num Not | FRBNF | ARK | ISBN | EAN | Titre | Auteur | Date)", justify="left").pack(anchor="w")
-
-
-    ligne_adv = tk.Frame(cadre_input_type_docs_explications, bg=couleur_fond)
-    ligne_adv.pack(anchor="w")
-    ligne_adv_ligne1 = tk.Frame(ligne_adv, bg=couleur_fond)
-    ligne_adv_ligne1.pack(anchor="w")
-    ligne_adv_ligne2 = tk.Frame(ligne_adv, bg=couleur_fond)
-    ligne_adv_ligne2.pack(anchor="w")
-    tk.Label(ligne_adv_ligne1, bg=couleur_fond, text="2 = Audiovisuel (CD / DVD)", justify="left").pack(anchor="w", side="left")
-    """ligne_adv_example_ico = tk.Button(ligne_adv_ligne1, 
-                                    image=icone_info, command=lambda: main.click2help("https://raw.githubusercontent.com/Lully/transbiblio/master/examples/adv.tsv"),
-                                    bd=0, justify="left")
-    ligne_adv_example_ico.pack(anchor="w", side="left")"""
-    tk.Label(ligne_adv_ligne2, bg=couleur_fond, text="      (Num Not | FRBNF | ARK | EAN | N° commercial | Titre | Auteur | Date)", justify="left").pack(anchor="w")
-
-    ligne_per = tk.Frame(cadre_input_type_docs_explications, bg=couleur_fond)
-    ligne_per.pack(anchor="w")
-    ligne_per_ligne1 = tk.Frame(ligne_per, bg=couleur_fond)
-    ligne_per_ligne1.pack(anchor="w")
-    ligne_per_ligne2 = tk.Frame(ligne_per, bg=couleur_fond)
-    ligne_per_ligne2.pack(anchor="w")
-    tk.Label(ligne_per_ligne1, bg=couleur_fond, text="3 = Périodiques", justify="left").pack(anchor="w", side="left")
-    """ligne_per_example_ico = tk.Button(ligne_per_ligne1, 
-                                    image=icone_info, command=lambda: main.click2help("https://raw.githubusercontent.com/Lully/transbiblio/master/examples/per.tsv"),
-                                    bd=0, justify="left")
-    ligne_per_example_ico.pack(anchor="w", side="left")"""
-    tk.Label(ligne_per_ligne2, bg=couleur_fond, text="      (Num Not | FRBNF | ARK | ISSN | Titre | Auteur | Date)", justify="left").pack(anchor="w")
-
-    #type_doc_bib = tk.IntVar()
-    """tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, 
-                   text="Documents imprimés (monographies)\n(Colonnes : Num Not | FRBNF | ARK | ISBN | EAN | Titre | Auteur | Date)", 
-                   variable=type_doc_bib, value=1, justify="left").pack(anchor="w")
-    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, 
-                   text="Audiovisuel (CD / DVD)\n(Num Not | FRBNF | ARK | EAN | N° commercial | Titre | Auteur | Date)", 
-                   variable=type_doc_bib, value=2, justify="left").pack(anchor="w")
-    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, 
-                   text="Périodiques imprimés\n(Num Not | FRBNF | ARK | ISSN | Titre | Auteur | Date | Lieu de publication)", 
-                   variable=type_doc_bib, value=3, justify="left").pack(anchor="w")"""
-    
+    type_doc_bib = tk.IntVar()
+    radioButton_lienExample(cadre_input_type_docs,type_doc_bib,1,couleur_fond,
+                            "Documents imprimés (monographies)",
+                            "(Colonnes : Num Not | FRBNF | ARK | ISBN | EAN | Titre | Auteur | Date)",
+                            "https://raw.githubusercontent.com/Lully/transbiblio/master/examples/mon_impr.tsv")
+    radioButton_lienExample(cadre_input_type_docs,type_doc_bib,2,couleur_fond,
+                            "Audiovisuel (CD / DVD)",
+                            "(Num Not | FRBNF | ARK | EAN | N° commercial | Titre | Auteur | Date)",
+                            "https://raw.githubusercontent.com/Lully/transbiblio/master/examples/adv.tsv")
+    radioButton_lienExample(cadre_input_type_docs,type_doc_bib,3,couleur_fond,
+                            "Périodiques",
+                            "(Num Not | FRBNF | ARK | ISSN | Titre | Auteur | Date | Lieu de publication)",
+                            "https://raw.githubusercontent.com/Lully/transbiblio/master/examples/per.tsv")
+    type_doc_bib.set(1)
     
     
     
     #Choix du format
     tk.Label(cadre_output_header,bg=couleur_fond, fg=couleur_bouton,text="En sortie :", font="bold").pack(anchor="w")
     tk.Label(cadre_output_nb_fichiers_zone, bg=couleur_fond, font="Arial 10 bold", text="Nombre de fichiers  ").pack(anchor="w", side="left")
-    file_nb = tk.Entry(cadre_output_nb_fichiers_zone, width=3, bd=2)
+    file_nb = tk.IntVar()
+    """file_nb = tk.Entry(cadre_output_nb_fichiers_zone, width=3, bd=2)
     file_nb.pack(anchor="w", side="left")
-    tk.Label(cadre_output_nb_fichiers_explications, bg=couleur_fond,text="""1 = 1 fichier d'alignements
-2 = Plusieurs fichiers (0 ARK trouvé / 1 ARK / Plusieurs ARK)""",
-                                   justify="left").pack(anchor="w")
+    tk.Label(cadre_output_nb_fichiers_explications, bg=couleur_fond,text="1 = 1 fichier d'alignements\n2 = Plusieurs fichiers (0 ARK trouvé / 1 ARK / Plusieurs ARK)",
+                                   justify="left").pack(anchor="w")"""
 
 
-    """tk.Radiobutton(cadre_output_nb_fichier,bg=couleur_fond, text="1 fichier", variable=file_nb , value=1, justify="left").pack(anchor="w")
-    tk.Radiobutton(cadre_output_nb_fichier,bg=couleur_fond, text="Plusieurs fichiers \n(Pb / 0 / 1 / plusieurs ARK trouvés)", justify="left", variable=file_nb , value=2).pack(anchor="w")"""
-    
+    tk.Radiobutton(cadre_output_nb_fichier,bg=couleur_fond, text="1 fichier", variable=file_nb , value=1, justify="left").pack(anchor="w")
+    tk.Radiobutton(cadre_output_nb_fichier,bg=couleur_fond, text="Plusieurs fichiers \n(Pb / 0 / 1 / plusieurs ARK trouvés)", justify="left", variable=file_nb , value=2).pack(anchor="w")
+    file_nb.set(1)
     #Récupérer les métadonnées BIB (dublin core)
-    """tk.Label(cadre_output_nb_fichier,bg=couleur_fond, fg=couleur_bouton, text="\n").pack()    
+    tk.Label(cadre_output_nb_fichier,bg=couleur_fond, fg=couleur_bouton, text="\n").pack()    
     meta_bib = tk.IntVar()
     meta_bib_check = tk.Checkbutton(cadre_output_nb_fichier, bg=couleur_fond, 
                        text="Récupérer les métadonnées\nbibliographiques BnF [Dublin Core]", 
                        variable=meta_bib, justify="left")
     meta_bib_check.pack(anchor="w")
-    tk.Label(cadre_output_nb_fichier,text="\n", bg=couleur_fond).pack()"""
+    tk.Label(cadre_output_nb_fichier,text="\n", bg=couleur_fond).pack()
 
 
     
@@ -1396,7 +1375,7 @@ def formulaire_noticesbib2arkBnF(access_to_network=True, last_version=[0,False])
     
     b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="Arial 10 bold", 
                   text = "Aligner les\nnotices BIB", 
-                  command = lambda: launch(form_bib2ark, entry_filename.get(), int(type_doc_bib.get()), int(file_nb.get()), 1, id_traitement.get()), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
+                  command = lambda: launch(form_bib2ark, entry_filename.get(), type_doc_bib.get(), file_nb.get(), meta_bib.get(), id_traitement.get()), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
     
     tk.Label(cadre_valider, font="bold", text="", bg=couleur_fond).pack()
@@ -1420,4 +1399,6 @@ if __name__ == '__main__':
     last_version = [0,False]
     if(access_to_network is True):
         last_version = check_last_compilation(programID)
-    formulaire_noticesbib2arkBnF(access_to_network,last_version)
+    main.formulaire_main(access_to_network, last_version)
+    #formulaire_noticesbib2arkBnF(access_to_network,last_version)
+    

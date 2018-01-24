@@ -283,22 +283,22 @@ def write_reports(id_traitement):
             file.write("\t".join(record) + "\n")            
 
     
-def end_of_treatments(master,id_traitement):
+def end_of_treatments(form,id_traitement):
     write_reports(id_traitement)
-    master.destroy()
+    form.destroy()
 
 
-def launch(master,entry_filename,file_format, output_ID):
+def launch(form,entry_filename,file_format, output_ID):
     print(entry_filename)
     if (file_format == 1):
         iso2tables(entry_filename, output_ID)
     else:
         xml2tables(entry_filename, output_ID)
-    end_of_treatments(master,output_ID)
+    end_of_treatments(form,output_ID)
 
 
 
-def formulaire_marc2tables(access_to_network=True, last_version=[version, False]):
+def formulaire_marc2tables(master,access_to_network=True, last_version=[version, False]):
 # =============================================================================
 # Structure du formulaire - Cadres
 # =============================================================================
@@ -306,12 +306,12 @@ def formulaire_marc2tables(access_to_network=True, last_version=[version, False]
     couleur_bouton = "#2D4991"
     #couleur_bouton = "#99182D"
     
-    [master,
+    [form,
      zone_alert_explications,
      zone_access2programs,
      zone_actions,
      zone_ok_help_cancel,
-     zone_notes] = main.form_generic_frames("Conversion de fichiers de notices MARC en tableaux",
+     zone_notes] = main.form_generic_frames(master,"Conversion de fichiers de notices MARC en tableaux",
                                       couleur_fond,couleur_bouton,
                                       access_to_network)
     
@@ -412,7 +412,7 @@ def formulaire_marc2tables(access_to_network=True, last_version=[version, False]
     #Bouton de validation
     
     b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", text = "OK", 
-                  command=lambda: launch(master, entry_filename.get(), file_format.get(), output_ID.get()), 
+                  command=lambda: launch(form, entry_filename.get(), file_format.get(), output_ID.get()), 
                   borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
     
@@ -421,7 +421,7 @@ def formulaire_marc2tables(access_to_network=True, last_version=[version, False]
     call4help = tk.Button(cadre_valider, text="Besoin d'aide ?", command=lambda: main.click2help("https://github.com/Lully/transbiblio"), padx=10, pady=1, width=15)
     call4help.pack()
     
-    cancel = tk.Button(cadre_valider, bg=couleur_fond, text="Annuler", command=lambda: main.annuler(master), padx=10, pady=1, width=15)
+    cancel = tk.Button(cadre_valider, bg=couleur_fond, text="Annuler", command=lambda: main.annuler(form), padx=10, pady=1, width=15)
     cancel.pack()
     
     tk.Label(zone_notes, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
@@ -436,5 +436,6 @@ if __name__ == '__main__':
     access_to_network = main.check_access_to_network()
     if(access_to_network is True):
         last_version = main.check_last_compilation(programID)
-    formulaire_marc2tables(access_to_network,last_version)
+    main.formulaire_main(access_to_network, last_version)
+    #formulaire_marc2tables(access_to_network,last_version)
 

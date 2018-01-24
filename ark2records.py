@@ -141,7 +141,7 @@ def record2file(file, XMLrec, format_file):
         file.write(record)
 
 
-def callback(master, filename, headers, AUTliees, outputID, format_records=1, format_file=1):
+def callback(form, filename, headers, AUTliees, outputID, format_records=1, format_file=1):
     main.generic_input_controls(filename)
     format_BIB = dict_format_records[format_records]
     bib_file = file_create("bib", format_file, outputID)
@@ -168,7 +168,7 @@ def callback(master, filename, headers, AUTliees, outputID, format_records=1, fo
         file_fin(bib_file, format_file)
         if (AUTliees == 1):
             file_fin(aut_file, format_file)
-    fin_traitements(master,outputID)
+    fin_traitements(form,outputID)
 
 def errors_file(outputID):
     errors_file = open(outputID + "-errors.txt", "w", encoding="utf-8")
@@ -187,16 +187,16 @@ def fin_traitements(window,outputID):
 # Création de la boîte de dialogue
 #==============================================================================
 
-def formulaire_ark2records(access_to_network=True,last_version=[version,False]):
+def formulaire_ark2records(master,access_to_network=True,last_version=[version,False]):
     couleur_fond = "white"
     couleur_bouton = "#99182D"
     
-    [master,
+    [form,
      zone_alert_explications,
      zone_access2programs,
      zone_actions,
      zone_ok_help_cancel,
-     zone_notes] = main.form_generic_frames("Récupérer les notices complètes de la BnF à partir d'une liste d'ARK",
+     zone_notes] = main.form_generic_frames(master,"Récupérer les notices complètes de la BnF à partir d'une liste d'ARK",
                                       couleur_fond,couleur_bouton,
                                       access_to_network)
     
@@ -274,7 +274,7 @@ def formulaire_ark2records(access_to_network=True,last_version=[version,False]):
     
     #file_format.focus_set()
     b = tk.Button(zone_ok_help_cancel, text = "OK", 
-                  command = lambda: callback(master, entry_filename.get(), headers.get(), AUTliees.get(), outputID.get(), format_records_choice.get(), format_file.get()), 
+                  command = lambda: callback(form, entry_filename.get(), headers.get(), AUTliees.get(), outputID.get(), format_records_choice.get(), format_file.get()), 
                   width = 15, borderwidth=1, pady=20, fg="white",
                   bg=couleur_bouton)
     b.pack()
@@ -282,7 +282,7 @@ def formulaire_ark2records(access_to_network=True,last_version=[version,False]):
     main.form_saut_de_ligne(zone_ok_help_cancel, couleur_fond)
     call4help = tk.Button(zone_ok_help_cancel, text="Besoin d'aide ?", command=lambda: main.click2help("https://github.com/Lully/transbiblio"), padx=10, pady=1, width=15)
     call4help.pack()    
-    cancel = tk.Button(zone_ok_help_cancel, bg=couleur_fond, text="Annuler", command=lambda: main.annuler(master), padx=10, pady=1, width=15)
+    cancel = tk.Button(zone_ok_help_cancel, bg=couleur_fond, text="Annuler", command=lambda: main.annuler(form), padx=10, pady=1, width=15)
     cancel.pack()
 
     tk.Label(zone_notes, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
@@ -299,4 +299,5 @@ if __name__ == '__main__':
     access_to_network = main.check_access_to_network()
     if(access_to_network is True):
         last_version = main.check_last_compilation(programID)
-    formulaire_ark2records(access_to_network,[version, False])
+    main.formulaire_main(access_to_network, last_version)
+    #formulaire_ark2records(access_to_network,[version, False])
