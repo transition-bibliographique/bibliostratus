@@ -201,16 +201,16 @@ def main_form_frames(title, couleur_fond, couleur_bordure,access_to_network):
             zone_notes]
 
 
-def generic_input_controls(filename):
-    check_file_name(filename)
+def generic_input_controls(master,filename):
+    check_file_name(master,filename)
        
-def check_file_name(filename):
+def check_file_name(master,filename):
     try:
         open(filename,"r")
     except FileNotFoundError:
-        popup_errors("Le fichier " + filename + " n'existe pas")
+        popup_errors(master,"Le fichier " + filename + " n'existe pas")
 
-def popup_errors(text):
+def popup_errors(master,text):
     couleur_fond = "white"
     couleur_bordure = "red"
     [master,
@@ -218,7 +218,7 @@ def popup_errors(text):
             zone_access2programs,
             zone_actions,
             zone_ok_help_cancel,
-            zone_notes] = form_generic_frames("Alerte", couleur_fond, couleur_bordure,True)
+            zone_notes] = form_generic_frames(master,"Alerte", couleur_fond, couleur_bordure,True)
     tk.Label(zone_access2programs, text=text, fg=couleur_bordure, 
              font="bold", bg=couleur_fond, padx=10, pady=10).pack()
 

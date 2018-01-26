@@ -23,7 +23,6 @@ from collections import defaultdict
 import webbrowser
 import codecs
 import json
-import base64
 import http.client
 import main as main
 
@@ -280,7 +279,8 @@ def comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,da
     ark = ""
     field = sous_zone.split("$")[0]
     subfield = sous_zone.split("$")[1]
-    titreBNF = main.extract_subfield(recordBNF,field,subfield,1)
+    titreBNF = nettoyageTitrePourControle(main.extract_subfield(recordBNF,field,subfield,1))
+
     if (titre != "" and titreBNF != ""):
         if (titre == titreBNF):
             ark = ark_current
@@ -641,7 +641,7 @@ def isbn2ark(NumNot,isbn_init,isbn,titre,auteur,date):
     
     resultatsIsbn2ARK = isbn2sru(NumNot,isbn_init,titre,auteur,date)
     #Requête sur l'ISBN dans le SRU, avec contrôle sur Titre ou auteur
-    if (resultatsIsbn2ARK == ""):
+    if (resultatsIsbn2ARK == "" and isbn_init != isbn):
         resultatsIsbn2ARK = isbn2sru(NumNot,isbn,titre,auteur,date)
 
     isbnConverti = conversionIsbn(isbn)
@@ -915,7 +915,7 @@ def monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
             try:
                 date = row[7]
             except IndexError:
-                main.popup_errors("Notice n°", row[0], " : Problème de format des données en entrée (nombre de colonnes)")
+                main.popup_errors(form_bib2ark,"Notice n°" + row[0] +  " : Problème de format des données en entrée (nombre de colonnes)")
                 break
             n += 1
             #print(row)
@@ -1118,7 +1118,7 @@ def perimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
     
 
 def launch(form_bib2ark, entry_filename, type_doc_bib, file_nb, meta_bib, id_traitement):
-    main.check_file_name(entry_filename)
+    main.check_file_name(form_bib2ark,entry_filename)
     #results2file(nb_fichiers_a_produire)
     #print("type_doc_bib : ", type_doc_bib)
     #print("file_nb : ",file_nb)
