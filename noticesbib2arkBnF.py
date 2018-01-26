@@ -409,9 +409,9 @@ def conversionIsbn(isbn):
     longueur = len(isbn)
     isbnConverti = ""
     if (longueur == 10):
-        isbnConverti == conversionIsbn1013(isbn)
+        isbnConverti = conversionIsbn1013(isbn)
     elif (longueur == 13):
-        isbnConverti == conversionIsbn1310(isbn)    
+        isbnConverti = conversionIsbn1310(isbn)
     return isbnConverti
 
 #conversion isbn13 en isbn10
