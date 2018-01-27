@@ -1386,19 +1386,19 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     cancel = tk.Button(cadre_valider, bg=couleur_fond, text="Annuler", command=lambda: annuler(form_bib2ark), padx=10, pady=1, width=15)
     cancel.pack()
     
-    tk.Label(zone_commentaires, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
+    """tk.Label(zone_commentaires, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
     
     if (last_version[1] == True):
         download_update = tk.Button(zone_commentaires, text = "Télécharger la version " + str(last_version[0]), command=download_last_update)
-        download_update.pack()
+        download_update.pack()"""
     
     tk.mainloop()
 
 if __name__ == '__main__':
     access_to_network = check_access_to_network()
     last_version = [0,False]
-    if(access_to_network is True):
-        last_version = check_last_compilation(programID)
+    #if(access_to_network is True):
+    #    last_version = check_last_compilation(programID)
     main.formulaire_main(access_to_network, last_version)
     #formulaire_noticesbib2arkBnF(access_to_network,last_version)
     

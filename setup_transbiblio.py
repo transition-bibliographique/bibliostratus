@@ -6,7 +6,7 @@ from cx_Freeze import setup, Executable
 import os
 
 
-path_anaconda = r"D:\BNF0017855\Programmes\Anaconda2"
+path_anaconda = r"C:\ProgramData\Anaconda3"
 if (path_anaconda[-1] != "\\"):
     path_anaconda = path_anaconda + "\\"
 
@@ -34,4 +34,4 @@ setup(
 
 #Ajout d'un raccourci pointant vers le fichier *.exe
 raccourci = open("build/transbiblio.bat","w")
-raccourci.write("start exe.win-amd64-3.5/main.exe")
+raccourci.write("start exe.win-amd64-3.6/main.exe")

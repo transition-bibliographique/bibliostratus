@@ -22,7 +22,7 @@ import codecs
 version = 0.02
 programID = "ark2records"
 lastupdate = "12/11/2017"
-#last_version = [version, False]
+last_version = [version, False]
 
 
 ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}
@@ -285,19 +285,19 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
     cancel = tk.Button(zone_ok_help_cancel, bg=couleur_fond, text="Annuler", command=lambda: main.annuler(form), padx=10, pady=1, width=15)
     cancel.pack()
 
-    tk.Label(zone_notes, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
+    """tk.Label(zone_notes, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
 
     
     if (last_version[1] == True):
         download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(last_version[0]), command=main.download_last_update)
-        download_update.pack()
+        download_update.pack()"""
     
     tk.mainloop()
     
 
 if __name__ == '__main__':
     access_to_network = main.check_access_to_network()
-    if(access_to_network is True):
-        last_version = main.check_last_compilation(programID)
+    #if(access_to_network is True):
+    #    last_version = main.check_last_compilation(programID)
     main.formulaire_main(access_to_network, last_version)
     #formulaire_ark2records(access_to_network,[version, False])
