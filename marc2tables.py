@@ -197,6 +197,10 @@ def record2pubPlace(f210a):
     pubPlace = f210a
     return pubPlace
 
+def record2numeroTome(f200h):
+    numeroTome = f200h
+    return numeroTome
+
 def record2issn(f011a):
     issn = f011a
     return issn
@@ -250,6 +254,7 @@ def record2listemetas(record):
                         )
     authors2keywords = aut2keywords(authors)
     date = record2date(record2meta(record,["100"]), record2meta(record,["210$d"]))
+    numeroTome = record2numeroTome(record2meta(record,["200$h"]))
     pubPlace = record2pubPlace(record2meta(record,["210$a"]))
     ark = record2ark(record2meta(record,["033$a"]))
     frbnf = record2frbnf(record2meta(record,["035$a"]))
@@ -266,7 +271,7 @@ def record2listemetas(record):
         
     meta = []
     if (doc_record == "am"):
-        meta = [numNot,frbnf,ark,isbn,ean,title,authors, date]
+        meta = [numNot,frbnf,ark,isbn,ean,title,authors, date, numeroTome]
     elif (doc_record == "jm"):
         meta = [numNot,frbnf,ark,ean,id_commercial_aud,title,authors2keywords,date]
     elif (doc_record == "as"):

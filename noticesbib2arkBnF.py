@@ -205,6 +205,20 @@ def nettoyageDate(date):
         date = date.split(signe)
         date = " ".join(annee for annee in date if annee != "")
     return date
+
+def nettoyageTome(numeroTome):
+    if (numeroTome):
+        numeroTome = unidecode(numeroTome.lower())
+        for lettre in lettres:
+            numeroTome = numeroTome.replace(lettre,"")
+        for signe in ponctuation:
+            numeroTome = numeroTome.split(signe)
+            numeroTome = "~".join(numero for numero in numeroTome)
+        numeroTome = numeroTome.split("~")
+        numeroTome = [numero for numero in numeroTome if numero != ""][-1]
+        numeroTome = ltrim(numeroTome)
+    return numeroTome
+
     
 def nettoyagePubPlace(pubPlace) :
     """Nettoyage du lieu de publication"""
@@ -242,7 +256,7 @@ def comparerBibBnf(NumNot,ark_current,systemid,isbn,titre,auteur,date,origineCom
     if (test == True):
         ark =  comparaisonIsbn(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF)
         if (ark == ""):
-            ark = comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison)
+            ark = comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,"",recordBNF,origineComparaison)
     return ark
 
 def comparaisonIsbn(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF):
@@ -265,7 +279,7 @@ def comparaisonIsbn(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF
             NumNotices2methode[NumNot].append("N° sys FRBNF + contrôle " + sourceID)
     return ark
 
-def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison):
+def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,numeroTome,recordBNF,origineComparaison):
     ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"200$a")
     if (ark == ""):
         ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"200$e")
@@ -273,8 +287,36 @@ def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordB
         ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"200$i")
     if (ark == ""):
         ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"750$a")
+    if (ark != "" and numeroTome != ""):
+        ark = verificationTomaison(ark,numeroTome,recordBNF)
     return ark
-            
+
+def verificationTomaison(ark,numeroTome,recordBNF):
+    """Une fois qu'on a trouvé un ARK (via une recherche Titre-Auteur-Date,
+    s'il y a un numéro de volume dans les données en entrée on va vérifier
+    si on le retrouve bien dans une des zones où il pourrait se trouver :
+        200$a, 200$h, 461$v"""
+    liste_subfields = ["200$a","200$h","461$v"]
+    volumesBNF = ""
+    for subf in liste_subfields:
+        volumesBNF += "~" + main.extract_subfield(recordBNF,subf.split("$")[0],subf.split("$")[1])
+    for signe in ponctuation:
+        volumesBNF = volumesBNF.replace(signe,"~")
+    for lettre in lettres:
+        volumesBNF = volumesBNF.replace(lettre, "~")
+    volumesBNF = volumesBNF.split("~")
+    volumesBNF = set(ltrim(nb) for nb in volumesBNF if nb != "")
+    if (numeroTome in volumesBNF):
+        return ark
+    else:
+        return ""
+
+def ltrim(nombre_texte):
+    "Supprime les 0 initiaux d'un nombre géré sous forme de chaîne de caractères"
+    while(nombre_texte[0] == "0"):
+        nombre_texte = nombre_texte[1:]
+    return nombre_texte
+
 def comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,sous_zone):
     ark = ""
     field = sous_zone.split("$")[0]
@@ -468,7 +510,7 @@ def isbn2sru(NumNot,isbn,titre,auteur,date):
             recordBNF_url = url_requete_sru('bib.persistentid all "' + ark_current + '"')
             (test,recordBNF) = testURLetreeParse(recordBNF_url)
             if (test == True):
-                ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,recordBNF,"ISBN")
+                ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,"",recordBNF,"ISBN")
                 #NumNotices2methode[NumNot].append("ISBN > ARK")
                 listeARK.append(ark)
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
@@ -562,7 +604,7 @@ def isbn_anywhere2sru(NumNot,isbn,titre,auteur,date):
             recordBNF_url = url_requete_sru('bib.persistentid all "' + ark_current)
             (test2,recordBNF) = testURLetreeParse(recordBNF_url)
             if (test2 == True):
-                ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,recordBNF,"ISBN dans toute la notice")
+                ark = comparaisonTitres(NumNot,ark_current,"",isbn,titre,auteur,date,"",recordBNF,"ISBN dans toute la notice")
                 #NumNotices2methode[NumNot].append("ISBN anywhere > ARK")
                 listeARK.append(ark)
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
@@ -743,7 +785,8 @@ def ppn2metas(ppn):
                 premierauteurPrenom = premierauteurPrenom.split("(")[0]
     return [titre,premierauteurPrenom,premierauteurNom,tousauteurs]
   
-def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,typeRecord,anywhere=False,pubPlace_nett=""):
+def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,anywhere=False,pubPlace_nett=""):
+    "Fonction d'alignement par Titre-Auteur-Date (et contrôles sur type Notice, sur n° de volume si nécessaire)"
 #En entrée : le numéro de notice, le titre (qu'il faut nettoyer pour la recherche)
 #L'auteur = zone auteur initiale, ou à défaut auteur_nett
 #date_nett
@@ -781,7 +824,7 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,typeRecord,anywhere=False,
                     if (recordBNF.find("//mxc:record/mxc:leader",namespaces=ns) is not None and recordBNF.find("//mxc:record/mxc:leader",namespaces=ns).text is not None):
                         typeRecord_current = recordBNF.find("//mxc:record/mxc:leader",namespaces=ns).text[7]
                         if (typeRecord_current == typeRecord):
-                            listeArk.append(comparaisonTitres(NumNot,ark_current,"","",nettoyageTitrePourControle(titre),auteur,date_nett,recordBNF,"Titre-Auteur-Date" + index))
+                            listeArk.append(comparaisonTitres(NumNot,ark_current,"","",nettoyageTitrePourControle(titre),auteur,date_nett,numeroTome,recordBNF,"Titre-Auteur-Date" + index))
                             methode = "Titre-Auteur-Date"
                             if (auteur == "-" and date_nett == "-"):
                                 methode = "Titre"
@@ -840,7 +883,7 @@ def ean2ark(NumNot,ean,titre,auteur,date):
                 ark_current = record.find("srw:recordIdentifier",namespaces=ns).text
                 (test2,recordBNF) = ark2recordBNF(ark_current)
                 if (test2 ==  True):
-                    ark = comparaisonTitres(NumNot,ark_current,"",ean,titre,auteur,date,recordBNF, "EAN")
+                    ark = comparaisonTitres(NumNot,ark_current,"",ean,titre,auteur,date,"",recordBNF, "EAN")
                     NumNotices2methode[NumNot].append("EAN > ARK")
                     listeARK.append(ark)
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
@@ -913,7 +956,7 @@ def monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
         next(entry_file)
         for row in entry_file:
             try:
-                date = row[7]
+                tome = row[8]
             except IndexError:
                 main.popup_errors(form_bib2ark,"Notice n°" + row[0] +  " : Problème de format des données en entrée (nombre de colonnes)")
                 break
@@ -934,6 +977,9 @@ def monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
             auteur_nett = nettoyageAuteur(auteur)
             date = row[7]
             date_nett = nettoyageDate(date)
+            tome = row[8]
+            tome_nett = nettoyageTome(tome)
+
             #Actualisation de l'ARK à partir de l'ARK
             ark = ""
             if (current_ark != ""):
@@ -954,10 +1000,10 @@ def monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
             
             #A défaut, recherche sur Titre-Auteur-Date
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"m",False)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,tome_nett,"m",False)
                 #print("1." + NumNot + " : " + ark)
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"m",True)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,tome_nett,"m",True)
             print(str(n) + ". " + NumNot + " : " + ark)
             nbARK = len(ark.split(","))
             if (ark == ""):
@@ -1023,16 +1069,10 @@ def cddvd(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, li
                 
             #A défaut, recherche sur Titre-Auteur-Date
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"m",False)
-                #print("1." + NumNot + " : " + ark)
-                """print(titre)
-                print(titre_nett)
-                print(auteur)
-                print(auteur_nett)
-                print(date)
-                print(date_nett)"""
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m",False)
+            #A défaut, on recherche Titre-Auteur dans tous champs (+Date comme date)
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"m",True)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m",True)
             print(NumNot + " : " + ark)
             nbARK = len(ark.split(","))
             if (ark == ""):
@@ -1094,10 +1134,10 @@ def perimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
                 ark = issn2ark(NumNot,issn,issn_propre,titre_nett,auteur_nett,date_nett)
             #A défaut, recherche sur Titre-Auteur-Date
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"s",False,pubPlace_nett)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","s",False,pubPlace_nett)
             #A défaut, recherche sur T-A-D tous mots
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"s",True,pubPlace_nett)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","s",True,pubPlace_nett)
             print(str(n) + ". " + NumNot + " : " + ark)
             nbARK = len(ark.split(","))
             if (ark == ""):
@@ -1324,7 +1364,7 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     type_doc_bib = tk.IntVar()
     radioButton_lienExample(cadre_input_type_docs,type_doc_bib,1,couleur_fond,
                             "Documents imprimés (monographies)",
-                            "(Colonnes : Num Not | FRBNF | ARK | ISBN | EAN | Titre | Auteur | Date)",
+                            "(Colonnes : Num Not | FRBNF | ARK | ISBN | EAN | Titre | Auteur | Date | Volume-Tome)",
                             "https://raw.githubusercontent.com/Lully/transbiblio/master/examples/mon_impr.tsv")
     radioButton_lienExample(cadre_input_type_docs,type_doc_bib,2,couleur_fond,
                             "Audiovisuel (CD / DVD)",
