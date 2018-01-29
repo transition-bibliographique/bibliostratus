@@ -141,8 +141,8 @@ def record2file(file, XMLrec, format_file):
         file.write(record)
 
 
-def callback(form, filename, headers, AUTliees, outputID, format_records=1, format_file=1):
-    main.generic_input_controls(filename)
+def callback(master, form, filename, headers, AUTliees, outputID, format_records=1, format_file=1):
+    main.generic_input_controls(master, filename)
     format_BIB = dict_format_records[format_records]
     bib_file = file_create("bib", format_file, outputID)
     if (AUTliees == 1):
@@ -180,6 +180,7 @@ def fin_traitements(window,outputID):
         errors_file(outputID)
     if (os.path.isfile("temp.xml") is True):
         os.remove("temp.xml")
+    print("Programme d'extraction de notices terminé")
     window.destroy()
     
 
@@ -274,7 +275,7 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
     
     #file_format.focus_set()
     b = tk.Button(zone_ok_help_cancel, text = "OK", 
-                  command = lambda: callback(form, entry_filename.get(), headers.get(), AUTliees.get(), outputID.get(), format_records_choice.get(), format_file.get()), 
+                  command = lambda: callback(master, form, entry_filename.get(), headers.get(), AUTliees.get(), outputID.get(), format_records_choice.get(), format_file.get()), 
                   width = 15, borderwidth=1, pady=20, fg="white",
                   bg=couleur_bouton)
     b.pack()

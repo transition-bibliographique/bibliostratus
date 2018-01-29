@@ -279,7 +279,7 @@ def formulaire_main(access_to_network, last_version):
 # =============================================================================
 #    3e module : exporter des notices à partir d'une liste d'ARK
 # =============================================================================
-    ark2recordsButton = tk.Button(frame3, text = "Exporter une liste d'ARK BnF\n en notices XML", 
+    ark2recordsButton = tk.Button(frame3, text = "Exporter une liste d'ARK BnF\n en notices", 
                                   command=lambda: ark2records.formulaire_ark2records(master,access_to_network,[0,False]), 
                                   padx=10,pady=25, bg="#99182D", fg="white")
     ark2recordsButton.pack()
