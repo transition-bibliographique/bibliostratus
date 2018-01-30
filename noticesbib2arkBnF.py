@@ -551,6 +551,11 @@ def testURLetreeParse(url):
         print(err)
         test = False
         url_access_pbs.append([url,"http.client.RemoteDisconnected"])
+    except http.client.BadStatusLine as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"http.client.BadStatusLine"])
     return (test,resultat)
 
 
@@ -589,6 +594,11 @@ def testURLurlopen(url):
         print(err)
         test = False
         url_access_pbs.append([url,"http.client.RemoteDisconnected"])
+    except http.client.BadStatusLine as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"http.client.BadStatusLine"])
     return (test,resultat)
 
 #Si l'ISBN n'a été trouvé ni dans l'index ISBN, ni dans l'index EAN
@@ -634,7 +644,7 @@ def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date):
         (test,resultats) = testURLetreeParse(url)
         if (test == True):
             for ppn in resultats.xpath("//ppn"):
-                ppn_val = resultats.find("//ppn").text
+                ppn_val = ppn.text
                 Listeppn.append("PPN" + ppn_val)
                 ark = ppn2ark(NumNot,ppn_val,isbn,titre,auteur,date)
             if (ark == ""):
@@ -644,7 +654,7 @@ def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date):
                     (test,resultats) = testURLetreeParse(url)
                     if (test == True):
                         for ppn in resultats.xpath("//ppn"):
-                            ppn_val = resultats.find("//ppn").text
+                            ppn_val = ppn.text
                             Listeppn.append("PPN" + ppn_val)
                             ark = ppn2ark(NumNot,ppn_val,isbnConverti,titre,auteur,date)
                             if (Listeppn != []):
