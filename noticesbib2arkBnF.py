@@ -1240,7 +1240,7 @@ def stats_extraction(liste_reports):
     """Ecriture des rapports de statistiques générales d'alignements"""
     for key in nb_notices_nb_ARK:
         liste_reports[-2].write(str(key) + "\t" + str(nb_notices_nb_ARK[key]) + "\n")
-    if ("Pb FRBNF" in nb_notices_nb_ARK):
+    if ("Pb FRBNF" in sorted(nb_notices_nb_ARK)):
         nb_notices_nb_ARK[-1] = nb_notices_nb_ARK.pop('Pb FRBNF')
     """plt.bar(list(nb_notices_nb_ARK.keys()), nb_notices_nb_ARK.values(), color='skyblue')
     plt.show()"""
