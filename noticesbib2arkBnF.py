@@ -28,7 +28,7 @@ import main as main
 
 #import matplotlib.pyplot as plt
 
-version = 0.92
+version = 0.91
 lastupdate = "29/12/2017"
 programID = "noticesbib2arkBnF"
 
@@ -296,7 +296,7 @@ def verificationTomaison(ark,numeroTome,recordBNF):
     s'il y a un numéro de volume dans les données en entrée on va vérifier
     si on le retrouve bien dans une des zones où il pourrait se trouver :
         200$a, 200$h, 461$v"""
-    liste_subfields = ["200$a","200$h","461$v"]
+    liste_subfields = ["200$h","461$v","200$a"]
     volumesBNF = ""
     for subf in liste_subfields:
         volumesBNF += "~" + main.extract_subfield(recordBNF,subf.split("$")[0],subf.split("$")[1])
@@ -310,6 +310,10 @@ def verificationTomaison(ark,numeroTome,recordBNF):
         return ark
     else:
         return ""
+
+def verificationTomaison_sous_zone(ark,numeroTome,numeroTomeBnF):
+    """Vérifie si le numéro du tome en entrée est présent dans l'extraction des nombres de la sous-zone"""
+    return ark,False
 
 def ltrim(nombre_texte):
     "Supprime les 0 initiaux d'un nombre géré sous forme de chaîne de caractères"
@@ -955,7 +959,7 @@ def ark2metadc(ark):
         
 
 def monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
-    header_columns = ["nbARK","NumNot","ark initial","frbnf","ark trouvé","isbn_nett","ean_propre","titre","auteur","date"]
+    header_columns = ["nbARK","NumNot","Méthode","ark trouvé","ark initial","frbnf","isbn_nett","ean_propre","titre","auteur","date","Tome/Volume"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
     if (file_nb ==  1):
@@ -1024,7 +1028,10 @@ def monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
                 nb_notices_nb_ARK["Pb FRBNF"] += 1
             else:
                 nb_notices_nb_ARK[nbARK] += 1
-            liste_metadonnees = [nbARK,NumNot,ark,frbnf,current_ark,isbn_nett,ean_propre,titre,auteur,date]
+            typeConversionNumNot = ""
+            if (NumNot in NumNotices2methode):
+                typeConversionNumNot = ">".join(NumNotices2methode[NumNot])
+            liste_metadonnees = [nbARK,NumNot,ark,typeConversionNumNot,current_ark,frbnf,isbn_nett,ean_propre,titre,auteur,date,tome]
             if (meta_bib == 1):
                 liste_metadonnees.extend(ark2metadc(ark))
             if (file_nb ==  1):
@@ -1034,7 +1041,7 @@ def monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
         
         
 def cddvd(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
-    header_columns = ["nbARK","NumNot","ark initial","frbnf","ark trouvé","ean_nett","ean_propre","no_commercial_propre","titre","auteur","date"]
+    header_columns = ["nbARK","NumNot","ark trouvé","Méthode","ark initial","frbnf","ean_nett","ean_propre","no_commercial_propre","titre","auteur","date"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
     if (file_nb ==  1):
@@ -1093,7 +1100,12 @@ def cddvd(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, li
                 nb_notices_nb_ARK["Pb FRBNF"] += 1
             else:
                 nb_notices_nb_ARK[nbARK] += 1
-            liste_metadonnees = [nbARK,NumNot,ark,frbnf,current_ark,ean_nett,ean_propre,
+
+            typeConversionNumNot = ""
+            if (NumNot in NumNotices2methode):
+                typeConversionNumNot = ">".join(NumNotices2methode[NumNot])
+                
+            liste_metadonnees = [nbARK,NumNot,ark,typeConversionNumNot,frbnf,current_ark,ean_nett,ean_propre,
                          no_commercial_propre,titre,auteur,date]
             if (meta_bib == 1):
                 liste_metadonnees.extend(ark2metadc(ark))
@@ -1104,7 +1116,7 @@ def cddvd(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, li
 
 #Si option du formulaire = périodiques imprimés
 def perimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
-    header_columns = ["nbARK","NumNot","ark initial","frbnf","ark trouvé","issn_nett","titre","auteur","date","lieu"]
+    header_columns = ["nbARK","NumNot","ark trouvé","Méthode","ark initial","frbnf","issn_nett","titre","auteur","date","lieu"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
     if (file_nb ==  1):
@@ -1158,7 +1170,11 @@ def perimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
                 nb_notices_nb_ARK["Pb FRBNF"] += 1
             else:
                 nb_notices_nb_ARK[nbARK] += 1
-            liste_metadonnees = [nbARK,NumNot,ark,frbnf,current_ark,issn_nett,titre,auteur,date]
+                                 
+            typeConversionNumNot = ""
+            if (NumNot in NumNotices2methode):
+                typeConversionNumNot = ">".join(NumNotices2methode[NumNot])
+            liste_metadonnees = [nbARK,NumNot,ark,typeConversionNumNot,frbnf,current_ark,issn_nett,titre,auteur,date]
             if (meta_bib == 1):
                 liste_metadonnees.extend(ark2metadc(ark))
             if (file_nb ==  1):
