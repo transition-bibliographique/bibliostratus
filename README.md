@@ -6,7 +6,7 @@ transbiblio est une **expérimentation** pour concevoir un ensemble de programme
 Actuellement quatre programmes sont en cours de développement **et très loin d'être finalisés** :
 
 * **marc2tables** : permet de charger en entrée l'extraction d'un catalogue de bibliothèque en Unimarc (formats iso2709 ou MarcXML). Le programme produit autant de fichiers tabulés (tableaux) qu'il y a de combinaisons Type de document / type de notice. Ces tableaux sont au format attendu pour le 2e programme
-* **noticesbib2arkBnF** : exploitation des métadonnées de chaque notice bibliographique pour identifier la notice correspondante dans le catalogue BnF. Pour l'instant, on charge les ressources par type de document/notice (monographies imprimées, CD/DVD, périodiques, etc.)
+* **noticesbib2arkBnF** : exploitation des métadonnées de chaque notice bibliographique pour identifier la notice correspondante dans le catalogue BnF. Pour l'instant, on charge les ressources par type de document/notice (monographies imprimées, CD/DVD, périodiques, etc.). -- 
 Et **noticesaut2arkBnF** : son équivalent pour s'aligner avec les autorités (Personnes physiques et organisation)
 * **ark2records** : en entrée un fichier listant des ARK BnF, afin de récupérer les notices bibliographiques (+option avec notices d'autorité) correspondantes. Le format en sortie est pour l'instant du XML. Il devrait y avoir de l'iso2709 à terme.
 
