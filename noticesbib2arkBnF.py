@@ -634,20 +634,21 @@ def testURLretrieve(url):
     return test
 
 
-
 def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date):
+    """A partir d'un ISBN, recherche dans le Sudoc. Pour chaque notice trouvée, on regarde sur la notice
+    Sudoc a un ARK BnF ou un FRBNF, auquel cas on convertit le PPN en ARK. Sinon, on garde le(s) PPN"""
     url = "https://www.sudoc.fr/services/isbn2ppn/" + isbn
     Listeppn = []
     isbnTrouve = testURLretrieve(url)
-    ark = ""
+    ark = []
     if (isbnTrouve == True):
         (test,resultats) = testURLetreeParse(url)
         if (test == True):
             for ppn in resultats.xpath("//ppn"):
                 ppn_val = ppn.text
                 Listeppn.append("PPN" + ppn_val)
-                ark = ppn2ark(NumNot,ppn_val,isbn,titre,auteur,date)
-            if (ark == ""):
+                ark.append(ppn2ark(NumNot,ppn_val,isbn,titre,auteur,date))
+            if (ark == []):
                 url = "https://www.sudoc.fr/services/isbn2ppn/" + isbnConverti
                 isbnTrouve = testURLretrieve(url)
                 if (isbnTrouve == True):
@@ -661,6 +662,7 @@ def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date):
                                 add_to_conversionIsbn(NumNot,isbn,isbnConverti,True)
     #Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK déclaré comme équivalent --> dans ce cas on récupère l'ARK
     Listeppn = ",".join(Listeppn)
+    ark = ",".join(ark)
     if (ark != ""):
         return ark
     else:
