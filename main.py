@@ -76,6 +76,18 @@ def check_access_to_network():
         access_to_network = False
     return access_to_network
 
+def check_access2apis(i,dict_report):
+    """Vérification de la disponibilité du SRU BnF et des API Abes
+    (en supposant que si une requête d'exemple fonctionne, tout fonctionne"""
+    testBnF = True
+    testAbes = True
+    testBnF = bib2ark.testURLretrieve("http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.recordid%20all%20%2230000001%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")
+    testAbes = bib2ark.testURLretrieve("https://www.sudoc.fr/services/isbn2ppn/0195141156")
+    dict_report["testAbes"][i] = testAbes
+    dict_report["testBnF"][i] = testBnF
+
+        
+
 def clean_string(string,replaceSpaces=False,replaceTirets=False):
     string = unidecode(string.lower())
     for sign in punctuation:

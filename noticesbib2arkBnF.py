@@ -48,6 +48,10 @@ NumNotices2methode = defaultdict(list)
 #est ajouté dans le rapport stat
 NumNotices_conversionISBN = defaultdict(dict)
 
+#Toutes les 100 notices, on vérifie que les API BnF et Abes répondent correctement.
+#Résultats (True/False) enregistrés dans ce dictionnaire
+dict_check_apis = defaultdict(dict)
+
 #Quelques listes de signes à nettoyer
 listeChiffres = ["0","1","2","3","4","5","6","7","8","9"]
 lettres = ["a","b","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
@@ -295,10 +299,11 @@ def verificationTomaison(ark,numeroTome,recordBNF):
     """Une fois qu'on a trouvé un ARK (via une recherche Titre-Auteur-Date,
     s'il y a un numéro de volume dans les données en entrée on va vérifier
     si on le retrouve bien dans une des zones où il pourrait se trouver :
-        200$a, 200$h, 461$v"""
-    liste_subfields = ["200$h","461$v","200$a"]
+    D'abord 200$h, 461$v
+    Si ces deux zones sont vides, on va regarder les nombres dans la zone 200$a"""
+    liste_subfields_volume = ["200$h","461$v"]
     volumesBNF = ""
-    for subf in liste_subfields:
+    for subf in liste_subfields_volume:
         volumesBNF += "~" + main.extract_subfield(recordBNF,subf.split("$")[0],subf.split("$")[1])
     for signe in ponctuation:
         volumesBNF = volumesBNF.replace(signe,"~")
@@ -306,6 +311,14 @@ def verificationTomaison(ark,numeroTome,recordBNF):
         volumesBNF = volumesBNF.replace(lettre, "~")
     volumesBNF = volumesBNF.split("~")
     volumesBNF = set(ltrim(nb) for nb in volumesBNF if nb != "")
+    if (volumesBNF == ""):
+        volumesBNF = main.extract_subfield(recordBNF,"200","a")
+        for signe in ponctuation:
+            volumesBNF = volumesBNF.replace(signe,"~")
+        for lettre in lettres:
+            volumesBNF = volumesBNF.replace(lettre, "~")
+        volumesBNF = volumesBNF.split("~")
+        volumesBNF = set(ltrim(nb) for nb in volumesBNF if nb != "")
     if (numeroTome in volumesBNF):
         return ark
     else:
@@ -976,6 +989,8 @@ def monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
             except IndexError:
                 main.popup_errors(form_bib2ark,"Notice n°" + row[0] +  " : Problème de format des données en entrée (nombre de colonnes)")
                 break
+            if (n%100 == 0):
+                main.check_access2apis(n,dict_check_apis)
             n += 1
             #print(row)
             NumNot = row[0]
@@ -1049,12 +1064,15 @@ def cddvd(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, li
     elif(file_nb ==  2):
         row2files(header_columns,liste_reports)
     #results2file(nb_fichiers_a_produire)
-    
+    n = 0
     with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter='\t')
         next(entry_file)
         for row in entry_file:
             #print(row)
+            n += 1
+            if (n%100 == 0):
+                main.check_access2apis(n,dict_check_apis)
             NumNot = row[0]
             frbnf = row[1]
             current_ark = row[2]
@@ -1092,7 +1110,7 @@ def cddvd(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, li
             #A défaut, on recherche Titre-Auteur dans tous champs (+Date comme date)
             if (ark == "" and titre != ""):
                 ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m",True)
-            print(NumNot + " : " + ark)
+            print(str(n) + "." + NumNot + " : " + ark)
             nbARK = len(ark.split(","))
             if (ark == ""):
                 nbARK = 0   
@@ -1129,6 +1147,8 @@ def perimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
         next(entry_file)
         for row in entry_file:
             n += 1
+            if (n%100 == 0):
+                main.check_access2apis(n,dict_check_apis)
             #print(row)
             NumNot = row[0]
             frbnf = row[1]
@@ -1209,6 +1229,7 @@ def launch(form_bib2ark, entry_filename, type_doc_bib, file_nb, meta_bib, id_tra
 def fin_traitements(form_bib2ark,liste_reports):
     stats_extraction(liste_reports)
     url_access_pbs_report(liste_reports)
+    check_access_to_apis(liste_reports)
     typesConversionARK(liste_reports)
     print("Programme terminé")
     form_bib2ark.destroy()
@@ -1238,6 +1259,22 @@ def url_access_pbs_report(liste_reports):
                                                 NumNotices_conversionISBN[record]["isbn trouvé"],
                                                 NumNotices_conversionISBN[record]["via Sudoc"],
                                                 ]) + "\n")
+def check_access_to_apis(liste_reports):
+    """Contrôles réguliers de l'accès aux API Abes et BnF -> enregistrés dans 
+    le dictionnaire dict_check_apis.
+    Si celui-ci contient au moins un "False", on génère une rubrique 
+    dans le rapport Stats"""
+    if (False in dict_check_apis["testAbes"]):
+        liste_reports[-2].write("\n\nProblème d'accès aux API Abes\n")
+        for key in dict_check_apis["testAbes"]:
+            if (dict_check_apis["testAbes"][key] is False):
+                liste_reports[-2].write("".join([str(key)," : API Abes down\n"]))
+    if (False in dict_check_apis["testBnF"]):
+        liste_reports[-2].write("\n\nProblème d'accès aux API BnF\n")
+        for key in dict_check_apis["testBnF"]:
+            if (dict_check_apis["testBnF"][key] is False):
+                liste_reports[-2].write("".join([str(key)," : API BnF down\n"]))
+
 
 def typesConversionARK(liste_reports):
     """Dans un rapport spécifique, pour chaque notice en entrée, mention de la méthode d'alignement (ISBN, ISNI, etc.)"""

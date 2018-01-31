@@ -35,6 +35,10 @@ programID = "noticesaut2arkBnF"
 #Pour chaque notice, on recense la méthode qui a permis de récupérer le ou les ARK
 NumNotices2methode = defaultdict(list)
 
+#Toutes les 100 notices, on vérifie que les API BnF et Abes répondent correctement.
+#Résultats (True/False) enregistrés dans ce dictionnaire
+dict_check_apis = defaultdict(dict)
+
 def create_reports(id_traitement_code, nb_fichiers_a_produire):
     reports = []
     stats_report_file_name=id_traitement_code + "-" + "rapport_stats_noticesbib2ark.txt"
@@ -157,6 +161,9 @@ def align_from_aut(form, entry_filename, headers, input_data_type, file_nb, id_t
             next(entry_file)
         for row in entry_file:
             n += 1
+            if (n%100 == 0):
+                main.check_access2apis(n,dict_check_apis)
+
             NumNot = row[0]
             NumNotBIB = row[1]
             ark_aut_init = row[2]
@@ -213,6 +220,9 @@ def align_from_bib(form, entry_filename, headers, input_data_type, file_nb, id_t
             next(entry_file)
         for row in entry_file:
             n += 1
+            if (n%100 == 0):
+                main.check_access2apis(n,dict_check_apis)
+
             NumNot = row[0]
             NumNotBib = row[1]
             ark_bib_init = row[2]
