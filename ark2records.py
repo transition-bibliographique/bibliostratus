@@ -25,8 +25,6 @@ lastupdate = "12/11/2017"
 last_version = [version, False]
 
 
-ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}
-
 listeARK_BIB = []
 listeNNA_AUT = []
 errors_list = []
@@ -66,7 +64,7 @@ def ark2record(ark, type_record, format_BIB, renvoyerNotice=False):
         test = False
         print("Pb d'accès à la notice " + ark)
     if (test == True):
-        record = page.xpath(".//srw:recordData/mxc:record",namespaces=ns)[0]
+        record = page.xpath(".//srw:recordData/mxc:record",namespaces=main.ns)[0]
     if (renvoyerNotice == True):
         return record
 
@@ -79,7 +77,7 @@ def bib2aut(ark, aut_file, format_BIB, format_file):
     bib_record = ark2record(ark, "bib", "intermarcxchange", True)
     for field in listefieldsLiensAUT:
         path = '//mxc:datafield[@tag="' + field + '"]/mxc:subfield[@code="3"]'
-        for datafield in bib_record.xpath(path, namespaces=ns):
+        for datafield in bib_record.xpath(path, namespaces=main.ns):
             nna = datafield.text
             if (nna not in listeNNA_AUT):
                 listeNNA_AUT.append(nna)
@@ -88,7 +86,7 @@ def bib2aut(ark, aut_file, format_BIB, format_file):
                     etree.parse(request.urlopen(url))
                 except error.URLerror:
                     print("Pb d'accès à la notice " + nna)
-                XMLrec = etree.parse(request.urlopen(url)).xpath("//srw:recordData/mxc:record",namespaces=ns)[0]
+                XMLrec = etree.parse(request.urlopen(url)).xpath("//srw:recordData/mxc:record",namespaces=main.ns)[0]
                 record2file(aut_file, XMLrec, format_file)
 
    
@@ -159,9 +157,9 @@ def callback(master, form, filename, headers, AUTliees, outputID, format_records
                 print(str(j) + ". " + ark)
                 listeARK_BIB.append(ark)
                 page = etree.parse(request.urlopen(ark2url(ark, "bib", format_BIB)))
-                nbResults = page.find("//srw:numberOfRecords", namespaces=ns).text
+                nbResults = page.find("//srw:numberOfRecords", namespaces=main.ns).text
                 if (nbResults == "1"):
-                    for XMLrec in page.xpath("//srw:record/srw:recordData/mxc:record", namespaces=ns):
+                    for XMLrec in page.xpath("//srw:record/srw:recordData/mxc:record", namespaces=main.ns):
                         record2file(bib_file, XMLrec, format_file)
                         if (AUTliees == 1):
                             bib2aut(ark, aut_file, format_BIB, format_file)
@@ -286,12 +284,11 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
     cancel = tk.Button(zone_ok_help_cancel, bg=couleur_fond, text="Annuler", command=lambda: main.annuler(form), padx=10, pady=1, width=15)
     cancel.pack()
 
-    """tk.Label(zone_notes, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
-
+    tk.Label(zone_notes, text = "Version " + str(main.version) + " - " + lastupdate, bg=couleur_fond).pack()
     
-    if (last_version[1] == True):
-        download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(last_version[0]), command=main.download_last_update)
-        download_update.pack()"""
+    if (main.last_version[1] == True):
+        download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(main.last_version[0]), command=download_last_update)
+        download_update.pack()
     
     tk.mainloop()
     

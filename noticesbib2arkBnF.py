@@ -28,7 +28,7 @@ import main as main
 
 #import matplotlib.pyplot as plt
 
-version = 0.91
+version = 0.92
 lastupdate = "29/12/2017"
 programID = "noticesbib2arkBnF"
 
@@ -38,9 +38,6 @@ errors = {
 
 url_access_pbs = []
 
-ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}
-nsSudoc = {"rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#", "bibo":"http://purl.org/ontology/bibo/", "dc":"http://purl.org/dc/elements/1.1/", "dcterms":"http://purl.org/dc/terms/", "rdafrbr1":"http://rdvocab.info/RDARelationshipsWEMI/", "marcrel":"http://id.loc.gov/vocabulary/relators/", "foaf":"http://xmlns.com/foaf/0.1/", "gr":"http://purl.org/goodrelations/v1#", "owl":"http://www.w3.org/2002/07/owl#", "isbd":"http://iflastandards.info/ns/isbd/elements/", "skos":"http://www.w3.org/2004/02/skos/core#", "rdafrbr2":"http://RDVocab.info/uri/schema/FRBRentitiesRDA/", "rdaelements":"http://rdvocab.info/Elements/", "rdac":"http://rdaregistry.info/Elements/c/", "rdau":"http://rdaregistry.info/Elements/u/", "rdaw":"http://rdaregistry.info/Elements/w/", "rdae":"http://rdaregistry.info/Elements/e/", "rdam":"http://rdaregistry.info/Elements/m/", "rdai":"http://rdaregistry.info/Elements/i/", "sudoc":"http://www.sudoc.fr/ns/", "bnf-onto":"http://data.bnf.fr/ontology/bnf-onto/"}
-urlSRUroot = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query="
 
 #Pour chaque notice, on recense la méthode qui a permis de récupérer le ou les ARK
 NumNotices2methode = defaultdict(list)
@@ -111,8 +108,8 @@ def ark2ark(NumNot,ark):
     (test,page) = testURLetreeParse(url)
     nv_ark = ""
     if (test == True):
-        if (page.find("//srw:recordIdentifier", namespaces=ns) is not None):
-            nv_ark = page.find("//srw:recordIdentifier", namespaces=ns).text
+        if (page.find("//srw:recordIdentifier", namespaces=main.ns) is not None):
+            nv_ark = page.find("//srw:recordIdentifier", namespaces=main.ns).text
             NumNotices2methode[NumNot].append("Actualisation ARK")
     return nv_ark
 
@@ -241,8 +238,8 @@ def relancerNNBAuteur(NumNot,systemid,isbn,titre,auteur,date):
         urlSRU = url_requete_sru('bib.author all "' + auteur + '" and bib.otherid all "' + systemid + '"')
         (test,pageSRU) = testURLetreeParse(urlSRU)
         if (test == True):
-            for record in pageSRU.xpath("//srw:records/srw:record", namespaces=ns):
-                ark = record.find("srw:recordIdentifier", namespaces=ns).text
+            for record in pageSRU.xpath("//srw:records/srw:record", namespaces=main.ns):
+                ark = record.find("srw:recordIdentifier", namespaces=main.ns).text
                 NumNotices2methode[NumNot].append("N° sys FRBNF + Auteur")
                 listeArk.append(ark)
     listeArk = ",".join(listeArk)
@@ -345,12 +342,12 @@ def comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,da
             ark = ark_current
             NumNotices2methode[NumNot].append(origineComparaison + " + contrôle Titre")
             if (len(titre) < 5):
-                ark += "[titre court]"
+                NumNotices2methode[NumNot].append("[titre court]")
         elif(titre[0:round(len(titre)/2)] == titreBNF[0:round(len(titre)/2)]):
             ark = ark_current
             NumNotices2methode[NumNot].append(origineComparaison + " + contrôle Titre")
             if (round(len(titre)/2)<10):
-                ark += "[demi-titre" + "-" + str(round(len(titre)/2)) + "caractères]"
+                NumNotices2methode[NumNot].append("[demi-titre" + "-" + str(round(len(titre)/2)) + "caractères]")
         elif(titre.find(titreBNF) > -1):
             NumNotices2methode[NumNot].append(origineComparaison + " + contrôle Titre BNF contenu dans titre initial")
             ark = ark_current
@@ -370,15 +367,15 @@ def systemid2ark(NumNot,systemid,tronque,isbn,titre,auteur,date):
     listeARK = []
     (test,page) = testURLetreeParse(url)
     if (test == True):
-        for record in page.xpath("//srw:records/srw:record", namespaces=ns):
-            ark_current = record.find("srw:recordIdentifier",namespaces=ns).text
-            for zone9XX in record.xpath("srw:recordData/mxc:record/mxc:datafield", namespaces=ns):
+        for record in page.xpath("//srw:records/srw:record", namespaces=main.ns):
+            ark_current = record.find("srw:recordIdentifier",namespaces=main.ns).text
+            for zone9XX in record.xpath("srw:recordData/mxc:record/mxc:datafield", namespaces=main.ns):
                 #print(ark_current)
                 tag = zone9XX.get("tag")
                 if (tag[0:1] =="9"):
-                    if (zone9XX.find("mxc:subfield[@code='a']", namespaces=ns) is not None):
-                        if (zone9XX.find("mxc:subfield[@code='a']", namespaces=ns).text is not None):
-                            if (zone9XX.find("mxc:subfield[@code='a']", namespaces=ns).text == systemid):
+                    if (zone9XX.find("mxc:subfield[@code='a']", namespaces=main.ns) is not None):
+                        if (zone9XX.find("mxc:subfield[@code='a']", namespaces=main.ns).text is not None):
+                            if (zone9XX.find("mxc:subfield[@code='a']", namespaces=main.ns).text == systemid):
                                 #print(zone9XX.get("tag"))
                                 listeARK.append(comparerBibBnf(NumNot,ark_current,systemid,isbn,titre,auteur,date, "Ancien n° notice"))
     listeARK = ",".join([ark1 for ark1 in listeARK if ark1 != ''])
@@ -405,8 +402,8 @@ def rechercheNNB(NumNot,nnb,isbn,titre,auteur,date):
         url = url_requete_sru('bib.recordid any "' + nnb + '"')
         (test,page) = testURLetreeParse(url)
         if (test == True):
-            for record in page.xpath("//srw:records/srw:record", namespaces=ns):
-                ark_current = record.find("srw:recordIdentifier",namespaces=ns).text
+            for record in page.xpath("//srw:records/srw:record", namespaces=main.ns):
+                ark_current = record.find("srw:recordIdentifier",namespaces=main.ns).text
                 ark = comparerBibBnf(NumNot,ark_current,nnb,isbn,titre,auteur,date,"Numéro de notice")
     return ark
 
@@ -430,15 +427,15 @@ def frbnf2ark(NumNot,frbnf,isbn,titre,auteur,date):
     url = url_requete_sru('bib.otherid all "' + frbnf + '"')
     (test,page) = testURLetreeParse(url)
     if (test == True):
-        nb_resultats = int(page.find("//srw:numberOfRecords", namespaces=ns).text)
+        nb_resultats = int(page.find("//srw:numberOfRecords", namespaces=main.ns).text)
         
         if (nb_resultats == 0):
             ark = oldfrbnf2ark(NumNot,frbnf,isbn,titre,auteur,date)
         elif (nb_resultats == 1):
-            ark = page.find("//srw:recordIdentifier", namespaces=ns).text
+            ark = page.find("//srw:recordIdentifier", namespaces=main.ns).text
             NumNotices2methode[NumNot].append("FRBNF")
         else:
-            ark = ",".join([ark.text for ark in page.xpath("//srw:recordIdentifier", namespaces=ns)])
+            ark = ",".join([ark.text for ark in page.xpath("//srw:recordIdentifier", namespaces=main.ns)])
     return ark
 
         
@@ -522,8 +519,8 @@ def isbn2sru(NumNot,isbn,titre,auteur,date):
     listeARK = []
     (test,resultats) = testURLetreeParse(urlSRU)
     if (test == True):
-        for record in resultats.xpath("//srw:record", namespaces=ns):
-            ark_current = record.find("srw:recordIdentifier", namespaces=ns).text
+        for record in resultats.xpath("//srw:record", namespaces=main.ns):
+            ark_current = record.find("srw:recordIdentifier", namespaces=main.ns).text
             recordBNF_url = url_requete_sru('bib.persistentid all "' + ark_current + '"')
             (test,recordBNF) = testURLetreeParse(recordBNF_url)
             if (test == True):
@@ -626,8 +623,8 @@ def isbn_anywhere2sru(NumNot,isbn,titre,auteur,date):
     test,resultat = testURLetreeParse(urlSRU)
     listeARK = []
     if (test == True):
-        for record in resultat.xpath("//srw:record", namespaces=ns):
-            ark_current = record.find("srw:recordIdentifier", namespaces=ns).text
+        for record in resultat.xpath("//srw:record", namespaces=main.ns):
+            ark_current = record.find("srw:recordIdentifier", namespaces=main.ns).text
             recordBNF_url = url_requete_sru('bib.persistentid all "' + ark_current)
             (test2,recordBNF) = testURLetreeParse(recordBNF_url)
             if (test2 == True):
@@ -690,13 +687,13 @@ def ppn2ark(NumNot,ppn,isbn,titre,auteur,date):
     url = "http://www.sudoc.fr/" + ppn + ".rdf"
     (test,record) = testURLetreeParse(url)
     if (test == True):
-        for sameAs in record.xpath("//owl:sameAs",namespaces=nsSudoc):
+        for sameAs in record.xpath("//owl:sameAs",namespaces=main.nsSudoc):
             resource = sameAs.get("{http://www.w3.org/1999/02/22-rdf-syntax-ns#}resource")
             if (resource.find("ark:/12148/")>0):
                 ark = resource[24:46]
                 NumNotices2methode[NumNot].append("ISBN > PPN > ARK")
         if (ark == ""):
-            for frbnf in record.xpath("//bnf-onto:FRBNF",namespaces=nsSudoc):
+            for frbnf in record.xpath("//bnf-onto:FRBNF",namespaces=main.nsSudoc):
                 frbnf_val = frbnf.text
                 NumNotices2methode[NumNot].append("ISBN > PPN > FRBNF > ARK")
                 ark = frbnf2ark(NumNot,frbnf_val,isbn,titre,auteur,date)
@@ -753,9 +750,9 @@ def issn2sru(NumNot,issn):
     listeArk = []
     (test,pageSRU) = testURLetreeParse(url)
     if (test == True):
-        for record in pageSRU.xpath("//srw:records/srw:record", namespaces=ns):
-            ark = record.find("srw:recordIdentifier", namespaces=ns).text
-            typeNotice = record.find("srw:recordData/mxc:record/mxc:leader",namespaces=ns).text[7]
+        for record in pageSRU.xpath("//srw:records/srw:record", namespaces=main.ns):
+            ark = record.find("srw:recordIdentifier", namespaces=main.ns).text
+            typeNotice = record.find("srw:recordData/mxc:record/mxc:leader",namespaces=main.ns).text[7]
             if (typeNotice == "s"):
                 NumNotices2methode[NumNot].append("ISSN")
                 listeArk.append(ark)
@@ -771,21 +768,21 @@ def ark2metas(ark, unidec=True):
     tousauteurs = ""
     date = ""
     if (test == True):
-        if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='a']", namespaces=ns) is not None):
-            titre = record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='a']", namespaces=ns).text
-        if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='e']", namespaces=ns) is not None):
-            titre = titre + ", " + record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='e']", namespaces=ns).text
-        if (record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='a']", namespaces=ns) is not None):
-            premierauteurNom = record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='a']", namespaces=ns).text
-        if (record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='b']", namespaces=ns) is not None):
-            premierauteurPrenom = record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='b']", namespaces=ns).text
+        if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='a']", namespaces=main.ns) is not None):
+            titre = record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='a']", namespaces=main.ns).text
+        if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='e']", namespaces=main.ns) is not None):
+            titre = titre + ", " + record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='e']", namespaces=main.ns).text
+        if (record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='a']", namespaces=main.ns) is not None):
+            premierauteurNom = record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='a']", namespaces=main.ns).text
+        if (record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='b']", namespaces=main.ns) is not None):
+            premierauteurPrenom = record.find("//mxc:datafield[@tag='700']/mxc:subfield[@code='b']", namespaces=main.ns).text
         if (premierauteurNom  == ""):
-            if (record.find("//mxc:datafield[@tag='710']/mxc:subfield[@code='a']", namespaces=ns) is not None):
-                premierauteurNom = record.find("//mxc:datafield[@tag='710']/mxc:subfield[@code='a']", namespaces=ns).text
-        if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='f']", namespaces=ns) is not None):
-            tousauteurs = record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='f']", namespaces=ns).text
-        if (record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='d']", namespaces=ns) is not None):
-            date = record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='d']", namespaces=ns).text
+            if (record.find("//mxc:datafield[@tag='710']/mxc:subfield[@code='a']", namespaces=main.ns) is not None):
+                premierauteurNom = record.find("//mxc:datafield[@tag='710']/mxc:subfield[@code='a']", namespaces=main.ns).text
+        if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='f']", namespaces=main.ns) is not None):
+            tousauteurs = record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='f']", namespaces=main.ns).text
+        if (record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='d']", namespaces=main.ns) is not None):
+            date = record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='d']", namespaces=main.ns).text
     metas = [titre,premierauteurPrenom,premierauteurNom,tousauteurs,date]
     if (unidec == True):
         metas = [unidecode(meta) for meta in metas]
@@ -801,15 +798,15 @@ def ppn2metas(ppn):
     premierauteurNom = ""
     tousauteurs = ""
     if (test == True):
-        if (record.find("//dc:title",namespaces=nsSudoc) is not None):
-            titre = unidecode(record.find("//dc:title",namespaces=nsSudoc).text).split("[")[0].split("/")[0]
-            tousauteurs = unidecode(record.find("//dc:title",namespaces=nsSudoc).text).split("/")[1]
+        if (record.find("//dc:title",namespaces=main.nsSudoc) is not None):
+            titre = unidecode(record.find("//dc:title",namespaces=main.nsSudoc).text).split("[")[0].split("/")[0]
+            tousauteurs = unidecode(record.find("//dc:title",namespaces=main.nsSudoc).text).split("/")[1]
             if (titre[0:5] == tousauteurs[0:5]):
                 tousauteurs = ""
-        if (record.find("//marcrel:aut/foaf:Person/foaf:name",namespaces=nsSudoc) is not None):
-            premierauteurNom = unidecode(record.find("//marcrel:aut/foaf:Person/foaf:name",namespaces=nsSudoc).text).split(",")[0]
-            if (record.find("//marcrel:aut/foaf:Person/foaf:name",namespaces=nsSudoc).text.find(",") > 0):
-                premierauteurPrenom = unidecode(record.find("//marcrel:aut/foaf:Person/foaf:name",namespaces=nsSudoc).text).split(",")[1]
+        if (record.find("//marcrel:aut/foaf:Person/foaf:name",namespaces=main.nsSudoc) is not None):
+            premierauteurNom = unidecode(record.find("//marcrel:aut/foaf:Person/foaf:name",namespaces=main.nsSudoc).text).split(",")[0]
+            if (record.find("//marcrel:aut/foaf:Person/foaf:name",namespaces=main.nsSudoc).text.find(",") > 0):
+                premierauteurPrenom = unidecode(record.find("//marcrel:aut/foaf:Person/foaf:name",namespaces=main.nsSudoc).text).split(",")[1]
             if (premierauteurPrenom.find("(") > 0):
                 premierauteurPrenom = premierauteurPrenom.split("(")[0]
     return [titre,premierauteurPrenom,premierauteurNom,tousauteurs]
@@ -837,21 +834,21 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,anyw
         #print(url)
         (test,results) = testURLetreeParse(url)
         index = ""
-        if (results != "" and results.find("//srw:numberOfRecords", namespaces=ns).text == "0"):
+        if (results != "" and results.find("//srw:numberOfRecords", namespaces=main.ns).text == "0"):
             url = url_requete_sru('bib.title all "' + titre_propre + '" and bib.author all "' + auteur_nett + '" and bib.date all "' + date_nett + '" and bib.publisher all "' + pubPlace_nett + '"')
             if (anywhere == True):
                 url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur_nett + ' ' + date_nett + ' ' + pubPlace_nett + '"')
                 index = " dans toute la notice"
             (test,results) = testURLetreeParse(url)
         if (test == True):
-            for record in results.xpath("//srw:recordIdentifier",namespaces=ns):
+            for record in results.xpath("//srw:recordIdentifier",namespaces=main.ns):
                 ark_current = record.text
                 #print(NumNot + " : " + ark_current)
                 recordBNF_url = url_requete_sru('bib.persistentid all "' + ark_current + '"')
                 (test,recordBNF) = testURLetreeParse(recordBNF_url)
                 if (test == True):
-                    if (recordBNF.find("//mxc:record/mxc:leader",namespaces=ns) is not None and recordBNF.find("//mxc:record/mxc:leader",namespaces=ns).text is not None):
-                        typeRecord_current = recordBNF.find("//mxc:record/mxc:leader",namespaces=ns).text[7]
+                    if (recordBNF.find("//mxc:record/mxc:leader",namespaces=main.ns) is not None and recordBNF.find("//mxc:record/mxc:leader",namespaces=main.ns).text is not None):
+                        typeRecord_current = recordBNF.find("//mxc:record/mxc:leader",namespaces=main.ns).text[7]
                         if (typeRecord_current == typeRecord):
                             listeArk.append(comparaisonTitres(NumNot,ark_current,"","",nettoyageTitrePourControle(titre),auteur,date_nett,numeroTome,recordBNF,"Titre-Auteur-Date" + index))
                             methode = "Titre-Auteur-Date"
@@ -871,7 +868,7 @@ def checkTypeRecord(ark,typeRecord_attendu):
     ark_checked = ""
     (test,record) = testURLetreeParse(url)
     if (test == True):
-        typeRecord = record.find("//srw:recordData/mxc:record/mxc:leader",namespaces=ns).text[7]
+        typeRecord = record.find("//srw:recordData/mxc:record/mxc:leader",namespaces=main.ns).text[7]
         if (typeRecord == typeRecord_attendu):
             ark_checked = ark
     return ark_checked
@@ -893,7 +890,7 @@ def extract_meta(recordBNF,field_subfield,occ="all",anl=False):
     return value
 
 def url_requete_sru(query,recordSchema="unimarcxchange",maximumRecords="1000",startRecord="1"):
-    url = urlSRUroot + urllib.parse.quote(query) +"&recordSchema=" + recordSchema + "&maximumRecords=" + maximumRecords + "&startRecord=" + startRecord
+    url = main.urlSRUroot + urllib.parse.quote(query) +"&recordSchema=" + recordSchema + "&maximumRecords=" + maximumRecords + "&startRecord=" + startRecord
     return url
 
 
@@ -907,9 +904,9 @@ def ean2ark(NumNot,ean,titre,auteur,date):
     url = url_requete_sru('bib.ean all "' + ean + '"')
     (test,results) = testURLetreeParse(url)
     if (test == True):
-        for record in results.xpath("//srw:recordData",namespaces=ns):
-            if (record.find("srw:recordIdentifier",namespaces=ns) is not None):
-                ark_current = record.find("srw:recordIdentifier",namespaces=ns).text
+        for record in results.xpath("//srw:recordData",namespaces=main.ns):
+            if (record.find("srw:recordIdentifier",namespaces=main.ns) is not None):
+                ark_current = record.find("srw:recordIdentifier",namespaces=main.ns).text
                 (test2,recordBNF) = ark2recordBNF(ark_current)
                 if (test2 ==  True):
                     ark = comparaisonTitres(NumNot,ark_current,"",ean,titre,auteur,date,"",recordBNF, "EAN")
@@ -926,8 +923,8 @@ def no_commercial2ark(NumNot,no_commercial,titre,auteur,date):
     ark = ""
     (test,results) = testURLetreeParse(url)
     if (test == True):
-        for record in results.xpath("//srw:recordData",namespaces=ns):
-            ark_current = record.find("srw:recordIdentifier",namespaces=ns).text
+        for record in results.xpath("//srw:recordData",namespaces=main.ns):
+            ark_current = record.find("srw:recordIdentifier",namespaces=main.ns).text
             recordBNF = ark2recordBNF(ark_current)
             ark = controleNoCommercial(NumNot,ark_current,no_commercial,titre,auteur,date,recordBNF)
     return ark
@@ -969,10 +966,21 @@ def ark2metadc(ark):
     dateList = "|".join(dateList)
     metas = [titlesList,PremierAuteurPrenomList,PremierAuteurNomList,tousAuteursList,dateList]
     return metas
-        
+
+def extract_cols_from_row(row,liste):
+        nb_cols = len(row)
+        i = 0
+        liste_values = []
+        for el in liste:
+            if (i<nb_cols):
+                liste_values.append(row[i])
+            else:
+                liste_values.append("")
+            i += 1
+        return tuple(liste_values)    
 
 def monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
-    header_columns = ["nbARK","NumNot","Méthode","ark trouvé","ark initial","frbnf","isbn_nett","ean_propre","titre","auteur","date","Tome/Volume"]
+    header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","frbnf","isbn_nett","ean_propre","titre","auteur","date","Tome/Volume"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
     if (file_nb ==  1):
@@ -984,31 +992,20 @@ def monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
         entry_file = csv.reader(csvfile, delimiter='\t')
         next(entry_file)
         for row in entry_file:
-            try:
-                tome = row[8]
-            except IndexError:
-                main.popup_errors(form_bib2ark,"Notice n°" + row[0] +  " : Problème de format des données en entrée (nombre de colonnes)")
-                break
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
             n += 1
             #print(row)
-            NumNot = row[0]
-            frbnf = row[1]
-            current_ark = row[2]
-            isbn = row[3]
+            (NumNot,frbnf,current_ark,isbn,ean,titre,auteur,date,tome,editeur) = extract_cols_from_row(row,
+                ["NumNot","frbnf","ark initial","isbn","ean","titre","auteur","date","tome","editeur"])
+            
             isbn_nett = nettoyageIsbnPourControle(isbn)
             isbn_propre = nettoyage_isbn(isbn)
-            ean = row[4]
             ean_nett = nettoyageIsbnPourControle(ean)
             ean_propre = nettoyage_isbn(ean)
-            titre = row[5]
             titre_nett= nettoyageTitrePourControle(titre)
-            auteur = row[6]
             auteur_nett = nettoyageAuteur(auteur)
-            date = row[7]
             date_nett = nettoyageDate(date)
-            tome = row[8]
             tome_nett = nettoyageTome(tome)
 
             #Actualisation de l'ARK à partir de l'ARK
@@ -1046,7 +1043,7 @@ def monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
             typeConversionNumNot = ""
             if (NumNot in NumNotices2methode):
                 typeConversionNumNot = ">".join(NumNotices2methode[NumNot])
-            liste_metadonnees = [nbARK,NumNot,ark,typeConversionNumNot,current_ark,frbnf,isbn_nett,ean_propre,titre,auteur,date,tome]
+            liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,current_ark,frbnf,isbn_nett,ean_propre,titre,auteur,date,tome]
             if (meta_bib == 1):
                 liste_metadonnees.extend(ark2metadc(ark))
             if (file_nb ==  1):
@@ -1056,7 +1053,7 @@ def monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
         
         
 def cddvd(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
-    header_columns = ["nbARK","NumNot","ark trouvé","Méthode","ark initial","frbnf","ean_nett","ean_propre","no_commercial_propre","titre","auteur","date"]
+    header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","frbnf","ean_nett","ean_propre","no_commercial_propre","titre","auteur","date"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
     if (file_nb ==  1):
@@ -1073,19 +1070,13 @@ def cddvd(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, li
             n += 1
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
-            NumNot = row[0]
-            frbnf = row[1]
-            current_ark = row[2]
-            ean = row[3]
+            (NumNot,frbnf,current_ark,ean,no_commercial,titre,auteur,date) = extract_cols_from_row(row,
+                ["NumNot","frbnf","ark initial","ean","no_commercial","titre","auteur","date"])
             ean_nett = nettoyageIsbnPourControle(ean)
             ean_propre = nettoyage_isbn(ean)
-            no_commercial = row[4]
             no_commercial_propre = nettoyage_no_commercial(no_commercial)
-            titre = row[5]
             titre_nett= nettoyageTitrePourControle(titre)
-            auteur = row[6]
             auteur_nett = nettoyageAuteur(auteur)
-            date = row[7]
             date_nett = nettoyageDate(date)
             #Actualisation de l'ARK à partir de l'ARK
             ark = ""
@@ -1123,7 +1114,7 @@ def cddvd(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, li
             if (NumNot in NumNotices2methode):
                 typeConversionNumNot = ">".join(NumNotices2methode[NumNot])
                 
-            liste_metadonnees = [nbARK,NumNot,ark,typeConversionNumNot,frbnf,current_ark,ean_nett,ean_propre,
+            liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,frbnf,current_ark,ean_nett,ean_propre,
                          no_commercial_propre,titre,auteur,date]
             if (meta_bib == 1):
                 liste_metadonnees.extend(ark2metadc(ark))
@@ -1134,7 +1125,7 @@ def cddvd(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, li
 
 #Si option du formulaire = périodiques imprimés
 def perimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
-    header_columns = ["nbARK","NumNot","ark trouvé","Méthode","ark initial","frbnf","issn_nett","titre","auteur","date","lieu"]
+    header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","frbnf","issn_nett","titre","auteur","date","lieu"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
     if (file_nb ==  1):
@@ -1150,19 +1141,14 @@ def perimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
             #print(row)
-            NumNot = row[0]
-            frbnf = row[1]
-            current_ark = row[2]
-            issn = row[3]
+            (NumNot,frbnf,current_ark,issn,titre,auteur,date,pubPlace) = extract_cols_from_row(row,
+                ["NumNot","frbnf","ark initial","issn","titre","auteur","date","lieu"])
+
             issn_nett = nettoyageIssnPourControle(issn)
             issn_propre = nettoyage_isbn(issn)
-            titre = row[4]
             titre_nett= nettoyageTitrePourControle(titre)
-            auteur = row[5]
             auteur_nett = nettoyageAuteur(auteur)
-            date = row[6]
             date_nett = nettoyageDate(date)
-            pubPlace = row[7]
             pubPlace_nett = nettoyagePubPlace(pubPlace)
             #Actualisation de l'ARK à partir de l'ARK
             ark = ""
@@ -1194,7 +1180,7 @@ def perimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
             typeConversionNumNot = ""
             if (NumNot in NumNotices2methode):
                 typeConversionNumNot = ">".join(NumNotices2methode[NumNot])
-            liste_metadonnees = [nbARK,NumNot,ark,typeConversionNumNot,frbnf,current_ark,issn_nett,titre,auteur,date]
+            liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,frbnf,current_ark,issn_nett,titre,auteur,date]
             if (meta_bib == 1):
                 liste_metadonnees.extend(ark2metadc(ark))
             if (file_nb ==  1):
@@ -1291,16 +1277,6 @@ def annuler(form_bib2ark):
     """Fermeture du formulaire (bouton "Annuler")"""
     form_bib2ark.destroy()
     
-def check_access_to_network():
-    """Vérification d'accès à internet pour le programme (permet notamment d'identifier d'éventuels problèmes de proxy)"""
-    access_to_network = True
-    try:
-        request.urlopen("http://www.bnf.fr")
-    except error.URLError:
-        print("Pas de réseau internet")
-        access_to_network = False
-    return access_to_network
-
 
 def check_last_compilation(programID):
     """Compare pour un programme donné le numéro de version du fichier en cours et la dernière version indiquée comme telle en ligne. Renvoie une liste à deux éléments : n° de la dernière version publiée ; affichage du bouton de téléchargement (True/False)"""
@@ -1347,25 +1323,17 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     """Affichage du formulaire : disposition des zones, options, etc."""
     couleur_fond = "white"
     couleur_bouton = "#acacac"
+
+    [form_bib2ark,
+     zone_alert_explications,
+     zone_access2programs,
+     zone_actions,
+     zone_ok_help_cancel,
+     zone_notes] = main.form_generic_frames(master,"Programme d'alignement de données bibliographiques avec la BnF",
+                                      couleur_fond,couleur_bouton,
+                                      access_to_network)
     
-    form_bib2ark = tk.Toplevel(master)
-    #form_bib2ark = tk.Tk()
-    form_bib2ark.config(padx=30, pady=20,bg=couleur_fond)
-    form_bib2ark.title("Programme d'alignement de données bibliographiques avec la BnF")
-    try:
-        form_bib2ark.iconbitmap(r'favicon.ico')
-    except tk.TclError:
-        favicone = "rien"
-    
-    zone_alert_explications = tk.Frame(form_bib2ark, bg=couleur_fond, pady=10)
-    zone_alert_explications.pack()
-    
-    zone_formulaire = tk.Frame(form_bib2ark, bg=couleur_fond)
-    zone_formulaire.pack()
-    zone_commentaires = tk.Frame(form_bib2ark, bg=couleur_fond, pady=10)
-    zone_commentaires.pack()
-    
-    cadre_input = tk.Frame(zone_formulaire, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
+    cadre_input = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_input.pack(side="left")
     cadre_input_header = tk.Frame(cadre_input,bg=couleur_fond)
     cadre_input_header.pack(anchor="w")
@@ -1382,11 +1350,11 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     cadre_input_type_docs_explications.pack(anchor="w")
     
 
-    cadre_inter = tk.Frame(form_bib2ark, borderwidth=0, padx=10,bg=couleur_fond)
+    cadre_inter = tk.Frame(zone_actions, borderwidth=0, padx=10,bg=couleur_fond)
     cadre_inter.pack(side="left")
     tk.Label(cadre_inter, text=" ",bg=couleur_fond).pack()
     
-    cadre_output = tk.Frame(zone_formulaire, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
+    cadre_output = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_output.pack(side="left", anchor="w")
     cadre_output_header = tk.Frame(cadre_output,bg=couleur_fond)
     cadre_output_header.pack(anchor="w")
@@ -1401,12 +1369,7 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     cadre_output_id_traitement = tk.Frame(cadre_output, padx=20,bg=couleur_fond)
     cadre_output_id_traitement.pack(side="left", anchor="w")
     
-    cadre_valider = tk.Frame(zone_formulaire, borderwidth=0, relief="groove", height=150, padx=10,bg=couleur_fond)
-    cadre_valider.pack(side="left")
     
-    if (access_to_network == False):
-        tk.Label(zone_alert_explications, text=errors["no_internet"], 
-             bg=couleur_fond,  fg="red").pack()
 #==============================================================================
 # Message d'alerte dans le formulaire si besoin
 #==============================================================================
@@ -1478,29 +1441,30 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     
     #Bouton de validation
     
-    b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="Arial 10 bold", 
+    b = tk.Button(zone_ok_help_cancel, bg=couleur_bouton, fg="white", font="Arial 10 bold", 
                   text = "Aligner les\nnotices BIB", 
                   command = lambda: launch(form_bib2ark, entry_filename.get(), type_doc_bib.get(), file_nb.get(), meta_bib.get(), id_traitement.get()), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
     
-    tk.Label(cadre_valider, font="bold", text="", bg=couleur_fond).pack()
+    tk.Label(zone_ok_help_cancel, font="bold", text="", bg=couleur_fond).pack()
     
-    call4help = tk.Button(cadre_valider, text="Besoin d'aide ?", command=click2help, padx=10, pady=1, width=15)
+    call4help = tk.Button(zone_ok_help_cancel, text="Besoin d'aide ?", command=click2help, padx=10, pady=1, width=15)
     call4help.pack()
     
-    cancel = tk.Button(cadre_valider, bg=couleur_fond, text="Annuler", command=lambda: annuler(form_bib2ark), padx=10, pady=1, width=15)
+    cancel = tk.Button(zone_ok_help_cancel, bg=couleur_fond, text="Annuler", command=lambda: annuler(form_bib2ark), padx=10, pady=1, width=15)
     cancel.pack()
     
-    """tk.Label(zone_commentaires, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
+    tk.Label(zone_notes, text = "Version " + str(main.version) + " - " + lastupdate, bg=couleur_fond).pack()
     
-    if (last_version[1] == True):
-        download_update = tk.Button(zone_commentaires, text = "Télécharger la version " + str(last_version[0]), command=download_last_update)
-        download_update.pack()"""
+    if (main.last_version[1] == True):
+        download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(main.last_version[0]), command=download_last_update)
+        download_update.pack()
+
     
     tk.mainloop()
 
 if __name__ == '__main__':
-    access_to_network = check_access_to_network()
+    access_to_network = main.check_access_to_network()
     last_version = [0,False]
     #if(access_to_network is True):
     #    last_version = check_last_compilation(programID)

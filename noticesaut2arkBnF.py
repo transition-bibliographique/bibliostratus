@@ -147,7 +147,7 @@ def ark2metas(ark, unidec=True):
 
 def align_from_aut(form, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf):
     """Aligner ses données d'autorité avec les autorités BnF à partir d'une extraction tabulée de la base d'autorités"""
-    header_columns = ["nbARK","NumNot","ark AUT trouvé","ARK AUT initial","frbnf AUT initial","ISNI","Nom","Complément nom","Date début","Date fin"]
+    header_columns = ["NumNot","nbARK","ark AUT trouvé","ARK AUT initial","frbnf AUT initial","ISNI","Nom","Complément nom","Date début","Date fin"]
     if (meta_bnf == 1):
         header_columns.extend(["[BnF] Nom","[BnF] Complément Nom","[BnF] Dates"])
     if (file_nb ==  1):
@@ -163,19 +163,13 @@ def align_from_aut(form, entry_filename, headers, input_data_type, file_nb, id_t
             n += 1
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
-
-            NumNot = row[0]
-            NumNotBIB = row[1]
-            ark_aut_init = row[2]
-            frbnf_aut_init = row[3]
-            isni = row[4]
-            nom = row[5]
+            (NumNot,NumNotBIB,ark_aut_init,frbnf_aut_init,isni,
+             nom,prenom,date_debut,date_fin) = bib2ark.extract_cols_from_row(row,
+                                           ["NumNot","NumNotBIB","ark_aut_init","frbnf_aut_init","isni","nom","prenom","date_debut","date_fin"])
+            
             nom_nett = main.clean_string(nom, False, True)
-            prenom = row[6]
             prenom_nett = main.clean_string(prenom, False, True)
-            date_debut = row[7]
             date_debut_nett = date_debut
-            date_fin = row[8]
             date_fin_nett = date_fin
             ark_trouve = ""
             if (ark_trouve == "" and ark_aut_init != ""):
@@ -183,7 +177,7 @@ def align_from_aut(form, entry_filename, headers, input_data_type, file_nb, id_t
             if (ark_trouve == "" and isni != ""):
                 ark_trouve = isni2ark(NumNot, isni)
             if (ark_trouve == "" and frbnf_aut_init != ""):
-                ark_trouve = frbnfAut2arkAut(NumNot, frbnf_bib_init, nom_nett, prenom_nett, date_debut_nett)
+                ark_trouve = frbnfAut2arkAut(NumNot, frbnf_aut_init, nom_nett, prenom_nett, date_debut_nett)
             if (ark_trouve == "" and nom != ""):
                 ark_trouve = accesspoint2arkAut(NumNot, nom_nett, prenom_nett, date_debut_nett, date_fin_nett)
             print(str(n) + ". " + NumNot + " : " + ark_trouve)
@@ -194,7 +188,10 @@ def align_from_aut(form, entry_filename, headers, input_data_type, file_nb, id_t
                 nb_notices_nb_ARK["Pb FRBNF"] += 1
             else:
                 nb_notices_nb_ARK[nbARK] += 1
-            liste_metadonnees = [nbARK,NumNot,ark_trouve,ark_aut_init,frbnf_aut_init,isni,nom,prenom,date_debut,date_fin]
+            typeConversionNumNot = ""
+            if (NumNot in NumNotices2methode):
+                typeConversionNumNot = ">".join(NumNotices2methode[NumNot])
+            liste_metadonnees = [NumNot,nbARK,ark_trouve,typeConversionNumNot,ark_aut_init,frbnf_aut_init,isni,nom,prenom,date_debut,date_fin]
             if (meta_bnf == 1):
                 liste_metadonnees.extend(ark2metadc(ark_trouve))
             if (file_nb.get() ==  1):
@@ -206,7 +203,7 @@ def align_from_aut(form, entry_filename, headers, input_data_type, file_nb, id_t
 
 def align_from_bib(form, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf):
     """Alignement de ses données d'autorité avec les autorités BnF à partir d'une extraction de sa base bibliographique (métadonnées BIB + Nom, prénom et dates de l'auteur)"""
-    header_columns = ["nbARK","NumNot","ark AUT trouvé","ark BIB initial","frbnf BIB initial","Titre","ISNI","Nom","Complément nom","dates Auteur"]
+    header_columns = ["NumNot","nbARK","ark AUT trouvé","ark BIB initial","frbnf BIB initial","Titre","ISNI","Nom","Complément nom","dates Auteur"]
     if (meta_bnf == 1):
         header_columns.extend(["[BnF] Nom","[BnF] Complément Nom","[BnF] Dates"])
     if (file_nb ==  1):
@@ -222,6 +219,9 @@ def align_from_bib(form, entry_filename, headers, input_data_type, file_nb, id_t
             n += 1
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
+            (NumNot,NumNotBIB,ark_bib_init,frbnf_bib_init,titre,
+             nom,prenom,dates_auteur) = bib2ark.extract_cols_from_row(row,
+                                           ["NumNotAUT","NumNotBIB","ark_bib_init","frbnf_bib_init","titre","nom","prenom","dates_auteur"])
 
             NumNot = row[0]
             NumNotBib = row[1]
@@ -259,7 +259,10 @@ def align_from_bib(form, entry_filename, headers, input_data_type, file_nb, id_t
                 nb_notices_nb_ARK["Pb FRBNF"] += 1
             else:
                 nb_notices_nb_ARK[nbARK] += 1
-            liste_metadonnees = [nbARK,NumNot,ark_trouve,NumNotBib,ark_bib_init,frbnf_bib_init,titre,isni,nom,prenom,dates_auteur]
+            typeConversionNumNot = ""
+            if (NumNot in NumNotices2methode):
+                typeConversionNumNot = ">".join(NumNotices2methode[NumNot])
+            liste_metadonnees = [nbARK,NumNot,ark_trouve,typeConversionNumNot,NumNotBib,ark_bib_init,frbnf_bib_init,titre,isni,nom,prenom,dates_auteur]
             if (meta_bnf == 1):
                 liste_metadonnees.extend(ark2metadc(ark_trouve))
             if (file_nb ==  1):
@@ -276,8 +279,8 @@ def arkAut2arkAut(NumNot,ark):
     (test,page) = bib2ark.testURLetreeParse(url)
     nv_ark = ""
     if (test == True):
-        if (page.find("//srw:recordIdentifier", namespaces=ns) is not None):
-            nv_ark = page.find("//srw:recordIdentifier", namespaces=ns).text
+        if (page.find("//srw:recordIdentifier", namespaces=main.ns) is not None):
+            nv_ark = page.find("//srw:recordIdentifier", namespaces=main.ns).text
             NumNotices2methode[NumNot].append("Actualisation ARK")
     return nv_ark
 
@@ -682,12 +685,12 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
     cancel = tk.Button(zone_ok_help_cancel, bg=couleur_fond, text="Annuler", command=lambda: main.annuler(form), padx=10, pady=1, width=15)
     cancel.pack()
 
-    """tk.Label(zone_notes, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
-
+    tk.Label(zone_notes, text = "Version " + str(main.version) + " - " + lastupdate, bg=couleur_fond).pack()
     
-    if (last_version[1] == True):
-        download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(last_version[0]), command=main.download_last_update)
-        download_update.pack()"""
+    if (main.last_version[1] == True):
+        download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(main.last_version[0]), command=download_last_update)
+        download_update.pack()
+
     
     tk.mainloop()
 

@@ -429,12 +429,12 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     cancel = tk.Button(cadre_valider, bg=couleur_fond, text="Annuler", command=lambda: main.annuler(form), padx=10, pady=1, width=15)
     cancel.pack()
     
-    """tk.Label(zone_notes, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
+    tk.Label(zone_notes, text = "Version " + str(main.version) + " - " + lastupdate, bg=couleur_fond).pack()
     
-    if (last_version[1] == True):
-        download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(last_version[0]), command=download_last_update)
-        download_update.pack()"""
-    
+    if (main.last_version[1] == True):
+        download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(main.last_version[0]), command=download_last_update)
+        download_update.pack()
+
     tk.mainloop()
 
 if __name__ == '__main__':
