@@ -431,9 +431,9 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     
     tk.Label(zone_notes, text = "Version " + str(main.version) + " - " + lastupdate, bg=couleur_fond).pack()
     
-    if (main.last_version[1] == True):
+    """if (main.last_version[1] == True):
         download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(main.last_version[0]), command=download_last_update)
-        download_update.pack()
+        download_update.pack()"""
 
     tk.mainloop()
 
