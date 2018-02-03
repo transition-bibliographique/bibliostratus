@@ -197,6 +197,11 @@ def record2pubPlace(f210a):
     pubPlace = f210a
     return pubPlace
 
+def record2publisher(f210c):
+    publisher = clean_spaces(f210c)
+    publisher = clean_punctation(publisher)
+    return publisher
+
 def record2numeroTome(f200h):
     numeroTome = f200h
     return numeroTome
@@ -255,6 +260,7 @@ def record2listemetas(record):
     authors2keywords = aut2keywords(authors)
     date = record2date(record2meta(record,["100"]), record2meta(record,["210$d"]))
     numeroTome = record2numeroTome(record2meta(record,["200$h"], ["461$v"]))
+    publisher = record2publisher(record2meta(record,["210$c"]))
     pubPlace = record2pubPlace(record2meta(record,["210$a"]))
     ark = record2ark(record2meta(record,["033$a"]))
     frbnf = record2frbnf(record2meta(record,["035$a"]))
@@ -271,9 +277,9 @@ def record2listemetas(record):
         
     meta = []
     if (doc_record == "am"):
-        meta = [numNot,frbnf,ark,isbn,ean,title,authors, date, numeroTome]
+        meta = [numNot,frbnf,ark,isbn,ean,title,authors, date, numeroTome, publisher]
     elif (doc_record == "jm"):
-        meta = [numNot,frbnf,ark,ean,id_commercial_aud,title,authors2keywords,date]
+        meta = [numNot,frbnf,ark,ean,id_commercial_aud,title,authors2keywords,date, publisher]
     elif (doc_record == "as"):
         meta = [numNot, frbnf, ark, issn, title, authors, date, pubPlace]
     else:
