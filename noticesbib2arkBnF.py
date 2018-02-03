@@ -216,7 +216,9 @@ def nettoyageTome(numeroTome):
             numeroTome = numeroTome.split(signe)
             numeroTome = "~".join(numero for numero in numeroTome)
         numeroTome = numeroTome.split("~")
-        numeroTome = [numero for numero in numeroTome if numero != ""][-1]
+        numeroTome = [numero for numero in numeroTome if numero != ""]
+        if (numeroTome != []):
+            numeroTome = numeroTome[-1]
         numeroTome = ltrim(numeroTome)
     return numeroTome
 
