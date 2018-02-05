@@ -54,13 +54,16 @@ def check_last_compilation(programID):
     programID_last_compilation = 0
     display_update_button = False
     url = "https://raw.githubusercontent.com/Lully/bnf-sru/master/last_compilations.json"
-    last_compilations = request.urlopen(url)
-    reader = codecs.getreader("utf-8")
-    last_compilations = json.load(reader(last_compilations))["last_compilations"][0]
-    if (programID in last_compilations):
-        programID_last_compilation = last_compilations[programID]
-    if (programID_last_compilation > version):
-        display_update_button = True
+    try:
+        last_compilations = request.urlopen(url)
+        reader = codecs.getreader("utf-8")
+        last_compilations = json.load(reader(last_compilations))["last_compilations"][0]
+        if (programID in last_compilations):
+            programID_last_compilation = last_compilations[programID]
+        if (programID_last_compilation > version):
+            display_update_button = True
+    except error.URLError:
+        print("erreur réseau")
     return [programID_last_compilation,display_update_button]
 
 def download_last_update(url="https://github.com/Lully/transbiblio/"):
