@@ -882,7 +882,7 @@ def extract_meta(recordBNF,field_subfield,occ="all",anl=False):
     subfield = field_subfield.split("$")[1]
     value = []
     path = "//srw:recordData/mxc:record/mxc:datafield[@tag='" + field + "']/mxc:subfield[@code='"+ subfield + "']"
-    for elem in recordBNF.xpath(path,namespaces = ns):
+    for elem in recordBNF.xpath(path,namespaces = main.ns):
         if (elem.text is not None):
             value.append(elem.text)
     if (occ == "first"):
@@ -925,10 +925,11 @@ def no_commercial2ark(NumNot,no_commercial,titre,auteur,date):
     ark = ""
     (test,results) = testURLetreeParse(url)
     if (test == True):
-        for record in results.xpath("//srw:recordData",namespaces=main.ns):
+        for record in results.xpath("//srw:records/srw:record",namespaces=main.ns):
             ark_current = record.find("srw:recordIdentifier",namespaces=main.ns).text
-            recordBNF = ark2recordBNF(ark_current)
-            ark = controleNoCommercial(NumNot,ark_current,no_commercial,titre,auteur,date,recordBNF)
+            (test2, recordBNF) = ark2recordBNF(ark_current)
+            if (test2 == True):
+                ark = controleNoCommercial(NumNot,ark_current,no_commercial,titre,auteur,date,recordBNF)
     return ark
 
 def controleNoCommercial(NumNot,ark_current,no_commercial,titre,auteur,date,recordBNF):
