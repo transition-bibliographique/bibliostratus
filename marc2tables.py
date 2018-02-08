@@ -223,6 +223,7 @@ def download_last_update():
 def iso2tables(entry_filename, id_traitement):
     with open(entry_filename, 'rb') as fh:
         collection = mc.MARCReader(fh)
+        collection.force_utf8 = True
         for record in collection:
             record2listemetas(record)
     
