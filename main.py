@@ -42,9 +42,9 @@ punctuation = [".",",",";",":","?","!","%","$","£","€","#","\\","\"","&","~",
 
 
 errors = {
-        "no_internet" : "Attention : Le programme n'a pas d'accès à Internet.\nSi votre navigateur y a accès, vérifiez les paramètres de votre proxy"
+        "no_internet" : "Attention : Le programme n'a pas d'accès à Internet.\nSi votre navigateur y a accès, vérifiez les paramètres de votre proxy",
+        "pb_input_utf8" : "Le fichier en entrée devrait être en UTF-8.\nErreur d'encodage constatée"
         }
-
 def click2help(url):
     webbrowser.open(url)
 def annuler(master):
@@ -218,6 +218,15 @@ def main_form_frames(title, couleur_fond, couleur_bordure,access_to_network):
 
 def generic_input_controls(master,filename):
     check_file_name(master,filename)
+
+def check_file_utf8(master, filename):
+    try:
+        open(filename, "r", encoding="utf-8")
+    except FileNotFoundError:
+        popup_errors(master,"Le fichier " + filename + " n'existe pas")
+    except UnicodeDecodeError:
+        popup_errors(master,errors["pb_input_utf8"])
+        
        
 def check_file_name(master,filename):
     try:
