@@ -301,7 +301,7 @@ def end_of_treatments(form,id_traitement):
 
 
 def launch(form,entry_filename,file_format, output_ID):
-    print(entry_filename)
+    print("Fichier en entrée : ", entry_filename)
     if (file_format == 1):
         iso2tables(entry_filename, output_ID)
     else:
