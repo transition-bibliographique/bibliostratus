@@ -139,10 +139,10 @@ def record2file(file, XMLrec, format_file):
         file.write(record)
 
 
-def callback(master, form, filename, headers, AUTliees, outputID, format_records=1, format_file=1):
+def callback(master, form, filename, type_records, headers, AUTliees, outputID, format_records=1, format_file=1):
     main.generic_input_controls(master, filename)
     format_BIB = dict_format_records[format_records]
-    bib_file = file_create("bib", format_file, outputID)
+    bib_file = file_create(type_records, format_file, outputID)
     if (AUTliees == 1):
         aut_file = file_create("aut", format_file, outputID)
     with open(filename, newline='\n',encoding="utf-8") as csvfile:
@@ -195,7 +195,7 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
      zone_access2programs,
      zone_actions,
      zone_ok_help_cancel,
-     zone_notes] = main.form_generic_frames(master,"Récupérer les notices complètes de la BnF à partir d'une liste d'ARK",
+     zone_notes] = main.form_generic_frames(master,"[Biblio] Récupérer les notices complètes de la BnF à partir d'une liste d'ARK",
                                       couleur_fond,couleur_bouton,
                                       access_to_network)
     
@@ -233,18 +233,29 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
     entry_filename.focus_set()
     
     tk.Label(frame_input_aut, text="\n", bg=couleur_fond).pack()
+
+    #ARK de BIB ou d'AUT ?
+    type_records = tk.IntVar()
+    tk.Radiobutton(frame_input_aut, text="ARK de notices BIB", variable=type_records, value="bib", bg=couleur_fond).pack(anchor="nw")
+    tk.Radiobutton(frame_input_aut, text="ARK de notices AUT", justify="left", variable=type_records, value="aut",bg=couleur_fond).pack(anchor="nw")
+    type_records.set("bib")
+
+    tk.Label(frame_input_aut, text="-------------------", bg=couleur_fond).pack()
+
     #Fichier avec en-têtes ?
     headers = tk.IntVar()
     headerButton = tk.Checkbutton(frame_input_aut, text="Mon fichier a des en-têtes de colonne", 
                        variable=headers,
                        bg=couleur_fond, justify="left").pack(anchor="w")
     headers.set(1)
+    
+   
     #notices d'autorité liées
     AUTliees = tk.IntVar()
     b = tk.Checkbutton(frame_input_aut, text="Récupérer aussi les notices d'autorité liées", 
                        variable=AUTliees,
                        bg=couleur_fond, justify="left").pack(anchor="w")
-    tk.Label(frame_input_aut, text="\n\n\n", bg=couleur_fond).pack()
+    #tk.Label(frame_input_aut, text="\n", bg=couleur_fond).pack()
     
     tk.Label(frame_output_file, text="ID de traitement (facultatif)",
              bg=couleur_fond).pack(side="left", anchor="w")
@@ -273,7 +284,7 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
     
     #file_format.focus_set()
     b = tk.Button(zone_ok_help_cancel, text = "OK", 
-                  command = lambda: callback(master, form, entry_filename.get(), headers.get(), AUTliees.get(), outputID.get(), format_records_choice.get(), format_file.get()), 
+                  command = lambda: callback(master, form, entry_filename.get(), type_records.get(), headers.get(), AUTliees.get(), outputID.get(), format_records_choice.get(), format_file.get()), 
                   width = 15, borderwidth=1, pady=20, fg="white",
                   bg=couleur_bouton)
     b.pack()
