@@ -15,6 +15,7 @@ from urllib import request, error
 import csv
 import pymarc as mc
 import main as main
+import noticesbib2arkBnF as bib2ark
 import os
 import re
 import codecs
@@ -139,8 +140,11 @@ def record2file(file, XMLrec, format_file):
         file.write(record)
 
 
-def callback(master, form, filename, type_records, headers, AUTliees, outputID, format_records=1, format_file=1):
+def callback(master, form, filename, type_records_form, headers, AUTliees, outputID, format_records=1, format_file=1):
     main.generic_input_controls(master, filename)
+    type_records = "bib"
+    if (type_records_form == 2):
+        type_records = "aut"
     format_BIB = dict_format_records[format_records]
     bib_file = file_create(type_records, format_file, outputID)
     if (AUTliees == 1):
@@ -236,9 +240,15 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
 
     #ARK de BIB ou d'AUT ?
     type_records = tk.IntVar()
-    tk.Radiobutton(frame_input_aut, text="ARK de notices BIB", variable=type_records, value="bib", bg=couleur_fond).pack(anchor="nw")
-    tk.Radiobutton(frame_input_aut, text="ARK de notices AUT", justify="left", variable=type_records, value="aut",bg=couleur_fond).pack(anchor="nw")
-    type_records.set("bib")
+    bib2ark.radioButton_lienExample(frame_input_aut,type_records,1,couleur_fond,
+                            "ARK de notices BIB",
+                            "",
+                            "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/listeARKbib.tsv")
+    bib2ark.radioButton_lienExample(frame_input_aut,type_records,2,couleur_fond,
+                            "ARK de notices AUT",
+                            "",
+                            "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/listeARKaut.tsv")    
+    type_records.set(1)
 
     tk.Label(frame_input_aut, text="-------------------", bg=couleur_fond).pack()
 

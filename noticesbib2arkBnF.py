@@ -1319,15 +1319,16 @@ def radioButton_lienExample(frame,variable_button,val,couleur_fond,text1,text2,l
     packButton.pack(anchor="w")
     line1 = tk.Frame(packButton, bg=couleur_fond)
     line1.pack(anchor="w")
-    line2 = tk.Frame(packButton, bg=couleur_fond)
-    line2.pack(anchor="w")
     tk.Radiobutton(line1,bg=couleur_fond, 
                    text=text1, 
                    variable=variable_button, value=val, justify="left").pack(anchor="w", side="left")    
     example_ico = tk.Button(line1, bd=0, justify="left", font="Arial 7 italic",
                                     text="exemple", command=lambda: main.click2help(link))
     example_ico.pack(anchor="w", side="left")
-    tk.Label(line2, bg=couleur_fond, text="      "+text2, justify="left").pack(anchor="w")
+    if (text2 != ""):
+        line2 = tk.Frame(packButton, bg=couleur_fond)
+        line2.pack(anchor="w")
+        tk.Label(line2, bg=couleur_fond, text="      "+text2, justify="left").pack(anchor="w")
 
 
 def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,False]):
