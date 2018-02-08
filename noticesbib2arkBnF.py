@@ -32,9 +32,7 @@ version = 0.92
 lastupdate = "29/12/2017"
 programID = "noticesbib2arkBnF"
 
-errors = {
-        "no_internet" : "Attention : Le programme n'a pas d'accès à Internet.\nSi votre navigateur y a accès, vérifiez les paramètres de votre proxy"
-        }
+
 
 url_access_pbs = []
 
@@ -993,7 +991,10 @@ def monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
     n = 0
     with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter='\t')
-        next(entry_file)
+        try:
+            next(entry_file)
+        except UnicodeDecodeError:
+            main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"])
         for row in entry_file:
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
@@ -1067,7 +1068,10 @@ def cddvd(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, li
     n = 0
     with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter='\t')
-        next(entry_file)
+        try:
+            next(entry_file)
+        except UnicodeDecodeError:
+            main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"])
         for row in entry_file:
             #print(row)
             n += 1
@@ -1138,7 +1142,10 @@ def perimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
     n = 0
     with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter='\t')
-        next(entry_file)
+        try:
+            next(entry_file)
+        except UnicodeDecodeError:
+            main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"])
         for row in entry_file:
             n += 1
             if (n%100 == 0):
@@ -1196,6 +1203,7 @@ def perimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
 
 def launch(form_bib2ark, entry_filename, type_doc_bib, file_nb, meta_bib, id_traitement):
     main.check_file_name(form_bib2ark,entry_filename)
+    
     #results2file(nb_fichiers_a_produire)
     #print("type_doc_bib : ", type_doc_bib)
     #print("file_nb : ",file_nb)
