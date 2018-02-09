@@ -66,8 +66,8 @@ def check_last_compilation(programID):
         print("erreur réseau")
     return [programID_last_compilation,display_update_button]
 
-def download_last_update(url="https://github.com/Lully/transbiblio/"):
-    url = "https://github.com/Lully/transbiblio/"
+def download_last_update(url="https://github.com/Transition-bibliographique/alignements-donnees-bnf/"):
+    url = "https://github.com/Transition-bibliographique/alignements-donnees-bnf/"
     webbrowser.open(url)
 
 def check_access_to_network():
@@ -313,7 +313,7 @@ def formulaire_main(access_to_network, last_version):
     tk.Label(zone_ok_help_cancel,text=" ", pady=5, bg=couleur_fond).pack()
     
 
-    call4help = tk.Button(frame_help_cancel, text="Besoin d'aide ?", command=lambda: click2help("https://github.com/Lully/transbiblio"), pady=5, padx=5, width=12)
+    call4help = tk.Button(frame_help_cancel, text="Besoin d'aide ?", command=lambda: click2help("https://github.com/Transition-bibliographique/alignements-donnees-bnf"), pady=5, padx=5, width=12)
     call4help.pack()
     cancel = tk.Button(frame_help_cancel, text="Annuler", command=lambda: annuler(master), pady=5, padx=5, width=12)
     cancel.pack()
