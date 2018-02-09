@@ -633,11 +633,11 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
     bib2ark.radioButton_lienExample(frame_input_aut,input_data_type,1,couleur_fond,
                             "Liste de notices d'autorité",
                             "(N° Notice AUT | ARK | FRBNF | ISNI | Nom | Prénom | Date de naissance | Date de mort)",
-                            "https://raw.githubusercontent.com/Lully/transbiblio/master/examples/aut_align_aut.tsv")
+                            "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/aut_align_aut.tsv")
     bib2ark.radioButton_lienExample(frame_input_aut,input_data_type,2,couleur_fond,
                             "Liste de notices bibliographiques",
                             "(N° Notice AUT | N° notice BIB | ARK Bib | FRBNF Bib | Titre | ISNI | Nom | Prénom | Dates Auteur)",
-                            "https://raw.githubusercontent.com/Lully/transbiblio/master/examples/aut_align_bib.tsv")
+                            "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/aut_align_bib.tsv")
     
     input_data_type.set(1)
 
@@ -680,7 +680,7 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
     b.pack()
     
     main.form_saut_de_ligne(zone_ok_help_cancel, couleur_fond)
-    call4help = tk.Button(zone_ok_help_cancel, text="Besoin d'aide ?", command=lambda: main.click2help("https://github.com/Lully/transbiblio"), padx=10, pady=1, width=15)
+    call4help = tk.Button(zone_ok_help_cancel, text="Besoin d'aide ?", command=lambda: main.click2help("https://github.com/Transition-bibliographique/alignements-donnees-bnf"), padx=10, pady=1, width=15)
     call4help.pack()    
     cancel = tk.Button(zone_ok_help_cancel, bg=couleur_fond, text="Annuler", command=lambda: main.annuler(form), padx=10, pady=1, width=15)
     cancel.pack()
