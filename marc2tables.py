@@ -220,15 +220,21 @@ def download_last_update():
     webbrowser.open(url)
 
 
-def iso2tables(entry_filename, id_traitement):
+def iso2tables(master,entry_filename, id_traitement):
     with open(entry_filename, 'rb') as fh:
         collection = mc.MARCReader(fh)
         collection.force_utf8 = True
-        for record in collection:
-            record2listemetas(record)
-    
+        try:
+            for record in collection:
+                record2listemetas(record)
+        except mc.exceptions.RecordLengthInvalid:
+            print("\n\n/*---------------------------------------------*\n\n")
+            print(main.errors["pb_input_utf8"])
+            print("\n\n*------------------------------------------------*/")
+            main.popup_errors(master,main.errors["pb_input_utf8"])
+        
 
-def xml2tables(entry_filename, id_traitement):
+def xml2tables(master,entry_filename, id_traitement):
     collection = mc.marcxml.parse_xml_to_array(entry_filename, strict=False)
     for record in collection:
         record2listemetas(record)
@@ -292,6 +298,7 @@ def write_reports(id_traitement):
         file = create_file_doc_record(doc_record, id_traitement)
         file.write("\t".join(["NumNotice","FRBNF","ARK","Autres métadonnées..."]) + "\n")
         for record in liste_resultats[doc_record]:
+            print(doc_record, ' - ', record[0])
             file.write("\t".join(record) + "\n")            
 
     
@@ -300,12 +307,13 @@ def end_of_treatments(form,id_traitement):
     form.destroy()
 
 
-def launch(form,entry_filename,file_format, output_ID):
+def launch(form,entry_filename,file_format, output_ID,master):
+    main.check_file_name(form,entry_filename)
     print("Fichier en entrée : ", entry_filename)
     if (file_format == 1):
-        iso2tables(entry_filename, output_ID)
+        iso2tables(master,entry_filename, output_ID)
     else:
-        xml2tables(entry_filename, output_ID)
+        xml2tables(master,entry_filename, output_ID)
     end_of_treatments(form,output_ID)
 
 
@@ -424,7 +432,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     #Bouton de validation
     
     b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", text = "OK", 
-                  command=lambda: launch(form, entry_filename.get(), file_format.get(), output_ID.get()), 
+                  command=lambda: launch(form, entry_filename.get(), file_format.get(), output_ID.get(),master), 
                   borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
     

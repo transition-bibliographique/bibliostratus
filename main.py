@@ -43,7 +43,7 @@ punctuation = [".",",",";",":","?","!","%","$","£","€","#","\\","\"","&","~",
 
 errors = {
         "no_internet" : "Attention : Le programme n'a pas d'accès à Internet.\nSi votre navigateur y a accès, vérifiez les paramètres de votre proxy",
-        "pb_input_utf8" : "Le fichier en entrée devrait être en UTF-8.\nErreur d'encodage constatée"
+        "pb_input_utf8" : "Le fichier en entrée doit être en UTF-8 sans BOM.\nErreur d'encodage constatée"
         }
 def click2help(url):
     webbrowser.open(url)
