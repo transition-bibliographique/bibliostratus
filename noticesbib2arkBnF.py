@@ -242,7 +242,7 @@ def relancerNNBAuteur(NumNot,systemid,isbn,titre,auteur,date):
                 ark = record.find("srw:recordIdentifier", namespaces=main.ns).text
                 NumNotices2methode[NumNot].append("N° sys FRBNF + Auteur")
                 listeArk.append(ark)
-    listeArk = ",".join(listeArk)
+    listeArk = ",".join([ark for ark in listeArk if ark != ""])
     return listeArk
         
     
@@ -528,6 +528,21 @@ def isbn2sru(NumNot,isbn,titre,auteur,date):
                 #NumNotices2methode[NumNot].append("ISBN > ARK")
                 listeARK.append(ark)
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
+    if (listeARK == "" and auteur != ""):
+        listeARK = isbnauteur2sru(NumNot,isbn,titre,auteur,date)
+    return listeARK
+
+def isbnauteur2sru(NumNot,isbn,titre,auteur,date):
+    """Si la recherche ISBN avec contrôle titre n'a rien donné, on recherche ISBN + le mot le plus long dans la zone "auteur", et pas de contrôle sur Titre ensuite"""
+    motlongauteur = auteur.split().sort(key=len, reverse=True)[0]
+    urlSRU = url_requete_sru('bib.isbn all "' + isbn + '" + bib.author all "' + motlongauteur + '"')
+    listeARK = []
+    (test,resultats) = testURLetreeParse(urlSRU)
+    if (test == True):
+        for record in resultats.xpath("//srw:record", namespaces=main.ns):
+            ark_current = record.find("srw:recordIdentifier", namespaces=main.ns).text
+            listeARK.append(ark_current)
+    listeARK = ",".join([ark for ark in listeARK if ark != ""])
     return listeARK
 
 def testURLetreeParse(url):
@@ -675,8 +690,8 @@ def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date):
                             if (Listeppn != []):
                                 add_to_conversionIsbn(NumNot,isbn,isbnConverti,True)
     #Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK déclaré comme équivalent --> dans ce cas on récupère l'ARK
-    Listeppn = ",".join(Listeppn)
-    ark = ",".join(ark)
+    Listeppn = ",".join([ppn for ppn in Listeppn if ppn != ""])
+    ark = ",".join([ark1 for ark1 in ark if ark1 != ""])
     if (ark != ""):
         return ark
     else:
@@ -756,7 +771,7 @@ def issn2sru(NumNot,issn):
             if (typeNotice == "s"):
                 NumNotices2methode[NumNot].append("ISSN")
                 listeArk.append(ark)
-    listeArk = ",".join(listeArk)
+    listeArk = ",".join([ark for ark in listeArk if ark != ""])
     return listeArk
 
 def ark2metas(ark, unidec=True):
@@ -1281,7 +1296,7 @@ def typesConversionARK(liste_reports):
 
 def click2help():
     """Fonction d'ouverture du navigateur pour avoir de l'aide sur le logiciel"""
-    url = "https://github.com/Lully/transbiblio"
+    url = "https://github.com/Transition-bibliographique/alignements-donnees-bnf"
     webbrowser.open_new(url)
 
 def annuler(form_bib2ark):
@@ -1308,7 +1323,7 @@ def check_last_compilation(programID):
 
 def download_last_update():
     """Fournit l'URL de téléchargement de la dernière version"""
-    url = "https://github.com/Lully/transbiblio/blob/master/noticesbib2arkBnF.py"
+    url = "https://github.com/Transition-bibliographique/alignements-donnees-bnf/blob/master/noticesbib2arkBnF.py"
     webbrowser.open(url)
 #==============================================================================
 # Création de la boîte de dialogue
@@ -1405,15 +1420,15 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     radioButton_lienExample(cadre_input_type_docs,type_doc_bib,1,couleur_fond,
                             "Documents imprimés (monographies)",
                             "(Colonnes : Num Not | FRBNF | ARK | ISBN | EAN | Titre | Auteur | Date | Volume-Tome)",
-                            "https://raw.githubusercontent.com/Lully/transbiblio/master/examples/mon_impr.tsv")
+                            "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/mon_impr.tsv")
     radioButton_lienExample(cadre_input_type_docs,type_doc_bib,2,couleur_fond,
                             "Audiovisuel (CD / DVD)",
                             "(Num Not | FRBNF | ARK | EAN | N° commercial | Titre | Auteur | Date)",
-                            "https://raw.githubusercontent.com/Lully/transbiblio/master/examples/adv.tsv")
+                            "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/adv.tsv")
     radioButton_lienExample(cadre_input_type_docs,type_doc_bib,3,couleur_fond,
                             "Périodiques",
                             "(Num Not | FRBNF | ARK | ISSN | Titre | Auteur | Date | Lieu de publication)",
-                            "https://raw.githubusercontent.com/Lully/transbiblio/master/examples/per.tsv")
+                            "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/per.tsv")
     type_doc_bib.set(1)
     
     
