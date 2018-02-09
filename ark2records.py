@@ -300,7 +300,7 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
     b.pack()
     
     main.form_saut_de_ligne(zone_ok_help_cancel, couleur_fond)
-    call4help = tk.Button(zone_ok_help_cancel, text="Besoin d'aide ?", command=lambda: main.click2help("https://github.com/Lully/transbiblio"), padx=10, pady=1, width=15)
+    call4help = tk.Button(zone_ok_help_cancel, text="Besoin d'aide ?", command=lambda: main.click2help("https://github.com/Transition-bibliographique/alignements-donnees-bnf"), padx=10, pady=1, width=15)
     call4help.pack()    
     cancel = tk.Button(zone_ok_help_cancel, bg=couleur_fond, text="Annuler", command=lambda: main.annuler(form), padx=10, pady=1, width=15)
     cancel.pack()
