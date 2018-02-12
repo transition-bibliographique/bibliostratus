@@ -248,6 +248,9 @@ def record2listemetas(record):
     title = record2title(
                 record2meta(record, ["200$a","200$e"])
                 )
+    keyTitle = record2title(
+                record2meta(record, ["530$a"], ["200$a","200$e"])
+                )
     authors = record2authors(record2meta(record, [
                                     "700$a",
                                     "700$b",
@@ -288,7 +291,10 @@ def record2listemetas(record):
     elif (doc_record == "jm"):
         meta = [numNot,frbnf,ark,ean,id_commercial_aud,title,authors2keywords,date, publisher]
     elif (doc_record == "as"):
-        meta = [numNot, frbnf, ark, issn, title, authors, date, pubPlace]
+        if (keyTitle == ""):
+            meta = [numNot, frbnf, ark, issn, title, authors, date, pubPlace]
+        else:
+            meta = [numNot, frbnf, ark, issn, keyTitle, authors, date, pubPlace]
     else:
         meta = [numNot, frbnf, ark, ean, title, authors, date]
     liste_resultats[doc_record].append(meta)
