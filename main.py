@@ -66,8 +66,8 @@ def check_last_compilation(programID):
         print("erreur réseau")
     return [programID_last_compilation,display_update_button]
 
-def download_last_update(url="https://github.com/Transition-bibliographique/alignements-donnees-bnf/"):
-    url = "https://github.com/Transition-bibliographique/alignements-donnees-bnf/"
+def download_last_update(url="https://github.com/Transition-bibliographique/alignements-donnees-bnf/bin"):
+    url = "https://github.com/Transition-bibliographique/alignements-donnees-bnf/bin"
     webbrowser.open(url)
 
 def check_access_to_network():
