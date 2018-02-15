@@ -118,7 +118,12 @@ def path2value(record, field_subfield):
             value = record[field_subfield].data
     return value
 
-
+def RepresentsInt(s):
+    try: 
+        int(s)
+        return True
+    except ValueError:
+        return False
 
 
 def record2meta(record, liste_elements, alternate_list=[]):
@@ -144,10 +149,10 @@ def record2title(f200a_e):
     title = clean_punctation(title)
     return title
 
-def record2date(f100,f210d):
+def record2date(f100a,f210d):
     date = ""
-    if (isinstance(f100[13:17],int) == True):
-        date = f100[13:17]
+    if (RepresentsInt(f100a[9:13]) == True):
+        date = f100a[9:13]
     else:
         date = f210d
     date = clean_punctation(date)
@@ -268,7 +273,7 @@ def record2listemetas(record):
                         ["200$f"])
                         )
     authors2keywords = aut2keywords(authors)
-    date = record2date(record2meta(record,["100"]), record2meta(record,["210$d"]))
+    date = record2date(record2meta(record,["100$a"]), record2meta(record,["210$d"], ["219$d", "219$i", "219$p"]))
     numeroTome = record2numeroTome(record2meta(record,["200$h"], ["461$v"]))
     publisher = record2publisher(record2meta(record,["210$c"]))
     pubPlace = record2pubPlace(record2meta(record,["210$a"]))
