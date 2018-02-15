@@ -120,7 +120,7 @@ def nettoyage(string,remplacerEspaces=True,remplacerTirets=True):
     if (remplacerEspaces == True):
         string = string.replace(" ","")
     if (remplacerTirets == True):
-        string = string.replace("-","")
+        string = string.replace("-"," ")
     return string
 
 def nettoyageTitrePourControle(titre):
@@ -534,7 +534,7 @@ def isbn2sru(NumNot,isbn,titre,auteur,date):
 
 def isbnauteur2sru(NumNot,isbn,titre,auteur,date):
     """Si la recherche ISBN avec contrôle titre n'a rien donné, on recherche ISBN + le mot le plus long dans la zone "auteur", et pas de contrôle sur Titre ensuite"""
-    motlongauteur = auteur.split().sort(key=len, reverse=True)[0]
+    motlongauteur = nettoyageAuteur(auteur, True)
     urlSRU = url_requete_sru('bib.isbn all "' + isbn + '" + bib.author all "' + motlongauteur + '"')
     listeARK = []
     (test,resultats) = testURLetreeParse(urlSRU)
@@ -1023,10 +1023,9 @@ def monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
             ean_nett = nettoyageIsbnPourControle(ean)
             ean_propre = nettoyage_isbn(ean)
             titre_nett= nettoyageTitrePourControle(titre)
-            auteur_nett = nettoyageAuteur(auteur)
+            auteur_nett = nettoyageAuteur(auteur, False)
             date_nett = nettoyageDate(date)
             tome_nett = nettoyageTome(tome)
-
             #Actualisation de l'ARK à partir de l'ARK
             ark = ""
             if (current_ark != ""):
@@ -1098,7 +1097,7 @@ def cddvd(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, li
             ean_propre = nettoyage_isbn(ean)
             no_commercial_propre = nettoyage_no_commercial(no_commercial)
             titre_nett= nettoyageTitrePourControle(titre)
-            auteur_nett = nettoyageAuteur(auteur)
+            auteur_nett = nettoyageAuteur(auteur,False)
             date_nett = nettoyageDate(date)
             #Actualisation de l'ARK à partir de l'ARK
             ark = ""
@@ -1172,7 +1171,7 @@ def perimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
             issn_nett = nettoyageIssnPourControle(issn)
             issn_propre = nettoyage_isbn(issn)
             titre_nett= nettoyageTitrePourControle(titre)
-            auteur_nett = nettoyageAuteur(auteur)
+            auteur_nett = nettoyageAuteur(auteur,False)
             date_nett = nettoyageDate(date)
             pubPlace_nett = nettoyagePubPlace(pubPlace)
             #Actualisation de l'ARK à partir de l'ARK
