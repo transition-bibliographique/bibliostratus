@@ -545,6 +545,19 @@ def isbnauteur2sru(NumNot,isbn,titre,auteur,date):
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
     return listeARK
 
+def eanauteur2sru(NumNot,ean,titre,auteur,date):
+    """Si la recherche EAN avec contrôle titre n'a rien donné, on recherche EAN + le mot le plus long dans la zone "auteur", et pas de contrôle sur Titre ensuite"""
+    motlongauteur = nettoyageAuteur(auteur, True)
+    urlSRU = url_requete_sru('bib.ean all "' + ean + '" + bib.author all "' + motlongauteur + '"')
+    listeARK = []
+    (test,resultats) = testURLetreeParse(urlSRU)
+    if (test == True):
+        for record in resultats.xpath("//srw:record", namespaces=main.ns):
+            ark_current = record.find("srw:recordIdentifier", namespaces=main.ns).text
+            listeARK.append(ark_current)
+    listeARK = ",".join([ark for ark in listeARK if ark != ""])
+    return listeARK
+
 def testURLetreeParse(url):
     test = True
     resultat = ""
@@ -928,6 +941,8 @@ def ean2ark(NumNot,ean,titre,auteur,date):
                     NumNotices2methode[NumNot].append("EAN > ARK")
                     listeARK.append(ark)
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
+    if (listeARK == "" and auteur != ""):
+        listeARK = eanauteur2sru(NumNot,ean,titre,auteur,date)
     return listeARK
 
 def nettoyage_no_commercial(no_commercial_propre):
@@ -951,10 +966,10 @@ def controleNoCommercial(NumNot,ark_current,no_commercial,titre,auteur,date,reco
     if (no_commercial != "" and no_commercialBNF != ""):
         if (no_commercial in no_commercialBNF):
             ark = ark_current
-            NumNotices2methode[NumNot].append("N° sys FRBNF + contrôle No commercial")
+            NumNotices2methode[NumNot].append("No commercial")
         elif (no_commercialBNF in no_commercial):
             ark = ark_current
-            NumNotices2methode[NumNot].append("N° sys FRBNF + contrôle No commercial")
+            NumNotices2methode[NumNot].append("No commercial")
     return ark
 
 #Si on a coché "Récupérer les données bibliographiques" : ouverture de la notice BIB de l'ARK et renvoie d'une liste de métadonnées
