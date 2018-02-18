@@ -28,7 +28,7 @@ import ark2records as ark2records
 
 #import matplotlib.pyplot as plt
 
-version = 0.09
+version = 0.10
 lastupdate = "30/02/2018"
 programID = "transbiblio"
 
