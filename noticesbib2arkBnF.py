@@ -156,7 +156,7 @@ def nettoyage_lettresISBN(isbn):
     return prefix+cle
 
 def nettoyageIsbnPourControle(isbn):
-    isbn = nettoyage(isbn)
+    isbn = nettoyage(isbn).replace(" ","")
     if (isbn != ""):
         isbn = nettoyage_lettresISBN(isbn)
     if (len(isbn) < 10):
@@ -423,18 +423,19 @@ def oldfrbnf2ark(NumNot,frbnf,isbn,titre,auteur,date):
 def frbnf2ark(NumNot,frbnf,isbn,titre,auteur,date):
     """Rechercher le FRBNF avec le préfixe "FRBN" ou "FRBNF". A défaut, lance d'autres fonctions pour lancer la recherche en utilisant uniquement le numéro, soit comme NNB/NNA, soit comme ancien numéro système (en zone 9XX)"""
     ark = ""
-    url = url_requete_sru('bib.otherid all "' + frbnf + '"')
-    (test,page) = testURLetreeParse(url)
-    if (test == True):
-        nb_resultats = int(page.find("//srw:numberOfRecords", namespaces=main.ns).text)
-        
-        if (nb_resultats == 0):
-            ark = oldfrbnf2ark(NumNot,frbnf,isbn,titre,auteur,date)
-        elif (nb_resultats == 1):
-            ark = page.find("//srw:recordIdentifier", namespaces=main.ns).text
-            NumNotices2methode[NumNot].append("FRBNF")
-        else:
-            ark = ",".join([ark.text for ark in page.xpath("//srw:recordIdentifier", namespaces=main.ns)])
+    if (frbnf[0:4].lower() == "frbn"):
+        url = url_requete_sru('bib.otherid all "' + frbnf + '"')
+        (test,page) = testURLetreeParse(url)
+        if (test == True):
+            nb_resultats = int(page.find("//srw:numberOfRecords", namespaces=main.ns).text)
+            
+            if (nb_resultats == 0):
+                ark = oldfrbnf2ark(NumNot,frbnf,isbn,titre,auteur,date)
+            elif (nb_resultats == 1):
+                ark = page.find("//srw:recordIdentifier", namespaces=main.ns).text
+                NumNotices2methode[NumNot].append("FRBNF")
+            else:
+                ark = ",".join([ark.text for ark in page.xpath("//srw:recordIdentifier", namespaces=main.ns)])
     return ark
 
         
