@@ -298,7 +298,7 @@ def verificationTomaison(ark,numeroTome,recordBNF):
     si on le retrouve bien dans une des zones où il pourrait se trouver :
     D'abord 200$h, 461$v
     Si ces deux zones sont vides, on va regarder les nombres dans la zone 200$a"""
-    liste_subfields_volume = ["200$h","461$v"]
+    liste_subfields_volume = ["200$h","200$u","461$v"]
     volumesBNF = ""
     for subf in liste_subfields_volume:
         volumesBNF += "~" + main.extract_subfield(recordBNF,subf.split("$")[0],subf.split("$")[1])
@@ -316,7 +316,8 @@ def verificationTomaison(ark,numeroTome,recordBNF):
             volumesBNF = volumesBNF.replace(lettre, "~")
         volumesBNF = volumesBNF.split("~")
         volumesBNF = set(ltrim(nb) for nb in volumesBNF if nb != "")
-    if (numeroTome in volumesBNF):
+        print(volumesBNF)
+    if (volumesBNF != "" and numeroTome in volumesBNF):
         return ark
     else:
         return ""
@@ -327,7 +328,7 @@ def verificationTomaison_sous_zone(ark,numeroTome,numeroTomeBnF):
 
 def ltrim(nombre_texte):
     "Supprime les 0 initiaux d'un nombre géré sous forme de chaîne de caractères"
-    while(nombre_texte[0] == "0"):
+    while(nombre_texte != [] and nombre_texte[0] == "0"):
         nombre_texte = nombre_texte[1:]
     return nombre_texte
 
@@ -932,7 +933,7 @@ def ean2ark(NumNot,ean,titre,auteur,date):
     url = url_requete_sru('bib.ean all "' + ean + '"')
     (test,results) = testURLetreeParse(url)
     if (test == True):
-        for record in results.xpath("//srw:recordData",namespaces=main.ns):
+        for record in results.xpath("//srw:records/srw:record",namespaces=main.ns):
             if (record.find("srw:recordIdentifier",namespaces=main.ns) is not None):
                 ark_current = record.find("srw:recordIdentifier",namespaces=main.ns).text
                 (test2,recordBNF) = ark2recordBNF(ark_current)
