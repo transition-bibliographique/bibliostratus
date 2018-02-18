@@ -336,7 +336,6 @@ def comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,da
     field = sous_zone.split("$")[0]
     subfield = sous_zone.split("$")[1]
     titreBNF = nettoyageTitrePourControle(main.extract_subfield(recordBNF,field,subfield,1))
-
     if (titre != "" and titreBNF != ""):
         if (titre == titreBNF):
             ark = ark_current
@@ -734,8 +733,8 @@ def add_to_conversionIsbn(NumNot,isbn_init,isbn_trouve,via_Sudoc=False):
 
 def isbn2ark(NumNot,isbn_init,isbn,titre,auteur,date):
     #Recherche sur l'ISBN tel que saisi dans la source
-    
     resultatsIsbn2ARK = isbn2sru(NumNot,isbn_init,titre,auteur,date)
+    
     #Requête sur l'ISBN dans le SRU, avec contrôle sur Titre ou auteur
     if (resultatsIsbn2ARK == "" and isbn_init != isbn):
         resultatsIsbn2ARK = isbn2sru(NumNot,isbn,titre,auteur,date)
