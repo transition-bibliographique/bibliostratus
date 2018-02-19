@@ -520,7 +520,7 @@ def isbn2sru(NumNot,isbn,titre,auteur,date):
     listeARK = []
     (test,resultats) = testURLetreeParse(urlSRU)
     if (test == True):
-        for record in resultats.xpath("//srw:record", namespaces=main.ns):
+        for record in resultats.xpath("//srw:records/srw:record", namespaces=main.ns):
             ark_current = record.find("srw:recordIdentifier", namespaces=main.ns).text
             recordBNF_url = url_requete_sru('bib.persistentid all "' + ark_current + '"')
             (test,recordBNF) = testURLetreeParse(recordBNF_url)
@@ -540,7 +540,7 @@ def isbnauteur2sru(NumNot,isbn,titre,auteur,date):
     listeARK = []
     (test,resultats) = testURLetreeParse(urlSRU)
     if (test == True):
-        for record in resultats.xpath("//srw:record", namespaces=main.ns):
+        for record in resultats.xpath("//srw:records/srw:record", namespaces=main.ns):
             ark_current = record.find("srw:recordIdentifier", namespaces=main.ns).text
             listeARK.append(ark_current)
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
@@ -553,7 +553,7 @@ def eanauteur2sru(NumNot,ean,titre,auteur,date):
     listeARK = []
     (test,resultats) = testURLetreeParse(urlSRU)
     if (test == True):
-        for record in resultats.xpath("//srw:record", namespaces=main.ns):
+        for record in resultats.xpath("//srw:records/srw:record", namespaces=main.ns):
             ark_current = record.find("srw:recordIdentifier", namespaces=main.ns).text
             listeARK.append(ark_current)
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
@@ -652,7 +652,7 @@ def isbn_anywhere2sru(NumNot,isbn,titre,auteur,date):
     test,resultat = testURLetreeParse(urlSRU)
     listeARK = []
     if (test == True):
-        for record in resultat.xpath("//srw:record", namespaces=main.ns):
+        for record in resultat.xpath("//srw:records/srw:record", namespaces=main.ns):
             ark_current = record.find("srw:recordIdentifier", namespaces=main.ns).text
             recordBNF_url = url_requete_sru('bib.persistentid all "' + ark_current)
             (test2,recordBNF) = testURLetreeParse(recordBNF_url)

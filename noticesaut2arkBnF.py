@@ -291,7 +291,7 @@ def arkBib2arkAut(NumNot,arkBib, nom, prenom, date_debut):
     (test,page) = bib2ark.testURLetreeParse(url)
     listeArk = ""
     if (test == True):
-        for record in page.xpath("//srw:recordData:mxc:record",namespaces=main.ns):
+        for record in page.xpath("//srw:recordData/mxc:record",namespaces=main.ns):
             listeArk.extend(extractARKautfromBIB(record,nom,prenom,date_debut))
             NumNotices2methode[NumNot].append("ARK notice BIB + contrôle accesspoint")
     return listeArk
