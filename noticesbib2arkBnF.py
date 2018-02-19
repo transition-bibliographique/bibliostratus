@@ -1011,7 +1011,8 @@ def extract_cols_from_row(row,liste):
             i += 1
         return tuple(liste_values)    
 
-def monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
+def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
+    header_columns_init = ["Num Not", "FRBNF", "ARK", "ISBN", "EAN", "Titre", "Auteur", "Date", "Volume-Tome"]
     header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","frbnf","isbn_nett","ean_propre","titre","auteur","date","Tome/Volume"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
@@ -1027,6 +1028,8 @@ def monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
         except UnicodeDecodeError:
             main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"])
         for row in entry_file:
+            if (n == 0):
+                controls_columns(form_bib2ark, header_columns_init, row)
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
             n += 1
@@ -1086,7 +1089,8 @@ def monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
                 row2files(liste_metadonnees,liste_reports)
         
         
-def cddvd(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
+def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
+    header_columns_init = ["Num Not", "FRBNF", "ARK", "EAN", "N° commercial", "Titre", "Auteur", "Date"]
     header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","frbnf","ean_nett","ean_propre","no_commercial_propre","titre","auteur","date"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
@@ -1103,6 +1107,8 @@ def cddvd(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, li
         except UnicodeDecodeError:
             main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"])
         for row in entry_file:
+            if (n == 0):
+                controls_columns(form_bib2ark, header_columns_init, row)
             #print(row)
             n += 1
             if (n%100 == 0):
@@ -1161,7 +1167,8 @@ def cddvd(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, li
                 row2files(liste_metadonnees,liste_reports)
 
 #Si option du formulaire = périodiques imprimés
-def perimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
+def perimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
+    header_columns_init = ["Num Not", "FRBNF", "ARK", "ISSN", "Titre", "Auteur", "Date", "Lieu de publication"]
     header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","frbnf","issn_nett","titre","auteur","date","lieu"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
@@ -1228,11 +1235,20 @@ def perimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, 
             elif(file_nb ==  2):
                 row2files(liste_metadonnees,liste_reports)
 
-        
-    
+def controls_columns(form, header_columns_init, row):
+    """i = 0
+    text = ""
+    for el in header_columns_init:
+        text += "\n" + el + " : "
+        if (len(row) > i):
+            text += row[i]
+        i += 1
+    main.popup_errors(form,text)  """  
+    #tk.Label(zone_controles, text = row[0], bg = "white").pack()
+    #print(row[0])
 
-def launch(form_bib2ark, entry_filename, type_doc_bib, file_nb, meta_bib, id_traitement):
-    main.check_file_name(form_bib2ark,entry_filename)
+def launch(form_bib2ark,zone_controles, entry_filename, type_doc_bib, file_nb, meta_bib, id_traitement):
+    main.check_file_name(form_bib2ark, entry_filename)
     
     #results2file(nb_fichiers_a_produire)
     #print("type_doc_bib : ", type_doc_bib)
@@ -1241,11 +1257,11 @@ def launch(form_bib2ark, entry_filename, type_doc_bib, file_nb, meta_bib, id_tra
     liste_reports = create_reports(id_traitement, file_nb)    
     
     if (type_doc_bib == 1):
-        monimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib)
+        monimpr(form_bib2ark,zone_controles, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib)
     elif (type_doc_bib == 2):
-        cddvd(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib)
+        cddvd(form_bib2ark,zone_controles, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib)
     elif (type_doc_bib == 3):
-        perimpr(form_bib2ark, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib)
+        perimpr(form_bib2ark,zone_controles, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib)
 
     else:
         print("Erreur : type de document non reconnu")
@@ -1485,7 +1501,7 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     
     b = tk.Button(zone_ok_help_cancel, bg=couleur_bouton, fg="white", font="Arial 10 bold", 
                   text = "Aligner les\nnotices BIB", 
-                  command = lambda: launch(form_bib2ark, entry_filename.get(), type_doc_bib.get(), file_nb.get(), meta_bib.get(), id_traitement.get()), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
+                  command = lambda: launch(form_bib2ark,zone_controles , entry_filename.get(), type_doc_bib.get(), file_nb.get(), meta_bib.get(), id_traitement.get()), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
     
     tk.Label(zone_ok_help_cancel, font="bold", text="", bg=couleur_fond).pack()
@@ -1496,7 +1512,12 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     cancel = tk.Button(zone_ok_help_cancel, bg=couleur_fond, text="Annuler", command=lambda: annuler(form_bib2ark), padx=10, pady=1, width=15)
     cancel.pack()
     
-    tk.Label(zone_notes, text = "Version " + str(main.version) + " - " + lastupdate, bg=couleur_fond).pack()
+    zone_version = tk.Frame(zone_notes, bg=couleur_fond)
+    zone_version.pack()
+    tk.Label(zone_version, text = "Version " + str(main.version) + " - " + lastupdate, bg=couleur_fond).pack()
+
+    zone_controles = tk.Frame(zone_notes, bg=couleur_fond)
+    zone_controles.pack()
     
     """if (main.last_version[1] == True):
         download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(main.last_version[0]), command=download_last_update)
