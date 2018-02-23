@@ -914,6 +914,23 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,anyw
     listeArk = ",".join(ark for ark in listeArk if ark != "")
     return listeArk
 
+def tad2ppn(NumNot,titre,auteur,auteur_nett,date_nett,typeRecord):
+    #Recherche dans DoMyBiblio : Titre & Auteur dans tous champs, Date dans un champ spécifique
+    typeRecord4DoMyBiblio = "all"
+    """all (pour tous les types de document), 
+           B (pour les livres), 
+           T (pour les périodiques), 
+           Y (pour les thèses version de soutenance),
+           V (pour le matériel audio-visuel)"""
+    url = "".join(["http://domybiblio.net/search/search_api.php?type_search=all&q=",
+                   titre + " " + auteur_nett,
+                   "&type_doc=",
+                   typeRecord4DoMyBiblio,
+                   "&period=",
+                   date_nett,
+                   "&pageID=1&wp=true&idref=true&loc=true"])
+    
+
 def checkTypeRecord(ark,typeRecord_attendu):
     url = url_requete_sru('bib.ark any "' + ark + '"')
     print(url)
@@ -1040,7 +1057,7 @@ def extract_cols_from_row(row,liste):
 
 def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
     header_columns_init = ["Num Not", "FRBNF", "ARK", "ISBN", "EAN", "Titre", "Auteur", "Date", "Volume-Tome"]
-    header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","frbnf","isbn_nett","ean_propre","titre","auteur","date","Tome/Volume"]
+    header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","FRBNF","ISBN","EAN","Titre","auteur","date","Tome/Volume"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
     if (file_nb ==  1):
@@ -1107,7 +1124,7 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
             typeConversionNumNot = ""
             if (NumNot in NumNotices2methode):
                 typeConversionNumNot = ">".join(NumNotices2methode[NumNot])
-            liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,current_ark,frbnf,isbn_nett,ean_propre,titre,auteur,date,tome]
+            liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,current_ark,frbnf,isbn,ean,titre,auteur,date,tome]
             if (meta_bib == 1):
                 liste_metadonnees.extend(ark2metadc(ark))
             if (file_nb ==  1):
@@ -1118,7 +1135,7 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
         
 def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
     header_columns_init = ["Num Not", "FRBNF", "ARK", "EAN", "N° commercial", "Titre", "Auteur", "Date"]
-    header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","frbnf","ean_nett","ean_propre","no_commercial_propre","titre","auteur","date"]
+    header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","FRBNF","EAN","no_commercial_propre","titre","auteur","date"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
     if (file_nb ==  1):
@@ -1184,7 +1201,7 @@ def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, i
             if (NumNot in NumNotices2methode):
                 typeConversionNumNot = ">".join(NumNotices2methode[NumNot])
                 
-            liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,frbnf,current_ark,ean_nett,ean_propre,
+            liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,frbnf,current_ark,ean,
                          no_commercial_propre,titre,auteur,date]
             if (meta_bib == 1):
                 liste_metadonnees.extend(ark2metadc(ark))
