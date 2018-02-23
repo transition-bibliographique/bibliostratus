@@ -724,6 +724,7 @@ def ean2sudoc(NumNot,ean,titre,auteur,date):
             for ppn in resultats.xpath("//ppn"):
                 ppn_val = ppn.text
                 Listeppn.append("PPN" + ppn_val)
+                NumNotices2methode[NumNot].append("EAN > PPN")
                 ark.append(ppn2ark(NumNot,ppn_val,ean,titre,auteur,date))
     #Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK déclaré comme équivalent --> dans ce cas on récupère l'ARK
     Listeppn = ",".join([ppn for ppn in Listeppn if ppn != ""])
@@ -914,21 +915,42 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,anyw
     listeArk = ",".join(ark for ark in listeArk if ark != "")
     return listeArk
 
-def tad2ppn(NumNot,titre,auteur,auteur_nett,date_nett,typeRecord):
+def tad2ppn(NumNot,titre,auteur,auteur_nett,date,typeRecord):
     #Recherche dans DoMyBiblio : Titre & Auteur dans tous champs, Date dans un champ spécifique
+    Listeppn = []
+    ark = []
     typeRecord4DoMyBiblio = "all"
     """all (pour tous les types de document), 
            B (pour les livres), 
            T (pour les périodiques), 
            Y (pour les thèses version de soutenance),
            V (pour le matériel audio-visuel)"""
+    typeRecordDic = {"monimpr":"B","cddvd":"V","perimpr":"T"}
+    if (typeRecord in typeRecordDic):
+        typeRecord4DoMyBiblio = typeRecordDic[typeRecord]
     url = "".join(["http://domybiblio.net/search/search_api.php?type_search=all&q=",
                    titre + " " + auteur_nett,
                    "&type_doc=",
                    typeRecord4DoMyBiblio,
                    "&period=",
-                   date_nett,
+                   date,
                    "&pageID=1&wp=true&idref=true&loc=true"])
+    (test,results) = testURLetreeParse(url)
+    if (test == True):
+        for record in results.xpath("//records/record"):
+            ppn = record.find("identifier").text
+            NumNotices2methode[NumNot].append("Titre-Auteur-Date DoMyBiblio")
+            Listeppn.append("PPN" + ppn)
+            ark.append(ppn2ark(NumNot,ppn,"",titre,auteur,date))
+    #Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK déclaré comme équivalent --> dans ce cas on récupère l'ARK
+    Listeppn = ",".join([ppn for ppn in Listeppn if ppn != ""])
+    ark = ",".join([ark1 for ark1 in ark if ark1 != ""])
+    if (ark != ""):
+        return ark
+    else:
+        return Listeppn
+
+            
     
 
 def checkTypeRecord(ark,typeRecord_attendu):
@@ -1113,6 +1135,10 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
                 #print("1." + NumNot + " : " + ark)
             if (ark == "" and titre != ""):
                 ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,tome_nett,"m",True)
+            """
+            if (ark == "" and titre != ""):
+                ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"monimpr")
+            """
             print(str(n) + ". " + NumNot + " : " + ark)
             nbARK = len(ark.split(","))
             if (ark == ""):
@@ -1188,6 +1214,10 @@ def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, i
             #A défaut, on recherche Titre-Auteur dans tous champs (+Date comme date)
             if (ark == "" and titre != ""):
                 ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m",True)
+            """
+            if (ark == "" and titre != ""):
+                ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"cddvd")
+            """
             print(str(n) + "." + NumNot + " : " + ark)
             nbARK = len(ark.split(","))
             if (ark == ""):
