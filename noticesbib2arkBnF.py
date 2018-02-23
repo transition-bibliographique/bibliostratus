@@ -711,6 +711,29 @@ def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date):
     else:
         return Listeppn
 
+def ean2sudoc(NumNot,ean,titre,auteur,date):
+    """A partir d'un EAN, recherche dans le Sudoc. Pour chaque notice trouvée, on regarde sur la notice
+    Sudoc a un ARK BnF ou un FRBNF, auquel cas on convertit le PPN en ARK. Sinon, on garde le(s) PPN"""
+    url = "https://www.sudoc.fr/services/ean/" + ean
+    Listeppn = []
+    eanTrouve = testURLretrieve(url)
+    ark = []
+    if (eanTrouve == True):
+        (test,resultats) = testURLetreeParse(url)
+        if (test == True):
+            for ppn in resultats.xpath("//ppn"):
+                ppn_val = ppn.text
+                Listeppn.append("PPN" + ppn_val)
+                ark.append(ppn2ark(NumNot,ppn_val,ean,titre,auteur,date))
+    #Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK déclaré comme équivalent --> dans ce cas on récupère l'ARK
+    Listeppn = ",".join([ppn for ppn in Listeppn if ppn != ""])
+    ark = ",".join([ark1 for ark1 in ark if ark1 != ""])
+    if (ark != ""):
+        return ark
+    else:
+        return Listeppn
+
+
 def ppn2ark(NumNot,ppn,isbn,titre,auteur,date):
     ark = ""
     url = "http://www.sudoc.fr/" + ppn + ".rdf"
@@ -944,6 +967,10 @@ def ean2ark(NumNot,ean,titre,auteur,date):
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
     if (listeARK == "" and auteur != ""):
         listeARK = eanauteur2sru(NumNot,ean,titre,auteur,date)
+
+#Si pas de résultats : on relance une recherche dans le Sudoc    
+    if (listeARK == ""):
+        listeARK = ean2sudoc(NumNot,ean,titre,auteur,date)
     return listeARK
 
 def nettoyage_no_commercial(no_commercial_propre):
