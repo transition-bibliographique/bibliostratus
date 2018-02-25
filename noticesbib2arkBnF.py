@@ -52,6 +52,11 @@ listeChiffres = ["0","1","2","3","4","5","6","7","8","9"]
 lettres = ["a","b","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
 ponctuation = [".",",",";",":","?","!","%","$","£","€","#","\\","\"","&","~","{","(","[","`","\\","_","@",")","]","}","=","+","*","\/","<",">",")","}"]
 
+header_columns_init_monimpr = ["Num Not", "FRBNF", "ARK", "ISBN", "EAN", "Titre", "Auteur", "Date", "Volume-Tome"]
+header_columns_init_cddvd = ["Num Not", "FRBNF", "ARK", "EAN", "N° commercial", "Titre", "Auteur", "Date"]
+header_columns_init_perimpr = ["Num Not", "FRBNF", "ARK", "ISSN", "Titre", "Auteur", "Date", "Lieu de publication"]
+
+
 #Noms des fichiers en sortie
 
 
@@ -340,12 +345,12 @@ def comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,da
     if (titre != "" and titreBNF != ""):
         if (titre == titreBNF):
             ark = ark_current
-            NumNotices2methode[NumNot].append(origineComparaison + " + contrôle Titre")
+            NumNotices2methode[NumNot].append(origineComparaison + " + contrôle Titre " + sous_zone)
             if (len(titre) < 5):
                 NumNotices2methode[NumNot].append("[titre court]")
         elif(titre[0:round(len(titre)/2)] == titreBNF[0:round(len(titre)/2)]):
             ark = ark_current
-            NumNotices2methode[NumNot].append(origineComparaison + " + contrôle Titre")
+            NumNotices2methode[NumNot].append(origineComparaison + " + contrôle Titre " + sous_zone)
             if (round(len(titre)/2)<10):
                 NumNotices2methode[NumNot].append("[demi-titre" + "-" + str(round(len(titre)/2)) + "caractères]")
         elif(titre.find(titreBNF) > -1):
@@ -356,7 +361,7 @@ def comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,da
             ark = ark_current
     elif (titre == ""):
         ark = ark_current
-        NumNotices2methode[NumNot].append(origineComparaison + " + pas de titre initial")
+        NumNotices2methode[NumNot].append(origineComparaison + " + pas de titre initial pour comparer")
     return ark
 
 #Recherche par n° système. Si le 3e paramètre est "False", c'est qu'on a pris uniquement le FRBNF initial, sans le tronquer. 
@@ -434,9 +439,10 @@ def frbnf2ark(NumNot,frbnf,isbn,titre,auteur,date):
                 ark = oldfrbnf2ark(NumNot,frbnf,isbn,titre,auteur,date)
             elif (nb_resultats == 1):
                 ark = page.find("//srw:recordIdentifier", namespaces=main.ns).text
-                NumNotices2methode[NumNot].append("FRBNF")
+                NumNotices2methode[NumNot].append("FRBNF > ARK")
             else:
                 ark = ",".join([ark.text for ark in page.xpath("//srw:recordIdentifier", namespaces=main.ns)])
+                NumNotices2methode[NumNot].append("FRBNF > ARK")
     return ark
 
         
@@ -514,6 +520,31 @@ def check_digit_13(isbn):
         return '0'
     else:
         return str(r)
+#==============================================================================
+# Fonctions pour convertir les chiffres romains en chiffres arabes (et l'inverse)
+# Utilisé pour comparer les volumaisons
+#==============================================================================
+numeral_map = tuple(zip(
+    (1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1),
+    ('M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I')
+))
+
+def int_to_roman(i):
+    result = []
+    for integer, numeral in numeral_map:
+        count = i // integer
+        result.append(numeral * count)
+        i -= integer * count
+    return ''.join(result)
+
+def roman_to_int(n):
+    i = result = 0
+    for integer, numeral in numeral_map:
+        while n[i:i + len(numeral)] == numeral:
+            result += integer
+            i += len(numeral)
+    return result
+
 
 def isbn2sru(NumNot,isbn,titre,auteur,date):
     urlSRU = url_requete_sru('bib.isbn all "' + isbn + '"')
@@ -540,6 +571,8 @@ def isbnauteur2sru(NumNot,isbn,titre,auteur,date):
     listeARK = []
     (test,resultats) = testURLetreeParse(urlSRU)
     if (test == True):
+        if (resultats.find("//srw:records/srw:record", namespaces=main.ns) is not None):
+            NumNotices2methode[NumNot].append("ISBN + Auteur > ARK")
         for record in resultats.xpath("//srw:records/srw:record", namespaces=main.ns):
             ark_current = record.find("srw:recordIdentifier", namespaces=main.ns).text
             listeARK.append(ark_current)
@@ -553,6 +586,8 @@ def eanauteur2sru(NumNot,ean,titre,auteur,date):
     listeARK = []
     (test,resultats) = testURLetreeParse(urlSRU)
     if (test == True):
+        if (resultats.find("//srw:records/srw:record", namespaces=main.ns) is not None):
+            NumNotices2methode[NumNot].append("EAN + Auteur > ARK")
         for record in resultats.xpath("//srw:records/srw:record", namespaces=main.ns):
             ark_current = record.find("srw:recordIdentifier", namespaces=main.ns).text
             listeARK.append(ark_current)
@@ -687,6 +722,8 @@ def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date):
     if (isbnTrouve == True):
         (test,resultats) = testURLetreeParse(url)
         if (test == True):
+            if (resultats.find("//ppn") is not None):
+                NumNotices2methode[NumNot].append("ISBN > PPN")                
             for ppn in resultats.xpath("//ppn"):
                 ppn_val = ppn.text
                 Listeppn.append("PPN" + ppn_val)
@@ -744,11 +781,11 @@ def ppn2ark(NumNot,ppn,isbn,titre,auteur,date):
             resource = sameAs.get("{http://www.w3.org/1999/02/22-rdf-syntax-ns#}resource")
             if (resource.find("ark:/12148/")>0):
                 ark = resource[24:46]
-                NumNotices2methode[NumNot].append("ISBN > PPN > ARK")
+                NumNotices2methode[NumNot].append("PPN > ARK")
         if (ark == ""):
             for frbnf in record.xpath("//bnf-onto:FRBNF",namespaces=main.nsSudoc):
                 frbnf_val = frbnf.text
-                NumNotices2methode[NumNot].append("ISBN > PPN > FRBNF > ARK")
+                NumNotices2methode[NumNot].append("PPN > FRBNF")
                 ark = frbnf2ark(NumNot,frbnf_val,isbn,titre,auteur,date)
     return ark
 
@@ -894,8 +931,13 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,anyw
                 index = " dans toute la notice"
             (test,results) = testURLetreeParse(url)
         if (test == True):
+            i = 1
+            total_rec = int(results.find("//srw:numberOfRecords", namespaces=main.ns).text)
             for record in results.xpath("//srw:recordIdentifier",namespaces=main.ns):
                 ark_current = record.text
+                if (int(results.find("//srw:numberOfRecords", namespaces=main.ns).text) > 100):
+                    print("    ", NumNot, "-", ark_current, "".join([str(i), "/", str(total_rec), " (limite max 1000)"]))
+                    i += 1
                 #print(NumNot + " : " + ark_current)
                 recordBNF_url = url_requete_sru('bib.persistentid all "' + ark_current + '"')
                 (test,recordBNF) = testURLetreeParse(recordBNF_url)
@@ -1078,7 +1120,7 @@ def extract_cols_from_row(row,liste):
         return tuple(liste_values)    
 
 def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
-    header_columns_init = ["Num Not", "FRBNF", "ARK", "ISBN", "EAN", "Titre", "Auteur", "Date", "Volume-Tome"]
+    
     header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","FRBNF","ISBN","EAN","Titre","auteur","date","Tome/Volume"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
@@ -1095,7 +1137,7 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
             main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"])
         for row in entry_file:
             if (n == 0):
-                controls_columns(form_bib2ark, header_columns_init, row)
+                controls_columns(form_bib2ark, header_columns_init_monimpr, row)
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
             n += 1
@@ -1149,7 +1191,7 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
                 nb_notices_nb_ARK[nbARK] += 1
             typeConversionNumNot = ""
             if (NumNot in NumNotices2methode):
-                typeConversionNumNot = ">".join(NumNotices2methode[NumNot])
+                typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
             liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,current_ark,frbnf,isbn,ean,titre,auteur,date,tome]
             if (meta_bib == 1):
                 liste_metadonnees.extend(ark2metadc(ark))
@@ -1158,9 +1200,8 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
             elif(file_nb ==  2):
                 row2files(liste_metadonnees,liste_reports)
         
-        
+
 def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
-    header_columns_init = ["Num Not", "FRBNF", "ARK", "EAN", "N° commercial", "Titre", "Auteur", "Date"]
     header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","FRBNF","EAN","no_commercial_propre","titre","auteur","date"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
@@ -1178,7 +1219,7 @@ def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, i
             main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"])
         for row in entry_file:
             if (n == 0):
-                controls_columns(form_bib2ark, header_columns_init, row)
+                controls_columns(form_bib2ark, header_columns_init_cddvd, row)
             #print(row)
             n += 1
             if (n%100 == 0):
@@ -1240,9 +1281,9 @@ def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, i
             elif(file_nb ==  2):
                 row2files(liste_metadonnees,liste_reports)
 
+
 #Si option du formulaire = périodiques imprimés
 def perimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
-    header_columns_init = ["Num Not", "FRBNF", "ARK", "ISSN", "Titre", "Auteur", "Date", "Lieu de publication"]
     header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","frbnf","issn_nett","titre","auteur","date","lieu"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
@@ -1370,6 +1411,12 @@ def url_access_pbs_report(liste_reports):
             liste_reports[-2].write("\t".join(pb) + "\n")
     if (len(NumNotices_conversionISBN) > 0):
         liste_reports[-2].write("".join(["\n\n",10*"-","\n"]))
+        liste_reports[-2].write("Liste des notices dont l'ISBN en entrée est différent de celui dans la notice trouvée\n")
+        liste_reports[-2].write("\t".join(["NumNotice",
+                                                "ISBN initial",
+                                                "ISBN converti",
+                                                "Notice trouvée dans le Sudoc ?",
+                                                ]) + "\n")
         for record in NumNotices_conversionISBN:
             liste_reports[-2].write("\t".join([record,
                                                 NumNotices_conversionISBN[record]["isbn initial"],
@@ -1524,15 +1571,15 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     type_doc_bib = tk.IntVar()
     radioButton_lienExample(cadre_input_type_docs,type_doc_bib,1,couleur_fond,
                             "Documents imprimés (monographies)",
-                            "(Colonnes : Num Not | FRBNF | ARK | ISBN | EAN | Titre | Auteur | Date | Volume-Tome)",
+                            "(Colonnes : " + " | ".join(header_columns_init_monimpr) + ")",
                             "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/mon_impr.tsv")
     radioButton_lienExample(cadre_input_type_docs,type_doc_bib,2,couleur_fond,
                             "Audiovisuel (CD / DVD)",
-                            "(Num Not | FRBNF | ARK | EAN | N° commercial | Titre | Auteur | Date)",
+                            "(" + " | ".join(header_columns_init_cddvd) + ")",
                             "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/adv.tsv")
     radioButton_lienExample(cadre_input_type_docs,type_doc_bib,3,couleur_fond,
                             "Périodiques",
-                            "(Num Not | FRBNF | ARK | ISSN | Titre | Auteur | Date | Lieu de publication)",
+                            "(" + " | ".join(header_columns_init_perimpr) + ")",
                             "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/per.tsv")
     type_doc_bib.set(1)
     
