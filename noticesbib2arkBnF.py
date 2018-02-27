@@ -961,6 +961,8 @@ def tad2ppn(NumNot,titre,auteur,auteur_nett,date,typeRecord):
     #Recherche dans DoMyBiblio : Titre & Auteur dans tous champs, Date dans un champ spécifique
     Listeppn = []
     ark = []
+    titre = nettoyageTitrePourRecherche(titre).replace(" ","+")
+    auteur_nett = auteur_nett.replace(" ","+")
     typeRecord4DoMyBiblio = "all"
     """all (pour tous les types de document), 
            B (pour les livres), 
@@ -971,19 +973,23 @@ def tad2ppn(NumNot,titre,auteur,auteur_nett,date,typeRecord):
     if (typeRecord in typeRecordDic):
         typeRecord4DoMyBiblio = typeRecordDic[typeRecord]
     url = "".join(["http://domybiblio.net/search/search_api.php?type_search=all&q=",
-                   titre + " " + auteur_nett,
+                   urllib.parse.quote(" ".join([titre, auteur_nett])),
                    "&type_doc=",
                    typeRecord4DoMyBiblio,
                    "&period=",
                    date,
                    "&pageID=1&wp=true&idref=true&loc=true"])
+    print(url)
     (test,results) = testURLetreeParse(url)
     if (test == True):
+        nb_results = str(results.find(".//results").text)
         for record in results.xpath("//records/record"):
             ppn = record.find("identifier").text
             NumNotices2methode[NumNot].append("Titre-Auteur-Date DoMyBiblio")
             Listeppn.append("PPN" + ppn)
             ark.append(ppn2ark(NumNot,ppn,"",titre,auteur,date))
+        if (nb_results < 11):
+            tad2ppn_pages_suivantes(NumNot,titre,auteur,auteur_nett,date,typeRecord,url,nb_results,2,Listeppn,ark)
     #Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK déclaré comme équivalent --> dans ce cas on récupère l'ARK
     Listeppn = ",".join([ppn for ppn in Listeppn if ppn != ""])
     ark = ",".join([ark1 for ark1 in ark if ark1 != ""])
@@ -992,8 +998,16 @@ def tad2ppn(NumNot,titre,auteur,auteur_nett,date,typeRecord):
     else:
         return Listeppn
 
-            
-    
+def tad2ppn_pages_suivantes(NumNot,titre,auteur,auteur_nett,date,typeRecord,url,nb_results,pageID,Listeppn,ark):
+    url = url + "pageID=" + pageID
+    (test,results) = testURLetreeParse(url)
+    for record in results.xpath("//records/record"):
+        ppn = record.find("identifier").text
+        NumNotices2methode[NumNot].append("Titre-Auteur-Date DoMyBiblio")
+        Listeppn.append("PPN" + ppn)
+        ark.append(ppn2ark(NumNot,ppn,"",titre,auteur,date))
+    if (nb_results >= pageID*10):
+        tad2ppn_pages_suivantes(NumNot,titre,auteur,auteur_nett,date,typeRecord,url,nb_results,pageID+1)
 
 def checkTypeRecord(ark,typeRecord_attendu):
     url = url_requete_sru('bib.ark any "' + ark + '"')
@@ -1177,10 +1191,10 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
                 #print("1." + NumNot + " : " + ark)
             if (ark == "" and titre != ""):
                 ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,tome_nett,"m",True)
-            """
-            if (ark == "" and titre != ""):
-                ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"monimpr")
-            """
+            
+            """if (ark == "" and titre != ""):
+                ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"monimpr")"""
+            
             print(str(n) + ". " + NumNot + " : " + ark)
             nbARK = len(ark.split(","))
             if (ark == ""):

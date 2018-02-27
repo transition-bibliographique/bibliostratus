@@ -306,8 +306,16 @@ def record2listemetas(record):
             
 def write_reports(id_traitement):
     for doc_record in liste_resultats:
+        if (doc_record == "am"):
+            header_columns = bib2ark.header_columns_init_monimpr
+        elif (doc_record == "jm"):
+            header_columns = bib2ark.header_columns_init_cddvd
+        elif (doc_record == "as"):
+            header_columns = bib2ark.header_columns_init_perimpr
+        else:
+            header_columns = ["NumNotice","FRBNF","ARK","Autres métadonnées..."]
         file = create_file_doc_record(doc_record, id_traitement)
-        file.write("\t".join(["NumNotice","FRBNF","ARK","Autres métadonnées..."]) + "\n")
+        file.write("\t".join(header_columns) + "\n")
         for record in liste_resultats[doc_record]:
             print(doc_record, ' - ', record[0])
             file.write("\t".join(record) + "\n")            
