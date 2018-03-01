@@ -302,7 +302,11 @@ def verificationTomaison(ark,numeroTome,recordBNF):
     s'il y a un numéro de volume dans les données en entrée on va vérifier
     si on le retrouve bien dans une des zones où il pourrait se trouver :
     D'abord 200$h, 461$v
-    Si ces deux zones sont vides, on va regarder les nombres dans la zone 200$a"""
+    Si ces deux zones sont vides, on va regarder les nombres dans la zone 200$a
+    La comparaison se fait en normalisant les données de part en d'autres, pour n'avoir
+    que des chiffres arabes sans 0 initial
+    Conséquence : s'il y a un numéro de volume en entrée, le programme peut aller jusqu'à convertir
+    tout ce qui ressemble à un chiffre romain dans la zone de titre"""
     liste_subfields_volume = ["200$h","200$u","461$v"]
     volumesBNF = ""
     for subf in liste_subfields_volume:
