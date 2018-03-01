@@ -330,7 +330,7 @@ def verificationTomaison_sous_zone(ark,numeroTome,numeroTomeBnF):
 
 def ltrim(nombre_texte):
     "Supprime les 0 initiaux d'un nombre géré sous forme de chaîne de caractères"
-    while(nombre_texte != [] and nombre_texte[0] == "0"):
+    while(len(nombre_texte) > 1 and nombre_texte[0] == "0"):
         nombre_texte = nombre_texte[1:]
     return nombre_texte
 
