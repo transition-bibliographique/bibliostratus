@@ -307,22 +307,15 @@ def verificationTomaison(ark,numeroTome,recordBNF):
     volumesBNF = ""
     for subf in liste_subfields_volume:
         volumesBNF += "~" + main.extract_subfield(recordBNF,subf.split("$")[0],subf.split("$")[1])
-    for signe in ponctuation:
-        volumesBNF = volumesBNF.replace(signe,"~")
-    for lettre in lettres:
-        volumesBNF = volumesBNF.replace(lettre, "~")
-    volumesBNF = volumesBNF.split("~")
-    volumesBNF = set(ltrim(nb) for nb in volumesBNF if nb != "")
+    volumesBNF = convert_volumes_to_int(volumesBNF)
     if (volumesBNF == ""):
         volumesBNF = main.extract_subfield(recordBNF,"200","a")
-        for signe in ponctuation:
-            volumesBNF = volumesBNF.replace(signe,"~")
+        volumesBNF = convert_volumes_to_int(volumesBNF)
         for lettre in lettres:
             volumesBNF = volumesBNF.replace(lettre, "~")
         volumesBNF = volumesBNF.split("~")
-        volumesBNF = set(ltrim(nb) for nb in volumesBNF if nb != "")
-        print(volumesBNF)
-    if (volumesBNF != "" and numeroTome in volumesBNF):
+        volumesBNF = set(str(ltrim(nb)) for nb in volumesBNF if nb != "")
+    if (volumesBNF != "" and numeroTome == volumesBNF):
         return ark
     else:
         return ""
@@ -544,6 +537,24 @@ def roman_to_int(n):
             result += integer
             i += len(numeral)
     return result
+
+def convert_volumes_to_int(n):
+    for char in ponctuation:
+        n = n.replace(char,"-")
+    n = n.replace(" ","-")
+    liste_n = [e for e in n.split("-") if e != ""]
+    liste_n_convert = []
+    for n in liste_n:
+        try:
+            int(n)
+            liste_n_convert.append(n)
+        except ValueError:
+            c = roman_to_int(n)
+            if (c != 0):
+                liste_n_convert.append(c)
+    liste_n_convert = set(ltrim(str(nb)) for nb in liste_n_convert if nb != "")
+    n_convert = " ".join([str(el) for el in list(liste_n_convert)])
+    return n_convert
 
 
 def isbn2sru(NumNot,isbn,titre,auteur,date):
@@ -1166,7 +1177,7 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
             titre_nett= nettoyageTitrePourControle(titre)
             auteur_nett = nettoyageAuteur(auteur, False)
             date_nett = nettoyageDate(date)
-            tome_nett = nettoyageTome(tome)
+            tome_nett = convert_volumes_to_int(tome)
             #Actualisation de l'ARK à partir de l'ARK
             ark = ""
             if (current_ark != ""):
