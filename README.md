@@ -9,11 +9,11 @@ Alignement-donnees-bnf : Programmes pour accompagner la Transition bibliographiq
 Actuellement quatre modules sont en cours de développement, non encore finalisés :
 
 * **marc2tables** : permet de charger en entrée l'extraction d'un catalogue de bibliothèque en Unimarc (formats iso2709 ou MarcXML). Le programme produit autant de fichiers tabulés (tableaux) qu'il y a de combinaisons Type de document / type de notice. Ces tableaux sont au format attendu pour le 2e programme
-* **noticesbib2arkBnF** : exploitation des métadonnées de chaque notice bibliographique pour identifier la notice correspondante dans le catalogue BnF. Pour l'instant, on charge les ressources par type de document/notice (monographies imprimées, CD/DVD, périodiques, etc.). -- 
-* **noticesaut2arkBnF** : son équivalent pour s'aligner avec les autorités (Personnes physiques et organisation)
+* **noticesbib2arkBnF** : exploitation des métadonnées de chaque notice bibliographique pour identifier la notice correspondante dans le catalogue BnF. Pour l'instant, on charge les ressources par type de document/notice (monographies imprimées, CD/DVD, périodiques, etc.). 
+* **noticesaut2arkBnF** : son équivalent pour s'aligner avec les autorités (Personnes physiques et organisations), peu testé pour le moment
 * **ark2records** : en entrée un fichier listant des ARK BnF, afin de récupérer les notices bibliographiques (+option avec notices d'autorité) correspondantes. Le format en sortie est pour l'instant du XML. Il devrait y avoir de l'iso2709 à terme.
 
-Le fichier **transbiblio** encapsule les 3 précédents pour les concevoir comme autant d'étapes dans la transition bibliographique des établissements
+Le fichier **main** encapsule les 4 précédents pour les concevoir comme autant d'étapes dans la transition bibliographique des établissements
 
 Objectifs du programme
 --
