@@ -1,9 +1,12 @@
-transbiblio : Programmes pour accompagner la Transition bibliographique dans les bibliothèques françaises
+Alignement-donnees-bnf : Programmes pour accompagner la Transition bibliographique dans les bibliothèques françaises
 ==
 
-transbiblio est une **expérimentation** pour concevoir un ensemble de programmes permettant de s'aligner avec les données bibliographiques de la Bibliothèque nationale de France, afin de pouvoir bénéficier de leurs travaux de FRBRisation de masse.
+* Le répertoire *source* contient le code développé en Python
+* Le répertoire *bin* contient la dernière version compilée de l'exécutable, à télécharger et lancer directement pour utiliser le programme (le code source n'est pas forcément compilé à chaque modification)
 
-Actuellement quatre programmes sont en cours de développement **et très loin d'être finalisés** :
+Alignement-donnees-bnf est une **expérimentation** pour concevoir un ensemble de programmes permettant de s'aligner avec les données bibliographiques de la Bibliothèque nationale de France, afin de pouvoir bénéficier de leurs travaux de FRBRisation de masse.
+
+Actuellement quatre modules sont en cours de développement, non encore finalisés :
 
 * **marc2tables** : permet de charger en entrée l'extraction d'un catalogue de bibliothèque en Unimarc (formats iso2709 ou MarcXML). Le programme produit autant de fichiers tabulés (tableaux) qu'il y a de combinaisons Type de document / type de notice. Ces tableaux sont au format attendu pour le 2e programme
 * **noticesbib2arkBnF** : exploitation des métadonnées de chaque notice bibliographique pour identifier la notice correspondante dans le catalogue BnF. Pour l'instant, on charge les ressources par type de document/notice (monographies imprimées, CD/DVD, périodiques, etc.). -- 
