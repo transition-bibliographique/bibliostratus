@@ -183,7 +183,7 @@ def nettoyageIssnPourControle(issn):
     return issn
 
 def nettoyageAuteur(auteur,justeunmot=True):
-    listeMots = ["par","avec","by","Mr.","M.","Mme","Mrs"]
+    listeMots = [" par "," avec "," by "," Mr. "," M. "," Mme "," Mrs "]
     for mot in listeMots:
         auteur = auteur.replace(mot,"")
     for chiffre in listeChiffres:
