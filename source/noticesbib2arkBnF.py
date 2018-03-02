@@ -134,7 +134,8 @@ def nettoyageTitrePourControle(titre):
     
 def nettoyageTitrePourRecherche(titre):
     titre = nettoyage(titre,False)
-    titre = nettoyageAuteur(titre,False)
+    titre = titre.split(" ")
+    titre = [mot for mot in titre if len(mot) > 1]
     return titre
     
 def nettoyage_lettresISBN(isbn):
@@ -173,7 +174,7 @@ def nettoyageIsbnPourControle(isbn):
     return isbn
 
 def nettoyageIssnPourControle(issn):
-    issn = nettoyage(issn)
+    issn = nettoyage(issn).replace(" ","")
     if (issn != ""):
         issn = nettoyage_lettresISBN(issn)
     if (len(issn) < 8):
@@ -295,6 +296,18 @@ def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,numeroT
         ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"750$a")
     if (ark == ""):
         ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"753$a")
+    if (ark == ""):
+        ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"500$a")
+    if (ark == ""):
+        ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"500$e")
+    if (ark == ""):
+        ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"503$a")
+    if (ark == ""):
+        ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"503$e")
+    if (ark == ""):
+        ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"540$a")
+    if (ark == ""):
+        ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"540$e")
     if (ark != "" and numeroTome != ""):
         ark = verificationTomaison(ark,numeroTome,recordBNF)
     return ark
@@ -321,7 +334,7 @@ def verificationTomaison(ark,numeroTome,recordBNF):
             volumesBNF = volumesBNF.replace(lettre, "~")
         volumesBNF = volumesBNF.split("~")
         volumesBNF = set(str(ltrim(nb)) for nb in volumesBNF if nb != "")
-    if (volumesBNF != "" and numeroTome == volumesBNF):
+    if (volumesBNF != "" and volumesBNF.fin(numeroTome) > -1):
         return ark
     else:
         return ""
@@ -1088,8 +1101,10 @@ def ean2ark(NumNot,ean,titre,auteur,date):
 def nettoyage_no_commercial(no_commercial_propre):
     return no_commercial_propre
             
-def no_commercial2ark(NumNot,no_commercial,titre,auteur,date):
+def no_commercial2ark(NumNot,no_commercial,titre,auteur,date,anywhere=False):
     url = url_requete_sru('bib.comref  all "' + no_commercial + '"')
+    if (anywhere == True):
+        url = url_requete_sru('bib.anywhere  all "' + no_commercial + '"')
     ark = ""
     (test,results) = testURLetreeParse(url)
     if (test == True):
@@ -1278,7 +1293,10 @@ def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, i
                 ark = ean2ark(NumNot,ean_propre,titre_nett,auteur_nett,date_nett)
             #A défaut, recherche sur no_commercial
             if (ark == "" and no_commercial != ""):
-                ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett)
+                ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,False)
+            #Si la recherche sur bib.comref n'a rien donné -> recherche du numéro partout dans la notice
+            if (ark == "" and no_commercial != ""):
+                ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,True)
                 
             #A défaut, recherche sur Titre-Auteur-Date
             if (ark == "" and titre != ""):
