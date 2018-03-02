@@ -52,8 +52,8 @@ listeChiffres = ["0","1","2","3","4","5","6","7","8","9"]
 lettres = ["a","b","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
 ponctuation = [".",",",";",":","?","!","%","$","£","€","#","\\","\"","&","~","{","(","[","`","\\","_","@",")","]","}","=","+","*","\/","<",">",")","}"]
 
-header_columns_init_monimpr = ["Num Not", "FRBNF", "ARK", "ISBN", "EAN", "Titre", "Auteur", "Date", "Volume-Tome"]
-header_columns_init_cddvd = ["Num Not", "FRBNF", "ARK", "EAN", "N° commercial", "Titre", "Auteur", "Date"]
+header_columns_init_monimpr = ["Num Not", "FRBNF", "ARK", "ISBN", "EAN", "Titre", "Auteur", "Date", "Volume-Tome", "Editeur"]
+header_columns_init_cddvd = ["Num Not", "FRBNF", "ARK", "EAN", "N° commercial", "Titre", "Auteur", "Date", "Editeur"]
 header_columns_init_perimpr = ["Num Not", "FRBNF", "ARK", "ISSN", "Titre", "Auteur", "Date", "Lieu de publication"]
 
 
@@ -1167,7 +1167,7 @@ def extract_cols_from_row(row,liste):
 
 def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
     
-    header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","FRBNF","ISBN","EAN","Titre","auteur","date","Tome/Volume"]
+    header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","FRBNF","ISBN","EAN","Titre","auteur","date","Tome/Volume", "editeur"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
     if (file_nb ==  1):
@@ -1188,7 +1188,7 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
                 main.check_access2apis(n,dict_check_apis)
             n += 1
             #print(row)
-            (NumNot,frbnf,current_ark,isbn,ean,titre,auteur,date,tome,editeur) = extract_cols_from_row(row,
+            (NumNot,frbnf,current_ark,isbn,ean,titre,auteur,date,tome,publisher) = extract_cols_from_row(row,
                 ["NumNot","frbnf","ark initial","isbn","ean","titre","auteur","date","tome","editeur"])
             
             isbn_nett = nettoyageIsbnPourControle(isbn)
@@ -1199,6 +1199,9 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
             auteur_nett = nettoyageAuteur(auteur, False)
             date_nett = nettoyageDate(date)
             tome_nett = convert_volumes_to_int(tome)
+            publisher_nett = nettoyageAuteur(publisher, False)
+            if (publisher_nett == ""):
+                publisher_nett = publisher
             #Actualisation de l'ARK à partir de l'ARK
             ark = ""
             if (current_ark != ""):
@@ -1219,10 +1222,10 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
             
             #A défaut, recherche sur Titre-Auteur-Date
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,tome_nett,"m",False)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,tome_nett,"m",False, publisher_nett)
                 #print("1." + NumNot + " : " + ark)
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,tome_nett,"m",True)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,tome_nett,"m",True, publisher_nett)
             
             """if (ark == "" and titre != ""):
                 ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"monimpr")"""
@@ -1238,7 +1241,7 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
             typeConversionNumNot = ""
             if (NumNot in NumNotices2methode):
                 typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
-            liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,current_ark,frbnf,isbn,ean,titre,auteur,date,tome]
+            liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,current_ark,frbnf,isbn,ean,titre,auteur,date,tome, publisher]
             if (meta_bib == 1):
                 liste_metadonnees.extend(ark2metadc(ark))
             if (file_nb ==  1):
@@ -1248,7 +1251,7 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
         
 
 def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
-    header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","FRBNF","EAN","no_commercial_propre","titre","auteur","date"]
+    header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","FRBNF","EAN","no_commercial_propre","titre","auteur","date", "editeur"]
     if (meta_bib == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
     if (file_nb ==  1):
@@ -1270,7 +1273,7 @@ def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, i
             n += 1
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
-            (NumNot,frbnf,current_ark,ean,no_commercial,titre,auteur,date) = extract_cols_from_row(row,
+            (NumNot,frbnf,current_ark,ean,no_commercial,titre,auteur,date, publisher) = extract_cols_from_row(row,
                 ["NumNot","frbnf","ark initial","ean","no_commercial","titre","auteur","date"])
             ean_nett = nettoyageIsbnPourControle(ean)
             ean_propre = nettoyage_isbn(ean)
@@ -1278,6 +1281,9 @@ def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, i
             titre_nett= nettoyageTitrePourControle(titre)
             auteur_nett = nettoyageAuteur(auteur,False)
             date_nett = nettoyageDate(date)
+            publisher_nett = nettoyageAuteur(publisher, False)
+            if (publisher_nett == ""):
+                publisher_nett = publisher
             #Actualisation de l'ARK à partir de l'ARK
             ark = ""
             if (current_ark != ""):
@@ -1293,10 +1299,10 @@ def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, i
                 ark = ean2ark(NumNot,ean_propre,titre_nett,auteur_nett,date_nett)
             #A défaut, recherche sur no_commercial
             if (ark == "" and no_commercial != ""):
-                ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,False)
+                ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,False, publisher_nett)
             #Si la recherche sur bib.comref n'a rien donné -> recherche du numéro partout dans la notice
             if (ark == "" and no_commercial != ""):
-                ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,True)
+                ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,True, publisher_nett)
                 
             #A défaut, recherche sur Titre-Auteur-Date
             if (ark == "" and titre != ""):
@@ -1322,7 +1328,7 @@ def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, i
                 typeConversionNumNot = ">".join(NumNotices2methode[NumNot])
                 
             liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,frbnf,current_ark,ean,
-                         no_commercial_propre,titre,auteur,date]
+                         no_commercial_propre,titre,auteur,date, publisher]
             if (meta_bib == 1):
                 liste_metadonnees.extend(ark2metadc(ark))
             if (file_nb ==  1):
