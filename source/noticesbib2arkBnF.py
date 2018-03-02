@@ -136,6 +136,7 @@ def nettoyageTitrePourRecherche(titre):
     titre = nettoyage(titre,False)
     titre = titre.split(" ")
     titre = [mot for mot in titre if len(mot) > 1]
+    titre = " ".join(titre)
     return titre
     
 def nettoyage_lettresISBN(isbn):
@@ -334,7 +335,7 @@ def verificationTomaison(ark,numeroTome,recordBNF):
             volumesBNF = volumesBNF.replace(lettre, "~")
         volumesBNF = volumesBNF.split("~")
         volumesBNF = set(str(ltrim(nb)) for nb in volumesBNF if nb != "")
-    if (volumesBNF != "" and volumesBNF.fin(numeroTome) > -1):
+    if (volumesBNF != "" and volumesBNF.find(numeroTome) > -1):
         return ark
     else:
         return ""
@@ -781,7 +782,7 @@ def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date):
 def ean2sudoc(NumNot,ean,titre,auteur,date):
     """A partir d'un EAN, recherche dans le Sudoc. Pour chaque notice trouvée, on regarde sur la notice
     Sudoc a un ARK BnF ou un FRBNF, auquel cas on convertit le PPN en ARK. Sinon, on garde le(s) PPN"""
-    url = "https://www.sudoc.fr/services/ean/" + ean
+    url = "https://www.sudoc.fr/services/ean2ppn/" + ean
     Listeppn = []
     eanTrouve = testURLretrieve(url)
     ark = []
@@ -931,7 +932,7 @@ def ppn2metas(ppn):
                 premierauteurPrenom = premierauteurPrenom.split("(")[0]
     return [titre,premierauteurPrenom,premierauteurNom,tousauteurs]
   
-def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,anywhere=False,pubPlace_nett=""):
+def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,typeDoc="a",anywhere=False,pubPlace_nett=""):
     "Fonction d'alignement par Titre-Auteur-Date (et contrôles sur type Notice, sur n° de volume si nécessaire)"
 #En entrée : le numéro de notice, le titre (qu'il faut nettoyer pour la recherche)
 #L'auteur = zone auteur initiale, ou à défaut auteur_nett
@@ -948,16 +949,17 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,anyw
             auteur_nett = "-"
         if (pubPlace_nett == ""):
             pubPlace_nett = "-"
-        url = url_requete_sru('bib.title all "' + titre_propre + '" and bib.author all "' + auteur + '" and bib.date all "' + date_nett + '" and bib.publisher all "' + pubPlace_nett + '"')
+        url = url_requete_sru('bib.title all "' + titre_propre + '" and bib.author all "' + auteur + '" and bib.date all "' + date_nett + '" and bib.publisher all "' + pubPlace_nett + '" and bib.doctype any "' + typeDoc + '"')
         if (anywhere == True):
-            url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur + ' ' + date_nett + ' ' + pubPlace_nett + '"')
+            url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur + ' ' + date_nett + ' ' + pubPlace_nett + '" and bib.doctype any "' + typeDoc + '"')
         #print(url)
+
         (test,results) = testURLetreeParse(url)
         index = ""
         if (results != "" and results.find("//srw:numberOfRecords", namespaces=main.ns).text == "0"):
-            url = url_requete_sru('bib.title all "' + titre_propre + '" and bib.author all "' + auteur_nett + '" and bib.date all "' + date_nett + '" and bib.publisher all "' + pubPlace_nett + '"')
+            url = url_requete_sru('bib.title all "' + titre_propre + '" and bib.author all "' + auteur_nett + '" and bib.date all "' + date_nett + '" and bib.publisher all "' + pubPlace_nett + '" and bib.doctype any "' + typeDoc + '"')
             if (anywhere == True):
-                url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur_nett + ' ' + date_nett + ' ' + pubPlace_nett + '"')
+                url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur_nett + ' ' + date_nett + ' ' + pubPlace_nett + '" and bib.doctype any "' + typeDoc + '"')
                 index = " dans toute la notice"
             (test,results) = testURLetreeParse(url)
         if (test == True):
@@ -1222,10 +1224,10 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
             
             #A défaut, recherche sur Titre-Auteur-Date
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,tome_nett,"m",False, publisher_nett)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,tome_nett,"m","a", False, publisher_nett)
                 #print("1." + NumNot + " : " + ark)
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,tome_nett,"m",True, publisher_nett)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,tome_nett,"m","a",True, publisher_nett)
             
             """if (ark == "" and titre != ""):
                 ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"monimpr")"""
@@ -1306,10 +1308,10 @@ def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, i
                 
             #A défaut, recherche sur Titre-Auteur-Date
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m",False)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m","g r h",False)
             #A défaut, on recherche Titre-Auteur dans tous champs (+Date comme date)
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m",True)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m","g r h",True)
             """
             if (ark == "" and titre != ""):
                 ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"cddvd")
@@ -1381,10 +1383,10 @@ def perimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
                 ark = issn2ark(NumNot,issn,issn_propre,titre_nett,auteur_nett,date_nett)
             #A défaut, recherche sur Titre-Auteur-Date
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","s",False,pubPlace_nett)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","s","a",False,pubPlace_nett)
             #A défaut, recherche sur T-A-D tous mots
             if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","s",True,pubPlace_nett)
+                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","s","a",True,pubPlace_nett)
             print(str(n) + ". " + NumNot + " : " + ark)
             nbARK = len(ark.split(","))
             if (ark == ""):
