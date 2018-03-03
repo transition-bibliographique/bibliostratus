@@ -939,6 +939,8 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,type
 #date_nett
     listeArk = []
     titre_propre = nettoyageTitrePourRecherche(titre)
+    if (typeRecord == "s"):
+        date_nett = datePerios(date_nett)
     #print("titre propre : " + titre_propre)
     if (titre_propre != ""):
         if (auteur == ""):
@@ -1051,6 +1053,13 @@ def checkTypeRecord(ark,typeRecord_attendu):
         if (typeRecord == typeRecord_attendu):
             ark_checked = ark
     return ark_checked
+
+def datePerios(date):
+    """Requête sur la date en élargissant sa valeur aux dates approximatives"""
+    date = date.split(" ")
+    date = date[0]
+
+    return date
 
 def extract_meta(recordBNF,field_subfield,occ="all",anl=False):
     assert field_subfield.find("$") == 3
