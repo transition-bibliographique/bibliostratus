@@ -932,15 +932,25 @@ def ppn2metas(ppn):
                 premierauteurPrenom = premierauteurPrenom.split("(")[0]
     return [titre,premierauteurPrenom,premierauteurNom,tousauteurs]
   
-def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,typeDoc="a",anywhere=False,pubPlace_nett=""):
+def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,typeDoc="a",anywhere=False,pubPlace_nett="", annee_plus_trois = False):
     "Fonction d'alignement par Titre-Auteur-Date (et contrôles sur type Notice, sur n° de volume si nécessaire)"
 #En entrée : le numéro de notice, le titre (qu'il faut nettoyer pour la recherche)
 #L'auteur = zone auteur initiale, ou à défaut auteur_nett
 #date_nett
     listeArk = []
     titre_propre = nettoyageTitrePourRecherche(titre)
+    #Cas des périodiques = on récupère uniquement la première date
+    #Si elle est sur moins de 4 caractères (19.. devenu 19, 196u devenu 196)
+    #   -> on tronque
     if (typeRecord == "s"):
         date_nett = datePerios(date_nett)
+    if (len(str(date_nett)) < 4):
+        date_nett += "*"
+    param_date = "all"
+    #Si on cherche l'année de début de périodique en élargissant à une fourchette de dates
+    #3 ans avant et 3 ans après
+    if (annee_plus_trois == True):
+        param_date = "any"
     #print("titre propre : " + titre_propre)
     if (titre_propre != ""):
         if (auteur == ""):
@@ -951,17 +961,17 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,type
             auteur_nett = "-"
         if (pubPlace_nett == ""):
             pubPlace_nett = "-"
-        url = url_requete_sru('bib.title all "' + titre_propre + '" and bib.author all "' + auteur + '" and bib.date all "' + date_nett + '" and bib.publisher all "' + pubPlace_nett + '" and bib.doctype any "' + typeDoc + '"')
+        url = url_requete_sru('bib.title all "' + titre_propre + '" and bib.author all "' + auteur + '" and bib.date ' + param_date + ' "' + date_nett + '" and bib.publisher all "' + pubPlace_nett + '" and bib.doctype any "' + typeDoc + '"')
         if (anywhere == True):
-            url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur + ' ' + date_nett + ' ' + pubPlace_nett + '" and bib.doctype any "' + typeDoc + '"')
+            url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur + ' ' + pubPlace_nett + '" and bib.anywhere ' + param_date + ' "' + date_nett + '" and bib.doctype any "' + typeDoc + '"')
         #print(url)
 
         (test,results) = testURLetreeParse(url)
         index = ""
         if (results != "" and results.find("//srw:numberOfRecords", namespaces=main.ns).text == "0"):
-            url = url_requete_sru('bib.title all "' + titre_propre + '" and bib.author all "' + auteur_nett + '" and bib.date all "' + date_nett + '" and bib.publisher all "' + pubPlace_nett + '" and bib.doctype any "' + typeDoc + '"')
+            url = url_requete_sru('bib.title all "' + titre_propre + '" and bib.author all "' + auteur_nett + '" and bib.date ' + param_date + ' "' + date_nett + '" and bib.publisher all "' + pubPlace_nett + '" and bib.doctype any "' + typeDoc + '"')
             if (anywhere == True):
-                url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur_nett + ' ' + date_nett + ' ' + pubPlace_nett + '" and bib.doctype any "' + typeDoc + '"')
+                url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur_nett + ' ' + pubPlace_nett + '" and bib.anywhere ' + param_date + ' "' + date_nett + '" and bib.doctype any "' + typeDoc + '"')
                 index = " dans toute la notice"
             (test,results) = testURLetreeParse(url)
         if (test == True):
@@ -989,6 +999,17 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,type
                                 methode = "Titre-Auteur"
                             NumNotices2methode[NumNot].append(methode)
     listeArk = ",".join(ark for ark in listeArk if ark != "")
+    
+    #Si la liste retournée est vide, et qu'on est sur des périodiques
+    # et que la date 
+    if (len(str(date_nett)) == 4 
+            and date_nett.find("*")<-1
+            and listeArk == "" 
+            and typeRecord == "s" 
+            and annee_plus_trois == False):
+        date = elargirDatesPerios(int(date_nett))
+        tad2ark(NumNot,titre,auteur,auteur_nett,date,numeroTome,typeRecord,typeDoc="a",anywhere=False,pubPlace_nett="", annee_plus_un = True)
+    
     return listeArk
 
 def tad2ppn(NumNot,titre,auteur,auteur_nett,date,typeRecord):
@@ -1058,8 +1079,16 @@ def datePerios(date):
     """Requête sur la date en élargissant sa valeur aux dates approximatives"""
     date = date.split(" ")
     date = date[0]
-
     return date
+
+def elargirDatesPerios(n):
+    j = n-3
+    liste = []
+    i = 1
+    while (i < 7):
+        liste.append(j+i)
+        i += 1
+    return " ".join([str(el) for el in liste])
 
 def extract_meta(recordBNF,field_subfield,occ="all",anl=False):
     assert field_subfield.find("$") == 3
