@@ -1315,7 +1315,7 @@ def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, i
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
             (NumNot,frbnf,current_ark,ean,no_commercial,titre,auteur,date, publisher) = extract_cols_from_row(row,
-                ["NumNot","frbnf","ark initial","ean","no_commercial","titre","auteur","date"])
+                ["NumNot","frbnf","ark initial","ean","no_commercial","titre","auteur","date","editeur"])
             ean_nett = nettoyageIsbnPourControle(ean)
             ean_propre = nettoyage_isbn(ean)
             no_commercial_propre = nettoyage_no_commercial(no_commercial)
