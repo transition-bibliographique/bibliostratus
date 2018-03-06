@@ -232,9 +232,10 @@ def iso2tables(master,entry_filename, id_traitement):
         try:
             for record in collection:
                 record2listemetas(record)
-        except mc.exceptions.RecordLengthInvalid:
+        except mc.exceptions.RecordLengthInvalid as err:
             print("\n\n/*---------------------------------------------*\n\n")
             print(main.errors["pb_input_utf8"])
+            print(err)
             print("\n\n*------------------------------------------------*/")
             main.popup_errors(master,main.errors["pb_input_utf8"])
         
