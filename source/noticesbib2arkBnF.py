@@ -864,6 +864,8 @@ def issn2ark(NumNot,issn_init,issn,titre,auteur,date):
     listeArk  = issn2sru(NumNot,issn_init)
     if (listeArk == ""):
         listeArk = issn2sru(NumNot,issn)
+    if (listeArk == ""):
+        listeArk = issn2sudoc(NumNot, issn_init, issn, titre, auteur, date)
     return listeArk 
 
 def issn2sru(NumNot,issn):
@@ -879,6 +881,32 @@ def issn2sru(NumNot,issn):
                 listeArk.append(ark)
     listeArk = ",".join([ark for ark in listeArk if ark != ""])
     return listeArk
+
+def issn2sudoc(NumNot,issn_init,issn_nett, titre, auteur, date):
+    """A partir d'un ISSN, recherche dans le Sudoc. Pour chaque notice trouvée, on regarde sur la notice
+    Sudoc a un ARK BnF ou un FRBNF, auquel cas on convertit le PPN en ARK. Sinon, on garde le(s) PPN"""
+    url = "https://www.sudoc.fr/services/issn2ppn/" + issn_nett
+    Listeppn = []
+    issnTrouve = testURLretrieve(url)
+    ark = []
+    if (issnTrouve == True):
+        (test,resultats) = testURLetreeParse(url)
+        if (test == True):
+            if (resultats.find("//ppn") is not None):
+                NumNotices2methode[NumNot].append("ISSN > PPN")                
+            for ppn in resultats.xpath("//ppn"):
+                ppn_val = ppn.text
+                Listeppn.append("PPN" + ppn_val)
+                ark.append(ppn2ark(NumNot,ppn_val,issn_nett,titre,auteur,date))
+    #Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK déclaré comme équivalent --> dans ce cas on récupère l'ARK
+    Listeppn = ",".join([ppn for ppn in Listeppn if ppn != ""])
+    ark = ",".join([ark1 for ark1 in ark if ark1 != ""])
+    if (ark != ""):
+        return ark
+    else:
+        return Listeppn
+
+
 
 def ark2metas(ark, unidec=True):
     recordBNF_url = url_requete_sru('bib.persistentid any "' + ark + '"')
