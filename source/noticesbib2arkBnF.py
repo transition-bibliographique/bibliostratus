@@ -1170,7 +1170,7 @@ def ean2ark(NumNot,ean,titre,auteur,date):
 def nettoyage_no_commercial(no_commercial_propre):
     return no_commercial_propre
             
-def no_commercial2ark(NumNot,no_commercial,titre,auteur,date,anywhere=False, publisher):
+def no_commercial2ark(NumNot,no_commercial,titre,auteur,date,anywhere=False, publisher=""):
     url = url_requete_sru('bib.comref  all "' + no_commercial + '"')
     if (anywhere == True):
         url = url_requete_sru('bib.anywhere  all "' + no_commercial + '"')
