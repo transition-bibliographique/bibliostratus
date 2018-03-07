@@ -1,32 +1,32 @@
-NumNotice	FRBNF	ARK	EAN	Numéro commercial	Titre	Auteur	Date
-754134				3329184688321	La grande nuit de l 'Opéra  1958	maria georges mars callas jean-pierre paris lance choeur orchestre albert de national opera sebastian hurteau jacques	2010
-754257	FRBNF451343430000009			2010100251255	Les trésors du classique les plus belles oeuvres par les plus grands compositeurs réunis Beethoven  Mozart  Berlioz   	mozart slovenske wolfgang amadeus zagrebacki ludwig filharmonije staatsorchester hector berlioz orkester solisti beethoven bayerisches van	2016
-754380	FRBNF435795740000000			5053105621323	Voyage au coeur de soi	mozart wolfgang barenboim amadeus ludwig staatskapelle johann daniel sebastian beethoven bach van	2013
-754503				3149028099225	Exiles	ernest judd wolfgang james gaillard orchestre cyrille korngold ophelie de bloch monte-carlo philharmonique lehn erich	2017
-754626	FRBNF438907500000004				Concerto pour violoncelle n° 1	il'ic francaise jonathan kammerorchester saint-saens maurice orchestre philharmonique sternberg gendron johannes philippe cajkovskij dimitri petr entremont brahms camille chorafas radiodiffusion-television staatsoper	2014
-754749				3149020217528	Meditations oboe   harp at the opera	donizetti celine moinet gaetano franz pasculli sarah christ antonio schubert	2014
-754872					Fantaisies d 'opéra	richard wolfgang henryk wagner alexandre lory leo marschner wieniawski marillier	2014
-754995				747313287178	Choruses for male voices and orchestra	malmo hold-garrido alberto singers operaorkester student lund	2012
-755118	FRBNF437057730000006			888837953221	Opéra   histoire 30 opéras face à l 'histoire	jean-baptiste claudio handel monteverdi lully friedrich georg	2013
-755241	FRBNF424619670000003			3561302532929	La valse viennoise 1930-1959	marek bela strauss volksoper sanders ohlsen johann doelle franz wiener weber orchester gustav ballorchester	2011
-755364				889853316724	Les 50 trésors de l 'opéra	scotto alagna mozart wolfgang roberto verdi amadeus luciano renata giuseppe pavarotti vincenzo bellini	2016
-755487	FRBNF437150350000000			3596972850820	100 voix sacrées	rossijskoj ansambl' choeurs rossii les gosudarstvennyj pesni teatr orkestr plaski de armii imeni a france akademiceskij bolsoj i aleksandrova v	2013
-755610				3596972661822	100 voix sacrées les Choeurs de l 'Armée rouge  les Choeurs de France  l 'Orchestre national du Bolchoï   	rossijskoj ansambl' choeurs rossii les gosudarstvennyj pesni teatr orkestr plaski de armii imeni a france akademiceskij bolsoj i aleksandrova v	2012
-755733	FRBNF442742090000007			888750606624	In the mood for tuba	ralph camille saint-saens leleu williams jean-philippe vaughan orquesta tarcisio de lara barreto ceballos sinfonica thomas vanbeselaere	2015
-755856				3596973180827	Valses de Vienne	moskovskij simfonceskij carl strauss zeller volksoper orkestr johann wiener orchester jacques symphoniker offenbach	2014
-755979	FRBNF436970870000002			3760061143715	Les chemins de Broadway	benjamin pourreyron jean-pierre angelique lee beatrice horn charles edward berne britten alexander billet	2013
-756102					Un hiver à Majorque préludes  nocturnes  mazurkas	okuyama chopin aya frederic	2014
-756225	FRBNF442299790000004			7600003772053	Michel Cadiou	cadiou michel	2014
-756348	FRBNF442308200000004			7600003772107	Guy Chauvet	chauvet guy	2014
-756471				7600003772121	Régine Crespin	regine crespin	2014
-756594				7600003772046	Georges Liccioni	georges liccioni	2014
-756717				709861305230	Arie d 'opera	vivaldi maria agnew piau federico sardelli antonio paul sandrine	2011
-756840				7600003772077	Andréa Guiot	andrea guiot	2014
-756963				7600003772039	Albert Lance	lance albert	2014
-757086					Les triomphes de l 'opéra De l 'opérette à la mélodie Chansons	bacquier gabriel	2010
-757209				3596972206924	Chants sacrés	ansambl' gosudarstvennyj verdi les pesni orkestr v rossijskoj noel teatr handel imeni akademiceskij bolsoj friedrich georg joseph plaski a giuseppe armii rossii chanteurs haydn de petits i aleksandrova	2013
-757332	FRBNF425321860000001			3596972462627	Chants sacrés	ansambl' gosudarstvennyj verdi les pesni orkestr v rossijskoj noel teatr michael handel imeni akademiceskij bolsoj friedrich georg plaski a giuseppe armii rossii chanteurs haydn de petits i aleksandrova	2011
-757455	FRBNF450067880000008			3149020185230	Ouvertüren music for the Hamburg opera	akademie alte keiser heinrich caspar erlebach fur schurmann berlin musik reinhard philipp georg	2016
-757578	FRBNF442305220000002			7600003772114	Gabriel Bacquier  airs d 'opéras 	mozart bacquier wolfgang amadeus gluck gabriel hector christoph berlioz von willibald	2014
-757701	FRBNF442305290000003			7600003772091	Geneviève Moizan  airs d 'opéras 	raoul moizan laparra hector berlioz massenet genevieve jules	2014
-757824	FRBNF442298850000006			7600003771957	Michel Dens	gounod massenet rossini charles michel gioachino jules dens	2014
+NumNotice	FRBNF	ARK	EAN	Numéro commercial	Titre	Auteur	Date Editeur	
+754134				3329184688321	La grande nuit de l 'Opéra  1958	maria georges mars callas jean-pierre paris lance choeur orchestre albert de national opera sebastian hurteau jacques	2010	Institut national de l'audiovisuel
+754257	FRBNF451343430000009			2010100251255	Les trésors du classique les plus belles oeuvres par les plus grands compositeurs réunis Beethoven  Mozart  Berlioz   	mozart slovenske wolfgang amadeus zagrebacki ludwig filharmonije staatsorchester hector berlioz orkester solisti beethoven bayerisches van	2016	France Loisirs
+754380	FRBNF435795740000000			5053105621323	Voyage au coeur de soi	mozart wolfgang barenboim amadeus ludwig staatskapelle johann daniel sebastian beethoven bach van	2013	Warner
+754503				3149028099225	Exiles	ernest judd wolfgang james gaillard orchestre cyrille korngold ophelie de bloch monte-carlo philharmonique lehn erich	2017	Little Tribeca
+754626	FRBNF438907500000004				Concerto pour violoncelle n° 1	il'ic francaise jonathan kammerorchester saint-saens maurice orchestre philharmonique sternberg gendron johannes philippe cajkovskij dimitri petr entremont brahms camille chorafas radiodiffusion-television staatsoper	2014	
+754749				3149020217528	Meditations oboe   harp at the opera	donizetti celine moinet gaetano franz pasculli sarah christ antonio schubert	2014	
+754872					Fantaisies d 'opéra	richard wolfgang henryk wagner alexandre lory leo marschner wieniawski marillier	2014	
+754995				747313287178	Choruses for male voices and orchestra	malmo hold-garrido alberto singers operaorkester student lund	2012	
+755118	FRBNF437057730000006			888837953221	Opéra   histoire 30 opéras face à l 'histoire	jean-baptiste claudio handel monteverdi lully friedrich georg	2013	
+755241	FRBNF424619670000003			3561302532929	La valse viennoise 1930-1959	marek bela strauss volksoper sanders ohlsen johann doelle franz wiener weber orchester gustav ballorchester	2011	
+755364				889853316724	Les 50 trésors de l 'opéra	scotto alagna mozart wolfgang roberto verdi amadeus luciano renata giuseppe pavarotti vincenzo bellini	2016	
+755487	FRBNF437150350000000			3596972850820	100 voix sacrées	rossijskoj ansambl' choeurs rossii les gosudarstvennyj pesni teatr orkestr plaski de armii imeni a france akademiceskij bolsoj i aleksandrova v	2013	
+755610				3596972661822	100 voix sacrées les Choeurs de l 'Armée rouge  les Choeurs de France  l 'Orchestre national du Bolchoï   	rossijskoj ansambl' choeurs rossii les gosudarstvennyj pesni teatr orkestr plaski de armii imeni a france akademiceskij bolsoj i aleksandrova v	2012	
+755733	FRBNF442742090000007			888750606624	In the mood for tuba	ralph camille saint-saens leleu williams jean-philippe vaughan orquesta tarcisio de lara barreto ceballos sinfonica thomas vanbeselaere	2015	
+755856				3596973180827	Valses de Vienne	moskovskij simfonceskij carl strauss zeller volksoper orkestr johann wiener orchester jacques symphoniker offenbach	2014	
+755979	FRBNF436970870000002			3760061143715	Les chemins de Broadway	benjamin pourreyron jean-pierre angelique lee beatrice horn charles edward berne britten alexander billet	2013	
+756102					Un hiver à Majorque préludes  nocturnes  mazurkas	okuyama chopin aya frederic	2014	
+756225	FRBNF442299790000004			7600003772053	Michel Cadiou	cadiou michel	2014	
+756348	FRBNF442308200000004			7600003772107	Guy Chauvet	chauvet guy	2014	
+756471				7600003772121	Régine Crespin	regine crespin	2014	
+756594				7600003772046	Georges Liccioni	georges liccioni	2014	
+756717				709861305230	Arie d 'opera	vivaldi maria agnew piau federico sardelli antonio paul sandrine	2011	
+756840				7600003772077	Andréa Guiot	andrea guiot	2014	
+756963				7600003772039	Albert Lance	lance albert	2014	
+757086					Les triomphes de l 'opéra De l 'opérette à la mélodie Chansons	bacquier gabriel	2010	
+757209				3596972206924	Chants sacrés	ansambl' gosudarstvennyj verdi les pesni orkestr v rossijskoj noel teatr handel imeni akademiceskij bolsoj friedrich georg joseph plaski a giuseppe armii rossii chanteurs haydn de petits i aleksandrova	2013	
+757332	FRBNF425321860000001			3596972462627	Chants sacrés	ansambl' gosudarstvennyj verdi les pesni orkestr v rossijskoj noel teatr michael handel imeni akademiceskij bolsoj friedrich georg plaski a giuseppe armii rossii chanteurs haydn de petits i aleksandrova	2011	
+757455	FRBNF450067880000008			3149020185230	Ouvertüren music for the Hamburg opera	akademie alte keiser heinrich caspar erlebach fur schurmann berlin musik reinhard philipp georg	2016	
+757578	FRBNF442305220000002			7600003772114	Gabriel Bacquier  airs d 'opéras 	mozart bacquier wolfgang amadeus gluck gabriel hector christoph berlioz von willibald	2014	
+757701	FRBNF442305290000003			7600003772091	Geneviève Moizan  airs d 'opéras 	raoul moizan laparra hector berlioz massenet genevieve jules	2014	
+757824	FRBNF442298850000006			7600003771957	Michel Dens	gounod massenet rossini charles michel gioachino jules dens	2014	

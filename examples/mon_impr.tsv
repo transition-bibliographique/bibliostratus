@@ -1,9 +1,9 @@
-NumNotice	FRBNF	ARK	ISBN	EAN	Titre	Auteur(s)	Date	Volume/Tome
-315742	FRBNF438877170000008		978-2-917559-28-4		Avec nous, après nous	Peres Shimon Attali Jacques	DL 2013	
-315749			978-2-213-67872-6	9782213678726	L'informatique du temps et des événements	Berry Gérard	DL 2013	
-315756	FRBNF435361100000003		978-2-213-67203-8		Mon Paris, ma mémoire	Morin Edgar	DL 2013	
-315763			978-2-213-66672-3		Adieu à Berlin	Isherwood Christopher Savitzky Ludmila	impr. 2013	
-315770		ark:/12148/cb435580221	978-2-213-66853-6		Dictionnaire Ferré	Belleret Robert	impr. 2013	
+NumNotice	FRBNF	ARK	ISBN	EAN	Titre	Auteur(s)	Date	Volume/Tome	Editeur
+315742	FRBNF438877170000008		978-2-917559-28-4		Avec nous, après nous	Peres Shimon Attali Jacques	DL 2013	Baker Street
+315749			978-2-213-67872-6	9782213678726	L'informatique du temps et des événements	Berry Gérard	DL 2013	Collège de France
+315756	FRBNF435361100000003		978-2-213-67203-8		Mon Paris, ma mémoire	Morin Edgar	DL 2013	Fayard
+315763			978-2-213-66672-3		Adieu à Berlin	Isherwood Christopher Savitzky Ludmila	impr. 2013	Fayard
+315770		ark:/12148/cb435580221	978-2-213-66853-6		Dictionnaire Ferré	Belleret Robert	impr. 2013	Fayard
 315777			978-2-213-67800-9		Défense républicaine et participation ministérielle, 1899-1902	Jaurès Jean Agulhon Maurice  Chanet Jean-François	impr. 2013	
 315784			978-2-213-66285-5		Philosophie de l'écran	Charolles Valérie	impr. 2013	
 315791	FRBNF435147370000003	ark:/12148/cb435147376	978-2-213-66893-2		Conversations Hitler-Mussolini	Milza Pierre	impr. 2013	
