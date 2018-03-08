@@ -407,8 +407,12 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     tk.Label(cadre_input_type_docs,bg=couleur_fond, text="\nFormat", 
              anchor="w", justify="left").pack(anchor="w")
     file_format = tk.IntVar()
-    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="iso2709", variable=file_format, value=1,
-                   anchor="w",justify="left").pack(anchor="w")
+
+    bib2ark.radioButton_lienExample(cadre_input_type_docs,file_format,1,couleur_fond,
+                            "iso2709",
+                            "",
+                            "https://github.com/Transition-bibliographique/alignements-donnees-bnf/blob/master/examples/noticesbib.iso")
+
     tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Marc XML", variable=file_format, value=2,
                    anchor="w", justify="left").pack(anchor="w")
     file_format.set(1)
