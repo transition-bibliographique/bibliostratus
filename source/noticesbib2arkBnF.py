@@ -25,6 +25,7 @@ import codecs
 import json
 import http.client
 import main as main
+import download_file_button as dfb
 
 #import matplotlib.pyplot as plt
 
@@ -36,6 +37,8 @@ programID = "noticesbib2arkBnF"
 
 url_access_pbs = []
 
+#Permet d'écrire dans une liste accessible au niveau général depuis le formulaire, et d'y accéder ensuite
+entry_file_list = []
 
 #Pour chaque notice, on recense la méthode qui a permis de récupérer le ou les ARK
 NumNotices2methode = defaultdict(list)
@@ -1683,11 +1686,12 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée :", justify="left", font="bold").pack()
     
     tk.Label(cadre_input_file,bg=couleur_fond, text="Fichier contenant les notices : ").pack(side="left")
-    entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
+    """entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
     entry_filename.pack(side="left")
-    entry_filename.focus_set()
+    entry_filename.focus_set()"""
+    main.download_zone(cadre_input_file, "Sélectionner un fichier\nSéparateur TAB, Encodage UTF-8",entry_file_list,couleur_fond)
     
-    tk.Label(cadre_input_infos_format,bg=couleur_fond, text=4*"\t"+"Séparateur TAB, Encodage UTF-8", justify="right").pack(anchor="s")
+    #tk.Label(cadre_input_infos_format,bg=couleur_fond, text=4*"\t"+"Séparateur TAB, Encodage UTF-8", justify="right").pack(anchor="s")
     
     
     tk.Label(cadre_input_type_docs_zone,bg=couleur_fond, text="Type de documents  ", font="Arial 10 bold", justify="left").pack(anchor="w", side="left")
@@ -1746,7 +1750,7 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     
     b = tk.Button(zone_ok_help_cancel, bg=couleur_bouton, fg="white", font="Arial 10 bold", 
                   text = "Aligner les\nnotices BIB", 
-                  command = lambda: launch(form_bib2ark,zone_controles , entry_filename.get(), type_doc_bib.get(), file_nb.get(), meta_bib.get(), id_traitement.get()), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
+                  command = lambda: launch(form_bib2ark,zone_controles , entry_file_list[0], type_doc_bib.get(), file_nb.get(), meta_bib.get(), id_traitement.get()), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
     
     tk.Label(zone_ok_help_cancel, font="bold", text="", bg=couleur_fond).pack()

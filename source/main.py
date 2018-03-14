@@ -28,7 +28,7 @@ import ark2records as ark2records
 
 #import matplotlib.pyplot as plt
 
-version = 0.13
+version = 0.14
 lastupdate = "30/02/2018"
 programID = "transbiblio"
 
@@ -254,6 +254,31 @@ def openfile(frame,liste,background_color="white"):
     filename_print = liste[0].split("/")[-1].split("\\")[-1]
     tk.Label(frame,text=filename_print, bg=background_color).pack()
 
+def download_button(frame,text,frame_selected,text_path,couleur_fond,file_entry_list):
+    if (file_entry_list != []):
+        text_path.delete(0.0,1000.3)
+    filename = filedialog.askopenfilename(parent=frame,title="Sélectionner un fichier")
+    if (file_entry_list == []):
+        file_entry_list.append(filename)
+    else:
+        file_entry_list[0] = filename
+    text_path.insert(0.0,filename)
+    
+def download_zone(frame, text_bouton,file_entry_list,couleur_fond):
+    frame_button = tk.Frame(frame)
+    frame_button.pack()
+    frame_selected = tk.Frame(frame)
+    frame_selected.pack()
+    display_selected = tk.Text(frame_selected, height=3, width=50, bg=couleur_fond, bd=0, font="Arial 9 bold")
+    display_selected.pack()
+    #bouton_telecharger = download_button(frame,"Sélectionner un fichier","#ffffff")
+    select_filename_button = tk.Button(frame_button,command=lambda:download_button(frame, 
+                                                    text_bouton,
+                                                    frame_selected,display_selected,
+                                                    "#ffffff", file_entry_list),
+                                text=text_bouton,
+                                padx=10, pady=10)
+    select_filename_button.pack()
 
 def formulaire_main(access_to_network, last_version):
     couleur_fond = "white"
