@@ -28,8 +28,8 @@ import ark2records as ark2records
 
 #import matplotlib.pyplot as plt
 
-version = 0.14
-lastupdate = "30/02/2018"
+version = 1.00
+lastupdate = "16/03/2018"
 programID = "transbiblio"
 
 ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}

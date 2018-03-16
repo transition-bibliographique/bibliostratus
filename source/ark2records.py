@@ -25,6 +25,8 @@ programID = "ark2records"
 lastupdate = "12/11/2017"
 last_version = [version, False]
 
+#Permet d'écrire dans une liste accessible au niveau général depuis le formulaire, et d'y accéder ensuite
+entry_file_list = []
 
 listeARK_BIB = []
 listeNNA_AUT = []
@@ -230,11 +232,13 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
     frame_output_options_format.pack(side="left", anchor="nw")
     
     
-    tk.Label(frame_input_file, text="Fichier contenant les ARK\n (1 par ligne)", 
+    tk.Label(frame_input_file, text="Fichier contenant les ARK\n (1 par ligne) \n\n", 
              bg=couleur_fond, justify="left").pack(side="left", anchor="w")
-    entry_filename = tk.Entry(frame_input_file, width=20, bd=2, bg=couleur_fond)
+    """entry_filename = tk.Entry(frame_input_file, width=20, bd=2, bg=couleur_fond)
     entry_filename.pack(side="left")
-    entry_filename.focus_set()
+    entry_filename.focus_set()"""
+    main.download_zone(frame_input_file, "Sélectionner un fichier",entry_file_list,couleur_fond)
+    
     
     tk.Label(frame_input_aut, text="\n", bg=couleur_fond).pack()
 
@@ -280,8 +284,10 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
     tk.Radiobutton(frame_output_options_marc, text="Intermarc", justify="left", variable=format_records_choice , value=3, bg=couleur_fond).pack(anchor="nw")
     tk.Radiobutton(frame_output_options_marc, text="Intermarc avec ANL", justify="left", variable=format_records_choice , value=4, bg=couleur_fond).pack(anchor="nw")
     format_records_choice.set(1)
-
-    tk.Label(frame_output_options_inter, text="\t", bg=couleur_fond).pack(side="left")
+    
+    #tk.Label(frame_output_options,text="\n\n", justify="left", variable=format_records_choice , value=4, bg=couleur_fond).pack()
+             
+    tk.Label(frame_output_options_inter, text="\t\n\n\n\n\n\n\n\n\n\n\n", bg=couleur_fond).pack(side="left")
 
     tk.Label(frame_output_options_format, text="Format du fichier :").pack(anchor="nw")    
     format_file = tk.IntVar()
@@ -294,7 +300,7 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
     
     #file_format.focus_set()
     b = tk.Button(zone_ok_help_cancel, text = "OK", 
-                  command = lambda: callback(master, form, entry_filename.get(), type_records.get(), headers.get(), AUTliees.get(), outputID.get(), format_records_choice.get(), format_file.get()), 
+                  command = lambda: callback(master, form, entry_file_list[0], type_records.get(), headers.get(), AUTliees.get(), outputID.get(), format_records_choice.get(), format_file.get()), 
                   width = 15, borderwidth=1, pady=20, fg="white",
                   bg=couleur_bouton)
     b.pack()

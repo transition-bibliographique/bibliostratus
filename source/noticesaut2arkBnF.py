@@ -32,6 +32,9 @@ version = 0.03
 lastupdate = "26/12/2017"
 programID = "noticesaut2arkBnF"
 
+#Permet d'écrire dans une liste accessible au niveau général depuis le formulaire, et d'y accéder ensuite
+entry_file_list = []
+
 #Pour chaque notice, on recense la méthode qui a permis de récupérer le ou les ARK
 NumNotices2methode = defaultdict(list)
 
@@ -615,11 +618,12 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
     
     tk.Label(frame_input_header, text="En entrée", font="bold", fg=couleur_bouton, bg=couleur_fond).pack()
 
-    tk.Label(frame_input_file, text="Fichier contenant les données d'autorité à aligner", 
+    tk.Label(frame_input_file, text="Fichier contenant \nles notices d'autorité à aligner\n\n", 
              bg=couleur_fond, justify="left").pack(side="left", anchor="w")
-    entry_filename = tk.Entry(frame_input_file, width=20, bd=2, bg=couleur_fond)
+    """entry_filename = tk.Entry(frame_input_file, width=20, bd=2, bg=couleur_fond)
     entry_filename.pack(side="left")
-    entry_filename.focus_set()
+    entry_filename.focus_set()"""
+    main.download_zone(frame_input_file, "Sélectionner un fichier\nSéparateur TAB, Encodage UTF-8",entry_file_list,couleur_fond)
 
     #Fichier avec en-têtes ?
     headers = tk.IntVar()
@@ -668,12 +672,12 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
     tk.Checkbutton(frame_output_file, text="Récupérer les métadonnées BnF ?", 
                        variable=meta_bnf,
                        bg=couleur_fond, justify="left").pack(anchor="w")
-
+    tk.Label(frame_output_file, text="\n\n\n\n", bg=couleur_fond, justify="left").pack(anchor="w")
 
     
     #file_format.focus_set()
     b = tk.Button(zone_ok_help_cancel, text = "Aligner\nles autorités", 
-                  command = lambda: launch(form, entry_filename.get(), headers.get(), input_data_type.get(), file_nb.get(), outputID.get(), meta_bnf.get()), 
+                  command = lambda: launch(form, entry_file_list[0], headers.get(), input_data_type.get(), file_nb.get(), outputID.get(), meta_bnf.get()), 
                   width = 15, borderwidth=1, pady=40, fg="white",
                   bg=couleur_bouton, font="Arial 10 bold"
                   )

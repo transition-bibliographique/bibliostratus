@@ -25,7 +25,8 @@ programID = "marc2tables"
 lastupdate = "10/11/2017"
 last_version = [version, False]
 
-
+#Permet d'écrire dans une liste accessible au niveau général depuis le formulaire, et d'y accéder ensuite
+entry_file_list = []
 
 # =============================================================================
 # Creation des fichiers résultats
@@ -395,11 +396,11 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     #définition input URL (u)
     tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée :", justify="left", font="bold").pack(anchor="w")
     
-    tk.Label(cadre_input_file_name,bg=couleur_fond, text="Fichier contenant les notices : ").pack(side="left")
-    entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
+    tk.Label(cadre_input_file_name,bg=couleur_fond, text="Fichier contenant les notices :  \n\n  ").pack(side="left")
+    """entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
     entry_filename.pack(side="left")
-    entry_filename.focus_set()
-    
+    entry_filename.focus_set()"""
+    main.download_zone(cadre_input_file, "Sélectionner un fichier\nde notices Marc",entry_file_list,couleur_fond)
     
     #tk.Button(cadre_input_file_browse, text="Sélectionner le fichier\ncontenant les notices", command=lambda:main.openfile(cadre_input_file_name, popup_filename), width=20).pack()
     
@@ -444,6 +445,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
         - audiovisuel (CD/DVD)
         - autres non identifiés
   Pour faire cela, il utilise les informations en zones codées dans chaque notice Unimarc
+  \n\n\n\n
     """
     tk.Label(cadre_output_explications,bg=couleur_fond, 
              text=message_fichiers_en_sortie,
@@ -456,7 +458,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     #Bouton de validation
     
     b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", text = "OK", 
-                  command=lambda: launch(form, entry_filename.get(), file_format.get(), output_ID.get(),master), 
+                  command=lambda: launch(form, entry_file_list[0], file_format.get(), output_ID.get(),master), 
                   borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
     

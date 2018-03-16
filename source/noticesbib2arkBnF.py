@@ -25,7 +25,7 @@ import codecs
 import json
 import http.client
 import main as main
-import download_file_button as dfb
+
 
 #import matplotlib.pyplot as plt
 
@@ -338,7 +338,7 @@ def verificationTomaison(ark,numeroTome,recordBNF):
             volumesBNF = volumesBNF.replace(lettre, "~")
         volumesBNF = volumesBNF.split("~")
         volumesBNF = set(str(ltrim(nb)) for nb in volumesBNF if nb != "")
-    if (volumesBNF != "" and volumesBNF.find(numeroTome) > -1):
+    if (volumesBNF != "" and numeroTome in volumesBNF):
         return ark
     else:
         return ""
@@ -1685,7 +1685,7 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     #définition input URL (u)
     tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée :", justify="left", font="bold").pack()
     
-    tk.Label(cadre_input_file,bg=couleur_fond, text="Fichier contenant les notices : ").pack(side="left")
+    tk.Label(cadre_input_file,bg=couleur_fond, text="Fichier contenant les notices : \n\n").pack(side="left")
     """entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
     entry_filename.pack(side="left")
     entry_filename.focus_set()"""
@@ -1733,7 +1733,7 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
                        text="Récupérer les métadonnées\nbibliographiques BnF [Dublin Core]", 
                        variable=meta_bib, justify="left")
     meta_bib_check.pack(anchor="w")
-    tk.Label(cadre_output_nb_fichier,text="\n", bg=couleur_fond).pack()
+    tk.Label(cadre_output_nb_fichier,text="\n\n\n\n\n", bg=couleur_fond).pack()
 
 
     
