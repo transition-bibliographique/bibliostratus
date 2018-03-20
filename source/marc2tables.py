@@ -295,14 +295,14 @@ def record2listemetas(record):
         
     meta = []
     if (doc_record == "am"):
-        meta = [numNot,frbnf,ark,isbn,ean,title,authors, date, numeroTome, publisher]
+        meta = [numNot,frbnf,ark,isbn,ean,title,authors2keywords, date, numeroTome, publisher]
     elif (doc_record == "im" or doc_record == "jm" or doc_record == "gm"):
         meta = [numNot,frbnf,ark,ean,id_commercial_aud,title,authors2keywords,date, publisher]
     elif (doc_record[1] == "s"):
         if (keyTitle == ""):
-            meta = [numNot, frbnf, ark, issn, title, authors, date, pubPlace]
+            meta = [numNot, frbnf, ark, issn, title, authors2keywords, date, pubPlace]
         else:
-            meta = [numNot, frbnf, ark, issn, keyTitle, authors, date, pubPlace]
+            meta = [numNot, frbnf, ark, issn, keyTitle, authors2keywords, date, pubPlace]
     else:
         meta = [numNot, frbnf, ark, ean, title, authors, date]
     liste_resultats[doc_record].append(meta)
