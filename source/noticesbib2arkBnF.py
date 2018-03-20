@@ -312,6 +312,10 @@ def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,numeroT
         ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"540$a")
     if (ark == ""):
         ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"540$e")
+    if (ark == ""):
+        ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"416$a")
+    if (ark == ""):
+        ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"225$a")
     if (ark != "" and numeroTome != ""):
         ark = verificationTomaison(ark,numeroTome,recordBNF)
     return ark

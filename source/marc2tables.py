@@ -27,6 +27,7 @@ last_version = [version, False]
 
 #Permet d'écrire dans une liste accessible au niveau général depuis le formulaire, et d'y accéder ensuite
 entry_file_list = []
+output_directory_list = []
 
 # =============================================================================
 # Creation des fichiers résultats
@@ -283,8 +284,8 @@ def record2listemetas(record):
     frbnf = record2frbnf(record2meta(record,["035$a"]))
     isbn = record2isbn(record2meta(record,["010$a"]))
     issn = record2isbn(record2meta(record,["011$a"]))
-    ean =  record2ean(record2meta(record,["038$a"]))
-    id_commercial_aud = record2id_commercial_aud(record2meta(record,["073$a"]))
+    ean =  record2ean(record2meta(record,["073$a"]))
+    id_commercial_aud = record2id_commercial_aud(record2meta(record,["071$a"]))
     
 
     doc_record = doctype + recordtype
@@ -295,9 +296,9 @@ def record2listemetas(record):
     meta = []
     if (doc_record == "am"):
         meta = [numNot,frbnf,ark,isbn,ean,title,authors, date, numeroTome, publisher]
-    elif (doc_record == "jm"):
+    elif (doc_record == "im" or doc_record == "jm" or doc_record == "gm"):
         meta = [numNot,frbnf,ark,ean,id_commercial_aud,title,authors2keywords,date, publisher]
-    elif (doc_record == "as"):
+    elif (doc_record[1] == "s"):
         if (keyTitle == ""):
             meta = [numNot, frbnf, ark, issn, title, authors, date, pubPlace]
         else:
@@ -310,9 +311,9 @@ def write_reports(id_traitement):
     for doc_record in liste_resultats:
         if (doc_record == "am"):
             header_columns = bib2ark.header_columns_init_monimpr
-        elif (doc_record == "jm"):
+        elif (doc_record == "im" or doc_record == "jm" or doc_record == "gm"):
             header_columns = bib2ark.header_columns_init_cddvd
-        elif (doc_record == "as"):
+        elif (doc_record[1] == "s"):
             header_columns = bib2ark.header_columns_init_perimpr
         else:
             header_columns = ["NumNotice","FRBNF","ARK","Autres métadonnées..."]
@@ -325,6 +326,7 @@ def write_reports(id_traitement):
     
 def end_of_treatments(form,id_traitement):
     write_reports(id_traitement)
+    print("\n\n------------------------\n\nExtraction terminée\n\n------------------------")
     form.destroy()
 
 
@@ -387,6 +389,8 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     cadre_output_header.pack(anchor="w")
     cadre_output_nom_fichiers = tk.Frame(cadre_output,bg=couleur_fond)
     cadre_output_nom_fichiers.pack(anchor="w")
+    cadre_output_repertoire = tk.Frame(cadre_output,bg=couleur_fond)
+    cadre_output_repertoire.pack(anchor="w")
     cadre_output_explications = tk.Frame(cadre_output, padx=20,bg=couleur_fond)
     cadre_output_explications.pack(anchor="w")
     
@@ -434,6 +438,12 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
              justify="left").pack(side="left")
     output_ID = tk.Entry(cadre_output_nom_fichiers, width=40, bd=2)
     output_ID.pack(side="left")
+
+    #Sélection du répertoire en sortie
+    #tk.Label(cadre_output_repertoire,text="\n",bg=couleur_fond).pack()
+    #main.select_directory(cadre_output_repertoire, "Dossier où déposer les fichiers",output_directory_list,couleur_fond)
+    
+
     
     #Ajout (optionnel) d'un identifiant de traitement
     message_fichiers_en_sortie = """
@@ -445,8 +455,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
         - audiovisuel (CD/DVD)
         - autres non identifiés
   Pour faire cela, il utilise les informations en zones codées dans chaque notice Unimarc
-  \n\n\n\n
-    """
+    \n\n\n\n"""
     tk.Label(cadre_output_explications,bg=couleur_fond, 
              text=message_fichiers_en_sortie,
              justify="left").pack()
