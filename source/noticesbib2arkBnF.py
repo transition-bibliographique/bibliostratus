@@ -53,6 +53,7 @@ dict_check_apis = defaultdict(dict)
 #Quelques listes de signes à nettoyer
 listeChiffres = ["0","1","2","3","4","5","6","7","8","9"]
 lettres = ["a","b","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
+lettres_sauf_x = ["a","b","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","y","z"]
 ponctuation = [".",",",";",":","?","!","%","$","£","€","#","\\","\"","&","~","{","(","[","`","\\","_","@",")","]","}","=","+","*","\/","<",">",")","}"]
 
 header_columns_init_monimpr = ["Num Not", "FRBNF", "ARK", "ISBN", "EAN", "Titre", "Auteur", "Date", "Volume-Tome", "Editeur"]
@@ -484,8 +485,13 @@ def row2files(liste_metadonnees,liste_reports):
         liste_reports[3].write("\t".join(liste_metadonnees_to_report) + "\n")
         
 def nettoyage_isbn(isbn):
-    isbn_nett = isbn.split(";")[0].split(",")[0]
+    isbn_nett = isbn.split(";")[0].split(",")[0].split("(")[0].split("[")[0]
     isbn_nett = isbn_nett.replace("-","").replace(" ","")
+    for signe in ponctuation:
+        isbn_nett.replace(signe,"")
+    isbn_nett = unidecode(isbn_nett)
+    for lettre in lettres_sauf_x:
+        isbn_nett.replace(lettre,"")
     return isbn_nett
     
 def conversionIsbn(isbn):
