@@ -611,7 +611,7 @@ def isbn2sru(NumNot,isbn,titre,auteur,date):
 def isbnauteur2sru(NumNot,isbn,titre,auteur,date):
     """Si la recherche ISBN avec contrôle titre n'a rien donné, on recherche ISBN + le mot le plus long dans la zone "auteur", et pas de contrôle sur Titre ensuite"""
     motlongauteur = nettoyageAuteur(auteur, True)
-    urlSRU = url_requete_sru('bib.isbn all "' + isbn + '" + bib.author all "' + motlongauteur + '"')
+    urlSRU = url_requete_sru('bib.isbn all "' + isbn + '" and bib.author all "' + motlongauteur + '"')
     listeARK = []
     (test,resultats) = testURLetreeParse(urlSRU)
     if (test == True):
