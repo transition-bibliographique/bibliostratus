@@ -146,9 +146,36 @@ def ark2metas(ark, unidec=True):
     return metas
 
 
+def accesspoint2isniorg(NumNot, nom_nett, prenom_nett, date_debut_nett, date_fin_nett):
+    url = "http://isni.oclc.nl/sru/?query=pica.nw%3D%22" + urllib.parse.quote(" ".join([nom_nett, prenom_nett, date_debut_nett])) + "%22&operation=searchRetrieve&recordSchema=isni-b"
+    isnis = []
+    (test,records) = bib2ark.testURLetreeParse(url)
+    if (test == True):
+        for rec in records.xpath("//srw:records/srw:record", namespaces=main.nsisni):
+            isni = rec.find("srw:recordData//isniURI", namespaces=main.nsisni).text
+            forenames = []
+            for forename in rec.xpath("srw:recordData//forename", namespaces=main.nsisni):
+                if (unidecode(forename.text).lower() not in forenames):
+                    forenames.append(unidecode(forename.text).lower())
+            surnames = []
+            for surname in rec.xpath("srw:recordData//surname", namespaces=main.nsisni):
+                if (unidecode(forename.text).lower() not in surnames):
+                    surnames.append(unidecode(surname.text).lower())
+            dates = []
+            for date in rec.xpath("srw:recordData//marcDate", namespaces=main.nsisni):
+                if (unidecode(date.text).lower() not in dates):
+                    dates.append(unidecode(date.text).lower())
+            forenames = " ".join(forenames)
+            surnames = " ".join(surnames)
+            dates = " ".join(dates)
+            if (nom_nett in surnames or surnames in nom_nett):
+                if (prenom_nett in forenames or forenames in prenom_nett):
+                    if (date_debut_nett in dates or dates in date_debut_nett):
+                        isnis.append(isni)
+    isnis = ",".join(isnis)
+    return isnis
 
-
-def align_from_aut(form, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf):
+def align_from_aut(form, entry_filename, headers, input_data_type, isni_option, file_nb, id_traitement, liste_reports, meta_bnf):
     """Aligner ses données d'autorité avec les autorités BnF à partir d'une extraction tabulée de la base d'autorités"""
     header_columns = ["NumNot","nbARK","ark AUT trouvé","ARK AUT initial","frbnf AUT initial","ISNI","Nom","Complément nom","Date début","Date fin"]
     if (meta_bnf == 1):
@@ -166,9 +193,9 @@ def align_from_aut(form, entry_filename, headers, input_data_type, file_nb, id_t
             n += 1
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
-            (NumNot,NumNotBIB,ark_aut_init,frbnf_aut_init,isni,
+            (NumNot,ark_aut_init,frbnf_aut_init,isni,
              nom,prenom,date_debut,date_fin) = bib2ark.extract_cols_from_row(row,
-                                           ["NumNot","NumNotBIB","ark_aut_init","frbnf_aut_init","isni","nom","prenom","date_debut","date_fin"])
+                                           ["NumNot","ark_aut_init","frbnf_aut_init","isni","nom","prenom","date_debut","date_fin"])
             
             nom_nett = main.clean_string(nom, False, True)
             prenom_nett = main.clean_string(prenom, False, True)
@@ -183,6 +210,8 @@ def align_from_aut(form, entry_filename, headers, input_data_type, file_nb, id_t
                 ark_trouve = frbnfAut2arkAut(NumNot, frbnf_aut_init, nom_nett, prenom_nett, date_debut_nett)
             if (ark_trouve == "" and nom != ""):
                 ark_trouve = accesspoint2arkAut(NumNot, nom_nett, prenom_nett, date_debut_nett, date_fin_nett)
+            if (ark_trouve == "" and isni_option == 1):
+                ark_trouve = accesspoint2isniorg(NumNot, nom_nett, prenom_nett, date_debut_nett, date_fin_nett)
             print(str(n) + ". " + NumNot + " : " + ark_trouve)
             nbARK = len(ark_trouve.split(","))
             if (ark_trouve == ""):
@@ -197,14 +226,14 @@ def align_from_aut(form, entry_filename, headers, input_data_type, file_nb, id_t
             liste_metadonnees = [NumNot,nbARK,ark_trouve,typeConversionNumNot,ark_aut_init,frbnf_aut_init,isni,nom,prenom,date_debut,date_fin]
             if (meta_bnf == 1):
                 liste_metadonnees.extend(ark2metadc(ark_trouve))
-            if (file_nb.get() ==  1):
+            if (file_nb ==  1):
                 row2file(liste_metadonnees,liste_reports)
-            elif(file_nb.get() ==  2):
+            elif(file_nb ==  2):
                 row2files(liste_metadonnees,liste_reports)
     
 
 
-def align_from_bib(form, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf):
+def align_from_bib(form, entry_filename, headers, input_data_type, isni_option, file_nb, id_traitement, liste_reports, meta_bnf):
     """Alignement de ses données d'autorité avec les autorités BnF à partir d'une extraction de sa base bibliographique (métadonnées BIB + Nom, prénom et dates de l'auteur)"""
     header_columns = ["NumNot","nbARK","ark AUT trouvé","ark BIB initial","frbnf BIB initial","Titre","ISNI","Nom","Complément nom","dates Auteur"]
     if (meta_bnf == 1):
@@ -557,15 +586,15 @@ def extractARKautfromBIB(record,nom,prenom,date_debut):
 # Gestion du formulaire
 #==============================================================================
 
-def launch(form, entry_filename, headers, input_data_type, file_nb, id_traitement, meta_bnf):
-    main.check_file_name(entry_filename)
+def launch(form, entry_filename, headers, input_data_type, isni_option, file_nb, id_traitement, meta_bnf):
+    #main.check_file_name(entry_filename)
     #results2file(nb_fichiers_a_produire)
     liste_reports = create_reports(id_traitement, file_nb)    
     
     if (input_data_type == 1):
-        align_from_aut(form, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf)
+        align_from_aut(form, entry_filename, headers, input_data_type, isni_option, file_nb, id_traitement, liste_reports, meta_bnf)
     elif (input_data_type == 2):
-        align_from_bib(form, entry_filename, headers, input_data_type, file_nb, id_traitement, liste_reports, meta_bnf)
+        align_from_bib(form, entry_filename, headers, input_data_type, isni_option, file_nb, id_traitement, liste_reports, meta_bnf)
     else:
         main.popup_errors("Format en entrée non défini")
     bib2ark.fin_traitements(form,liste_reports)
@@ -645,7 +674,15 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
     
     input_data_type.set(1)
 
-    tk.Label(frame_input_aut,bg=couleur_fond, text="\n").pack()
+    #Option Relance sur isni ?
+    isni_option = tk.IntVar()
+    tk.Checkbutton(frame_input_aut, text="Relancer sur isni.org en cas d'absence de réponse", 
+                       variable=isni_option,
+                       bg=couleur_fond, justify="left").pack(anchor="w")
+    isni_option.set(1)
+
+
+    #tk.Label(frame_input_aut,bg=couleur_fond, text="\n").pack()
 
     tk.Label(frame_output_header, text="En sortie", font="bold", fg=couleur_bouton, bg=couleur_fond).pack()    
     
@@ -655,7 +692,7 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
                    variable=file_nb , value=1, justify="left").pack(anchor="w")
     tk.Radiobutton(frame_output_file,bg=couleur_fond, text="Plusieurs fichiers \n(Pb / 0 / 1 / plusieurs ARK trouvés)", 
                    variable=file_nb, value=2, justify="left").pack(anchor="w")
-    file_nb.set(2)
+    file_nb.set(1)
 
 
     tk.Label(frame_output_file, text="ID de traitement (facultatif)",
@@ -677,7 +714,7 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
     
     #file_format.focus_set()
     b = tk.Button(zone_ok_help_cancel, text = "Aligner\nles autorités", 
-                  command = lambda: launch(form, entry_file_list[0], headers.get(), input_data_type.get(), file_nb.get(), outputID.get(), meta_bnf.get()), 
+                  command = lambda: launch(form, entry_file_list[0], headers.get(), input_data_type.get(), isni_option.get(), file_nb.get(), outputID.get(), meta_bnf.get()), 
                   width = 15, borderwidth=1, pady=40, fg="white",
                   bg=couleur_bouton, font="Arial 10 bold"
                   )
