@@ -35,6 +35,8 @@ programID = "noticesaut2arkBnF"
 #Permet d'écrire dans une liste accessible au niveau général depuis le formulaire, et d'y accéder ensuite
 entry_file_list = []
 
+header_columns_init_aut2aut = ['N° Notice AUT', 'FRBNF', 'ARK', 'ISNI', 'Nom', 'Prénom', 'Date de naissance', 'Date de mort']
+
 #Pour chaque notice, on recense la méthode qui a permis de récupérer le ou les ARK
 NumNotices2methode = defaultdict(list)
 
@@ -159,7 +161,7 @@ def accesspoint2isniorg(NumNot, nom_nett, prenom_nett, date_debut_nett, date_fin
                     forenames.append(unidecode(forename.text).lower())
             surnames = []
             for surname in rec.xpath("srw:recordData//surname", namespaces=main.nsisni):
-                if (unidecode(forename.text).lower() not in surnames):
+                if (unidecode(surname.text).lower() not in surnames):
                     surnames.append(unidecode(surname.text).lower())
             dates = []
             for date in rec.xpath("srw:recordData//marcDate", namespaces=main.nsisni):
@@ -193,7 +195,7 @@ def align_from_aut(form, entry_filename, headers, input_data_type, isni_option, 
             n += 1
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
-            (NumNot,ark_aut_init,frbnf_aut_init,isni,
+            (NumNot,frbnf_aut_init,ark_aut_init,isni,
              nom,prenom,date_debut,date_fin) = bib2ark.extract_cols_from_row(row,
                                            ["NumNot","ark_aut_init","frbnf_aut_init","isni","nom","prenom","date_debut","date_fin"])
             ark_aut_init = nettoyageArk(ark_aut_init)
@@ -348,8 +350,17 @@ def isni2ark(NumNot, isni):
     return nv_ark
 
 
+def nettoyageFRBNF(frbnf):
+    frbnf_nett = ""
+    if (frbnf[0:4].lower() == "frbn"):
+        frbnf_nett = unidecode(frbnf.lower())
+    for signe in bib2ark.ponctuation:
+        frbnf_nett = frbnf_nett.split(signe)[0]
+    return frbnf_nett
+
 def frbnfAut2arkAut(NumNot,frbnf,nom, prenom, date_debut):
     ark = ""
+    frbnf = nettoyageFRBNF(frbnf)
     url = bib2ark.url_requete_sru('aut.otherid all "' + frbnf + '"')
     (test,page) = bib2ark.testURLetreeParse(url)
     if (test == True):
@@ -675,7 +686,7 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
     input_data_type = tk.IntVar()
     bib2ark.radioButton_lienExample(frame_input_aut,input_data_type,1,couleur_fond,
                             "Liste de notices d'autorité",
-                            "(N° Notice AUT | ARK | FRBNF | ISNI | Nom | Prénom | Date de naissance | Date de mort)",
+                            "(" + " | ".join(header_columns_init_aut2aut) + ")",
                             "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/aut_align_aut.tsv")
     bib2ark.radioButton_lienExample(frame_input_aut,input_data_type,2,couleur_fond,
                             "Liste de notices bibliographiques",

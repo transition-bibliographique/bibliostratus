@@ -17,6 +17,7 @@ from collections import defaultdict
 import re
 import webbrowser
 import noticesbib2arkBnF as bib2ark
+import noticesaut2arkBnF as aut2ark
 import pymarc as mc
 import main as main
 
@@ -69,12 +70,22 @@ recordtype = {"a":"analytique",
                "s":"périodiques",
                "c":"collection"}
 
+
+doctypeAUT = {
+               "c":"autorité",
+               "n":"autorité",
+               
+               }
+recordtypeAUT = {"a":"personne physique",
+                 "b":"collectivité",
+                 "c":"nom géographique Rameau",
+                 "j":"nom commun Rameau"
+               }
+
+
+
 doc_record_type = defaultdict(str)
-for doct in doctype:
-    for recordt in recordtype:
-        dcrec = doct + recordt
-        dcrec_libelles = "-".join([doctype[doct],recordtype[recordt]])
-        doc_record_type[dcrec] = dcrec_libelles
+
 #suppression des signes de ponctuation
 def clean_punctation(text):
     for char in punctation:
@@ -97,11 +108,18 @@ def clean_accents_case(text):
 # Définition des zones pour chaque élément
 # =============================================================================
 
-def record2doctype(label):
-    return label[6]
+def record2doctype(label,rec_format=1):
+    if (rec_format == 2):
+        return label[5]
+    else:
+        return label[6]
 
-def record2recordtype(label):
-    return label[7]
+def record2recordtype(label,rec_format=1):
+    if (rec_format == 2):
+        return label[9]
+    else:
+        return label[7]
+
 
 def path2value(record, field_subfield):
     value = None
@@ -227,13 +245,13 @@ def download_last_update():
     webbrowser.open(url)
 
 
-def iso2tables(master,entry_filename, id_traitement):
+def iso2tables(master,entry_filename, rec_format, id_traitement):
     with open(entry_filename, 'rb') as fh:
         collection = mc.MARCReader(fh)
         collection.force_utf8 = True
         try:
             for record in collection:
-                record2listemetas(record)
+                record2listemetas(record,rec_format)
         except mc.exceptions.RecordLengthInvalid as err:
             print("\n\n/*---------------------------------------------*\n\n")
             print(main.errors["pb_input_utf8"])
@@ -242,17 +260,12 @@ def iso2tables(master,entry_filename, id_traitement):
             main.popup_errors(master,main.errors["pb_input_utf8"])
         
 
-def xml2tables(master,entry_filename, id_traitement):
+def xml2tables(master,entry_filename, rec_format, id_traitement):
     collection = mc.marcxml.parse_xml_to_array(entry_filename, strict=False)
     for record in collection:
-        record2listemetas(record)
+        record2listemetas(record,rec_format)
 
-
-def record2listemetas(record):
-    numNot = record2meta(record,["001"])
-    doctype = record2doctype(record.leader)
-    recordtype = record2recordtype(record.leader)
-   
+def bibrecord2metas(numNot,doc_record,record):
     title = record2title(
                 record2meta(record, ["200$a","200$e"])
                 )
@@ -286,25 +299,65 @@ def record2listemetas(record):
     issn = record2isbn(record2meta(record,["011$a"]))
     ean =  record2ean(record2meta(record,["073$a"]))
     id_commercial_aud = record2id_commercial_aud(record2meta(record,["071$a"]))
-    
 
-    doc_record = doctype + recordtype
-    doc_record = doc_record.strip()
+
     if (doc_record not in liste_fichiers):
         liste_fichiers.append(doc_record)
-        
-    meta = []
     if (doc_record == "am"):
         meta = [numNot,frbnf,ark,isbn,ean,title,authors2keywords, date, numeroTome, publisher]
     elif (doc_record == "im" or doc_record == "jm" or doc_record == "gm"):
         meta = [numNot,frbnf,ark,ean,id_commercial_aud,title,authors2keywords,date, publisher]
-    elif (doc_record[1] == "s"):
+    elif (len(doc_record)>1 and doc_record[1] == "s"):
         if (keyTitle == ""):
             meta = [numNot, frbnf, ark, issn, title, authors2keywords, date, pubPlace]
         else:
             meta = [numNot, frbnf, ark, issn, keyTitle, authors2keywords, date, pubPlace]
     else:
         meta = [numNot, frbnf, ark, ean, title, authors, date]
+    return meta
+
+def record2isniAUT(isni):
+    return isni
+
+def record2firstnameAUT(name):
+    return name
+
+def record2lastnameAUT(name):
+    return name
+
+def record2firstdateAUT(f100a):
+    return f100a[1:5]
+
+def record2lastdateAUT(f100a):
+    return f100a[1:5]
+
+def autrecord2metas(numNot,doc_record,record):
+    ark = record2ark(record2meta(record,["033$a"]))
+    frbnf = record2frbnf(record2meta(record,["035$a"]))
+    isni = record2isniAUT(record2meta(record,["010$a"]))
+    firstname = record2firstnameAUT(record2meta(record,["200$a"],["210$a"]))
+    lastname =  record2lastnameAUT(record2meta(record,["200$b"],["210$b"]))
+    firstdate = record2firstdateAUT(record2meta(record,["103$a"]))
+    lastdate = record2lastdateAUT(record2meta(record,["103$b"]))
+
+    if (doc_record not in liste_fichiers):
+        liste_fichiers.append(doc_record)
+    meta = [numNot,frbnf,ark,isni,lastname,firstname,firstdate,lastdate]
+    return meta   
+    
+def record2listemetas(record,rec_format=1):
+    numNot = record2meta(record,["001"])
+    doctype = record2doctype(record.leader,rec_format)
+    recordtype = record2recordtype(record.leader,rec_format)
+    
+    doc_record = doctype + recordtype
+    doc_record = doc_record.strip()
+    meta = []
+    if (rec_format == 2):
+        meta = autrecord2metas(numNot,doc_record,record)
+    else:
+        meta = bibrecord2metas(numNot,doc_record,record)
+
     liste_resultats[doc_record].append(meta)
             
 def write_reports(id_traitement):
@@ -313,7 +366,9 @@ def write_reports(id_traitement):
             header_columns = bib2ark.header_columns_init_monimpr
         elif (doc_record == "im" or doc_record == "jm" or doc_record == "gm"):
             header_columns = bib2ark.header_columns_init_cddvd
-        elif (doc_record[1] == "s"):
+        elif (doc_record == "ca"):
+            header_columns = aut2ark.header_columns_init_aut2aut
+        elif (len(doc_record)> 1 and doc_record[1] == "s"):
             header_columns = bib2ark.header_columns_init_perimpr
         else:
             header_columns = ["NumNotice","FRBNF","ARK","Autres métadonnées..."]
@@ -330,13 +385,37 @@ def end_of_treatments(form,id_traitement):
     form.destroy()
 
 
-def launch(form,entry_filename,file_format, output_ID,master):
+def launch(form,entry_filename,file_format, rec_format, output_ID,master):
+    
     main.check_file_name(form,entry_filename)
+    for doct in doctype:
+        for recordt in recordtype:
+            if (rec_format == 1):
+                dcrec = doct + recordt
+                doct_libelle = doct
+                if (doct in doctype):
+                    doct_libelle = doctype[doct]
+                recordt_libelle = recordt
+                if (recordt in recordtype):
+                    recordt_libelle = recordtype[recordt]
+                dcrec_libelles = "-".join([doct_libelle,recordt_libelle])
+                doc_record_type[dcrec] = dcrec_libelles
+            else:
+                dcrec = doct + recordt
+                doct_libelle = doct
+                if (doct in doctypeAUT):
+                    doct_libelle = doctypeAUT[doct]
+                recordt_libelle = recordt
+                if (recordt in recordtypeAUT):
+                    recordt_libelle = recordtypeAUT[recordt]
+                dcrec_libelles = "-".join([doct_libelle,recordt_libelle])
+                doc_record_type[dcrec] = dcrec_libelles
+                
     print("Fichier en entrée : ", entry_filename)
     if (file_format == 1):
-        iso2tables(master,entry_filename, output_ID)
+        iso2tables(master,entry_filename, rec_format, output_ID)
     else:
-        xml2tables(master,entry_filename, output_ID)
+        xml2tables(master,entry_filename, rec_format, output_ID)
     end_of_treatments(form,output_ID)
 
 
@@ -370,9 +449,17 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     cadre_input_file_browse = tk.Frame(cadre_input_file,bg=couleur_fond)
     cadre_input_file_browse.pack(side="left")
     cadre_input_infos_format = tk.Frame(cadre_input,bg=couleur_fond)
-    cadre_input_infos_format.pack(anchor="w")
+    cadre_input_infos_format.pack(side="left")
+    
+    cadre_input_type_docs_interstice1 = tk.Frame(cadre_input,bg=couleur_fond)
+    cadre_input_type_docs_interstice1.pack(side="left")
+    
     cadre_input_type_docs = tk.Frame(cadre_input,bg=couleur_fond)
-    cadre_input_type_docs.pack(anchor="w")
+    cadre_input_type_docs.pack(side="left")
+    cadre_input_type_docs_interstice2 = tk.Frame(cadre_input,bg=couleur_fond)
+    cadre_input_type_docs_interstice2.pack(side="left")
+    cadre_input_type_rec = tk.Frame(cadre_input,bg=couleur_fond)
+    cadre_input_type_rec.pack(side="left")
     
     cadre_inter = tk.Frame(zone_actions, borderwidth=0, padx=10,bg=couleur_fond)
     cadre_inter.pack(side="left")
@@ -400,7 +487,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     #définition input URL (u)
     tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée :", justify="left", font="bold").pack(anchor="w")
     
-    tk.Label(cadre_input_file_name,bg=couleur_fond, text="Fichier contenant les notices :  \n\n  ").pack(side="left")
+    tk.Label(cadre_input_file_name,bg=couleur_fond, text="Fichier contenant les notices : ").pack(side="left")
     """entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
     entry_filename.pack(side="left")
     entry_filename.focus_set()"""
@@ -409,7 +496,23 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     #tk.Button(cadre_input_file_browse, text="Sélectionner le fichier\ncontenant les notices", command=lambda:main.openfile(cadre_input_file_name, popup_filename), width=20).pack()
     
     
-    tk.Label(cadre_input_type_docs,bg=couleur_fond, text="\nFormat", 
+    """tk.Label(cadre_input_infos_format,bg=couleur_fond, text="Format MARC", 
+             anchor="w", justify="left").pack(anchor="w")
+    marc_format = tk.IntVar()
+
+    bib2ark.radioButton_lienExample(cadre_input_infos_format,marc_format,1,couleur_fond,
+                            "Unimarc",
+                            "",
+                            "")
+
+    tk.Radiobutton(cadre_input_infos_format,bg=couleur_fond, text="Marc21", variable=marc_format, value=2,
+                   anchor="w", justify="left").pack(anchor="w")
+    marc_format.set(1)"""
+    
+    tk.Label(cadre_input_type_docs_interstice1, bg=couleur_fond, text="\t\t", justify="left").pack()
+    
+    
+    tk.Label(cadre_input_type_docs,bg=couleur_fond, text="Format de fichier", 
              anchor="w", justify="left").pack(anchor="w")
     file_format = tk.IntVar()
 
@@ -422,7 +525,22 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
                    anchor="w", justify="left").pack(anchor="w")
     file_format.set(1)
     
-    tk.Label(cadre_input_type_docs, text="\n\n\n", bg=couleur_fond).pack()
+    tk.Label(cadre_input_type_docs_interstice2, bg=couleur_fond, text="\t\t", justify="left").pack()
+    
+    tk.Label(cadre_input_type_rec,bg=couleur_fond, text="\n\n\nType de notices", 
+             anchor="w", justify="left").pack(anchor="w")
+    rec_format = tk.IntVar()
+
+    bib2ark.radioButton_lienExample(cadre_input_type_rec,rec_format,1,couleur_fond,
+                            "bibliographiques",
+                            "",
+                            "")
+
+    tk.Radiobutton(cadre_input_type_rec,bg=couleur_fond, text="autorités (personnes)", variable=rec_format, value=2,
+                   anchor="w", justify="left").pack(anchor="w")
+    rec_format.set(1)
+    
+    tk.Label(cadre_input_type_rec, text="\n\n", bg=couleur_fond).pack()
     
 # =============================================================================
 #     Formulaire - Fichiers en sortie
@@ -467,7 +585,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     #Bouton de validation
     
     b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", text = "OK", 
-                  command=lambda: launch(form, entry_file_list[0], file_format.get(), output_ID.get(),master), 
+                  command=lambda: launch(form, entry_file_list[0], file_format.get(), rec_format.get(), output_ID.get(),master), 
                   borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
     

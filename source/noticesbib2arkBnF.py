@@ -1681,9 +1681,10 @@ def radioButton_lienExample(frame,variable_button,val,couleur_fond,text1,text2,l
     tk.Radiobutton(line1,bg=couleur_fond, 
                    text=text1, 
                    variable=variable_button, value=val, justify="left").pack(anchor="w", side="left")    
-    example_ico = tk.Button(line1, bd=0, justify="left", font="Arial 7 italic",
+    if (link != ""):
+        example_ico = tk.Button(line1, bd=0, justify="left", font="Arial 7 italic",
                                     text="exemple", command=lambda: main.click2help(link))
-    example_ico.pack(anchor="w", side="left")
+        example_ico.pack(anchor="w", side="left")
     if (text2 != ""):
         line2 = tk.Frame(packButton, bg=couleur_fond)
         line2.pack(anchor="w")
