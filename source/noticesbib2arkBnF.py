@@ -70,15 +70,15 @@ def create_reports(id_traitement_code, nb_fichiers_a_produire):
     stats_report_file = open(stats_report_file_name,"w")
     stats_report_file.write("Nb ARK trouvés\tNb notices concernées\n")
     
-    report_type_convert_file_name = id_traitement_code + "-" + "NumNotices-TypeConversion.txt"
-    report_type_convert_file = open(report_type_convert_file_name,"w")
-    report_type_convert_file.write("NumNotice\tMéthode pour trouver l'ARK\n")
+    #report_type_convert_file_name = id_traitement_code + "-" + "NumNotices-TypeConversion.txt"
+    #report_type_convert_file = open(report_type_convert_file_name,"w")
+    #report_type_convert_file.write("NumNotice\tMéthode pour trouver l'ARK\n")
     if (nb_fichiers_a_produire == 1):
         reports = create_reports_1file(id_traitement_code)
     else:
         reports = create_reports_files(id_traitement_code)
     reports.append(stats_report_file)
-    reports.append(report_type_convert_file)
+    #reports.append(report_type_convert_file)
     return reports
 
 def create_reports_1file(id_traitement_code):
@@ -1332,10 +1332,19 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
             #Si plusieurs résultats, contrôle sur l'auteur
             if (ark == "" and isbn_nett != ""):
                 ark = isbn2ark(NumNot,isbn,isbn_propre,titre_nett,auteur_nett,date_nett)
+                
+            #Si la recherche ISBN + contrôle Titre/Date n'a rien donné -> on cherche ISBN seul
+            if (ark == "" and isbn_nett != ""):
+                ark = isbn2ark(NumNot,isbn,isbn_propre,"","","")
             #A défaut, recherche sur EAN
             if (ark == "" and ean != ""):
                 ark = ean2ark(NumNot,ean_propre,titre_nett,auteur_nett,date_nett)
-            #A défaut, recherche sur Titre-Auteur-Date
+
+
+            #Si la recherche EAN + contrôles Titre/Date n'a rien donné -> on cherche EAN seul
+            if (ark == "" and ean != ""):
+                ark = ean2ark(NumNot,ean_propre,"","","")
+
             
             #A défaut, recherche sur Titre-Auteur-Date
             if (ark == "" and titre != ""):
@@ -1414,9 +1423,18 @@ def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, i
             #Si plusieurs résultats, contrôle sur l'auteur
             if (ark == "" and ean_nett != ""):
                 ark = ean2ark(NumNot,ean_propre,titre_nett,auteur_nett,date_nett)
+            #Si la recherche EAN + contrôle n'a rien donné -> on cherche EAN seul
+            if (ark == "" and ean_nett != ""):
+                ark = ean2ark(NumNot,ean_propre,"","","")
+
             #A défaut, recherche sur no_commercial
             if (ark == "" and no_commercial != ""):
                 ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,False, publisher_nett)
+            
+            #Si la recherche N° commercial + contrôle n'a rien donné -> on cherche N° commercial seul
+            if (ark == "" and no_commercial != ""):
+                ark = no_commercial2ark(NumNot,no_commercial_propre,"","","",False, "")
+                
             #Si la recherche sur bib.comref n'a rien donné -> recherche du numéro partout dans la notice
             if (ark == "" and no_commercial != ""):
                 ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,True, publisher_nett)
@@ -1563,34 +1581,36 @@ def fin_traitements(form_bib2ark,liste_reports):
     typesConversionARK(liste_reports)
     print("Programme terminé")
     form_bib2ark.destroy()
+    for file in liste_reports:
+        file.close()
 
 
 
 def stats_extraction(liste_reports):
     """Ecriture des rapports de statistiques générales d'alignements"""
     for key in nb_notices_nb_ARK:
-        liste_reports[-2].write(str(key) + "\t" + str(nb_notices_nb_ARK[key]) + "\n")
-    if ("Pb FRBNF" in sorted(nb_notices_nb_ARK)):
-        nb_notices_nb_ARK[-1] = nb_notices_nb_ARK.pop('Pb FRBNF')
+        liste_reports[-1].write(str(key) + "\t" + str(nb_notices_nb_ARK[key]) + "\n")
+    """if ("Pb FRBNF" in sorted(nb_notices_nb_ARK)):
+        nb_notices_nb_ARK[-2] = nb_notices_nb_ARK.pop('Pb FRBNF')"""
     """plt.bar(list(nb_notices_nb_ARK.keys()), nb_notices_nb_ARK.values(), color='skyblue')
     plt.show()"""
 
 def url_access_pbs_report(liste_reports):
     """A la suite des stats générales, liste des erreurs rencontrées (plantage URL) + ISBN différents en entrée et en sortie"""
     if (len(url_access_pbs) > 0):
-        liste_reports[-2].write("\n\nProblème d'accès à certaines URL :\nURL\tType de problème\n")
+        liste_reports[-1].write("\n\nProblème d'accès à certaines URL :\nURL\tType de problème\n")
         for pb in url_access_pbs:
-            liste_reports[-2].write("\t".join(pb) + "\n")
+            liste_reports[-1].write("\t".join(pb) + "\n")
     if (len(NumNotices_conversionISBN) > 0):
-        liste_reports[-2].write("".join(["\n\n",10*"-","\n"]))
-        liste_reports[-2].write("Liste des notices dont l'ISBN en entrée est différent de celui dans la notice trouvée\n")
-        liste_reports[-2].write("\t".join(["NumNotice",
+        liste_reports[-1].write("".join(["\n\n",10*"-","\n"]))
+        liste_reports[-1].write("Liste des notices dont l'ISBN en entrée est différent de celui dans la notice trouvée\n")
+        liste_reports[-1].write("\t".join(["NumNotice",
                                                 "ISBN initial",
                                                 "ISBN converti",
                                                 "Notice trouvée dans le Sudoc ?",
                                                 ]) + "\n")
         for record in NumNotices_conversionISBN:
-            liste_reports[-2].write("\t".join([record,
+            liste_reports[-1].write("\t".join([record,
                                                 NumNotices_conversionISBN[record]["isbn initial"],
                                                 NumNotices_conversionISBN[record]["isbn trouvé"],
                                                 NumNotices_conversionISBN[record]["via Sudoc"],
@@ -1601,22 +1621,22 @@ def check_access_to_apis(liste_reports):
     Si celui-ci contient au moins un "False", on génère une rubrique 
     dans le rapport Stats"""
     if (False in dict_check_apis["testAbes"]):
-        liste_reports[-2].write("\n\nProblème d'accès aux API Abes\n")
+        liste_reports[-1].write("\n\nProblème d'accès aux API Abes\n")
         for key in dict_check_apis["testAbes"]:
             if (dict_check_apis["testAbes"][key] is False):
-                liste_reports[-2].write("".join([str(key)," : API Abes down\n"]))
+                liste_reports[-1].write("".join([str(key)," : API Abes down\n"]))
     if (False in dict_check_apis["testBnF"]):
-        liste_reports[-2].write("\n\nProblème d'accès aux API BnF\n")
+        liste_reports[-1].write("\n\nProblème d'accès aux API BnF\n")
         for key in dict_check_apis["testBnF"]:
             if (dict_check_apis["testBnF"][key] is False):
-                liste_reports[-2].write("".join([str(key)," : API BnF down\n"]))
+                liste_reports[-1].write("".join([str(key)," : API BnF down\n"]))
 
 
 def typesConversionARK(liste_reports):
     """Dans un rapport spécifique, pour chaque notice en entrée, mention de la méthode d'alignement (ISBN, ISNI, etc.)"""
-    for key in NumNotices2methode:
+    """for key in NumNotices2methode:
         value = " / ".join(NumNotices2methode[key])
-        liste_reports[-1].write(key + "\t" + value + "\n")
+        liste_reports[-1].write(key + "\t" + value + "\n")"""
 
 def click2help():
     """Fonction d'ouverture du navigateur pour avoir de l'aide sur le logiciel"""
