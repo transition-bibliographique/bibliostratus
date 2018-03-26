@@ -28,7 +28,7 @@ import ark2records as ark2records
 
 #import matplotlib.pyplot as plt
 
-version = 1.02
+version = 1.03
 lastupdate = "24/03/2018"
 programID = "transbiblio"
 
@@ -105,6 +105,12 @@ def clean_string(string,replaceSpaces=False,replaceTirets=False):
     string = string.strip()
     return string
 
+def RepresentsInt(s):
+    try: 
+        int(s)
+        return True
+    except ValueError:
+        return False
 
 def extract_subfield(record,field,subfield,nb_occ="all",sep="~"):
     path = ".//mxc:datafield[@tag='" + field + "']/mxc:subfield[@code='" + subfield + "']"

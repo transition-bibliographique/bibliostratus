@@ -292,6 +292,7 @@ def comparaisonIsbn(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF
     return ark
 
 def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,numeroTome,recordBNF,origineComparaison):
+
     ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"200$a")
     if (ark == ""):
         ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"200$e")
@@ -319,7 +320,11 @@ def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,numeroT
         ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"225$a")
     if (ark != "" and numeroTome != ""):
         ark = verificationTomaison(ark,numeroTome,recordBNF)
+    if (ark != "" and date != ""):
+        if ("ISBN" in origineComparaison or "EAN" in origineComparaison):
+            ark = checkDate(ark,date,recordBNF)
     return ark
+
 
 def verificationTomaison(ark,numeroTome,recordBNF):
     """Une fois qu'on a trouvé un ARK (via une recherche Titre-Auteur-Date,
@@ -357,6 +362,36 @@ def ltrim(nombre_texte):
     while(len(nombre_texte) > 1 and nombre_texte[0] == "0"):
         nombre_texte = nombre_texte[1:]
     return nombre_texte
+
+def checkDate(ark,date,recordBNF):
+    ark_checked = ""
+    dateBNF = []
+    dateBNF_100 = unidecode(main.extract_subfield(recordBNF,"100","a",1,sep="~").lower())
+    if (len(dateBNF_100)>4):
+        dateBNF_100 = dateBNF_100[0:4]
+    if (main.RepresentsInt(dateBNF_100) is True):
+        dateBNF_100  = int(dateBNF_100)
+        dateBNF.extend([dateBNF_100 + 1, dateBNF_100-1])
+    dateBNF.append(dateBNF_100)
+    
+    
+    dateBNF_210d = unidecode(main.extract_subfield(recordBNF,"210","d",1,sep="~").lower())
+    for lettre in lettres:
+        dateBNF_210d = dateBNF_210d.replace(lettre,"~")
+    for signe in ponctuation:
+        dateBNF_210d = dateBNF_210d.replace(signe,"~")
+    dateBNF_210d = [el for el in dateBNF_210d.split("~") if el != ""]
+    for date in dateBNF_210d:
+        if (main.RepresentsInt(date) is True):
+            date = int(date)
+            dateBNF.extend([date + 1, date-1])
+    dateBNF.extend(dateBNF_210d)
+    dateBNF = " ".join([str(date) for date in dateBNF])
+   
+    if (len(str(date))>3 and str(date)[0:4] in dateBNF):
+        ark_checked = ark
+    return ark_checked
+    
 
 def comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,sous_zone):
     ark = ""
