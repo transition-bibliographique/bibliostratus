@@ -196,7 +196,7 @@ def align_from_aut(form, entry_filename, headers, input_data_type, isni_option, 
             (NumNot,ark_aut_init,frbnf_aut_init,isni,
              nom,prenom,date_debut,date_fin) = bib2ark.extract_cols_from_row(row,
                                            ["NumNot","ark_aut_init","frbnf_aut_init","isni","nom","prenom","date_debut","date_fin"])
-            
+            ark_aut_init = nettoyageArk(ark_aut_init)
             nom_nett = main.clean_string(nom, False, True)
             prenom_nett = main.clean_string(prenom, False, True)
             date_debut_nett = date_debut
@@ -302,11 +302,20 @@ def align_from_bib(form, entry_filename, headers, input_data_type, isni_option, 
             elif(file_nb ==  2):
                 row2files(liste_metadonnees,liste_reports)
 
+def nettoyageArk(ark):
+    ark_nett = ""
+    if ("ark:/12148/cb" in ark):
+        pos = ark.find("ark:/12148/cb")
+        ark_nett = ark[pos:pos+22]
+    return ark_nett
+        
+
 #==============================================================================
 # Fonctions d'alignement : recherche sur identifiants, points d'accès ou titre-auteur
 #==============================================================================
 def arkAut2arkAut(NumNot,ark):
     """Actualisation d'un ARK de notice d'autorité"""
+    
     url = bib2ark.url_requete_sru('aut.persistentid all "' + ark + '"')
     (test,page) = bib2ark.testURLetreeParse(url)
     nv_ark = ""
