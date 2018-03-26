@@ -338,7 +338,8 @@ def isni2ark(NumNot, isni):
             NumNotices2methode[NumNot].append("ISNI")
     return nv_ark
 
-def frbnfAut2arkAut(NumNot,frbnf,nom):
+
+def frbnfAut2arkAut(NumNot,frbnf,nom, prenom, date_debut):
     ark = ""
     url = bib2ark.url_requete_sru('aut.otherid all "' + frbnf + '"')
     (test,page) = bib2ark.testURLetreeParse(url)
