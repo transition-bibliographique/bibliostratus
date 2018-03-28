@@ -28,8 +28,8 @@ import ark2records as ark2records
 
 #import matplotlib.pyplot as plt
 
-version = 1.04
-lastupdate = "26/03/2018"
+version = 1.05
+lastupdate = "28/03/2018"
 programID = "transbiblio"
 
 ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}
@@ -275,7 +275,7 @@ def openfile(frame,liste,background_color="white"):
     filename_print = liste[0].split("/")[-1].split("\\")[-1]
     tk.Label(frame,text=filename_print, bg=background_color).pack()
 
-def download_button(frame,text,frame_selected,text_path,couleur_fond,file_entry_list):
+def download_button(frame,text,frame_selected,text_path,couleur_fond,file_entry_list,zone_message_en_cours=""):
     if (file_entry_list != []):
         text_path.delete(0.0,1000.3)
     filename = filedialog.askopenfilename(parent=frame,title="Sélectionner un fichier")
@@ -284,19 +284,32 @@ def download_button(frame,text,frame_selected,text_path,couleur_fond,file_entry_
     else:
         file_entry_list[0] = filename
     text_path.insert(0.0,filename)
+    texte = """Après avoir lancé le traitement,
+vous pourrez suivre sa progression sur le terminal (fenêtre écran noir).
     
-def download_zone(frame, text_bouton,file_entry_list,couleur_fond):
+Cette fenêtre se fermera toute seule à la fin du programme
+et sa fermeture signifiera que le programme est arrivée à la fin du traitement"""
+    if (zone_message_en_cours != ""):
+        zone_message_en_cours.insert(0.0,texte)
+    
+def download_zone(frame, text_bouton,file_entry_list,couleur_fond,cadre_output_message_en_cours=""):
     frame_button = tk.Frame(frame)
     frame_button.pack()
     frame_selected = tk.Frame(frame)
     frame_selected.pack()
     display_selected = tk.Text(frame_selected, height=3, width=50, bg=couleur_fond, bd=0, font="Arial 9 bold")
     display_selected.pack()
+    zone_message_en_cours = ""
+    if (cadre_output_message_en_cours != ""):
+        zone_message_en_cours = tk.Text(cadre_output_message_en_cours, 
+                                        height=5, width=70, fg="red",
+                                        bg=couleur_fond, bd=0, font="Arial 9 bold")
+        zone_message_en_cours.pack()
     #bouton_telecharger = download_button(frame,"Sélectionner un fichier","#ffffff")
     select_filename_button = tk.Button(frame_button,command=lambda:download_button(frame, 
                                                     text_bouton,
                                                     frame_selected,display_selected,
-                                                    "#ffffff", file_entry_list),
+                                                    "#ffffff", file_entry_list,zone_message_en_cours),
                                 text=text_bouton,
                                 padx=10, pady=10)
     select_filename_button.pack()

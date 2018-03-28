@@ -231,13 +231,17 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
     frame_output_options_format = tk.Frame(frame_output_options, bg=couleur_fond)
     frame_output_options_format.pack(side="left", anchor="nw")
     
+
+    zone_notes_message_en_cours = tk.Frame(zone_notes, padx=20,bg=couleur_fond)
+    zone_notes_message_en_cours.pack()
+
     
     tk.Label(frame_input_file, text="Fichier contenant les ARK\n (1 par ligne) \n\n", 
              bg=couleur_fond, justify="left").pack(side="left", anchor="w")
     """entry_filename = tk.Entry(frame_input_file, width=20, bd=2, bg=couleur_fond)
     entry_filename.pack(side="left")
     entry_filename.focus_set()"""
-    main.download_zone(frame_input_file, "Sélectionner un fichier",entry_file_list,couleur_fond)
+    main.download_zone(frame_input_file, "Sélectionner un fichier",entry_file_list,couleur_fond,zone_notes_message_en_cours)
     
     
     tk.Label(frame_input_aut, text="\n", bg=couleur_fond).pack()

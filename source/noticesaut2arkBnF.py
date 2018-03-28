@@ -670,6 +670,11 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
     frame_output_options_format = tk.Frame(frame_output_options, bg=couleur_fond)
     frame_output_options_format.pack(side="left", anchor="nw")
     
+    
+    zone_notes_message_en_cours = tk.Frame(zone_notes, padx=20,bg=couleur_fond)
+    zone_notes_message_en_cours.pack()
+
+    
     tk.Label(frame_input_header, text="En entrée", font="bold", fg=couleur_bouton, bg=couleur_fond).pack()
 
     tk.Label(frame_input_file, text="Fichier contenant \nles notices d'autorité à aligner\n\n", 
@@ -677,7 +682,7 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
     """entry_filename = tk.Entry(frame_input_file, width=20, bd=2, bg=couleur_fond)
     entry_filename.pack(side="left")
     entry_filename.focus_set()"""
-    main.download_zone(frame_input_file, "Sélectionner un fichier\nSéparateur TAB, Encodage UTF-8",entry_file_list,couleur_fond)
+    main.download_zone(frame_input_file, "Sélectionner un fichier\nSéparateur TAB, Encodage UTF-8",entry_file_list,couleur_fond,zone_notes_message_en_cours)
 
     #Fichier avec en-têtes ?
     headers = tk.IntVar()

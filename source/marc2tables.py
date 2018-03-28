@@ -28,6 +28,8 @@ last_version = [version, False]
 
 #Permet d'écrire dans une liste accessible au niveau général depuis le formulaire, et d'y accéder ensuite
 entry_file_list = []
+message_en_cours = []
+
 output_directory_list = []
 
 # =============================================================================
@@ -382,11 +384,11 @@ def write_reports(id_traitement):
             file.write("\t".join(record) + "\n")            
 
     
-def end_of_treatments(form,popup_en_cours,id_traitement):
+def end_of_treatments(form,id_traitement):
     write_reports(id_traitement)
     print("\n\n------------------------\n\nExtraction terminée\n\n------------------------")
     form.destroy()
-    popup_en_cours.destroy()
+
 
 
 def launch(form,entry_filename,file_format, rec_format, output_ID,master):
@@ -422,7 +424,7 @@ def launch(form,entry_filename,file_format, rec_format, output_ID,master):
         iso2tables(master,entry_filename, rec_format, output_ID)
     else:
         xml2tables(master,entry_filename, rec_format, output_ID)
-    end_of_treatments(form,popup_en_cours,output_ID)
+    end_of_treatments(form,output_ID)
 
 
 
@@ -486,6 +488,10 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     cadre_output_repertoire.pack(anchor="w")
     cadre_output_explications = tk.Frame(cadre_output, padx=20,bg=couleur_fond)
     cadre_output_explications.pack(anchor="w")
+
+    cadre_output_message_en_cours = tk.Frame(cadre_output, padx=20,bg=couleur_fond)
+    cadre_output_message_en_cours.pack(anchor="w")
+
     
     cadre_valider = tk.Frame(zone_ok_help_cancel, borderwidth=0, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_valider.pack(side="left")
@@ -497,7 +503,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     """entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
     entry_filename.pack(side="left")
     entry_filename.focus_set()"""
-    main.download_zone(cadre_input_file, "Sélectionner un fichier\nde notices Marc",entry_file_list,couleur_fond)
+    main.download_zone(cadre_input_file, "Sélectionner un fichier\nde notices Marc",entry_file_list,couleur_fond,cadre_output_message_en_cours)
     
     #tk.Button(cadre_input_file_browse, text="Sélectionner le fichier\ncontenant les notices", command=lambda:main.openfile(cadre_input_file_name, popup_filename), width=20).pack()
     
@@ -581,7 +587,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
 
 		
   Pour faire cela, il utilise les informations en zones codées dans chaque notice Unimarc
-  \n\n\n\n"""
+"""
     tk.Label(cadre_output_explications,bg=couleur_fond, 
              text=message_fichiers_en_sortie,
              justify="left").pack()

@@ -1746,6 +1746,9 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     cadre_output_id_traitement = tk.Frame(cadre_output, padx=20,bg=couleur_fond)
     cadre_output_id_traitement.pack(side="left", anchor="w")
     
+    zone_notes_message_en_cours = tk.Frame(zone_notes, padx=20,bg=couleur_fond)
+    zone_notes_message_en_cours.pack()
+
     
 #==============================================================================
 # Message d'alerte dans le formulaire si besoin
@@ -1760,7 +1763,7 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     """entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
     entry_filename.pack(side="left")
     entry_filename.focus_set()"""
-    main.download_zone(cadre_input_file, "Sélectionner un fichier\nSéparateur TAB, Encodage UTF-8",entry_file_list,couleur_fond)
+    main.download_zone(cadre_input_file, "Sélectionner un fichier\nSéparateur TAB, Encodage UTF-8",entry_file_list,couleur_fond,zone_notes)
     
     #tk.Label(cadre_input_infos_format,bg=couleur_fond, text=4*"\t"+"Séparateur TAB, Encodage UTF-8", justify="right").pack(anchor="s")
     
