@@ -44,8 +44,13 @@ punctuation = [".",",",";",":","?","!","%","$","£","€","#","\\","\"","&","~",
 
 errors = {
         "no_internet" : "Attention : Le programme n'a pas d'accès à Internet.\nSi votre navigateur y a accès, vérifiez les paramètres de votre proxy",
-        "pb_input_utf8" : "Le fichier en entrée doit être en UTF-8 sans BOM.\nErreur d'encodage constatée"
+        "pb_input_utf8" : "Le fichier en entrée doit être en UTF-8 sans BOM.\nErreur d'encodage constatée",
+        "pb_input_utf8_marcEdit" : """Erreur d'encodage constatée :
+        Le fichier en entrée doit être en UTF-8 sans BOM.
+        
+        Si vous utilisez un fichier iso2709, convertissez-le d'abord en XML avec MarcEdit"""
         }
+
 def click2help(url):
     webbrowser.open(url)
 def annuler(master):
@@ -241,7 +246,7 @@ def check_file_name(master,filename):
     except FileNotFoundError:
         popup_errors(master,"Le fichier " + filename + " n'existe pas")
 
-def popup_errors(master,text):
+def popup_errors(master,text,online_help_text="",online_help_link=""):
     couleur_fond = "white"
     couleur_bordure = "red"
     [master,
@@ -251,7 +256,16 @@ def popup_errors(master,text):
             zone_ok_help_cancel,
             zone_notes] = form_generic_frames(master,"Alerte", couleur_fond, couleur_bordure,True)
     tk.Label(zone_access2programs, text=text, fg=couleur_bordure, 
-             font="bold", bg=couleur_fond, padx=10, pady=10).pack()
+             font="bold", bg=couleur_fond, padx=20, pady=20).pack()
+    if (online_help_text != ""):
+        help_button = tk.Button(zone_access2programs, bd=2, justify="left", font="Arial 10 italic",
+                                bg="#ffffff",
+                                padx=5,pady=5,
+                                    text=online_help_text, command=lambda: click2help(online_help_link))
+        help_button.pack()
+    tk.Label(zone_access2programs, bg=couleur_fond, text="\n").pack()
+    cancel = tk.Button(zone_access2programs, text="Fermer", command=lambda: annuler(master), padx=10, pady=1, width=15)
+    cancel.pack()
 
 #popup_filename = ""
     
@@ -314,6 +328,29 @@ def select_directory(frame, text_bouton,directory_list,couleur_fond):
                                 text=text_bouton,
                                 padx=10, pady=10)
     select_filename_button.pack()
+
+
+def message_programme_en_cours(master, access_to_network=True, couleur_fond="#ffffff"):
+    texte = """Le programme est en cours d'exécution.
+Vous pouvez suivre sa progression sur le terminal (écran noir).
+    
+Cette fenêtre se fermera toute seule à la fin du programme
+et sa fermeture signifiera que le programme est arrivée à la fin du traitement"""
+    #zone_message.insert(0.0,texte)
+    couleur_bouton = "#efefef"
+    [form,
+    zone_alert_explications,
+    zone_access2programs,
+    zone_actions,
+    zone_ok_help_cancel,
+    zone_notes] = form_generic_frames(master,"Traitement en cours",
+                                      couleur_fond,couleur_bouton,
+                                      access_to_network)
+    a = tk.Label(zone_alert_explications, text=texte)
+    a.pack()
+    #form.mainloop()
+    return form
+    
 
 
 def formulaire_main(access_to_network, last_version):

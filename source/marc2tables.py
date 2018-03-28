@@ -257,7 +257,10 @@ def iso2tables(master,entry_filename, rec_format, id_traitement):
             print(main.errors["pb_input_utf8"])
             print(err)
             print("\n\n*------------------------------------------------*/")
-            main.popup_errors(master,main.errors["pb_input_utf8"])
+            main.popup_errors(master,main.errors["pb_input_utf8_marcEdit"], 
+            "Aide en ligne : conversion iso2709 > XML",
+            "https://github.com/Transition-bibliographique/alignements-donnees-bnf/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#un-probl%C3%A8me-dencodage--passez-en-xml-avec-marcedit" 
+            )
         
 
 def xml2tables(master,entry_filename, rec_format, id_traitement):
@@ -379,15 +382,18 @@ def write_reports(id_traitement):
             file.write("\t".join(record) + "\n")            
 
     
-def end_of_treatments(form,id_traitement):
+def end_of_treatments(form,popup_en_cours,id_traitement):
     write_reports(id_traitement)
     print("\n\n------------------------\n\nExtraction terminée\n\n------------------------")
     form.destroy()
+    popup_en_cours.destroy()
 
 
 def launch(form,entry_filename,file_format, rec_format, output_ID,master):
     
     main.check_file_name(form,entry_filename)
+    #popup_en_cours = main.message_programme_en_cours(form)
+
     for doct in doctype:
         for recordt in recordtype:
             if (rec_format == 1):
@@ -416,7 +422,7 @@ def launch(form,entry_filename,file_format, rec_format, output_ID,master):
         iso2tables(master,entry_filename, rec_format, output_ID)
     else:
         xml2tables(master,entry_filename, rec_format, output_ID)
-    end_of_treatments(form,output_ID)
+    end_of_treatments(form,popup_en_cours,output_ID)
 
 
 
@@ -573,7 +579,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
         - audiovisuel (CD/DVD)
         - autres non identifiés
   Pour faire cela, il utilise les informations en zones codées dans chaque notice Unimarc
-    \n\n\n\n"""
+    """
     tk.Label(cadre_output_explications,bg=couleur_fond, 
              text=message_fichiers_en_sortie,
              justify="left").pack()
@@ -581,11 +587,10 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     
     
     
-    
     #Bouton de validation
     
     b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", text = "OK", 
-                  command=lambda: launch(form, entry_file_list[0], file_format.get(), rec_format.get(), output_ID.get(),master), 
+                  command=lambda:launch(form, entry_file_list[0], file_format.get(), rec_format.get(), output_ID.get(),master), 
                   borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
     
