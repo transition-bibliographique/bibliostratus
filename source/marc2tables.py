@@ -578,8 +578,10 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
         - périodiques
         - audiovisuel (CD/DVD)
         - autres non identifiés
+
+		
   Pour faire cela, il utilise les informations en zones codées dans chaque notice Unimarc
-    """
+  \n\n\n\n"""
     tk.Label(cadre_output_explications,bg=couleur_fond, 
              text=message_fichiers_en_sortie,
              justify="left").pack()
