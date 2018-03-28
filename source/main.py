@@ -25,6 +25,7 @@ import noticesbib2arkBnF as bib2ark
 import noticesaut2arkBnF as aut2ark
 import marc2tables as marc2tables
 import ark2records as ark2records
+import preferences
 
 #import matplotlib.pyplot as plt
 
@@ -300,7 +301,7 @@ def download_zone(frame, text_bouton,file_entry_list,couleur_fond,cadre_output_m
     display_selected = tk.Text(frame_selected, height=3, width=50, bg=couleur_fond, bd=0, font="Arial 9 bold")
     display_selected.pack()
     zone_message_en_cours = ""
-    if (cadre_output_message_en_cours != ""):
+    if (cadre_output_message_en_cours != "" and preferences["display_message_in_progress"]["value"]==1):
         zone_message_en_cours = tk.Text(cadre_output_message_en_cours, 
                                         height=5, width=70, fg="red",
                                         bg=couleur_fond, bd=0, font="Arial 9 bold")
