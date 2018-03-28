@@ -1367,6 +1367,8 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
             typeConversionNumNot = ""
             if (NumNot in NumNotices2methode):
                 typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
+                if (len(set(NumNotices2methode[NumNot])) == 1):
+                    typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
             liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,current_ark,frbnf,isbn,ean,titre,auteur,date,tome, publisher]
             if (meta_bib == 1):
                 liste_metadonnees.extend(ark2metadc(ark))
@@ -1460,8 +1462,9 @@ def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, i
 
             typeConversionNumNot = ""
             if (NumNot in NumNotices2methode):
-                typeConversionNumNot = ">".join(NumNotices2methode[NumNot])
-                
+                typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
+                if (len(set(NumNotices2methode[NumNot])) == 1):
+                    typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
             liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,frbnf,current_ark,ean,
                          no_commercial_propre,titre,auteur,date, publisher]
             if (meta_bib == 1):
@@ -1531,7 +1534,9 @@ def perimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
                                  
             typeConversionNumNot = ""
             if (NumNot in NumNotices2methode):
-                typeConversionNumNot = ">".join(NumNotices2methode[NumNot])
+                typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
+                if (len(set(NumNotices2methode[NumNot])) == 1):
+                    typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
             liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,frbnf,current_ark,issn_nett,titre,auteur,date]
             if (meta_bib == 1):
                 liste_metadonnees.extend(ark2metadc(ark))

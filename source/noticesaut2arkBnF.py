@@ -224,7 +224,9 @@ def align_from_aut(form, entry_filename, headers, input_data_type, isni_option, 
                 nb_notices_nb_ARK[nbARK] += 1
             typeConversionNumNot = ""
             if (NumNot in NumNotices2methode):
-                typeConversionNumNot = ">".join(NumNotices2methode[NumNot])
+                typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
+                if (len(set(NumNotices2methode[NumNot])) == 1):
+                    typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
             liste_metadonnees = [NumNot,nbARK,ark_trouve,typeConversionNumNot,ark_aut_init,frbnf_aut_init,isni,nom,prenom,date_debut,date_fin]
             if (meta_bnf == 1):
                 liste_metadonnees.extend(ark2metadc(ark_trouve))
@@ -295,7 +297,9 @@ def align_from_bib(form, entry_filename, headers, input_data_type, isni_option, 
                 nb_notices_nb_ARK[nbARK] += 1
             typeConversionNumNot = ""
             if (NumNot in NumNotices2methode):
-                typeConversionNumNot = ">".join(NumNotices2methode[NumNot])
+                typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
+                if (len(set(NumNotices2methode[NumNot])) == 1):
+                    typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
             liste_metadonnees = [nbARK,NumNot,ark_trouve,typeConversionNumNot,NumNotBib,ark_bib_init,frbnf_bib_init,titre,isni,nom,prenom,dates_auteur]
             if (meta_bnf == 1):
                 liste_metadonnees.extend(ark2metadc(ark_trouve))
