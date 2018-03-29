@@ -81,6 +81,7 @@ doctypeAUT = {
 recordtypeAUT = {"a":"personne physique",
                  "b":"collectivité",
                  "c":"nom géographique Rameau",
+                 "f":"titre",
                  "j":"nom commun Rameau"
                }
 
@@ -340,8 +341,8 @@ def autrecord2metas(numNot,doc_record,record):
     ark = record2ark(record2meta(record,["033$a"]))
     frbnf = record2frbnf(record2meta(record,["035$a"]))
     isni = record2isniAUT(record2meta(record,["010$a"]))
-    firstname = record2firstnameAUT(record2meta(record,["200$a"],["210$a"]))
-    lastname =  record2lastnameAUT(record2meta(record,["200$b"],["210$b"]))
+    firstname =  record2lastnameAUT(record2meta(record,["200$b"],["210$b"]))
+    lastname = record2firstnameAUT(record2meta(record,["200$a"],["210$a"]))
     firstdate = record2firstdateAUT(record2meta(record,["103$a"]))
     lastdate = record2lastdateAUT(record2meta(record,["103$b"]))
 
@@ -395,10 +396,10 @@ def launch(form,entry_filename,file_format, rec_format, output_ID,master):
     
     main.check_file_name(form,entry_filename)
     #popup_en_cours = main.message_programme_en_cours(form)
-
-    for doct in doctype:
-        for recordt in recordtype:
-            if (rec_format == 1):
+    
+    if (rec_format == 1):
+        for doct in doctype:
+            for recordt in recordtype:
                 dcrec = doct + recordt
                 doct_libelle = doct
                 if (doct in doctype):
@@ -408,7 +409,9 @@ def launch(form,entry_filename,file_format, rec_format, output_ID,master):
                     recordt_libelle = recordtype[recordt]
                 dcrec_libelles = "-".join([doct_libelle,recordt_libelle])
                 doc_record_type[dcrec] = dcrec_libelles
-            else:
+    else:
+        for doct in doctypeAUT:
+            for recordt in recordtypeAUT:
                 dcrec = doct + recordt
                 doct_libelle = doct
                 if (doct in doctypeAUT):
@@ -585,7 +588,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
         - audiovisuel (CD/DVD)
         - autres non identifiés
 
-		
+        
   Pour faire cela, il utilise les informations en zones codées dans chaque notice Unimarc
 """
     tk.Label(cadre_output_explications,bg=couleur_fond, 

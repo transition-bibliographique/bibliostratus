@@ -478,7 +478,8 @@ def relancerNNA_nomAuteur(NumNot,systemid,nom):
 
 def accesspoint2arkAut(NumNot, nom_nett, prenom_nett, date_debut, date_fin):
     listeArk = []
-    url = bib2ark.url_requete_sru(" ".join(["aut.accesspoint adj", nom_nett, prenom_nett, date_debut]))
+    url = bib2ark.url_requete_sru('aut.accesspoint adj "' + " ".join([nom_nett, prenom_nett, date_debut]) + '"')
+    #print(url)
     (test,results) = bib2ark.testURLetreeParse(url)
     if (test):
         for record in results.xpath("//srw:recordIdentifier", namespaces=main.ns):

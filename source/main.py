@@ -29,7 +29,7 @@ import preferences
 
 #import matplotlib.pyplot as plt
 
-version = 1.06
+version = 1.07
 lastupdate = "29/03/2018"
 programID = "transbiblio"
 
