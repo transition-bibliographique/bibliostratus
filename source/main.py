@@ -29,8 +29,8 @@ import preferences
 
 #import matplotlib.pyplot as plt
 
-version = 1.05
-lastupdate = "28/03/2018"
+version = 1.06
+lastupdate = "29/03/2018"
 programID = "transbiblio"
 
 ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}
@@ -381,10 +381,10 @@ def formulaire_main(access_to_network, last_version):
                                       couleur_bouton,access_to_network)
     
     frame1 = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
-    frame1.pack(side="left")
+    frame1.pack(side="left",anchor="w")
     
-    frame2 = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
-    frame2.pack(side="left")
+    frame2 = tk.Frame(zone_actions, highlightthickness=0, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=5)
+    frame2.pack(side="left",anchor="w")
     
     frame3 = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
     frame3.pack(side="left")
@@ -393,33 +393,57 @@ def formulaire_main(access_to_network, last_version):
     frame_help_cancel.pack()
     
 # =============================================================================
-#     1er module : convertir un fichier MARC en tables
+#   Module blanc : aligner ses données bibliographiques ou AUT  
 # =============================================================================
-    marc2tableButton = tk.Button(frame1, text = "Convertir un fichier Marc\n en tableaux", 
-                                 command=lambda: marc2tables.formulaire_marc2tables(master,access_to_network), 
-                                 padx=10,pady=25, bg="#2D4991",fg="white")
-    marc2tableButton.pack()
-    
-# =============================================================================
-#   2e module : aligner ses données bibliographiques ou AUT  
-# =============================================================================
-    bib2arkButton = tk.Button(frame2, text = "Aligner ses données  BIB (tableaux)\n avec le catalogue BnF", 
+    tk.Label(frame1,text="Aligner ses données avec la BnF",bg=couleur_fond,fg="#365B43",font="Arial 11 bold").pack(anchor="w")
+    tk.Label(frame1,text="\n",bg=couleur_fond).pack()
+
+    bib2arkButton = tk.Button(frame1, text = "Aligner ses données  BIB\n avec le catalogue BnF\nà partir de fichiers tableaux", 
                               command=lambda: bib2ark.formulaire_noticesbib2arkBnF(master,access_to_network,[0,False]), 
-                              padx=10,pady=10, bg="#fefefe", font="Arial 9 bold")
+                              padx=40,pady=40, bg="#fefefe", font="Arial 9 bold")
     bib2arkButton.pack()
+    
+    tk.Label(frame1,text="\n",bg=couleur_fond, font="Arial 3 normal").pack()
         
-    aut2arkButton = tk.Button(frame2, text = "Aligner ses données AUT ", command=lambda: aut2ark.formulaire_noticesaut2arkBnF(master,access_to_network,[0,False]), 
-                              padx=50,pady=1, bg="#fefefe", font="Arial 8 normal")
+    aut2arkButton = tk.Button(frame1, text = "Aligner ses données AUT ", command=lambda: aut2ark.formulaire_noticesaut2arkBnF(master,access_to_network,[0,False]), 
+                              padx=55,pady=10, bg="#fefefe", font="Arial 8 normal")
     aut2arkButton.pack()
 
+    tk.Label(frame1,text="\n\n", bg=couleur_fond).pack()
+
+    tk.Label(frame2,text="\n\n", bg=couleur_fond).pack()
 # =============================================================================
-#    3e module : exporter des notices à partir d'une liste d'ARK
+#     Module bleu : convertir un fichier MARC en tables
 # =============================================================================
+    tk.Label(frame3,text="Avant / Après : outils d'accompagnement",bg=couleur_fond,
+             fg="#365B43",font="Arial 11 bold").pack(anchor="w")
+    tk.Label(frame3,text="\n",bg=couleur_fond,font="Arial 4 normal").pack()
+    
+    tk.Label(frame3,text="Préparer ses données",
+             bg=couleur_fond,fg="#365B43",font="Arial 9 bold").pack(anchor="w")
+    tk.Label(frame3,text="(constitution de tableaux            \nà partir d'un export catalogue)",
+             bg=couleur_fond,fg="#365B43",font="Arial 9 normal").pack(anchor="w")
+    
+    
+    marc2tableButton = tk.Button(frame3, text = "Convertir un fichier Marc\n en tableaux", 
+                                 command=lambda: marc2tables.formulaire_marc2tables(master,access_to_network), 
+                                 padx=10,pady=10, bg="#2D4991",fg="white")
+    marc2tableButton.pack()
+    
+    tk.Label(frame3,text="\n",bg=couleur_fond).pack()
+    
+# =============================================================================
+#    Module rouge : exporter des notices à partir d'une liste d'ARK
+# =============================================================================
+
+    tk.Label(frame3,text="Exporter les données BnF après alignement",bg=couleur_fond,fg="#365B43",font="Arial 9 bold").pack(anchor="w")
+
     ark2recordsButton = tk.Button(frame3, text = "Exporter une liste d'ARK BnF\n en notices", 
                                   command=lambda: ark2records.formulaire_ark2records(master,access_to_network,[0,False]), 
-                                  padx=10,pady=25, bg="#99182D", fg="white")
+                                  padx=10,pady=10, bg="#99182D", fg="white")
     ark2recordsButton.pack()
 
+    tk.Label(frame3,text="\n",bg=couleur_fond, font="Arial 7 normal").pack()
 
     
     tk.Label(zone_ok_help_cancel,text=" ", pady=5, bg=couleur_fond).pack()
