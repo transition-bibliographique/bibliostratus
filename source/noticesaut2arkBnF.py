@@ -179,7 +179,7 @@ def accesspoint2isniorg(NumNot, nom_nett, prenom_nett, date_debut_nett, date_fin
 
 def align_from_aut(form, entry_filename, headers, input_data_type, isni_option, file_nb, id_traitement, liste_reports, meta_bnf):
     """Aligner ses données d'autorité avec les autorités BnF à partir d'une extraction tabulée de la base d'autorités"""
-    header_columns = ["NumNot","nbARK","ark AUT trouvé","ARK AUT initial","frbnf AUT initial","ISNI","Nom","Complément nom","Date début","Date fin"]
+    header_columns = ["NumNot","nbARK","ark AUT trouvé","Méthode","ARK AUT initial","frbnf AUT initial","ISNI","Nom","Complément nom","Date début","Date fin"]
     if (meta_bnf == 1):
         header_columns.extend(["[BnF] Nom","[BnF] Complément Nom","[BnF] Dates"])
     if (file_nb ==  1):
