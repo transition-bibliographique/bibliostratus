@@ -1,3 +1,5 @@
+## Télécharger la version compilée
+
 Les noms des fichiers contiennent :
 - le nom du logiciel
 - le numéro de version
@@ -13,3 +15,9 @@ Ce dossier contient
 - un fichier **alignements-donnees-bnf.bat** sur lequel il faut double-cliquer pour lancer le programme.
 - un répertoire *main* avec tous les programmes (inutile d'ouvrir ce répertoire)
 
+## Pour lancer le programme
+
+1. Décompresser le fichier téléchargé. Cela crée un dossier alignement-donnees-bnf
+2. Déposer ce dossier où vous voulez sur votre ordinateur
+3. Y mettre aussi vos fichiers de travail (extraction du catalogue, tableaux de jeux de données)
+4. Double-cliquer sur le fichier alignements-donnees-bnf.bat
