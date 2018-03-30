@@ -6,8 +6,15 @@ Les noms des fichiers contiennent :
 - le système d'exploitation (windows 64 bits, windows 32 bits)
 - la version Python utilisée
 
+Cliquez sur le nom du fichier qui vous convient, puis sur le bouton Download
+
+![Télécharger le logiciel](https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/img/telecharger_logiciel.png)
+
 Le fichier zip contient un dossier toujours intitulé de la même manière (quelle que soit la version) : "alignement-donnees-bnf"
 A chaque mise à jour, vous pouvez ainsi facilement écraser le contenu du dossier précédemment récupéré
+
+![Décompresser et installer le logiciel](https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/img/decompression_logiciel.png)
+
 
 **Ce dossier alignement-donnees-bnf sert de répertoire de travail** : c'est directement dans ce dossier que le logiciel dépose les fichiers qu'il produit
 
