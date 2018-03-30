@@ -10,6 +10,8 @@ Cliquez sur le nom du fichier qui vous convient, puis sur le bouton Download
 
 ![Télécharger le logiciel](https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/img/telecharger_logiciel.png)
 
+
+
 Le fichier zip contient un dossier toujours intitulé de la même manière (quelle que soit la version) : "alignement-donnees-bnf"
 A chaque mise à jour, vous pouvez ainsi facilement écraser le contenu du dossier précédemment récupéré
 
