@@ -15,6 +15,7 @@ import tkinter as tk
 from tkinter import filedialog
 from collections import defaultdict
 import re
+import os
 import webbrowser
 import noticesbib2arkBnF as bib2ark
 import noticesaut2arkBnF as aut2ark
@@ -36,6 +37,8 @@ output_directory_list = []
 # Creation des fichiers résultats
 # =============================================================================
 popup_filename = []
+liste_notices_pb_encodage = []
+
 
 def create_file_doc_record(doc_record, id_traitement):
     filename= "-".join([id_traitement, doc_record_type[doc_record]]) + ".txt"
@@ -248,7 +251,7 @@ def download_last_update():
     webbrowser.open(url)
 
 
-def iso2tables(master,entry_filename, rec_format, id_traitement):
+def iso2tables_old(master,entry_filename, rec_format, id_traitement):
     with open(entry_filename, 'rb') as fh:
         collection = mc.MARCReader(fh)
         collection.force_utf8 = True
@@ -264,7 +267,31 @@ def iso2tables(master,entry_filename, rec_format, id_traitement):
             "Aide en ligne : conversion iso2709 > XML",
             "https://github.com/Transition-bibliographique/alignements-donnees-bnf/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#un-probl%C3%A8me-dencodage--passez-en-xml-avec-marcedit" 
             )
+
+def iso2tables(master,entry_filename, rec_format, id_traitement):
+    input_file = open(entry_filename,'r',encoding="utf-8").read().split(u'\u001D')[0:-1]
+    temp_list = [el + u'\u001D' for el in input_file]
+    for rec in temp_list :
+        outputfilename = "temp_record.txt"
+        outputfile = open(outputfilename, "wb")
+        outputfile.write(rec.encode("utf-8"))
+        outputfile.close()
+        with open(outputfilename, 'rb') as fh:
+            collection = mc.MARCReader(fh)
+            try:
+                for record in collection:
+                    record2listemetas(record,rec_format)
+            except mc.exceptions.RecordLengthInvalid as err:
+                NumNot = record2meta(record,["001"])
+                liste_notices_pb_encodage.append(NumNot)
+                print("\n\n/*--------------Problème d'encodage------------*\n\n")
+                print(NumNot)
+                print("\n\n*------------------------------------------------*/")
+                pass
+    os.remove("temp_record.txt")
+    
         
+
 
 def xml2tables(master,entry_filename, rec_format, id_traitement):
     collection = mc.marcxml.parse_xml_to_array(entry_filename, strict=False)
@@ -381,11 +408,17 @@ def write_reports(id_traitement):
         file = create_file_doc_record(doc_record, id_traitement)
         file.write("\t".join(header_columns) + "\n")
         for record in liste_resultats[doc_record]:
-            print(doc_record, ' - ', record[0])
-            file.write("\t".join(record) + "\n")            
+            if (record[0] not in liste_notices_pb_encodage):
+                print(doc_record, ' - ', record[0])
+                file.write("\t".join(record) + "\n")            
 
     
 def end_of_treatments(form,id_traitement):
+    if (liste_notices_pb_encodage != []):
+        encoding_errors_file = open("ALERT-" + id_traitement + "-notices_pb_encodage.txt","w",encoding="utf-8")
+        for NumNot in liste_notices_pb_encodage:
+            encoding_errors_file.write(NumNot + "\n")
+        encoding_errors_file.close()
     write_reports(id_traitement)
     print("\n\n------------------------\n\nExtraction terminée\n\n------------------------")
     form.destroy()
