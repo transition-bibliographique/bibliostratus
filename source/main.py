@@ -450,9 +450,13 @@ def formulaire_main(access_to_network, last_version):
     tk.Label(zone_ok_help_cancel,text=" ", pady=5, bg=couleur_fond).pack()
     
 
-    call4help = tk.Button(frame_help_cancel, text="Besoin d'aide ?", command=lambda: click2help("https://github.com/Transition-bibliographique/alignements-donnees-bnf"), pady=5, padx=5, width=12)
+    call4help = tk.Button(frame_help_cancel, 
+                          text="Besoin d'aide ?", 
+                          command=lambda: click2help("https://github.com/Transition-bibliographique/alignements-donnees-bnf"), 
+                          pady=55, padx=5, width=12)
     call4help.pack()
-    cancel = tk.Button(frame_help_cancel, text="Annuler", command=lambda: annuler(master), pady=5, padx=5, width=12)
+    tk.Label(frame_help_cancel, text="\n",bg=couleur_fond, font="Arial 13 normal").pack()
+    cancel = tk.Button(frame_help_cancel, text="Annuler", command=lambda: annuler(master), pady=55, padx=5, width=12)
     cancel.pack()
 
 
