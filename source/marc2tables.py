@@ -539,6 +539,19 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Marc XML", variable=file_format, value=2,
                    anchor="w", justify="left").pack(anchor="w")
     file_format.set(1)
+    info_utf8 = tk.Label(cadre_input_type_docs,
+                         bg=couleur_fond,justify="left", font="Arial 7 italic",
+                         text="""Le fichier iso2709 doit être 
+en UTF-8 sans BOM.             
+En cas de problème, 
+convertissez-le en XML
+avant de le passer dans ce module
+
+
+
+
+""")
+    info_utf8.pack()
     
     tk.Label(cadre_input_type_docs_interstice2, bg=couleur_fond, text="\t\t", justify="left").pack()
     
@@ -589,7 +602,8 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
         - autres non identifiés
 
         
-  Pour faire cela, il utilise les informations en zones codées dans chaque notice Unimarc
+  Pour faire cela, il utilise les informations 
+  en zones codées dans chaque notice Unimarc
 """
     tk.Label(cadre_output_explications,bg=couleur_fond, 
              text=message_fichiers_en_sortie,

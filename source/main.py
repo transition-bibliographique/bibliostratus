@@ -29,8 +29,8 @@ import preferences
 
 #import matplotlib.pyplot as plt
 
-version = 1.07
-lastupdate = "29/03/2018"
+version = 1.08
+lastupdate = "31/03/2018"
 programID = "transbiblio"
 
 ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}
@@ -422,8 +422,8 @@ def formulaire_main(access_to_network, last_version):
     
     tk.Label(frame3,text="Préparer ses données",
              bg=couleur_fond,fg="#365B43",font="Arial 9 bold").pack(anchor="w")
-    tk.Label(frame3,text="(constitution de tableaux            \nà partir d'un export catalogue)",
-             bg=couleur_fond,fg="#365B43",font="Arial 9 normal").pack(anchor="w")
+    tk.Label(frame3,text="(constitution de tableaux\nà partir d'un export catalogue)",
+             bg=couleur_fond,fg="#365B43",font="Arial 9 normal", justify="left").pack(anchor="w")
     
     
     marc2tableButton = tk.Button(frame3, text = "Convertir un fichier Marc\n en tableaux", 
