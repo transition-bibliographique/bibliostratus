@@ -73,8 +73,7 @@ def check_last_compilation(programID):
         print("erreur réseau")
     return [programID_last_compilation,display_update_button]
 
-def download_last_update(url="https://github.com/Transition-bibliographique/alignements-donnees-bnf/bin"):
-    url = "https://github.com/Transition-bibliographique/alignements-donnees-bnf/tree/master/bin"
+def download_last_update(url="https://github.com/Transition-bibliographique/alignements-donnees-bnf/tree/master/bin"):
     webbrowser.open(url)
 
 def check_access_to_network():
@@ -466,7 +465,15 @@ def formulaire_main(access_to_network, last_version):
     if (last_version[1] == True):
         download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(last_version[0]), command=download_last_update)
         download_update.pack()
-
+        url_release_notes = "https://github.com/Transition-bibliographique/alignements-donnees-bnf/blob/master/source/release_notes.md#" + "version-" + str(last_version[0]).replace(".","")
+        release_notes = tk.Button(zone_notes, 
+                                  bg=couleur_fond,
+                                  font="Arial 8 bold italic",
+                                  border=0,
+                                  text = "Liste des nouveautés", 
+                                  command=lambda: download_last_update(url_release_notes)
+                                  )
+        release_notes.pack()
     
     tk.mainloop()
     
