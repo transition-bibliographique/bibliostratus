@@ -1772,15 +1772,15 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
 
     type_doc_bib = tk.IntVar()
     radioButton_lienExample(cadre_input_type_docs,type_doc_bib,1,couleur_fond,
-                            "Documents imprimés (monographies)",
+                            "[TEX] Documents imprimés (monographies)",
                             "(Colonnes : " + " | ".join(header_columns_init_monimpr) + ")",
                             "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/mon_impr.tsv")
     radioButton_lienExample(cadre_input_type_docs,type_doc_bib,2,couleur_fond,
-                            "Audiovisuel (CD / DVD)",
+                            "[VID] Audiovisuel (CD / DVD)",
                             "(" + " | ".join(header_columns_init_cddvd) + ")",
                             "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/adv.tsv")
     radioButton_lienExample(cadre_input_type_docs,type_doc_bib,3,couleur_fond,
-                            "Périodiques",
+                            "[PER] Périodiques",
                             "(" + " | ".join(header_columns_init_perimpr) + ")",
                             "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/per.tsv")
     type_doc_bib.set(1)

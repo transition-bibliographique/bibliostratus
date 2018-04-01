@@ -40,8 +40,8 @@ popup_filename = []
 liste_notices_pb_encodage = []
 
 
-def create_file_doc_record(doc_record, id_traitement):
-    filename= "-".join([id_traitement, doc_record_type[doc_record]]) + ".txt"
+def create_file_doc_record(filename, id_traitement):
+    filename= "-".join([id_traitement, filename]) + ".txt"
     file = open(filename, "w", encoding="utf-8")
     return file
 
@@ -273,20 +273,18 @@ def iso2tables(master,entry_filename, rec_format, id_traitement):
     temp_list = [el + u'\u001D' for el in input_file]
     for rec in temp_list :
         outputfilename = "temp_record.txt"
-        outputfile = open(outputfilename, "wb")
-        outputfile.write(rec.encode("utf-8"))
+        outputfile = open(outputfilename, "w", encoding="utf-8")
+        outputfile.write(rec)
         outputfile.close()
         with open(outputfilename, 'rb') as fh:
             collection = mc.MARCReader(fh)
+            collection.force_utf8 = True
             try:
                 for record in collection:
                     record2listemetas(record,rec_format)
             except mc.exceptions.RecordLengthInvalid as err:
                 NumNot = record2meta(record,["001"])
                 liste_notices_pb_encodage.append(NumNot)
-                print("\n\n/*--------------Problème d'encodage------------*\n\n")
-                print(NumNot)
-                print("\n\n*------------------------------------------------*/")
                 pass
     os.remove("temp_record.txt")
     
@@ -395,31 +393,43 @@ def record2listemetas(record,rec_format=1):
             
 def write_reports(id_traitement):
     for doc_record in liste_resultats:
+        filename = doc_record_type[doc_record]
         if (doc_record == "am"):
+            filename = "TEX-"+filename
             header_columns = bib2ark.header_columns_init_monimpr
         elif (doc_record == "im" or doc_record == "jm" or doc_record == "gm"):
             header_columns = bib2ark.header_columns_init_cddvd
+            filename = "VID-"+filename
         elif (doc_record == "ca"):
             header_columns = aut2ark.header_columns_init_aut2aut
         elif (len(doc_record)> 1 and doc_record[1] == "s"):
             header_columns = bib2ark.header_columns_init_perimpr
+            filename = "PER-"+filename
         else:
             header_columns = ["NumNotice","FRBNF","ARK","Autres métadonnées..."]
-        file = create_file_doc_record(doc_record, id_traitement)
+        file = create_file_doc_record(filename, id_traitement)
         file.write("\t".join(header_columns) + "\n")
         for record in liste_resultats[doc_record]:
             if (record[0] not in liste_notices_pb_encodage):
                 print(doc_record, ' - ', record[0])
                 file.write("\t".join(record) + "\n")            
 
-    
-def end_of_treatments(form,id_traitement):
+def encoding_errors(id_traitement):
+    """Génération d'un fichier listant les numéros de notices avec problème d'encodage"""
     if (liste_notices_pb_encodage != []):
-        encoding_errors_file = open("ALERT-" + id_traitement + "-notices_pb_encodage.txt","w",encoding="utf-8")
+        encoding_errors_file = open(id_traitement + "-ALERT-notices_pb_encodage.txt","w",encoding="utf-8")
+        encoding_errors_file.write("""Le logiciel a trouvé des problèmes d'encodage dans les notices suivantes
+Elles n'ont pas été exportées dans les tableaux\n\n""")
+        encoding_errors_file.write(str(len(liste_notices_pb_encodage)) + " notice(s) concernée(s)\n\n")
+        print("\n\nNotices ayant un problème d'encodage (caractère non conforme UTF-8)\n")
         for NumNot in liste_notices_pb_encodage:
             encoding_errors_file.write(NumNot + "\n")
+            print(NumNot)
         encoding_errors_file.close()
+    
+def end_of_treatments(form,id_traitement):
     write_reports(id_traitement)
+    encoding_errors(id_traitement)
     print("\n\n------------------------\n\nExtraction terminée\n\n------------------------")
     form.destroy()
 
@@ -667,6 +677,7 @@ avant de le passer dans ce module
         download_update.pack()"""
 
     tk.mainloop()
+
 
 if __name__ == '__main__':
     access_to_network = main.check_access_to_network()
