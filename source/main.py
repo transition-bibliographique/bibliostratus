@@ -29,8 +29,8 @@ import preferences
 
 #import matplotlib.pyplot as plt
 
-version = 1.08
-lastupdate = "31/04/2018"
+version = 1.09
+lastupdate = "04/04/2018"
 programID = "transbiblio"
 
 ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}

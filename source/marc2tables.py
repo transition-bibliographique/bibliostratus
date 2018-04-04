@@ -267,6 +267,15 @@ def iso2tables_old(master,entry_filename, rec_format, id_traitement):
             "Aide en ligne : conversion iso2709 > XML",
             "https://github.com/Transition-bibliographique/alignements-donnees-bnf/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#un-probl%C3%A8me-dencodage--passez-en-xml-avec-marcedit" 
             )
+        except UnicodeDecodeError as err:
+            print("\n\n/*---------------------------------------------*\n\n")
+            print(main.errors["pb_input_utf8"])
+            print(err)
+            print("\n\n*------------------------------------------------*/")
+            main.popup_errors(master,main.errors["pb_input_utf8_marcEdit"], 
+            "Aide en ligne : conversion iso2709 > XML",
+            "https://github.com/Transition-bibliographique/alignements-donnees-bnf/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#un-probl%C3%A8me-dencodage--passez-en-xml-avec-marcedit" 
+            )
 
 def iso2tables(master,entry_filename, rec_format, id_traitement):
     input_file = open(entry_filename,'r',encoding="utf-8").read().split(u'\u001D')[0:-1]
@@ -283,6 +292,10 @@ def iso2tables(master,entry_filename, rec_format, id_traitement):
                 for record in collection:
                     record2listemetas(record,rec_format)
             except mc.exceptions.RecordLengthInvalid as err:
+                NumNot = record2meta(record,["001"])
+                liste_notices_pb_encodage.append(NumNot)
+                pass
+            except UnicodeDecodeError as err:
                 NumNot = record2meta(record,["001"])
                 liste_notices_pb_encodage.append(NumNot)
                 pass
@@ -425,6 +438,7 @@ Elles n'ont pas été exportées dans les tableaux\n\n""")
         for NumNot in liste_notices_pb_encodage:
             encoding_errors_file.write(NumNot + "\n")
             print(NumNot)
+        print("Consultez le fichier " + id_traitement + "-ALERT-notices_pb_encodage.txt")
         encoding_errors_file.close()
     
 def end_of_treatments(form,id_traitement):
