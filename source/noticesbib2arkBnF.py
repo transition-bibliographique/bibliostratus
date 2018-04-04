@@ -315,7 +315,7 @@ def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,numeroT
     if (ark == ""):
         ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"540$e")
     if (ark == ""):
-        ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"416$a")
+        ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"410$a")
     if (ark == ""):
         ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"225$a")
     if (ark != "" and numeroTome != ""):
@@ -652,8 +652,9 @@ def isbnauteur2sru(NumNot,isbn,titre,auteur,date):
     if (test == True):
         if (resultats.find("//srw:records/srw:record", namespaces=main.ns) is not None):
             NumNotices2methode[NumNot].append("ISBN + Auteur > ARK")
-        for record in resultats.xpath("//srw:records/srw:record", namespaces=main.ns):
+        for recordBNF in resultats.xpath("//srw:records/srw:record", namespaces=main.ns):
             ark_current = record.find("srw:recordIdentifier", namespaces=main.ns).text
+            ark_current = checkDate(ark_current,date,recordBNF)
             listeARK.append(ark_current)
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
     return listeARK
