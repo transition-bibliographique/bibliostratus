@@ -585,7 +585,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     
     
     tk.Label(cadre_input_type_docs,bg=couleur_fond, text="Format de fichier", 
-             anchor="w", justify="left").pack(anchor="w")
+             anchor="w", justify="left", font="Arial 9 bold").pack(anchor="w")
     file_format = tk.IntVar()
 
     bib2ark.radioButton_lienExample(cadre_input_type_docs,file_format,1,couleur_fond,
@@ -610,10 +610,10 @@ avant de le passer dans ce module
 """)
     info_utf8.pack()
     
-    tk.Label(cadre_input_type_docs_interstice2, bg=couleur_fond, text="\t\t", justify="left").pack()
+    tk.Label(cadre_input_type_docs_interstice2, bg=couleur_fond, text="\t", justify="left").pack()
     
-    tk.Label(cadre_input_type_rec,bg=couleur_fond, text="\n\n\nType de notices", 
-             anchor="w", justify="left").pack(anchor="w")
+    tk.Label(cadre_input_type_rec,bg=couleur_fond, text="\nType de notices", 
+             anchor="w", justify="left", font="Arial 9 bold").pack(anchor="w")
     rec_format = tk.IntVar()
 
     bib2ark.radioButton_lienExample(cadre_input_type_rec,rec_format,1,couleur_fond,
@@ -625,7 +625,7 @@ avant de le passer dans ce module
                    anchor="w", justify="left").pack(anchor="w")
     rec_format.set(1)
     
-    tk.Label(cadre_input_type_rec, text="\n\n", bg=couleur_fond).pack()
+    tk.Label(cadre_input_type_rec, text="\n\n\n\n", bg=couleur_fond).pack()
     
 # =============================================================================
 #     Formulaire - Fichiers en sortie

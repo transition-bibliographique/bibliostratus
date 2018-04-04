@@ -287,8 +287,7 @@ def download_button(frame,text,frame_selected,text_path,couleur_fond,file_entry_
     texte = """Après avoir lancé le traitement,
 vous pourrez suivre sa progression sur le terminal (fenêtre écran noir).
     
-Cette fenêtre se fermera toute seule à la fin du programme
-et sa fermeture signifiera que le programme est arrivée à la fin du traitement"""
+Cette fenêtre se fermera automatiquement à la fin du programme"""
     if (zone_message_en_cours != ""):
         zone_message_en_cours.insert(0.0,texte)
     
