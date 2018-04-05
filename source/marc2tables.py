@@ -302,7 +302,10 @@ def iso2tables(master,entry_filename, rec_format, id_traitement):
                 NumNot = record2meta(record,["001"])
                 liste_notices_pb_encodage.append(NumNot)
                 pass
-    os.remove("temp_record.txt")
+    try:
+        os.remove("temp_record.txt")
+    except FileNotFoundError as err:
+        main.popup_errors(master,main.errors["format_fichier_en_entree"])
     
         
 

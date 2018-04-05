@@ -49,7 +49,8 @@ errors = {
         "pb_input_utf8_marcEdit" : """Erreur d'encodage constatée :
         Le fichier en entrée doit être en UTF-8 sans BOM.
         
-        Si vous utilisez un fichier iso2709, convertissez-le d'abord en XML avec MarcEdit"""
+        Si vous utilisez un fichier iso2709, convertissez-le d'abord en XML avec MarcEdit""",
+        "format_fichier_en_entree" : "Erreur dans le traitement\n\nVérifier les options choisies\npour le format de fichier en entrée"
         }
 
 def click2help(url):
