@@ -33,6 +33,8 @@ message_en_cours = []
 
 output_directory_list = []
 
+output_files_dict = defaultdict()
+
 # =============================================================================
 # Creation des fichiers résultats
 # =============================================================================
@@ -290,6 +292,7 @@ def iso2tables(master,entry_filename, rec_format, id_traitement):
             collection.force_utf8 = True
             try:
                 for record in collection:
+                    print(record2meta(record,["001"]))
                     record2listemetas(record,rec_format)
             except mc.exceptions.RecordLengthInvalid as err:
                 NumNot = record2meta(record,["001"])

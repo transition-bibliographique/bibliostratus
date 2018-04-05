@@ -363,7 +363,8 @@ def ltrim(nombre_texte):
         nombre_texte = nombre_texte[1:]
     return nombre_texte
 
-def checkDate(ark,date,recordBNF):
+def checkDate(ark,date_init,recordBNF):
+    print("origine",date_init)
     ark_checked = ""
     dateBNF = []
     dateBNF_100 = unidecode(main.extract_subfield(recordBNF,"100","a",1,sep="~").lower())
@@ -373,8 +374,6 @@ def checkDate(ark,date,recordBNF):
         dateBNF_100  = int(dateBNF_100)
         dateBNF.extend([dateBNF_100 + 1, dateBNF_100-1])
     dateBNF.append(dateBNF_100)
-    
-    
     dateBNF_210d = unidecode(main.extract_subfield(recordBNF,"210","d",1,sep="~").lower())
     for lettre in lettres:
         dateBNF_210d = dateBNF_210d.replace(lettre,"~")
@@ -387,8 +386,7 @@ def checkDate(ark,date,recordBNF):
             dateBNF.extend([date + 1, date-1])
     dateBNF.extend(dateBNF_210d)
     dateBNF = " ".join([str(date) for date in dateBNF])
-   
-    if (len(str(date))>3 and str(date)[0:4] in dateBNF):
+    if (len(str(date_init))>3 and str(date_init)[0:4] in dateBNF):
         ark_checked = ark
     return ark_checked
     
