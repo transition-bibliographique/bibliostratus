@@ -67,7 +67,7 @@ def annuler(master):
 def check_last_compilation(programID):
     programID_last_compilation = 0
     display_update_button = False
-    url = "https://github.com/Transition-bibliographique/alignements-donnees-bnf/master/last_compilations.json"
+    url = "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/source/last_compilations.json"
     try:
         last_compilations = request.urlopen(url)
         reader = codecs.getreader("utf-8")
