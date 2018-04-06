@@ -1,3 +1,12 @@
+### version 1.10
+**06/04/2018**
+
+- Tous modules : ajout d'un bouton "Forum utilisateurs" > agoraBib
+- Module bleu Marc > tables : 
+	- récupération de toutes les autorités (certaines écrasées par d'autres)
+	- rapidité : notices écrites directement dans les rapports en sortie au lieu de passer par une liste intermédiaire
+	- Stats finales sur le terminal (volumétrie des notices ventilées)
+
 ### version 1.09
 **04/04/2018**
 

@@ -29,14 +29,20 @@ import preferences
 
 #import matplotlib.pyplot as plt
 
-version = 1.09
-lastupdate = "04/04/2018"
+version = 1.10
+lastupdate = "06/04/2018"
 programID = "transbiblio"
 
 ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}
 nsSudoc = {"rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#", "bibo":"http://purl.org/ontology/bibo/", "dc":"http://purl.org/dc/elements/1.1/", "dcterms":"http://purl.org/dc/terms/", "rdafrbr1":"http://rdvocab.info/RDARelationshipsWEMI/", "marcrel":"http://id.loc.gov/vocabulary/relators/", "foaf":"http://xmlns.com/foaf/0.1/", "gr":"http://purl.org/goodrelations/v1#", "owl":"http://www.w3.org/2002/07/owl#", "isbd":"http://iflastandards.info/ns/isbd/elements/", "skos":"http://www.w3.org/2004/02/skos/core#", "rdafrbr2":"http://RDVocab.info/uri/schema/FRBRentitiesRDA/", "rdaelements":"http://rdvocab.info/Elements/", "rdac":"http://rdaregistry.info/Elements/c/", "rdau":"http://rdaregistry.info/Elements/u/", "rdaw":"http://rdaregistry.info/Elements/w/", "rdae":"http://rdaregistry.info/Elements/e/", "rdam":"http://rdaregistry.info/Elements/m/", "rdai":"http://rdaregistry.info/Elements/i/", "sudoc":"http://www.sudoc.fr/ns/", "bnf-onto":"http://data.bnf.fr/ontology/bnf-onto/"}
 nsisni = {'srw':'http://www.loc.gov/zing/srw/', 'dc':'http://purl.org/dc/elements/1.1/', 'diag':'http://www.loc.gov/zing/srw/diagnostic/', 'xcql':'http://www.loc.gov/zing/cql/xcql/'}
 urlSRUroot = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query="
+
+url_online_help = "https://github.com/Transition-bibliographique/alignements-donnees-bnf"
+texte_bouton_help = "Documentation\nen ligne"
+
+url_forum_aide = "http://www.agorabib.fr/forum/10-informatique-documentaire/"
+texte_bouton_forum = "Forum\nutilisateurs"
 
 chiffers = ["0","1","2","3","4","5","6","7","8","9"]
 letters = ["a","b","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
@@ -449,13 +455,21 @@ def formulaire_main(access_to_network, last_version):
     tk.Label(zone_ok_help_cancel,text=" ", pady=5, bg=couleur_fond).pack()
     
 
-    call4help = tk.Button(frame_help_cancel, 
-                          text="Besoin d'aide ?", 
-                          command=lambda: click2help("https://github.com/Transition-bibliographique/alignements-donnees-bnf"), 
-                          pady=55, padx=5, width=12)
+    call4help = tk.Button(frame_help_cancel,
+                          text=texte_bouton_help, 
+                          command=lambda: click2help(url_online_help), 
+                          pady=25, padx=5, width=12)
     call4help.pack()
-    tk.Label(frame_help_cancel, text="\n",bg=couleur_fond, font="Arial 13 normal").pack()
-    cancel = tk.Button(frame_help_cancel, text="Annuler", command=lambda: annuler(master), pady=55, padx=5, width=12)
+    tk.Label(frame_help_cancel, text="\n",bg=couleur_fond, font="Arial 1 normal").pack()
+    
+    forum_button = tk.Button(frame_help_cancel, 
+                          text=texte_bouton_forum, 
+                          command=lambda: click2help(url_forum_aide), 
+                          pady=15, padx=5, width=12)
+    forum_button.pack()
+    
+    tk.Label(frame_help_cancel, text="\n",bg=couleur_fond, font="Arial 8 normal").pack()
+    cancel = tk.Button(frame_help_cancel, text="Annuler",bg=couleur_fond, command=lambda: annuler(master), pady=45, padx=5, width=12)
     cancel.pack()
 
 

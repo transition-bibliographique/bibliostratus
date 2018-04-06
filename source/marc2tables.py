@@ -34,6 +34,8 @@ message_en_cours = []
 output_directory_list = []
 
 output_files_dict = defaultdict()
+stats = defaultdict(int)
+
 
 # =============================================================================
 # Creation des fichiers résultats
@@ -80,14 +82,20 @@ recordtype = {"a":"analytique",
 
 doctypeAUT = {
                "c":"autorité",
-               "n":"autorité",
                
                }
-recordtypeAUT = {"a":"personne physique",
-                 "b":"collectivité",
-                 "c":"nom géographique Rameau",
-                 "f":"titre",
-                 "j":"nom commun Rameau"
+recordtypeAUT = {"a":"personne",
+                "b":"collectivite",
+                "c":"nom-geographique",
+                "d":"marque",
+                "e":"famille",
+                "f":"titre-uniforme",
+                "g":"rubrique-de-classement",
+                "h":"auteur-titre",
+                "i":"auteur-rubrique-de-classement",
+                "j":"nom-commun",
+                "k":"lieu-d-edition",
+                "l":"forme-genre"
                }
 
 
@@ -118,7 +126,7 @@ def clean_accents_case(text):
 
 def record2doctype(label,rec_format=1):
     if (rec_format == 2):
-        return label[5]
+        return "c"
     else:
         return label[6]
 
@@ -282,7 +290,9 @@ def iso2tables_old(master,entry_filename, rec_format, id_traitement):
 def iso2tables(master,entry_filename, rec_format, id_traitement):
     input_file = open(entry_filename,'r',encoding="utf-8").read().split(u'\u001D')[0:-1]
     temp_list = [el + u'\u001D' for el in input_file]
+    i = 0
     for rec in temp_list :
+        i += 1
         outputfilename = "temp_record.txt"
         outputfile = open(outputfilename, "w", encoding="utf-8")
         outputfile.write(rec)
@@ -292,8 +302,8 @@ def iso2tables(master,entry_filename, rec_format, id_traitement):
             collection.force_utf8 = True
             try:
                 for record in collection:
-                    print(record2meta(record,["001"]))
-                    record2listemetas(record,rec_format)
+                    #print(record2meta(record,["001"]))
+                    record2listemetas(id_traitement, record,rec_format)
             except mc.exceptions.RecordLengthInvalid as err:
                 NumNot = record2meta(record,["001"])
                 liste_notices_pb_encodage.append(NumNot)
@@ -306,14 +316,18 @@ def iso2tables(master,entry_filename, rec_format, id_traitement):
         os.remove("temp_record.txt")
     except FileNotFoundError as err:
         main.popup_errors(master,main.errors["format_fichier_en_entree"])
-    
-        
+    stats["Nombre total de notices traitées"] = i
 
 
 def xml2tables(master,entry_filename, rec_format, id_traitement):
     collection = mc.marcxml.parse_xml_to_array(entry_filename, strict=False)
+    i = 0
     for record in collection:
-        record2listemetas(record,rec_format)
+        print(record.leader)
+        i += 1
+        record2listemetas(id_traitement, record,rec_format)
+    stats["Nombre total de notices traitées"] = i
+    
 
 def bibrecord2metas(numNot,doc_record,record):
     title = record2title(
@@ -395,7 +409,7 @@ def autrecord2metas(numNot,doc_record,record):
     meta = [numNot,frbnf,ark,isni,lastname,firstname,firstdate,lastdate]
     return meta   
     
-def record2listemetas(record,rec_format=1):
+def record2listemetas(id_traitement, record,rec_format=1):
     numNot = record2meta(record,["001"])
     doctype = record2doctype(record.leader,rec_format)
     recordtype = record2recordtype(record.leader,rec_format)
@@ -408,30 +422,39 @@ def record2listemetas(record,rec_format=1):
     else:
         meta = bibrecord2metas(numNot,doc_record,record)
 
-    liste_resultats[doc_record].append(meta)
+    #print(meta)
+    if (doc_record in output_files_dict):
+        if (meta[0] not in liste_notices_pb_encodage):
+            stats[doc_record_type[doc_record]] += 1
+            output_files_dict[doc_record].write("\t".join(meta) + "\n")
+            print(doc_record, ' - ', meta[0])
+
+    else:
+        stats[doc_record_type[doc_record]] = 1
+        output_files_dict[doc_record] = write_reports(id_traitement,doc_record)
+        output_files_dict[doc_record].write("\t".join(meta) + "\n")
+        print(doc_record, ' - ', meta[0])    
+
+    #liste_resultats[doc_record].append(meta)
             
-def write_reports(id_traitement):
-    for doc_record in liste_resultats:
-        filename = doc_record_type[doc_record]
-        if (doc_record == "am"):
-            filename = "TEX-"+filename
-            header_columns = bib2ark.header_columns_init_monimpr
-        elif (doc_record == "im" or doc_record == "jm" or doc_record == "gm"):
-            header_columns = bib2ark.header_columns_init_cddvd
-            filename = "VID-"+filename
-        elif (doc_record == "ca"):
-            header_columns = aut2ark.header_columns_init_aut2aut
-        elif (len(doc_record)> 1 and doc_record[1] == "s"):
-            header_columns = bib2ark.header_columns_init_perimpr
-            filename = "PER-"+filename
-        else:
-            header_columns = ["NumNotice","FRBNF","ARK","Autres métadonnées..."]
-        file = create_file_doc_record(filename, id_traitement)
-        file.write("\t".join(header_columns) + "\n")
-        for record in liste_resultats[doc_record]:
-            if (record[0] not in liste_notices_pb_encodage):
-                print(doc_record, ' - ', record[0])
-                file.write("\t".join(record) + "\n")            
+def write_reports(id_traitement,doc_record):
+    filename = doc_record_type[doc_record]
+    if (doc_record == "am"):
+        filename = "TEX-"+filename
+        header_columns = bib2ark.header_columns_init_monimpr
+    elif (doc_record == "im" or doc_record == "jm" or doc_record == "gm"):
+        header_columns = bib2ark.header_columns_init_cddvd
+        filename = "VID-"+filename
+    elif (doc_record == "ca"):
+        header_columns = aut2ark.header_columns_init_aut2aut
+    elif (len(doc_record)> 1 and doc_record[1] == "s"):
+        header_columns = bib2ark.header_columns_init_perimpr
+        filename = "PER-"+filename
+    else:
+        header_columns = ["NumNotice","FRBNF","ARK","Autres métadonnées..."]
+    file = create_file_doc_record(filename, id_traitement)
+    file.write("\t".join(header_columns) + "\n")
+    return file
 
 def encoding_errors(id_traitement):
     """Génération d'un fichier listant les numéros de notices avec problème d'encodage"""
@@ -448,9 +471,15 @@ Elles n'ont pas été exportées dans les tableaux\n\n""")
         encoding_errors_file.close()
     
 def end_of_treatments(form,id_traitement):
-    write_reports(id_traitement)
+    for file in output_files_dict:
+        output_files_dict[file].close()
     encoding_errors(id_traitement)
-    print("\n\n------------------------\n\nExtraction terminée\n\n------------------------")
+    print("\n\n------------------------\n\nExtraction terminée\n\n")
+    for key in stats:
+        if ("Nombre" not in key):
+            print(key + " : ", stats[key])
+    print("\nNombre total de notices traitées : ", stats["Nombre total de notices traitées"])
+    print("------------------------")
     form.destroy()
 
 
@@ -473,17 +502,17 @@ def launch(form,entry_filename,file_format, rec_format, output_ID,master):
                 dcrec_libelles = "-".join([doct_libelle,recordt_libelle])
                 doc_record_type[dcrec] = dcrec_libelles
     else:
-        for doct in doctypeAUT:
-            for recordt in recordtypeAUT:
-                dcrec = doct + recordt
-                doct_libelle = doct
-                if (doct in doctypeAUT):
-                    doct_libelle = doctypeAUT[doct]
-                recordt_libelle = recordt
-                if (recordt in recordtypeAUT):
-                    recordt_libelle = recordtypeAUT[recordt]
-                dcrec_libelles = "-".join([doct_libelle,recordt_libelle])
-                doc_record_type[dcrec] = dcrec_libelles
+        doct = "c"
+        for recordt in recordtypeAUT:
+            dcrec = doct + recordt
+            doct_libelle = doct
+            if (doct in doctypeAUT):
+                doct_libelle = doctypeAUT[doct]
+            recordt_libelle = recordt
+            if (recordt in recordtypeAUT):
+                recordt_libelle = recordtypeAUT[recordt]
+            dcrec_libelles = "-".join([doct_libelle,recordt_libelle])
+            doc_record_type[dcrec] = dcrec_libelles
                 
     print("Fichier en entrée : ", entry_filename)
     if (file_format == 1):
@@ -684,10 +713,23 @@ avant de le passer dans ce module
     
     tk.Label(cadre_valider, font="bold", text="", bg=couleur_fond).pack()
     
-    call4help = tk.Button(cadre_valider, text="Besoin d'aide ?", command=lambda: main.click2help("https://github.com/Transition-bibliographique/alignements-donnees-bnf/"), padx=10, pady=1, width=15)
-    call4help.pack()
     
-    cancel = tk.Button(cadre_valider, bg=couleur_fond, text="Annuler", command=lambda: main.annuler(form), padx=10, pady=1, width=15)
+    
+    call4help = tk.Button(cadre_valider,
+                          text=main.texte_bouton_help, 
+                          command=lambda: main.click2help(main.url_online_help), 
+                          pady=5, padx=5, width=12)
+    call4help.pack()
+    tk.Label(cadre_valider, text="\n",bg=couleur_fond, font="Arial 1 normal").pack()
+    
+    forum_button = tk.Button(cadre_valider, 
+                          text=main.texte_bouton_forum, 
+                          command=lambda: main.click2help(main.url_forum_aide), 
+                          pady=5, padx=5, width=12)
+    forum_button.pack()
+    
+    tk.Label(cadre_valider, text="\n",bg=couleur_fond, font="Arial 4 normal").pack()
+    cancel = tk.Button(cadre_valider, text="Annuler",bg=couleur_fond, command=lambda: main.annuler(form), pady=10, padx=5, width=12)
     cancel.pack()
     
     tk.Label(zone_notes, text = "Version " + str(main.version) + " - " + lastupdate, bg=couleur_fond).pack()

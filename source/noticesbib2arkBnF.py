@@ -1828,10 +1828,21 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     
     tk.Label(zone_ok_help_cancel, font="bold", text="", bg=couleur_fond).pack()
     
-    call4help = tk.Button(zone_ok_help_cancel, text="Besoin d'aide ?", command=click2help, padx=10, pady=1, width=15)
+    call4help = tk.Button(zone_ok_help_cancel,
+                          text=main.texte_bouton_help, 
+                          command=lambda: main.click2help(main.texte_bouton_help), 
+                          pady=5, padx=5, width=12)
     call4help.pack()
+    tk.Label(zone_ok_help_cancel, text="\n",bg=couleur_fond, font="Arial 1 normal").pack()
     
-    cancel = tk.Button(zone_ok_help_cancel, bg=couleur_fond, text="Annuler", command=lambda: annuler(form_bib2ark), padx=10, pady=1, width=15)
+    forum_button = tk.Button(zone_ok_help_cancel, 
+                          text=main.texte_bouton_forum, 
+                          command=lambda: main.click2help(main.url_forum_aide), 
+                          pady=5, padx=5, width=12)
+    forum_button.pack()
+    
+    tk.Label(zone_ok_help_cancel, text="\n",bg=couleur_fond, font="Arial 4 normal").pack()
+    cancel = tk.Button(zone_ok_help_cancel, text="Annuler",bg=couleur_fond, command=lambda: main.annuler(form_bib2ark), pady=10, padx=5, width=12)
     cancel.pack()
     
     zone_version = tk.Frame(zone_notes, bg=couleur_fond)
