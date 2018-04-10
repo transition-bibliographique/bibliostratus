@@ -89,7 +89,7 @@ def row2file(liste_metadonnees,liste_reports):
 
 def row2files(liste_metadonnees,liste_reports):
     liste_metadonnees_to_report = [str(el) for el in liste_metadonnees]
-    nbARK = liste_metadonnees[0]
+    nbARK = liste_metadonnees[1]
     ark = liste_metadonnees[2]
     if (ark == "Pb FRBNF"):
         liste_reports[0].write("\t".join(liste_metadonnees_to_report) + "\n")
