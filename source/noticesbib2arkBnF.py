@@ -1236,10 +1236,12 @@ def controleNoCommercial(NumNot,ark_current,no_commercial,titre,auteur,date,reco
     if (no_commercial != "" and no_commercialBNF != ""):
         if (no_commercial in no_commercialBNF):
             ark = comparaisonTitres(NumNot,ark_current,"",no_commercial,titre,auteur,date,"",recordBNF, "No commercial")
-            NumNotices2methode[NumNot].append("No commercial")
+            if (ark != ""):
+                NumNotices2methode[NumNot].append("No commercial")
         elif (no_commercialBNF in no_commercial):
             ark = comparaisonTitres(NumNot,ark_current,"",no_commercial,titre,auteur,date,"",recordBNF, "No commercial")
-            NumNotices2methode[NumNot].append("No commercial")
+            if (ark != ""):
+                NumNotices2methode[NumNot].append("No commercial")
     return ark
 
 #Si on a coché "Récupérer les données bibliographiques" : ouverture de la notice BIB de l'ARK et renvoie d'une liste de métadonnées
@@ -1432,8 +1434,8 @@ def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, i
                 ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,False, publisher_nett)
             
             #Si la recherche N° commercial + contrôle n'a rien donné -> on cherche N° commercial seul
-            if (ark == "" and no_commercial != ""):
-                ark = no_commercial2ark(NumNot,no_commercial_propre,"","","",False, "")
+            #if (ark == "" and no_commercial != ""):
+            #    ark = no_commercial2ark(NumNot,no_commercial_propre,"","","",False, "")
                 
             #Si la recherche sur bib.comref n'a rien donné -> recherche du numéro partout dans la notice
             if (ark == "" and no_commercial != ""):
