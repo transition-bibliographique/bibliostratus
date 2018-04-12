@@ -2,6 +2,7 @@
 - Module blanc : 
 	- Correction du format des fichiers en sortie quand l'option "Plusieurs fichiers est choisie"
 	- Ajout d'un contrôle Titre sur l'alignement par numéro commercial
+	- Correction de la fonction Nettoyage ISBN (les ponctuations, etc. n'étaient pas retirées en réalité)
 
 
 ### version 1.10
