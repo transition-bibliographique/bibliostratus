@@ -1,8 +1,8 @@
 ### version 1.11
-- Module blanc : 
+- Module blanc (alignements notices bibliographiques) : 
 	- Correction du format des fichiers en sortie quand l'option "Plusieurs fichiers est choisie"
 	- Ajout d'un contrôle Titre sur l'alignement par numéro commercial
-	- Correction de la fonction Nettoyage ISBN (les ponctuations, etc. n'étaient pas retirées en réalité)
+	- Correction de la fonction Nettoyage ISBN (les ponctuations, etc. n'étaient pas retirées en réalité jusque-là)
 
 
 ### version 1.10
