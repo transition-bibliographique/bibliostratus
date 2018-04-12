@@ -1,3 +1,9 @@
+### version 1.11
+- Module blanc : 
+	- Correction du format des fichiers en sortie quand l'option "Plusieurs fichiers est choisie"
+	- Ajout d'un contrôle Titre sur l'alignement par numéro commercial
+
+
 ### version 1.10
 **06/04/2018**
 

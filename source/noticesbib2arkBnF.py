@@ -321,7 +321,7 @@ def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,numeroT
     if (ark != "" and numeroTome != ""):
         ark = verificationTomaison(ark,numeroTome,recordBNF)
     if (ark != "" and date != ""):
-        if ("ISBN" in origineComparaison or "EAN" in origineComparaison):
+        if ("ISBN" in origineComparaison or "EAN" in origineComparaison or "commercial" in origineComparaison):
             ark = checkDate(ark,date,recordBNF)
     return ark
 
@@ -364,7 +364,6 @@ def ltrim(nombre_texte):
     return nombre_texte
 
 def checkDate(ark,date_init,recordBNF):
-    print("origine",date_init)
     ark_checked = ""
     dateBNF = []
     dateBNF_100 = unidecode(main.extract_subfield(recordBNF,"100","a",1,sep="~").lower())
@@ -1237,10 +1236,10 @@ def controleNoCommercial(NumNot,ark_current,no_commercial,titre,auteur,date,reco
     no_commercialBNF = nettoyage_no_commercial(extract_meta(recordBNF,"071$a"))
     if (no_commercial != "" and no_commercialBNF != ""):
         if (no_commercial in no_commercialBNF):
-            ark = ark_current
+            ark = comparaisonTitres(NumNot,ark_current,"",ean,titre,auteur,date,"",recordBNF, "No commercial")
             NumNotices2methode[NumNot].append("No commercial")
         elif (no_commercialBNF in no_commercial):
-            ark = ark_current
+            ark = comparaisonTitres(NumNot,ark_current,"",ean,titre,auteur,date,"",recordBNF, "No commercial")
             NumNotices2methode[NumNot].append("No commercial")
     return ark
 
