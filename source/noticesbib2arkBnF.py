@@ -520,10 +520,10 @@ def nettoyage_isbn(isbn):
     isbn_nett = isbn.split(";")[0].split(",")[0].split("(")[0].split("[")[0]
     isbn_nett = isbn_nett.replace("-","").replace(" ","")
     for signe in ponctuation:
-        isbn_nett.replace(signe,"")
-    isbn_nett = unidecode(isbn_nett)
+        isbn_nett = isbn_nett.replace(signe,"")
+        isbn_nett = unidecode(isbn_nett)
     for lettre in lettres_sauf_x:
-        isbn_nett.replace(lettre,"")
+        isbn_nett = isbn_nett.replace(lettre,"")
     return isbn_nett
     
 def conversionIsbn(isbn):
@@ -1334,7 +1334,7 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
                 ark = isbn2ark(NumNot,isbn,isbn_propre,titre_nett,auteur_nett,date_nett)
                 
             #Si la recherche ISBN + contrôle Titre/Date n'a rien donné -> on cherche ISBN seul
-            if (ark == "" and isbn_nett != ""):
+            if (ark == "" and isbn_propre != ""):
                 ark = isbn2ark(NumNot,isbn,isbn_propre,"","","")
             #A défaut, recherche sur EAN
             if (ark == "" and ean != ""):
