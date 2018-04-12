@@ -292,7 +292,6 @@ def comparaisonIsbn(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF
     return ark
 
 def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,numeroTome,recordBNF,origineComparaison):
-
     ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"200$a")
     if (ark == ""):
         ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"200$e")
@@ -1236,10 +1235,10 @@ def controleNoCommercial(NumNot,ark_current,no_commercial,titre,auteur,date,reco
     no_commercialBNF = nettoyage_no_commercial(extract_meta(recordBNF,"071$a"))
     if (no_commercial != "" and no_commercialBNF != ""):
         if (no_commercial in no_commercialBNF):
-            ark = comparaisonTitres(NumNot,ark_current,"",ean,titre,auteur,date,"",recordBNF, "No commercial")
+            ark = comparaisonTitres(NumNot,ark_current,"",no_commercial,titre,auteur,date,"",recordBNF, "No commercial")
             NumNotices2methode[NumNot].append("No commercial")
         elif (no_commercialBNF in no_commercial):
-            ark = comparaisonTitres(NumNot,ark_current,"",ean,titre,auteur,date,"",recordBNF, "No commercial")
+            ark = comparaisonTitres(NumNot,ark_current,"",no_commercial,titre,auteur,date,"",recordBNF, "No commercial")
             NumNotices2methode[NumNot].append("No commercial")
     return ark
 
