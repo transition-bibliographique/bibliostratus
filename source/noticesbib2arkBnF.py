@@ -126,10 +126,10 @@ def nettoyage(string,remplacerEspaces=True,remplacerTirets=True):
     for signe in ponctuation:
         string = string.replace(signe,"")
     string = string.replace("'"," ")
-    if (remplacerEspaces == True):
-        string = string.replace(" ","")
     if (remplacerTirets == True):
         string = string.replace("-"," ")
+    if (remplacerEspaces == True):
+        string = string.replace(" ","")
     return string
 
 def nettoyageTitrePourControle(titre):
@@ -365,7 +365,7 @@ def ltrim(nombre_texte):
 def checkDate(ark,date_init,recordBNF):
     ark_checked = ""
     dateBNF = []
-    dateBNF_100 = unidecode(main.extract_subfield(recordBNF,"100","a",1,sep="~").lower())
+    dateBNF_100 = unidecode(main.extract_subfield(recordBNF,"100","a",1,sep="~").lower())[9:13]
     if (len(dateBNF_100)>4):
         dateBNF_100 = dateBNF_100[0:4]
     if (main.RepresentsInt(dateBNF_100) is True):
@@ -405,10 +405,10 @@ def comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,da
             NumNotices2methode[NumNot].append(origineComparaison + " + contrôle Titre " + sous_zone)
             if (round(len(titre)/2)<10):
                 NumNotices2methode[NumNot].append("[demi-titre" + "-" + str(round(len(titre)/2)) + "caractères]")
-        elif(titre.find(titreBNF) > -1):
+        elif(titreBNF in titre):
             NumNotices2methode[NumNot].append(origineComparaison + " + contrôle Titre BNF contenu dans titre initial")
             ark = ark_current
-        elif (titreBNF.find(titre) > -1):
+        elif (titre in titreBNF):
             NumNotices2methode[NumNot].append(origineComparaison + " + contrôle Titre initial contenu dans titre BNF")
             ark = ark_current
     elif (titre == ""):
@@ -650,7 +650,7 @@ def isbnauteur2sru(NumNot,isbn,titre,auteur,date):
         if (resultats.find("//srw:records/srw:record", namespaces=main.ns) is not None):
             NumNotices2methode[NumNot].append("ISBN + Auteur > ARK")
         for recordBNF in resultats.xpath("//srw:records/srw:record", namespaces=main.ns):
-            ark_current = record.find("srw:recordIdentifier", namespaces=main.ns).text
+            ark_current = recordBNF.find("srw:recordIdentifier", namespaces=main.ns).text
             ark_current = checkDate(ark_current,date,recordBNF)
             listeARK.append(ark_current)
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
@@ -1019,7 +1019,7 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,type
     #   -> on tronque
     if (typeRecord == "s" and annee_plus_trois == False):
         date_nett = datePerios(date_nett)
-    if (len(str(date_nett)) < 4):
+    if (len(str(date_nett)) < 4 and date_nett != ""):
         date_nett += "*"
     param_date = "all"
     #Si on cherche l'année de début de périodique en élargissant à une fourchette de dates
@@ -1038,7 +1038,6 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,type
         url = url_requete_sru('bib.title all "' + titre_propre + '" and bib.author all "' + auteur + '" and bib.date ' + param_date + ' "' + date_nett + '" and bib.publisher all "' + pubPlace_nett + '" and bib.doctype any "' + typeDoc + '"')
         if (anywhere == True):
             url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur + ' ' + pubPlace_nett + '" and bib.anywhere ' + param_date + ' "' + date_nett + '" and bib.doctype any "' + typeDoc + '"')
-        
         (test,results) = testURLetreeParse(url)
         index = ""
         if (results != "" and results.find("//srw:numberOfRecords", namespaces=main.ns).text == "0"):
@@ -1214,6 +1213,7 @@ def ean2ark(NumNot,ean,titre,auteur,date):
     return listeARK
 
 def nettoyage_no_commercial(no_commercial_propre):
+    no_commercial_propre = unidecode(no_commercial_propre.lower())
     return no_commercial_propre
             
 def no_commercial2ark(NumNot,no_commercial,titre,auteur,date,anywhere=False, publisher=""):
@@ -1232,9 +1232,9 @@ def no_commercial2ark(NumNot,no_commercial,titre,auteur,date,anywhere=False, pub
 
 def controleNoCommercial(NumNot,ark_current,no_commercial,titre,auteur,date,recordBNF):
     ark = ""
-    no_commercialBNF = nettoyage_no_commercial(extract_meta(recordBNF,"071$a"))
+    no_commercialBNF = " ".join([nettoyage_no_commercial(extract_meta(recordBNF,"071$b")), nettoyage_no_commercial(extract_meta(recordBNF,"071$a"))])
     if (no_commercial != "" and no_commercialBNF != ""):
-        if (no_commercial in no_commercialBNF):
+        if (no_commercial == no_commercialBNF or no_commercial in no_commercialBNF):
             ark = comparaisonTitres(NumNot,ark_current,"",no_commercial,titre,auteur,date,"",recordBNF, "No commercial")
             if (ark != ""):
                 NumNotices2methode[NumNot].append("No commercial")
@@ -1345,7 +1345,6 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
             if (ark == "" and ean != ""):
                 ark = ean2ark(NumNot,ean_propre,"","","")
 
-            
             #A défaut, recherche sur Titre-Auteur-Date
             if (ark == "" and titre != ""):
                 ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,tome_nett,"m","a", False, publisher_nett)

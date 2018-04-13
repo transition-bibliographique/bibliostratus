@@ -362,7 +362,7 @@ def bibrecord2metas(numNot,doc_record,record):
     isbn = record2isbn(record2meta(record,["010$a"]))
     issn = record2isbn(record2meta(record,["011$a"]))
     ean =  record2ean(record2meta(record,["073$a"]))
-    id_commercial_aud = record2id_commercial_aud(record2meta(record,["071$a"]))
+    id_commercial_aud = record2id_commercial_aud(record2meta(record,["071$b","071$a"]))
 
 
     if (doc_record not in liste_fichiers):
