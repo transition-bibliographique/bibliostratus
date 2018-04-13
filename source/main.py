@@ -86,7 +86,7 @@ def download_last_update(url="https://github.com/Transition-bibliographique/alig
 def check_access_to_network():
     access_to_network = True
     try:
-        request.urlopen("http://www.bnf.fr")
+        request.urlopen("http://catalogue.bnf.fr/api")
     except error.URLError:
         print("Pas de réseau internet")
         access_to_network = False
