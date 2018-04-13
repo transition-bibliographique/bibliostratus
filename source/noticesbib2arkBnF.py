@@ -1438,8 +1438,8 @@ def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, i
             #    ark = no_commercial2ark(NumNot,no_commercial_propre,"","","",False, "")
                 
             #Si la recherche sur bib.comref n'a rien donné -> recherche du numéro partout dans la notice
-            if (ark == "" and no_commercial != ""):
-                ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,True, publisher_nett)
+            #if (ark == "" and no_commercial != ""):
+            #    ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,True, publisher_nett)
                 
             #A défaut, recherche sur Titre-Auteur-Date
             if (ark == "" and titre != ""):

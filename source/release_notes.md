@@ -1,3 +1,7 @@
+### version 1.12
+- Module blanc (alignements notices bibliographiques) : 
+	- Recherche sur numéro commercial : si 0 résultat quand on cherche sur le critère bib.comref, le programme relançait la recherche partout dans la notice --> ce rebond est désactivé (le "numéro commercial" peut avoir des valeurs trop génériques, comme "208")
+
 ### version 1.11
 - Module blanc (alignements notices bibliographiques) : 
 	- Correction du format des fichiers en sortie quand l'option "Plusieurs fichiers est choisie"
