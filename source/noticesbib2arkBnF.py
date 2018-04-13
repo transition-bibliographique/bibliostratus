@@ -1217,7 +1217,11 @@ def nettoyage_no_commercial(no_commercial_propre):
     return no_commercial_propre
             
 def no_commercial2ark(NumNot,no_commercial,titre,auteur,date,anywhere=False, publisher=""):
-    url = url_requete_sru('bib.comref  all "' + no_commercial + '"')
+    no_commercial = no_commercial.strip(" ")
+    if (" " in no_commercial):
+        no_commercial_source = " ".join([mot for mot in no_commercial.split(" ")[0:-1]])
+        no_commercial_id = no_commercial.split(" ")[-1]
+        url = url_requete_sru('bib.anywhere all "' + no_commercial_source + '" and bib.comref  all "' + no_commercial_id + '"')
     if (anywhere == True):
         url = url_requete_sru('bib.anywhere  all "' + no_commercial + '"')
     ark = ""
