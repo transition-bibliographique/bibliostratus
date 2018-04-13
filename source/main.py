@@ -474,7 +474,7 @@ def formulaire_main(access_to_network, last_version):
 
 
 
-    tk.Label(zone_notes, text = "Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
+    tk.Label(zone_notes, text = "BiblioStratus - Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
     
     if (last_version[1] == True):
         download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(last_version[0]), command=download_last_update)

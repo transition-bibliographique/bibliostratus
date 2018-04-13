@@ -1854,7 +1854,7 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     
     zone_version = tk.Frame(zone_notes, bg=couleur_fond)
     zone_version.pack()
-    tk.Label(zone_version, text = "Version " + str(main.version) + " - " + main.lastupdate, bg=couleur_fond).pack()
+    tk.Label(zone_version, text = "BiblioStratus - Version " + str(main.version) + " - " + main.lastupdate, bg=couleur_fond).pack()
 
     zone_controles = tk.Frame(zone_notes, bg=couleur_fond)
     zone_controles.pack()
