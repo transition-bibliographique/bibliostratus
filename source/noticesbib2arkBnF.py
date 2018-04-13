@@ -1222,6 +1222,8 @@ def no_commercial2ark(NumNot,no_commercial,titre,auteur,date,anywhere=False, pub
         no_commercial_source = " ".join([mot for mot in no_commercial.split(" ")[0:-1]])
         no_commercial_id = no_commercial.split(" ")[-1]
         url = url_requete_sru('bib.anywhere all "' + no_commercial_source + '" and bib.comref  all "' + no_commercial_id + '"')
+    else:
+        url = url_requete_sru('bib.comref  all "' + no_commercial + '"')
     if (anywhere == True):
         url = url_requete_sru('bib.anywhere  all "' + no_commercial + '"')
     ark = ""
