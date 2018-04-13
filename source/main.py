@@ -382,7 +382,7 @@ def formulaire_main(access_to_network, last_version):
      zone_access2programs,
      zone_actions,
      zone_ok_help_cancel,
-     zone_notes] = main_form_frames("Bibliostratus : Stratégie d'alignement d'URIs pour la Transition bibliographique",
+     zone_notes] = main_form_frames("BiblioStratus : Stratégie d'alignement d'URIs pour la Transition bibliographique",
                                       couleur_fond,
                                       couleur_bouton,access_to_network)
     
