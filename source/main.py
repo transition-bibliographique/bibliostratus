@@ -41,7 +41,7 @@ urlSRUroot = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrie
 url_online_help = "https://github.com/Transition-bibliographique/bibliostratus"
 texte_bouton_help = "Documentation\nen ligne"
 
-url_forum_aide = "http://www.agorabib.fr/forum/10-informatique-documentaire/"
+url_forum_aide = "http://www.agorabib.fr/topic/3317-bibliostratus-mettre-en-correspondance-ses-notices-avec-celles-de-la-bnf/"
 texte_bouton_forum = "Forum\nutilisateurs"
 
 chiffers = ["0","1","2","3","4","5","6","7","8","9"]
