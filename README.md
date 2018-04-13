@@ -1,4 +1,4 @@
-Alignement-donnees-bnf : Programmes pour accompagner la Transition bibliographique dans les bibliothèques françaises
+Bibliostratus : STRatégie d'Alignement d'URIs pour la Transition bibliographique
 ==
 
 * Le répertoire *source* contient le code développé en Python

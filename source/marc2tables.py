@@ -257,7 +257,7 @@ def record2id_commercial_aud(f073a):
 # Gestion des mises à jour
 # =============================================================================
 def download_last_update():
-    url = "https://github.com/Transition-bibliographique/alignements-donnees-bnf/"
+    url = "https://github.com/Transition-bibliographique/bibliostratus/"
     webbrowser.open(url)
 
 
@@ -275,7 +275,7 @@ def iso2tables_old(master,entry_filename, rec_format, id_traitement):
             print("\n\n*------------------------------------------------*/")
             main.popup_errors(master,main.errors["pb_input_utf8_marcEdit"], 
             "Aide en ligne : conversion iso2709 > XML",
-            "https://github.com/Transition-bibliographique/alignements-donnees-bnf/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#un-probl%C3%A8me-dencodage--passez-en-xml-avec-marcedit" 
+            "https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#un-probl%C3%A8me-dencodage--passez-en-xml-avec-marcedit" 
             )
         except UnicodeDecodeError as err:
             print("\n\n/*---------------------------------------------*\n\n")
@@ -284,7 +284,7 @@ def iso2tables_old(master,entry_filename, rec_format, id_traitement):
             print("\n\n*------------------------------------------------*/")
             main.popup_errors(master,main.errors["pb_input_utf8_marcEdit"], 
             "Aide en ligne : conversion iso2709 > XML",
-            "https://github.com/Transition-bibliographique/alignements-donnees-bnf/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#un-probl%C3%A8me-dencodage--passez-en-xml-avec-marcedit" 
+            "https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#un-probl%C3%A8me-dencodage--passez-en-xml-avec-marcedit" 
             )
 
 def iso2tables(master,entry_filename, rec_format, id_traitement):
@@ -536,7 +536,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
      zone_access2programs,
      zone_actions,
      zone_ok_help_cancel,
-     zone_notes] = main.form_generic_frames(master,"Conversion de fichiers de notices MARC en tableaux",
+     zone_notes] = main.form_generic_frames(master,"Conversion de fichiers de notices Unimarc en tableaux",
                                       couleur_fond,couleur_bouton,
                                       access_to_network)
     
@@ -598,7 +598,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     """entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
     entry_filename.pack(side="left")
     entry_filename.focus_set()"""
-    main.download_zone(cadre_input_file, "Sélectionner un fichier\nde notices Marc",entry_file_list,couleur_fond,cadre_output_message_en_cours)
+    main.download_zone(cadre_input_file, "Sélectionner un fichier\nde notices Unimarc",entry_file_list,couleur_fond,cadre_output_message_en_cours)
     
     #tk.Button(cadre_input_file_browse, text="Sélectionner le fichier\ncontenant les notices", command=lambda:main.openfile(cadre_input_file_name, popup_filename), width=20).pack()
     
@@ -626,7 +626,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     bib2ark.radioButton_lienExample(cadre_input_type_docs,file_format,1,couleur_fond,
                             "iso2709",
                             "",
-                            "https://github.com/Transition-bibliographique/alignements-donnees-bnf/blob/master/examples/noticesbib.iso")
+                            "https://github.com/Transition-bibliographique/bibliostratus/blob/master/examples/noticesbib.iso")
 
     tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Marc XML", variable=file_format, value=2,
                    anchor="w", justify="left").pack(anchor="w")
@@ -637,12 +637,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
 en UTF-8 sans BOM.             
 En cas de problème, 
 convertissez-le en XML
-avant de le passer dans ce module
-
-
-
-
-""")
+avant de le passer dans ce module""")
     info_utf8.pack()
     
     tk.Label(cadre_input_type_docs_interstice2, bg=couleur_fond, text="\t", justify="left").pack()
@@ -732,7 +727,7 @@ avant de le passer dans ce module
     cancel = tk.Button(cadre_valider, text="Annuler",bg=couleur_fond, command=lambda: main.annuler(form), pady=10, padx=5, width=12)
     cancel.pack()
     
-    tk.Label(zone_notes, text = "Version " + str(main.version) + " - " + lastupdate, bg=couleur_fond).pack()
+    tk.Label(zone_notes, text = "Version " + str(main.version) + " - " + main.lastupdate, bg=couleur_fond).pack()
     
     """if (main.last_version[1] == True):
         download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(main.last_version[0]), command=download_last_update)

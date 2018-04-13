@@ -31,14 +31,14 @@ import preferences
 
 version = 1.12
 lastupdate = "13/04/2018"
-programID = "transbiblio"
+programID = "bibliostratus"
 
 ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}
 nsSudoc = {"rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#", "bibo":"http://purl.org/ontology/bibo/", "dc":"http://purl.org/dc/elements/1.1/", "dcterms":"http://purl.org/dc/terms/", "rdafrbr1":"http://rdvocab.info/RDARelationshipsWEMI/", "marcrel":"http://id.loc.gov/vocabulary/relators/", "foaf":"http://xmlns.com/foaf/0.1/", "gr":"http://purl.org/goodrelations/v1#", "owl":"http://www.w3.org/2002/07/owl#", "isbd":"http://iflastandards.info/ns/isbd/elements/", "skos":"http://www.w3.org/2004/02/skos/core#", "rdafrbr2":"http://RDVocab.info/uri/schema/FRBRentitiesRDA/", "rdaelements":"http://rdvocab.info/Elements/", "rdac":"http://rdaregistry.info/Elements/c/", "rdau":"http://rdaregistry.info/Elements/u/", "rdaw":"http://rdaregistry.info/Elements/w/", "rdae":"http://rdaregistry.info/Elements/e/", "rdam":"http://rdaregistry.info/Elements/m/", "rdai":"http://rdaregistry.info/Elements/i/", "sudoc":"http://www.sudoc.fr/ns/", "bnf-onto":"http://data.bnf.fr/ontology/bnf-onto/"}
 nsisni = {'srw':'http://www.loc.gov/zing/srw/', 'dc':'http://purl.org/dc/elements/1.1/', 'diag':'http://www.loc.gov/zing/srw/diagnostic/', 'xcql':'http://www.loc.gov/zing/cql/xcql/'}
 urlSRUroot = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query="
 
-url_online_help = "https://github.com/Transition-bibliographique/alignements-donnees-bnf"
+url_online_help = "https://github.com/Transition-bibliographique/bibliostratus"
 texte_bouton_help = "Documentation\nen ligne"
 
 url_forum_aide = "http://www.agorabib.fr/forum/10-informatique-documentaire/"
@@ -67,7 +67,7 @@ def annuler(master):
 def check_last_compilation(programID):
     programID_last_compilation = 0
     display_update_button = False
-    url = "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/source/last_compilations.json"
+    url = "https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/source/last_compilations.json"
     try:
         last_compilations = request.urlopen(url)
         reader = codecs.getreader("utf-8")
@@ -80,7 +80,7 @@ def check_last_compilation(programID):
         print("erreur réseau")
     return [programID_last_compilation,display_update_button]
 
-def download_last_update(url="https://github.com/Transition-bibliographique/alignements-donnees-bnf/tree/master/bin"):
+def download_last_update(url="https://github.com/Transition-bibliographique/bibliostratus/tree/master/bin"):
     webbrowser.open(url)
 
 def check_access_to_network():
@@ -382,7 +382,7 @@ def formulaire_main(access_to_network, last_version):
      zone_access2programs,
      zone_actions,
      zone_ok_help_cancel,
-     zone_notes] = main_form_frames("La Transition bibliographique en chantant nous ouvre...",
+     zone_notes] = main_form_frames("Bibliostratus : Stratégie d'alignement d'URIs pour la Transition bibliographique",
                                       couleur_fond,
                                       couleur_bouton,access_to_network)
     
@@ -431,7 +431,7 @@ def formulaire_main(access_to_network, last_version):
              bg=couleur_fond,fg="#365B43",font="Arial 9 normal", justify="left").pack(anchor="w")
     
     
-    marc2tableButton = tk.Button(frame3, text = "Convertir un fichier Marc\n en tableaux", 
+    marc2tableButton = tk.Button(frame3, text = "Convertir un fichier Unimarc\n en tableaux", 
                                  command=lambda: marc2tables.formulaire_marc2tables(master,access_to_network), 
                                  padx=10,pady=10, bg="#2D4991",fg="white")
     marc2tableButton.pack()
@@ -479,7 +479,7 @@ def formulaire_main(access_to_network, last_version):
     if (last_version[1] == True):
         download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(last_version[0]), command=download_last_update)
         download_update.pack()
-        url_release_notes = "https://github.com/Transition-bibliographique/alignements-donnees-bnf/blob/master/source/release_notes.md#" + "version-" + str(last_version[0]).replace(".","")
+        url_release_notes = "https://github.com/Transition-bibliographique/bibliostratus/blob/master/source/release_notes.md#" + "version-" + str(last_version[0]).replace(".","")
         release_notes = tk.Button(zone_notes, 
                                   bg=couleur_fond,
                                   font="Arial 8 bold italic",

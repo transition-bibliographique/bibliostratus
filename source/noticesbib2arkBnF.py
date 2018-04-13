@@ -1652,7 +1652,7 @@ def typesConversionARK(liste_reports):
 
 def click2help():
     """Fonction d'ouverture du navigateur pour avoir de l'aide sur le logiciel"""
-    url = "https://github.com/Transition-bibliographique/alignements-donnees-bnf"
+    url = "https://github.com/Transition-bibliographique/bibliostratus"
     webbrowser.open_new(url)
 
 def annuler(form_bib2ark):
@@ -1679,7 +1679,7 @@ def check_last_compilation(programID):
 
 def download_last_update():
     """Fournit l'URL de téléchargement de la dernière version"""
-    url = "https://github.com/Transition-bibliographique/alignements-donnees-bnf/blob/master/noticesbib2arkBnF.py"
+    url = "https://github.com/Transition-bibliographique/bibliostratus/blob/master/noticesbib2arkBnF.py"
     webbrowser.open(url)
 #==============================================================================
 # Création de la boîte de dialogue
@@ -1781,15 +1781,15 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     radioButton_lienExample(cadre_input_type_docs,type_doc_bib,1,couleur_fond,
                             "[TEX] Documents imprimés (monographies)",
                             "(Colonnes : " + " | ".join(header_columns_init_monimpr) + ")",
-                            "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/mon_impr.tsv")
+                            "https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/examples/mon_impr.tsv")
     radioButton_lienExample(cadre_input_type_docs,type_doc_bib,2,couleur_fond,
                             "[VID] Audiovisuel (CD / DVD)",
                             "(" + " | ".join(header_columns_init_cddvd) + ")",
-                            "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/adv.tsv")
+                            "https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/examples/adv.tsv")
     radioButton_lienExample(cadre_input_type_docs,type_doc_bib,3,couleur_fond,
                             "[PER] Périodiques",
                             "(" + " | ".join(header_columns_init_perimpr) + ")",
-                            "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/per.tsv")
+                            "https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/examples/per.tsv")
     type_doc_bib.set(1)
     
     
@@ -1855,7 +1855,7 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     
     zone_version = tk.Frame(zone_notes, bg=couleur_fond)
     zone_version.pack()
-    tk.Label(zone_version, text = "Version " + str(main.version) + " - " + lastupdate, bg=couleur_fond).pack()
+    tk.Label(zone_version, text = "Version " + str(main.version) + " - " + main.lastupdate, bg=couleur_fond).pack()
 
     zone_controles = tk.Frame(zone_notes, bg=couleur_fond)
     zone_controles.pack()
