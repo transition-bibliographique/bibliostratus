@@ -144,7 +144,9 @@ def nettoyageTitrePourRecherche(titre):
     return titre
     
 def nettoyage_lettresISBN(isbn):
-    isbn = isbn.lower()
+    isbn = unidecode(isbn.lower())
+    for signe in ponctuation:
+        isbn = isbn.replace(signe,"")
     prefix = isbn[0:-1]
     cle = isbn[-1]
     for lettre in lettres:
@@ -521,9 +523,9 @@ def row2files(liste_metadonnees,liste_reports):
 def nettoyage_isbn(isbn):
     isbn_nett = isbn.split(";")[0].split(",")[0].split("(")[0].split("[")[0]
     isbn_nett = isbn_nett.replace("-","").replace(" ","")
+    isbn_nett = unidecode(isbn_nett)
     for signe in ponctuation:
         isbn_nett = isbn_nett.replace(signe,"")
-        isbn_nett = unidecode(isbn_nett)
     isbn_nett = isbn_nett.lower()
     for lettre in lettres_sauf_x:
         isbn_nett = isbn_nett.replace(lettre,"")
