@@ -524,6 +524,7 @@ def nettoyage_isbn(isbn):
     for signe in ponctuation:
         isbn_nett = isbn_nett.replace(signe,"")
         isbn_nett = unidecode(isbn_nett)
+    isbn_nett = isbn_nett.lower()
     for lettre in lettres_sauf_x:
         isbn_nett = isbn_nett.replace(lettre,"")
     return isbn_nett
