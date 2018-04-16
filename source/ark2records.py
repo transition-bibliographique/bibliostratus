@@ -47,7 +47,8 @@ def ark2url(ark, type_record, format_BIB):
     if (type_record == "aut"):
         query += ' and aut.status any "sparse validated"'
     query = urllib.parse.quote(query)
-    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + "&recordSchema=" + format_BIB + "&maximumRecords=20&startRecord=1"
+    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + "&recordSchema=" + format_BIB + "&maximumRecords=20&startRecord=1&origin=bibliostratus"
+    print(url)
     return url
 
 def nn2url(nn, type_record, format_BIB):
@@ -101,8 +102,8 @@ def file_create(record_type, format_file, outputID):
         file = open(filename, "w", encoding="utf-8")
         file.write("<?xml version='1.0'?>\n")
         file.write("<mxc:collection ")
-        for key in ns:
-            file.write(' xmlns:' + key + '="' + ns[key] + '"')
+        for key in main.ns:
+            file.write(' xmlns:' + key + '="' + main.ns[key] + '"')
         file.write(">\n")
     else:
         filename = id_filename + ".iso2709"
@@ -162,7 +163,7 @@ def callback(master, form, filename, type_records_form, headers, AUTliees, outpu
             if (ark not in listeARK_BIB):
                 print(str(j) + ". " + ark)
                 listeARK_BIB.append(ark)
-                page = etree.parse(request.urlopen(ark2url(ark, "bib", format_BIB)))
+                page = etree.parse(request.urlopen(ark2url(ark, type_records, format_BIB)))
                 nbResults = page.find("//srw:numberOfRecords", namespaces=main.ns).text
                 if (nbResults == "1"):
                     for XMLrec in page.xpath("//srw:record/srw:recordData/mxc:record", namespaces=main.ns):
@@ -265,6 +266,7 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
     headerButton = tk.Checkbutton(frame_input_aut, text="Mon fichier a des en-têtes de colonne", 
                        variable=headers,
                        bg=couleur_fond, justify="left").pack(anchor="w")
+
     headers.set(1)
     
    

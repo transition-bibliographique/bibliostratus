@@ -1,7 +1,15 @@
+### version 1.14
+- Modules blancs (alignements) :
+    - ajout d'un marqueur "&origin=bibliostratus" dans les requêtes sur le SRU BnF
+
 ### version 1.13
 - Module blanc (alignement notices bibliographiques)
 	- meilleur nettoyage de l'ISBN
-
+- Module blanc (alignement notices d'autorité)
+	- intégration code d'erreur 10053 (problème connexion à l'API)
+- Module rouge (extraction de notices à partir d'une liste d'ARK):
+	- correction pour extraction correcte d'ARK autorités
+	
 ### version 1.12
 14/04/2017
 - Module blanc (alignements notices bibliographiques) : 

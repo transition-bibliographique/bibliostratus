@@ -600,7 +600,7 @@ def extractARKautfromBIB(record,nom,prenom,date_debut):
                 elif (date_debut != "" and "dates" in listeFieldsAuteur[auteur]):
                     if (date_debut in listeFieldsAuteur[auteur]["dates"] or listeFieldsAuteur[auteur]["dates"] in date_debut):
                         listeNNA.append(listeFieldsAuteur[auteur]["nna"])
-                else:
+                elif ("nna" in listeFieldsAuteur[auteur]):
                     listeNNA.append(listeFieldsAuteur[auteur]["nna"])
     for nna in listeNNA:
         listeArk.append(nna2ark(nna))

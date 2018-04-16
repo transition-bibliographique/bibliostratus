@@ -716,6 +716,11 @@ def testURLetreeParse(url):
         print(err)
         test = False
         url_access_pbs.append([url,"http.client.BadStatusLine"])
+    except error.ConnectionAbortedError as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"urllib.error.ConnectionAbortedError"])
     return (test,resultat)
 
 
@@ -759,6 +764,11 @@ def testURLurlopen(url):
         print(err)
         test = False
         url_access_pbs.append([url,"http.client.BadStatusLine"])
+    except error.ConnectionAbortedError as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"urllib.error.ConnectionAbortedError"])
     return (test,resultat)
 
 #Si l'ISBN n'a été trouvé ni dans l'index ISBN, ni dans l'index EAN
@@ -790,6 +800,8 @@ def testURLretrieve(url):
     except error.URLError as err:
         test = False
     except http.client.RemoteDisconnected as err:
+        test = False
+    except error.ConnectionAbortedError as err:
         test = False
     return test
 
@@ -1186,7 +1198,7 @@ def extract_meta(recordBNF,field_subfield,occ="all",anl=False):
     return value
 
 def url_requete_sru(query,recordSchema="unimarcxchange",maximumRecords="1000",startRecord="1"):
-    url = main.urlSRUroot + urllib.parse.quote(query) +"&recordSchema=" + recordSchema + "&maximumRecords=" + maximumRecords + "&startRecord=" + startRecord
+    url = main.urlSRUroot + urllib.parse.quote(query) +"&recordSchema=" + recordSchema + "&maximumRecords=" + maximumRecords + "&startRecord=" + startRecord + "&origin=bibliostratus"
     return url
 
 
