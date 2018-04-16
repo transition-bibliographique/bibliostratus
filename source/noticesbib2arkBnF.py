@@ -716,11 +716,11 @@ def testURLetreeParse(url):
         print(err)
         test = False
         url_access_pbs.append([url,"http.client.BadStatusLine"])
-    except error.ConnectionAbortedError as err:
+    except ConnectionAbortedError as err:
         print(url)
         print(err)
         test = False
-        url_access_pbs.append([url,"urllib.error.ConnectionAbortedError"])
+        url_access_pbs.append([url,"urllib.ConnectionAbortedError"])
     return (test,resultat)
 
 

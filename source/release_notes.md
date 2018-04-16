@@ -1,6 +1,7 @@
 ### version 1.14
 - Modules blancs (alignements) :
     - ajout d'un marqueur "&origin=bibliostratus" dans les requêtes sur le SRU BnF
+	- bug : Exception ConnectionAbortedError mal levée
 
 ### version 1.13
 - Module blanc (alignement notices bibliographiques)
