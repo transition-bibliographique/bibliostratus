@@ -48,7 +48,6 @@ def ark2url(ark, type_record, format_BIB):
         query += ' and aut.status any "sparse validated"'
     query = urllib.parse.quote(query)
     url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + "&recordSchema=" + format_BIB + "&maximumRecords=20&startRecord=1&origin=bibliostratus"
-    print(url)
     return url
 
 def nn2url(nn, type_record, format_BIB):
