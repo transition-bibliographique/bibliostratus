@@ -4,9 +4,9 @@
 :: 4. Supprime le répertoire initial "alignement-donnees-bnf" 
 @echo off
 set /p version="version: "
-python "C:/Anaconda/Lib/site-packages/PyInstaller-3.3.1/pyinstaller.py" "C:/Users/USER/Downloads/alignements-donnees-bnf-master/alignements-donnees-bnf-master/source/main.py"
+python "C:/Anaconda/Lib/site-packages/PyInstaller-3.3.1/pyinstaller.py" "C:/Users/USER/Downloads/bibliostratus-master/source/main.py"
 rd /s /q build
-copy alignement-donnees-bnf.bat dist
-rename dist alignement-donnees-bnf
-"C:/Program Files/7-Zip/7z" a -tzip ../bin/alignement-donnees-bnf_%version%_win32_py3.6.zip alignement-donnees-bnf/
-rd /s /q alignement-donnees-bnf
+copy bibliostratus.bat dist
+rename dist bibliostratus
+"C:/Program Files/7-Zip/7z" a -tzip ../bin/bibliostratus_%version%_win32_py3.6.zip bibliostratus/
+rd /s /q bibliostratus
