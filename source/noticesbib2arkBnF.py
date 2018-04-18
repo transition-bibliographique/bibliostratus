@@ -145,31 +145,21 @@ def nettoyageTitrePourRecherche(titre):
     
 def nettoyage_lettresISBN(isbn):
     isbn = unidecode(isbn.lower())
+    char_cle = "0123456789xX"
     for signe in ponctuation:
         isbn = isbn.replace(signe,"")
     prefix = isbn[0:-1]
     cle = isbn[-1]
     for lettre in lettres:
         prefix = prefix.replace(lettre, "")
-    if (cle == "0" 
-        or cle == "1" 
-        or cle == "2" 
-        or cle == "3" 
-        or cle == "4" 
-        or cle == "5"
-        or cle == "6"
-        or cle == "7"
-        or cle == "8"
-        or cle == "9"):
-        cle = cle
-    elif (cle == "x"):
-        cle = "X"
+    if (cle in char_cle):
+        cle = cle.upper()
     else:
         cle = ""
     return prefix+cle
 
 def nettoyageIsbnPourControle(isbn):
-    isbn = nettoyage(isbn).replace(" ","")
+    isbn = nettoyage(isbn)
     if (isbn != ""):
         isbn = nettoyage_lettresISBN(isbn)
     if (len(isbn) < 10):
@@ -1356,7 +1346,7 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
                 ark = isbn2ark(NumNot,isbn,isbn_propre,titre_nett,auteur_nett,date_nett)
                 
             #Si la recherche ISBN + contrôle Titre/Date n'a rien donné -> on cherche ISBN seul
-            if (ark == "" and isbn_propre != ""):
+            if (ark == "" and isbn_nett != ""):
                 ark = isbn2ark(NumNot,isbn,isbn_propre,"","","")
             #A défaut, recherche sur EAN
             if (ark == "" and ean != ""):
