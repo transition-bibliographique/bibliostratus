@@ -710,7 +710,7 @@ def testURLetreeParse(url):
         print(url)
         print(err)
         test = False
-        url_access_pbs.append([url,"urllib.ConnectionAbortedError"])
+        url_access_pbs.append([url,"ConnectionAbortedError"])
     return (test,resultat)
 
 
