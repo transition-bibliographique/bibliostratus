@@ -1548,7 +1548,7 @@ def perimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
                 typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
                 if (len(set(NumNotices2methode[NumNot])) == 1):
                     typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
-            liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,frbnf,current_ark,issn_nett,titre,auteur,date]
+            liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,frbnf,current_ark,issn_nett,titre,auteur,date,pubPlace]
             if (meta_bib == 1):
                 liste_metadonnees.extend(ark2metadc(ark))
             if (file_nb ==  1):
