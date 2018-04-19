@@ -56,7 +56,11 @@ errors = {
         Le fichier en entrée doit être en UTF-8 sans BOM.
         
         Si vous utilisez un fichier iso2709, convertissez-le d'abord en XML avec MarcEdit""",
-        "format_fichier_en_entree" : "Erreur dans le traitement\n\nVérifier les options choisies\npour le format de fichier en entrée"
+        "format_fichier_en_entree" : """Erreur dans le traitement
+
+Vérifier les options choisies\npour le format de fichier en entrée
+
+Si l'erreur persiste, convertissez le fichier dans un autre format avec MarcEdit"""
         }
 
 def click2help(url):

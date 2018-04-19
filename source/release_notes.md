@@ -2,6 +2,10 @@
 - Module blanc (alignements BIB):
 	- Quand la recherche ISBN n'a rien donné : relance d'une recherche ISBN partout dans la notice seulement si sa valeur nettoyée est d'au moins 10 caractères
 	- Correction sur l'erreur ConnectionAbortedError
+- Tous modules :
+	- Correction lien "Documentation en ligne"
+- Module rouge (marc > tableaux) :
+	- Erreur d'encodage XML : message d'erreur + fichier en sortie
 
 ### version 1.14
 17/04/2018

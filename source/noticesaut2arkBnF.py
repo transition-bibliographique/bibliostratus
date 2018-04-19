@@ -50,15 +50,15 @@ def create_reports(id_traitement_code, nb_fichiers_a_produire):
     stats_report_file = open(stats_report_file_name,"w")
     stats_report_file.write("Nb ARK trouvés\tNb notices concernées\n")
     
-    report_type_convert_file_name = id_traitement_code + "-" + "NumNotices-TypeConversion.txt"
-    report_type_convert_file = open(report_type_convert_file_name,"w")
-    report_type_convert_file.write("NumNotice\tMéthode pour trouver l'ARK\n")
+    #report_type_convert_file_name = id_traitement_code + "-" + "NumNotices-TypeConversion.txt"
+    #report_type_convert_file = open(report_type_convert_file_name,"w")
+    #report_type_convert_file.write("NumNotice\tMéthode pour trouver l'ARK\n")
     if (nb_fichiers_a_produire == 1):
         reports = create_reports_1file(id_traitement_code)
     else:
         reports = create_reports_files(id_traitement_code)
     reports.append(stats_report_file)
-    reports.append(report_type_convert_file)
+    #reports.append(report_type_convert_file)
     return reports
 
 def create_reports_1file(id_traitement_code):
@@ -623,7 +623,7 @@ def launch(form, entry_filename, headers, input_data_type, isni_option, file_nb,
         align_from_bib(form, entry_filename, headers, input_data_type, isni_option, file_nb, id_traitement, liste_reports, meta_bnf)
     else:
         main.popup_errors("Format en entrée non défini")
-    bib2ark.fin_traitements(form,liste_reports)
+    bib2ark.fin_traitements(form,liste_reports,nb_notices_nb_ARK)
 
 
 
@@ -754,7 +754,7 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
     main.form_saut_de_ligne(zone_ok_help_cancel, couleur_fond)
     call4help = tk.Button(zone_ok_help_cancel,
                           text=main.texte_bouton_help, 
-                          command=lambda: main.click2help(main.texte_bouton_help), 
+                          command=lambda: main.click2help(main.url_online_help), 
                           pady=5, padx=5, width=12)
     call4help.pack()
     tk.Label(zone_ok_help_cancel, text="\n",bg=couleur_fond, font="Arial 1 normal").pack()

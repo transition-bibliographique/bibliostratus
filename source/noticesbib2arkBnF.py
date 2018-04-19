@@ -1587,11 +1587,11 @@ def launch(form_bib2ark,zone_controles, entry_filename, type_doc_bib, file_nb, m
     else:
         print("Erreur : type de document non reconnu")
     
-    fin_traitements(form_bib2ark,liste_reports)
+    fin_traitements(form_bib2ark,liste_reports,nb_notices_nb_ARK)
 
 
-def fin_traitements(form_bib2ark,liste_reports):
-    stats_extraction(liste_reports)
+def fin_traitements(form_bib2ark,liste_reports,nb_notices_nb_ARK):
+    stats_extraction(liste_reports,nb_notices_nb_ARK)
     url_access_pbs_report(liste_reports)
     check_access_to_apis(liste_reports)
     typesConversionARK(liste_reports)
@@ -1602,7 +1602,7 @@ def fin_traitements(form_bib2ark,liste_reports):
 
 
 
-def stats_extraction(liste_reports):
+def stats_extraction(liste_reports,nb_notices_nb_ARK):
     """Ecriture des rapports de statistiques générales d'alignements"""
     for key in nb_notices_nb_ARK:
         liste_reports[-1].write(str(key) + "\t" + str(nb_notices_nb_ARK[key]) + "\n")
@@ -1842,7 +1842,7 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     
     call4help = tk.Button(zone_ok_help_cancel,
                           text=main.texte_bouton_help, 
-                          command=lambda: main.click2help(main.texte_bouton_help), 
+                          command=lambda: main.click2help(main.url_online_help), 
                           pady=5, padx=5, width=12)
     call4help.pack()
     tk.Label(zone_ok_help_cancel, text="\n",bg=couleur_fond, font="Arial 1 normal").pack()

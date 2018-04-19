@@ -20,7 +20,10 @@ import webbrowser
 import noticesbib2arkBnF as bib2ark
 import noticesaut2arkBnF as aut2ark
 import pymarc as mc
+import xml
 import main as main
+import chardet
+from chardet.universaldetector import UniversalDetector
 
 version = 0.01
 programID = "marc2tables"
@@ -287,46 +290,127 @@ def iso2tables_old(master,entry_filename, rec_format, id_traitement):
             "https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#un-probl%C3%A8me-dencodage--passez-en-xml-avec-marcedit" 
             )
 
-def iso2tables(master,entry_filename, rec_format, id_traitement):
-    input_file = open(entry_filename,'r',encoding="utf-8").read().split(u'\u001D')[0:-1]
+def testchardet(filename):
+    detector = UniversalDetector()
+    for line in open(filename, 'rb'):
+        detector.feed(line)
+        if (detector.done): 
+            break
+    detector.close()
+    print("detector\n\n")
+    print (detector.result)
+
+def alerte_bom(err):
+    if ("\xef\xbb\xbf" in err.lower()):
+        print("""Le fichier est en UTF-8 BOM
+Ouvrez-le dans un éditeur de texte (par exemple avec Notepad++) 
+pour le convertir en UTF-8 (sans BOM).
+""")
+        
+def detect_errors_encoding_iso(collection):
+    test = True
+    record = ""
+    try:
+        for rec in collection:
+            record = rec
+    except ValueError as err:
+            alerte_bom(str(err))
+            test = False
+    except mc.exceptions.RecordLengthInvalid as err:
+        alerte_bom(str(err))
+        NumNot = record2meta(record,["001"])
+        liste_notices_pb_encodage.append(NumNot)
+        pass
+    return (test, record)
+
+def test_encoding_file(master,entry_filename,encoding):
+    test = True
+    input_file = ""
+    try:
+        input_file = open(entry_filename,'r',encoding=encoding).read().split(u'\u001D')[0:-1]
+    except ValueError as err:
+        if ("base 10" in str(err)):
+            print("Encodage UTF-8 BOM -> convertir le fichier en UTF8 sans BOM")
+    except UnicodeDecodeError:
+        main.popup_errors(master,main.errors["format_fichier_en_entree"])
+    return (test, input_file)
+
+def iso2tables(master,entry_filename, file_format, rec_format, id_traitement):
+    #input_file_test = open(entry_filename,'rb').read()
+    #print(chardet.detect(input_file_test).read())
+    encoding = "iso-8859-1"
+    if (file_format == 1):
+        encoding = "utf-8"
+    (test_file,input_file) = test_encoding_file(master,entry_filename,encoding)
+    assert test_file
+
     temp_list = [el + u'\u001D' for el in input_file]
     i = 0
     for rec in temp_list :
         i += 1
         outputfilename = "temp_record.txt"
         outputfile = open(outputfilename, "w", encoding="utf-8")
+
         outputfile.write(rec)
         outputfile.close()
         with open(outputfilename, 'rb') as fh:
             collection = mc.MARCReader(fh)
-            collection.force_utf8 = True
-            try:
-                for record in collection:
-                    #print(record2meta(record,["001"]))
-                    record2listemetas(id_traitement, record,rec_format)
-            except mc.exceptions.RecordLengthInvalid as err:
-                NumNot = record2meta(record,["001"])
-                liste_notices_pb_encodage.append(NumNot)
-                pass
-            except UnicodeDecodeError as err:
-                NumNot = record2meta(record,["001"])
-                liste_notices_pb_encodage.append(NumNot)
-                pass
+            if (file_format == 1):
+                collection.force_utf8 = True
+            (test,record) = detect_errors_encoding_iso(collection)
+            if (test):
+                record2listemetas(id_traitement, record,rec_format)
+#==============================================================================
+#             try:
+#                 for record in collection:
+#                     #print(record2meta(record,["001"]))
+#                     record2listemetas(id_traitement, record,rec_format)
+#             except ValueError as err:
+#                 alerte_bom(str(err))
+#             except UnboundLocalError:
+#                 main.popup_errors(master,main.errors["format_fichier_en_entree"])
+#             except mc.exceptions.RecordLengthInvalid as err:
+#                 alerte_bom(str(err))
+#                 NumNot = record2meta(record,["001"])
+#                 liste_notices_pb_encodage.append(NumNot)
+#                 pass
+#             except UnicodeDecodeError as err:
+#                 NumNot = record2meta(record,["001"])
+#                 liste_notices_pb_encodage.append(NumNot)
+#                 pass
+#==============================================================================
+#==============================================================================
+#     except UnicodeDecodeError as err:
+#         print("""Le fichier en entrée n'est pas en """ + encoding + """
+# Essayez l'autre option d'encodage du module, ou convertissez le fichier en XML
+# en utilisant MarcEdit""")
+#     
+#==============================================================================
     try:
         os.remove("temp_record.txt")
     except FileNotFoundError as err:
-        main.popup_errors(master,main.errors["format_fichier_en_entree"])
+        print(err)
     stats["Nombre total de notices traitées"] = i
 
 
 def xml2tables(master,entry_filename, rec_format, id_traitement):
-    collection = mc.marcxml.parse_xml_to_array(entry_filename, strict=False)
-    i = 0
-    for record in collection:
-        print(record.leader)
-        i += 1
-        record2listemetas(id_traitement, record,rec_format)
-    stats["Nombre total de notices traitées"] = i
+    try:
+        collection = mc.marcxml.parse_xml_to_array(entry_filename, strict=False)
+        i = 0
+        for record in collection:
+            #print(record.leader)
+            i += 1
+            record2listemetas(id_traitement, record,rec_format)
+        stats["Nombre total de notices traitées"] = i
+    except xml.sax._exceptions.SAXParseException:
+        message = """Le fichier XML """ + entry_filename + """ n'est pas encodé en UTF-8.
+Veuillez ouvrir ce fichier avec un logiciel (exemple : Notepad++)
+qui permet de modifier l'encodage du fichier pour le passer
+en UTF-8 avant de le mettre en entrée du logiciel"""
+        print(message)
+        error_file = open(id_traitement + "-errors.txt","w",encoding="utf-8")
+        error_file.write(message)
+        error_file.close()
     
 
 def bibrecord2metas(numNot,doc_record,record):
@@ -467,6 +551,9 @@ Elles n'ont pas été exportées dans les tableaux\n\n""")
         for NumNot in liste_notices_pb_encodage:
             encoding_errors_file.write(NumNot + "\n")
             print(NumNot)
+        print("""\n\nNous vous recommandons de convertir votre fichier
+en XML avec encodage UTF-8, en utilisant pour cela MarcEdit\n
+https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#un-probl%C3%A8me-dencodage--passez-en-xml-avec-marcedit\n""")
         print("Consultez le fichier " + id_traitement + "-ALERT-notices_pb_encodage.txt")
         encoding_errors_file.close()
     
@@ -515,8 +602,8 @@ def launch(form,entry_filename,file_format, rec_format, output_ID,master):
             doc_record_type[dcrec] = dcrec_libelles
                 
     print("Fichier en entrée : ", entry_filename)
-    if (file_format == 1):
-        iso2tables(master,entry_filename, rec_format, output_ID)
+    if (file_format == 1 or file_format == 3):
+        iso2tables(master,entry_filename, file_format, rec_format, output_ID)
     else:
         xml2tables(master,entry_filename, rec_format, output_ID)
     end_of_treatments(form,output_ID)
@@ -624,21 +711,37 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     file_format = tk.IntVar()
 
     bib2ark.radioButton_lienExample(cadre_input_type_docs,file_format,1,couleur_fond,
-                            "iso2709",
+                            "iso2709 encodé UTF-8",
                             "",
                             "https://github.com/Transition-bibliographique/bibliostratus/blob/master/examples/noticesbib.iso")
+    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="iso2709 encodé ISO-8859-1", 
+                   variable=file_format, value=3,
+                   anchor="w", justify="left").pack(anchor="w")
 
-    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Marc XML", variable=file_format, value=2,
+
+    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Marc XML encodé UTF-8", variable=file_format, value=2,
                    anchor="w", justify="left").pack(anchor="w")
     file_format.set(1)
-    info_utf8 = tk.Label(cadre_input_type_docs,
-                         bg=couleur_fond,justify="left", font="Arial 7 italic",
-                         text="""Le fichier iso2709 doit être 
-en UTF-8 sans BOM.             
-En cas de problème, 
-convertissez-le en XML
-avant de le passer dans ce module""")
-    info_utf8.pack()
+    
+    tk.Label(cadre_input_type_docs, bg=couleur_fond, text="\n", 
+             font="Arial 4", justify="left").pack()
+    
+    lien_help_encodage = tk.Button(cadre_input_type_docs, 
+                                   font="Arial 8 italic",
+                                   border=0,
+                                   text = "Je ne sais pas / Je ne comprends pas", 
+              command=lambda: main.click2help("https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#lencodage-des-fichiers-en-entr%C3%A9e"), 
+              )
+    lien_help_encodage.pack()
+
+#    info_utf8 = tk.Label(cadre_input_type_docs,
+#                         bg=couleur_fond,justify="left", font="Arial 7 italic",
+#                         text="""Le fichier iso2709 doit être 
+#en UTF-8 sans BOM.             
+#En cas de problème, 
+#convertissez-le en XML
+#avant de le passer dans ce module""")
+#    info_utf8.pack()
     
     tk.Label(cadre_input_type_docs_interstice2, bg=couleur_fond, text="\t", justify="left").pack()
     
