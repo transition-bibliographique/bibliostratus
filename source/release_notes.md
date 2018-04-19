@@ -6,6 +6,7 @@
 	- Correction lien "Documentation en ligne"
 - Module rouge (marc > tableaux) :
 	- Erreur d'encodage XML : message d'erreur + fichier en sortie
+	- Prise en compte d'un fichier ISO2709 UTF-8 avec BOM : nettoyage du BOM (dans un fichier temporaire) avant d'extraire les notices
 
 ### version 1.14
 17/04/2018
