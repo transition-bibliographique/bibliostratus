@@ -754,11 +754,11 @@ def testURLurlopen(url):
         print(err)
         test = False
         url_access_pbs.append([url,"http.client.BadStatusLine"])
-    except error.ConnectionAbortedError as err:
+    except ConnectionAbortedError as err:
         print(url)
         print(err)
         test = False
-        url_access_pbs.append([url,"urllib.error.ConnectionAbortedError"])
+        url_access_pbs.append([url,"ConnectionAbortedError"])
     return (test,resultat)
 
 #Si l'ISBN n'a été trouvé ni dans l'index ISBN, ni dans l'index EAN
@@ -791,7 +791,7 @@ def testURLretrieve(url):
         test = False
     except http.client.RemoteDisconnected as err:
         test = False
-    except error.ConnectionAbortedError as err:
+    except ConnectionAbortedError as err:
         test = False
     return test
 

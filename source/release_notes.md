@@ -1,9 +1,16 @@
+### version 1.15
+- Module blanc (alignements BIB):
+	- Quand la recherche ISBN n'a rien donné : relance d'une recherche ISBN partout dans la notice seulement si sa valeur nettoyée est d'au moins 10 caractères
+	- Correction sur l'erreur ConnectionAbortedError
+
 ### version 1.14
+17/04/2018
 - Modules blancs (alignements) :
     - ajout d'un marqueur "&origin=bibliostratus" dans les requêtes sur le SRU BnF
 	- bug : Exception ConnectionAbortedError mal levée
 
 ### version 1.13
+16/04/2018
 - Module blanc (alignement notices bibliographiques)
 	- meilleur nettoyage de l'ISBN
 - Module blanc (alignement notices d'autorité)
