@@ -323,25 +323,16 @@ def detect_errors_encoding_iso(collection):
         pass
     return (test, record)
 
-def test_encoding_file(master,entry_filename,encoding,file_format):
+def test_encoding_file(master,entry_filename,encoding):
     test = True
     input_file = ""
-    if (file_format == 1):
-        file = open(entry_filename,"rb").read()
-        if (len(file[0:3].decode(encoding)) == 1):
-            file = file[3:]
-            entry_filename = "temp_file_sans_bom.txt"
-        temp_file = open("temp_file_sans_bom.txt","wb")
-        temp_file.write(file)
-        temp_file.close()
     try:
         input_file = open(entry_filename,'r',encoding=encoding).read().split(u'\u001D')[0:-1]
+    except ValueError as err:
+        if ("base 10" in str(err)):
+            print("Encodage UTF-8 BOM -> convertir le fichier en UTF8 sans BOM")
     except UnicodeDecodeError:
         main.popup_errors(master,main.errors["format_fichier_en_entree"])
-    try:
-        os.remove("temp_file_sans_bom.txt")
-    except FileNotFoundError:
-        print("Fichier temporaire UTF8-sans BOM inutile")
     return (test, input_file)
 
 def iso2tables(master,entry_filename, file_format, rec_format, id_traitement):
@@ -350,7 +341,7 @@ def iso2tables(master,entry_filename, file_format, rec_format, id_traitement):
     encoding = "iso-8859-1"
     if (file_format == 1):
         encoding = "utf-8"
-    (test_file,input_file) = test_encoding_file(master,entry_filename,encoding,file_format)
+    (test_file,input_file) = test_encoding_file(master,entry_filename,encoding)
     assert test_file
 
     temp_list = [el + u'\u001D' for el in input_file]
