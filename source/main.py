@@ -38,7 +38,7 @@ nsSudoc = {"rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#", "bibo":"http://p
 nsisni = {'srw':'http://www.loc.gov/zing/srw/', 'dc':'http://purl.org/dc/elements/1.1/', 'diag':'http://www.loc.gov/zing/srw/diagnostic/', 'xcql':'http://www.loc.gov/zing/cql/xcql/'}
 urlSRUroot = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query="
 
-url_online_help = "https://github.com/Transition-bibliographique/bibliostratus"
+url_online_help = "https://github.com/Transition-bibliographique/bibliostratus/wiki"
 texte_bouton_help = "Documentation\nen ligne"
 
 url_forum_aide = "http://www.agorabib.fr/topic/3317-bibliostratus-mettre-en-correspondance-ses-notices-avec-celles-de-la-bnf/"
