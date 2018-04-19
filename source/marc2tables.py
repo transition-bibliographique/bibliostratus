@@ -264,32 +264,6 @@ def download_last_update():
     webbrowser.open(url)
 
 
-def iso2tables_old(master,entry_filename, rec_format, id_traitement):
-    with open(entry_filename, 'rb') as fh:
-        collection = mc.MARCReader(fh)
-        collection.force_utf8 = True
-        try:
-            for record in collection:
-                record2listemetas(record,rec_format)
-        except mc.exceptions.RecordLengthInvalid as err:
-            print("\n\n/*---------------------------------------------*\n\n")
-            print(main.errors["pb_input_utf8"])
-            print(err)
-            print("\n\n*------------------------------------------------*/")
-            main.popup_errors(master,main.errors["pb_input_utf8_marcEdit"], 
-            "Aide en ligne : conversion iso2709 > XML",
-            "https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#un-probl%C3%A8me-dencodage--passez-en-xml-avec-marcedit" 
-            )
-        except UnicodeDecodeError as err:
-            print("\n\n/*---------------------------------------------*\n\n")
-            print(main.errors["pb_input_utf8"])
-            print(err)
-            print("\n\n*------------------------------------------------*/")
-            main.popup_errors(master,main.errors["pb_input_utf8_marcEdit"], 
-            "Aide en ligne : conversion iso2709 > XML",
-            "https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#un-probl%C3%A8me-dencodage--passez-en-xml-avec-marcedit" 
-            )
-
 def testchardet(filename):
     detector = UniversalDetector()
     for line in open(filename, 'rb'):
@@ -314,10 +288,8 @@ def detect_errors_encoding_iso(collection):
         for rec in collection:
             record = rec
     except ValueError as err:
-            alerte_bom(str(err))
             test = False
     except mc.exceptions.RecordLengthInvalid as err:
-        alerte_bom(str(err))
         NumNot = record2meta(record,["001"])
         liste_notices_pb_encodage.append(NumNot)
         pass
@@ -369,32 +341,6 @@ def iso2tables(master,entry_filename, file_format, rec_format, id_traitement):
             (test,record) = detect_errors_encoding_iso(collection)
             if (test):
                 record2listemetas(id_traitement, record,rec_format)
-#==============================================================================
-#             try:
-#                 for record in collection:
-#                     #print(record2meta(record,["001"]))
-#                     record2listemetas(id_traitement, record,rec_format)
-#             except ValueError as err:
-#                 alerte_bom(str(err))
-#             except UnboundLocalError:
-#                 main.popup_errors(master,main.errors["format_fichier_en_entree"])
-#             except mc.exceptions.RecordLengthInvalid as err:
-#                 alerte_bom(str(err))
-#                 NumNot = record2meta(record,["001"])
-#                 liste_notices_pb_encodage.append(NumNot)
-#                 pass
-#             except UnicodeDecodeError as err:
-#                 NumNot = record2meta(record,["001"])
-#                 liste_notices_pb_encodage.append(NumNot)
-#                 pass
-#==============================================================================
-#==============================================================================
-#     except UnicodeDecodeError as err:
-#         print("""Le fichier en entrée n'est pas en """ + encoding + """
-# Essayez l'autre option d'encodage du module, ou convertissez le fichier en XML
-# en utilisant MarcEdit""")
-#     
-#==============================================================================
     try:
         os.remove("temp_record.txt")
     except FileNotFoundError as err:

@@ -1,9 +1,11 @@
 ### version 1.15
+- Tous modules :
+	- Correction lien "Documentation en ligne"
 - Module blanc (alignements BIB):
 	- Quand la recherche ISBN n'a rien donné : relance d'une recherche ISBN partout dans la notice seulement si sa valeur nettoyée est d'au moins 10 caractères
 	- Correction sur l'erreur ConnectionAbortedError
-- Tous modules :
-	- Correction lien "Documentation en ligne"
+- Module blanc (alignements AUT):
+	- nettoyage et formatage des ISNI avant requête dans le SRU
 - Module rouge (marc > tableaux) :
 	- Erreur d'encodage XML : message d'erreur + fichier en sortie
 	- Prise en compte d'un fichier ISO2709 UTF-8 avec BOM : nettoyage du BOM (dans un fichier temporaire) avant d'extraire les notices

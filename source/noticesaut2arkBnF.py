@@ -199,6 +199,7 @@ def align_from_aut(form, entry_filename, headers, input_data_type, isni_option, 
              nom,prenom,date_debut,date_fin) = bib2ark.extract_cols_from_row(row,
                                            ["NumNot","ark_aut_init","frbnf_aut_init","isni","nom","prenom","date_debut","date_fin"])
             ark_aut_init = nettoyageArk(ark_aut_init)
+            isni_nett = nettoyage_isni(isni)
             nom_nett = main.clean_string(nom, False, True)
             prenom_nett = main.clean_string(prenom, False, True)
             date_debut_nett = date_debut
@@ -206,8 +207,8 @@ def align_from_aut(form, entry_filename, headers, input_data_type, isni_option, 
             ark_trouve = ""
             if (ark_trouve == "" and ark_aut_init != ""):
                 ark_trouve = arkAut2arkAut(NumNot, ark_aut_init)
-            if (ark_trouve == "" and isni != ""):
-                ark_trouve = isni2ark(NumNot, isni)
+            if (ark_trouve == "" and isni_nett != ""):
+                ark_trouve = isni2ark(NumNot, isni_nett)
             if (ark_trouve == "" and frbnf_aut_init != ""):
                 ark_trouve = frbnfAut2arkAut(NumNot, frbnf_aut_init, nom_nett, prenom_nett, date_debut_nett)
             if (ark_trouve == "" and nom != ""):
@@ -342,6 +343,15 @@ def arkBib2arkAut(NumNot,arkBib, nom, prenom, date_debut):
             listeArk.extend(extractARKautfromBIB(record,nom,prenom,date_debut))
             NumNotices2methode[NumNot].append("ARK notice BIB + contrôle accesspoint")
     return listeArk
+
+def nettoyage_isni(isni):
+    if (isni[0:20] == "http://www.isni.org"):
+        isni = isni[20:36]
+    else:
+        isni = bib2ark.nettoyage(isni)
+    for lettre in bib2ark.lettres:
+        isni = isni.replace(lettre,"")
+    return isni
 
 def isni2ark(NumNot, isni):
     url = bib2ark.url_requete_sru('aut.isni all "' + isni + '" and aut.status any "sparse validated"')
