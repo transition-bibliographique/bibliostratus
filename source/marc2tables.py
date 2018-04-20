@@ -428,11 +428,21 @@ def record2firstnameAUT(name):
 def record2lastnameAUT(name):
     return name
 
-def record2firstdateAUT(f100a):
-    return f100a[1:5]
+def record2firstdateAUT(f103a,f200f):
+    if (f103a[1:5] != "    "):
+        return f103a[1:5]
+    elif ("-" in f200f):
+        return (f200f.split("-")[0])
+    else:
+        return f200f
 
-def record2lastdateAUT(f100a):
-    return f100a[1:5]
+def record2lastdateAUT(f103b,f200f):
+    if (f103b[1:5] != "    "):
+        return f103b[1:5]
+    elif ("-" in f200f):
+        return (f200f.split("-")[1])
+    else:
+        return f200f
 
 def autrecord2metas(numNot,doc_record,record):
     ark = record2ark(record2meta(record,["033$a"]))
@@ -440,8 +450,8 @@ def autrecord2metas(numNot,doc_record,record):
     isni = record2isniAUT(record2meta(record,["010$a"]))
     firstname =  record2lastnameAUT(record2meta(record,["200$b"],["210$b"]))
     lastname = record2firstnameAUT(record2meta(record,["200$a"],["210$a"]))
-    firstdate = record2firstdateAUT(record2meta(record,["103$a"]))
-    lastdate = record2lastdateAUT(record2meta(record,["103$b"]))
+    firstdate = record2firstdateAUT(record2meta(record,["103$a"]),record2meta(record,["200$f"]))
+    lastdate = record2lastdateAUT(record2meta(record,["103$b"]),record2meta(record,["200$f"]))
 
     if (doc_record not in liste_fichiers):
         liste_fichiers.append(doc_record)

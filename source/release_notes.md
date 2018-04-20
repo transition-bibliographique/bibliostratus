@@ -1,4 +1,9 @@
 ### version 1.15
+- Module bleu (marc > tables):
+	- Autorités : récupération des dates en 200$f si la zone à positions fixes 103 n'est pas renseignée
+
+### version 1.15
+20/04/2018
 - Tous modules :
 	- Correction lien "Documentation en ligne"
 - Module blanc (alignements BIB):

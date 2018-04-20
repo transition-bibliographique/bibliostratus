@@ -29,7 +29,7 @@ import preferences
 
 #import matplotlib.pyplot as plt
 
-version = 1.15
+version = 1.16
 lastupdate = "20/04/2018"
 programID = "bibliostratus"
 
