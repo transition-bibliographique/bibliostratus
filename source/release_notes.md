@@ -1,4 +1,4 @@
-### version 1.15
+### version 1.16
 - Module bleu (marc > tables):
 	- Autorités : récupération des dates en 200$f si la zone à positions fixes 103 n'est pas renseignée
 
