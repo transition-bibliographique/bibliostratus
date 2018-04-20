@@ -386,7 +386,7 @@ def formulaire_main(access_to_network, last_version):
      zone_access2programs,
      zone_actions,
      zone_ok_help_cancel,
-     zone_notes] = main_form_frames("BiblioStratus : Stratégie d'alignement d'URIs pour la Transition bibliographique",
+     zone_notes] = main_form_frames("Bibliostratus : Stratégie d'alignement d'URIs pour la Transition bibliographique",
                                       couleur_fond,
                                       couleur_bouton,access_to_network)
     
@@ -478,7 +478,7 @@ def formulaire_main(access_to_network, last_version):
 
 
 
-    tk.Label(zone_notes, text = "BiblioStratus - Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
+    tk.Label(zone_notes, text = "Bibliostratus - Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
     
     if (last_version[1] == True):
         download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(last_version[0]), command=download_last_update)

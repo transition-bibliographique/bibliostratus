@@ -785,7 +785,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     cancel = tk.Button(cadre_valider, text="Annuler",bg=couleur_fond, command=lambda: main.annuler(form), pady=10, padx=5, width=12)
     cancel.pack()
     
-    tk.Label(zone_notes, text = "BiblioStratus - Version " + str(main.version) + " - " + main.lastupdate, bg=couleur_fond).pack()
+    tk.Label(zone_notes, text = "Bibliostratus - Version " + str(main.version) + " - " + main.lastupdate, bg=couleur_fond).pack()
     
     """if (main.last_version[1] == True):
         download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(main.last_version[0]), command=download_last_update)
