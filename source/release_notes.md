@@ -1,7 +1,9 @@
 ### version 1.16
 - Module bleu (marc > tables):
 	- Autorités : récupération des dates en 200$f si la zone à positions fixes 103 n'est pas renseignée
-
+- Module blanc (alignement Autorités):
+	- si un ISNI a été trouvé, le module vérifie si cet ISNI est dans le catalogue BnF. En effet la base ISNI connaît certaines formes d'auteurs absentes du catalogue BnF
+	
 ### version 1.15
 20/04/2018
 - Tous modules :

@@ -148,6 +148,18 @@ def ark2metas(ark, unidec=True):
     return metas
 
 
+def isni2ark(NumNot, isni, origine="isni"):
+    url = bib2ark.url_requete_sru('aut.isni all "' + isni + '" and aut.status any "sparse validated"')
+    (test,page) = bib2ark.testURLetreeParse(url)
+    nv_ark = ""
+    if (test == True):
+        if (page.find("//srw:recordIdentifier", namespaces=main.ns) is not None):
+            nv_ark = page.find("//srw:recordIdentifier", namespaces=main.ns).text
+            if (origine == "isni"):
+                NumNotices2methode[NumNot].append("ISNI")
+    return nv_ark
+
+
 def accesspoint2isniorg(NumNot, nom_nett, prenom_nett, date_debut_nett, date_fin_nett):
     url = "http://isni.oclc.nl/sru/?query=pica.nw%3D%22" + urllib.parse.quote(" ".join([nom_nett, prenom_nett, date_debut_nett])) + "%22&operation=searchRetrieve&recordSchema=isni-b"
     isnis = []
@@ -174,6 +186,17 @@ def accesspoint2isniorg(NumNot, nom_nett, prenom_nett, date_debut_nett, date_fin
                 if (prenom_nett in forenames or forenames in prenom_nett):
                     if (date_debut_nett in dates or dates in date_debut_nett):
                         isnis.append(isni)
+    if (isnis != []):
+        NumNotices2methode[NumNot].append("Point d'accès > ISNI")
+    i = 0
+    for isni in isnis:
+        NumNotices2methode[NumNot][-1]
+        isni_id = isni.split("/")[-1]
+        ark = isni2ark(NumNot,isni_id,origine="accesspoint")
+        if (ark != ""):
+            isnis[i] = ark
+            NumNotices2methode[NumNot].append("ISNI > ARK")
+        i += 1
     isnis = ",".join(isnis)
     return isnis
 
@@ -353,15 +376,7 @@ def nettoyage_isni(isni):
         isni = isni.replace(lettre,"")
     return isni
 
-def isni2ark(NumNot, isni):
-    url = bib2ark.url_requete_sru('aut.isni all "' + isni + '" and aut.status any "sparse validated"')
-    (test,page) = bib2ark.testURLetreeParse(url)
-    nv_ark = ""
-    if (test == True):
-        if (page.find("//srw:recordIdentifier", namespaces=main.ns) is not None):
-            nv_ark = page.find("//srw:recordIdentifier", namespaces=main.ns).text
-            NumNotices2methode[NumNot].append("ISNI")
-    return nv_ark
+
 
 
 def nettoyageFRBNF(frbnf):
@@ -494,7 +509,7 @@ def accesspoint2arkAut(NumNot, nom_nett, prenom_nett, date_debut, date_fin):
     if (test):
         for record in results.xpath("//srw:recordIdentifier", namespaces=main.ns):
             listeArk.append(record.text)
-            NumNotices2methode[NumNot].append("Access point")
+            NumNotices2methode[NumNot].append("Point d'accès")
     listeArk = ",".join(listeArk)
     return listeArk
 
