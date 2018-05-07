@@ -406,7 +406,7 @@ def bibrecord2metas(numNot,doc_record,record):
 
     if (doc_record not in liste_fichiers):
         liste_fichiers.append(doc_record)
-    if (doc_record == "am"):
+    if (doc_record == "am" or doc_record == "lm"):
         meta = [numNot,frbnf,ark,isbn,ean,title,authors2keywords, date, numeroTome, publisher]
     elif (doc_record == "im" or doc_record == "jm" or doc_record == "gm"):
         meta = [numNot,frbnf,ark,ean,id_commercial_aud,title,authors2keywords,date, publisher]
@@ -488,7 +488,7 @@ def record2listemetas(id_traitement, record,rec_format=1):
             
 def write_reports(id_traitement,doc_record):
     filename = doc_record_type[doc_record]
-    if (doc_record == "am"):
+    if (doc_record == "am" or doc_record == "lm"):
         filename = "TEX-"+filename
         header_columns = bib2ark.header_columns_init_monimpr
     elif (doc_record == "im" or doc_record == "jm" or doc_record == "gm"):
