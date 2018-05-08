@@ -410,13 +410,13 @@ def formulaire_main(access_to_network, last_version):
 
     bib2arkButton = tk.Button(frame1, text = "Aligner ses données  BIB\n avec le catalogue BnF\nà partir de fichiers tableaux", 
                               command=lambda: bib2ark.formulaire_noticesbib2arkBnF(master,access_to_network,[0,False]), 
-                              padx=40,pady=40, bg="#fefefe", font="Arial 9 bold")
+                              padx=40,pady=47, bg="#fefefe", font="Arial 9 bold")
     bib2arkButton.pack()
     
     tk.Label(frame1,text="\n",bg=couleur_fond, font="Arial 3 normal").pack()
         
     aut2arkButton = tk.Button(frame1, text = "Aligner ses données AUT ", command=lambda: aut2ark.formulaire_noticesaut2arkBnF(master,access_to_network,[0,False]), 
-                              padx=55,pady=10, bg="#fefefe", font="Arial 8 normal")
+                              padx=55,pady=25, bg="#fefefe", font="Arial 8 normal")
     aut2arkButton.pack()
 
     tk.Label(frame1,text="\n\n", bg=couleur_fond).pack()
@@ -425,9 +425,12 @@ def formulaire_main(access_to_network, last_version):
 # =============================================================================
 #     Module bleu : convertir un fichier MARC en tables
 # =============================================================================
-    tk.Label(frame3,text="Avant / Après : outils d'accompagnement",bg=couleur_fond,
+    tk.Label(frame3,text="Outils d'accompagnement",bg=couleur_fond,
              fg="#365B43",font="Arial 11 bold").pack(anchor="w")
     tk.Label(frame3,text="\n",bg=couleur_fond,font="Arial 4 normal").pack()
+
+    tk.Label(frame3,text="Avant alignement",bg=couleur_fond,
+             fg="#2D4991",font="Arial 10 bold").pack(anchor="w")
     
     tk.Label(frame3,text="Préparer ses données",
              bg=couleur_fond,fg="#365B43",font="Arial 9 bold").pack(anchor="w")
@@ -445,7 +448,8 @@ def formulaire_main(access_to_network, last_version):
 # =============================================================================
 #    Module rouge : exporter des notices à partir d'une liste d'ARK
 # =============================================================================
-
+    tk.Label(frame3,text="Après alignement",bg=couleur_fond,
+             fg="#99182D",font="Arial 10 bold").pack(anchor="w")
     tk.Label(frame3,text="Exporter les données BnF après alignement",bg=couleur_fond,fg="#365B43",font="Arial 9 bold").pack(anchor="w")
 
     ark2recordsButton = tk.Button(frame3, text = "Exporter une liste d'ARK BnF\n en notices", 
