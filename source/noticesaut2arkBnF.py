@@ -751,22 +751,27 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
     file_nb.set(1)
 
 
-    tk.Label(frame_output_file, text="ID de traitement (facultatif)",
+
+    tk.Label(frame_output_file, bg=couleur_fond,text="\n").pack()
+
+    #Récupérer les métadonnées BnF au passage ?
+    meta_bnf = tk.IntVar()
+    tk.Checkbutton(frame_output_file, text="Récupérer les métadonnées BnF", 
+                       variable=meta_bnf,
+                       bg=couleur_fond, justify="left").pack(anchor="w")
+    tk.Label(frame_output_file, text="\n", bg=couleur_fond, justify="left").pack(anchor="w")
+    tk.Label(frame_output_file, text="Préfixe des fichiers en sortie",
              bg=couleur_fond).pack(anchor="w")
-    outputID = tk.Entry(frame_output_file, bg=couleur_fond)
+    outputID = tk.Entry(frame_output_file, bg=couleur_fond, width=30)
     outputID.pack(anchor="w")
+
+
+    
 
     tk.Label(frame_output_file, text="\n",
              bg=couleur_fond).pack(anchor="w")
 
     
-    #Récupérer les métadonnées BnF au passage ?
-    meta_bnf = tk.IntVar()
-    tk.Checkbutton(frame_output_file, text="Récupérer les métadonnées BnF ?", 
-                       variable=meta_bnf,
-                       bg=couleur_fond, justify="left").pack(anchor="w")
-    tk.Label(frame_output_file, text="\n\n\n\n", bg=couleur_fond, justify="left").pack(anchor="w")
-
     
     #file_format.focus_set()
     b = tk.Button(zone_ok_help_cancel, text = "Aligner\nles autorités", 

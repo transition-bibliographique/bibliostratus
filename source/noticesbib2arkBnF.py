@@ -1783,7 +1783,7 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
 
     type_doc_bib = tk.IntVar()
     radioButton_lienExample(cadre_input_type_docs,type_doc_bib,1,couleur_fond,
-                            "[TEX] Documents imprimés (monographies)",
+                            "[TEX] Monographies texte",
                             "(Colonnes : " + " | ".join(header_columns_init_monimpr) + ")",
                             "https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/examples/mon_impr.tsv")
     radioButton_lienExample(cadre_input_type_docs,type_doc_bib,2,couleur_fond,
@@ -1824,7 +1824,7 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     
     #Ajout (optionnel) d'un identifiant de traitement
     tk.Label(cadre_output_id_traitement,bg=couleur_fond, text="\n\n\n").pack()
-    tk.Label(cadre_output_id_traitement,bg=couleur_fond, text="ID traitement (optionnel)").pack()
+    tk.Label(cadre_output_id_traitement,bg=couleur_fond, text="Préfixe fichiers en sortie").pack()
     id_traitement = tk.Entry(cadre_output_id_traitement, width=20, bd=2)
     id_traitement.pack()
     tk.Label(cadre_output_id_traitement,bg=couleur_fond, text="\n\n\n").pack()

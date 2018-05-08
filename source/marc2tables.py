@@ -644,13 +644,13 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     cadre_valider.pack(side="left")
     
     #définition input URL (u)
-    tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée :", justify="left", font="bold").pack(anchor="w")
+    tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée :\n", justify="left", font="bold").pack(anchor="w")
     
-    tk.Label(cadre_input_file_name,bg=couleur_fond, text="Fichier contenant les notices : ").pack(side="left")
+    #tk.Label(cadre_input_file_name,bg=couleur_fond, text="Fichier contenant les notices : ").pack(side="left")
     """entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
     entry_filename.pack(side="left")
     entry_filename.focus_set()"""
-    main.download_zone(cadre_input_file, "Sélectionner un fichier\nde notices Unimarc",entry_file_list,couleur_fond,cadre_output_message_en_cours)
+    main.download_zone(cadre_input_file, "Sélectionner un fichier de notices Unimarc",entry_file_list,couleur_fond,cadre_output_message_en_cours)
     
     #tk.Button(cadre_input_file_browse, text="Sélectionner le fichier\ncontenant les notices", command=lambda:main.openfile(cadre_input_file_name, popup_filename), width=20).pack()
     
@@ -698,6 +698,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
               command=lambda: main.click2help("https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#lencodage-des-fichiers-en-entr%C3%A9e"), 
               )
     lien_help_encodage.pack()
+    tk.Label(cadre_input_type_docs, bg=couleur_fond,text="\n\n").pack()
 
 #    info_utf8 = tk.Label(cadre_input_type_docs,
 #                         bg=couleur_fond,justify="left", font="Arial 7 italic",
@@ -735,7 +736,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
              text="En sortie :", 
              justify="left").pack()
     tk.Label(cadre_output_nom_fichiers,bg=couleur_fond, 
-             text="Identifiant des fichiers en sortie : ", 
+             text="Préfixe des fichiers en sortie : ", 
              justify="left").pack(side="left")
     output_ID = tk.Entry(cadre_output_nom_fichiers, width=40, bd=2)
     output_ID.pack(side="left")

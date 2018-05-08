@@ -159,7 +159,8 @@ def callback(master, form, filename, type_records_form, headers, AUTliees, outpu
         for line in entry_file:
             j = j+1
             ark = line[0]
-            if (ark not in listeARK_BIB):
+            ark = ark[ark.find("ark:/12148"):]
+            if (len(ark)>1 and ark not in listeARK_BIB):
                 print(str(j) + ". " + ark)
                 listeARK_BIB.append(ark)
                 page = etree.parse(request.urlopen(ark2url(ark, type_records, format_BIB)))
@@ -220,10 +221,11 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
                            bg=couleur_fond, padx=10, pady=10,
                            highlightthickness=2, highlightbackground=couleur_bouton)
     frame_output.pack(side="left", anchor="w")
-    frame_output_file = tk.Frame(frame_output, bg=couleur_fond, padx=10, pady=10)
-    frame_output_file.pack(anchor="w")
+
     frame_output_options = tk.Frame(frame_output, bg=couleur_fond, padx=10, pady=10)
     frame_output_options.pack(anchor="w")
+    frame_output_file = tk.Frame(frame_output, bg=couleur_fond, padx=10, pady=10)
+    frame_output_file.pack(anchor="w")
     frame_output_options_marc = tk.Frame(frame_output_options, bg=couleur_fond)
     frame_output_options_marc.pack(side="left", anchor="nw")
     frame_output_options_inter = tk.Frame(frame_output_options, bg=couleur_fond)
@@ -236,12 +238,12 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
     zone_notes_message_en_cours.pack()
 
     
-    tk.Label(frame_input_file, text="Fichier contenant les ARK\n (1 par ligne) \n\n", 
-             bg=couleur_fond, justify="left").pack(side="left", anchor="w")
+    #tk.Label(frame_input_file, text="Fichier contenant les ARK\n (1 par ligne) \n\n", 
+    #         bg=couleur_fond, justify="left").pack(side="left", anchor="w")
     """entry_filename = tk.Entry(frame_input_file, width=20, bd=2, bg=couleur_fond)
     entry_filename.pack(side="left")
     entry_filename.focus_set()"""
-    main.download_zone(frame_input_file, "Sélectionner un fichier",entry_file_list,couleur_fond,zone_notes_message_en_cours)
+    main.download_zone(frame_input_file, "Sélectionner un fichier contenant\nune liste d'ARK (un ARK par ligne)",entry_file_list,couleur_fond,zone_notes_message_en_cours)
     
     
     tk.Label(frame_input_aut, text="\n", bg=couleur_fond).pack()
@@ -276,23 +278,28 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
                        bg=couleur_fond, justify="left").pack(anchor="w")
     #tk.Label(frame_input_aut, text="\n", bg=couleur_fond).pack()
     
-    tk.Label(frame_output_file, text="ID de traitement (facultatif)",
-             bg=couleur_fond).pack(side="left", anchor="w")
-    outputID = tk.Entry(frame_output_file, bg=couleur_fond)
-    outputID.pack(side="left", anchor="w")
-    
     #Choix du format
     tk.Label(frame_output_options_marc, text="Notices à récupérer en :").pack(anchor="nw")
     format_records_choice = tk.IntVar()
     tk.Radiobutton(frame_output_options_marc, text="Unimarc", variable=format_records_choice, value=1, bg=couleur_fond).pack(anchor="nw")
-    tk.Radiobutton(frame_output_options_marc, text="Unimarc avec ANL", justify="left", variable=format_records_choice, value=2,bg=couleur_fond).pack(anchor="nw")
     tk.Radiobutton(frame_output_options_marc, text="Intermarc", justify="left", variable=format_records_choice , value=3, bg=couleur_fond).pack(anchor="nw")
-    tk.Radiobutton(frame_output_options_marc, text="Intermarc avec ANL", justify="left", variable=format_records_choice , value=4, bg=couleur_fond).pack(anchor="nw")
+    tk.Radiobutton(frame_output_options_marc, text="Unimarc avec notices analytiques", justify="left", variable=format_records_choice, value=2,bg=couleur_fond).pack(anchor="nw")
+    tk.Radiobutton(frame_output_options_marc, text="Intermarc avec notices analytiques", justify="left", variable=format_records_choice , value=4, bg=couleur_fond).pack(anchor="nw")
     format_records_choice.set(1)
+
+    tk.Label(frame_output_options_inter, text="\n", bg=couleur_fond).pack(side="left")
+
     
     #tk.Label(frame_output_options,text="\n\n", justify="left", variable=format_records_choice , value=4, bg=couleur_fond).pack()
+
+    tk.Label(frame_output_file, text="Préfixe fichier(s) en sortie",
+             bg=couleur_fond).pack(side="left", anchor="w")
+    outputID = tk.Entry(frame_output_file, bg=couleur_fond)
+    outputID.pack(side="left", anchor="w")
+    tk.Label(frame_output_file, text="\n\n\n\n\n", bg=couleur_fond).pack(side="left")
+    
+
              
-    tk.Label(frame_output_options_inter, text="\t\n\n\n\n\n\n\n\n\n\n\n", bg=couleur_fond).pack(side="left")
 
     tk.Label(frame_output_options_format, text="Format du fichier :").pack(anchor="nw")    
     format_file = tk.IntVar()
