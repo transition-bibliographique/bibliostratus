@@ -1,4 +1,11 @@
+### version 1.17
+05/2018
+Corrections diverses dans les formulaires : homogénéisation, etc.
+- Module bleu (marc > tables) :
+	- tables de ebooks générés comme les imprimés -> deviennent alignables
+
 ### version 1.16
+02/05/2018
 - Module bleu (marc > tables):
 	- Autorités : récupération des dates en 200$f si la zone à positions fixes 103 n'est pas renseignée
 - Module blanc (alignement Autorités):

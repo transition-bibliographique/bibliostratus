@@ -30,7 +30,7 @@ import preferences
 #import matplotlib.pyplot as plt
 
 version = 1.17
-lastupdate = "20/04/2018"
+lastupdate = "10/05/2018"
 programID = "bibliostratus"
 
 ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}
@@ -443,8 +443,9 @@ def formulaire_main(access_to_network, last_version):
                                  padx=10,pady=10, bg="#2D4991",fg="white")
     marc2tableButton.pack()
     
-    tk.Label(frame3,text="\n",bg=couleur_fond).pack()
+    #☺tk.Label(frame3,text="\n",bg=couleur_fond).pack()
     
+    tk.Label(frame3, text="\n"+"-"*50, bg=couleur_fond,fg="#a1a1a1").pack()
 # =============================================================================
 #    Module rouge : exporter des notices à partir d'une liste d'ARK
 # =============================================================================

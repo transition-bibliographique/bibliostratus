@@ -644,7 +644,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     cadre_valider.pack(side="left")
     
     #définition input URL (u)
-    tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée :\n", justify="left", font="bold").pack(anchor="w")
+    tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée\n", justify="left", font="bold").pack(anchor="w")
     
     #tk.Label(cadre_input_file_name,bg=couleur_fond, text="Fichier contenant les notices : ").pack(side="left")
     """entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
@@ -698,7 +698,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
               command=lambda: main.click2help("https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#lencodage-des-fichiers-en-entr%C3%A9e"), 
               )
     lien_help_encodage.pack()
-    tk.Label(cadre_input_type_docs, bg=couleur_fond,text="\n\n").pack()
+    tk.Label(cadre_input_type_docs, bg=couleur_fond,text="\n\n\n").pack()
 
 #    info_utf8 = tk.Label(cadre_input_type_docs,
 #                         bg=couleur_fond,justify="left", font="Arial 7 italic",
@@ -724,7 +724,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
                    anchor="w", justify="left").pack(anchor="w")
     rec_format.set(1)
     
-    tk.Label(cadre_input_type_rec, text="\n\n\n\n", bg=couleur_fond).pack()
+    tk.Label(cadre_input_type_rec, text="\n\n\n\n\n\n\n\n", bg=couleur_fond).pack()
     
 # =============================================================================
 #     Formulaire - Fichiers en sortie
@@ -733,7 +733,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     
     #Choix du format
     tk.Label(cadre_output_header,bg=couleur_fond, fg=couleur_bouton, font="bold", 
-             text="En sortie :", 
+             text="En sortie", 
              justify="left").pack()
     tk.Label(cadre_output_nom_fichiers,bg=couleur_fond, 
              text="Préfixe des fichiers en sortie : ", 
@@ -752,14 +752,16 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
   Le programme va générer plusieurs fichiers, par type de document,
   en fonction du processus d'alignement avec les données de la BnF
   et des métadonnées utilisées pour cela :
-        - monographies imprimées
-        - périodiques
-        - audiovisuel (CD/DVD)
-        - autres non identifiés
-
+        - code TEX : monographies
+        - code VID : audiovisuel (CD/DVD)
+        - code PER : périodiques
+        - autres non prévus pour le module d'alignement (blanc)
+  Les codes indiquent l'option d'alignement à choisir dans le module blanc
+  S'il n'y a pas de code, le fichier ne peut être chargé tel quel dans le module
+  blanc : il faut au moins reprendre les colonnes.
         
-  Pour faire cela, il utilise les informations 
-  en zones codées dans chaque notice Unimarc
+  Pour répartir les notices en fichiers, le programme utilise les informations 
+  présentes dans les zones codées de chaque notice Unimarc
 """
     tk.Label(cadre_output_explications,bg=couleur_fond, 
              text=message_fichiers_en_sortie,

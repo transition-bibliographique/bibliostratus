@@ -1690,7 +1690,6 @@ def download_last_update():
 #==============================================================================
 
 def radioButton_lienExample(frame,variable_button,val,couleur_fond,text1,text2,link):
-    button_image = tk.PhotoImage(file="../img/example.gif")
     packButton = tk.Frame(frame, bg=couleur_fond)
     packButton.pack(anchor="w")
     line1 = tk.Frame(packButton, bg=couleur_fond)
@@ -1699,14 +1698,10 @@ def radioButton_lienExample(frame,variable_button,val,couleur_fond,text1,text2,l
                    text=text1, 
                    variable=variable_button, value=val, justify="left").pack(anchor="w", side="left")    
     if (link != ""):
-#==============================================================================
-#         example_ico = tk.Button(line1, bd=0, justify="left", font="Arial 7 italic",
-#                                     text="exemple", command=lambda: main.click2help(link))
-#==============================================================================
+        tk.Label(line1,text="  ",bg=couleur_fond).pack(anchor="w", side="left")
         example_ico = tk.Button(line1, bd=0, justify="left", font="Arial 7 italic",
-                                image=button_image, command=lambda: main.click2help(link))
+                                    text="exemple", command=lambda: main.click2help(link))
         example_ico.pack(anchor="w", side="left")
-        example_ico.image = button_image
     if (text2 != ""):
         line2 = tk.Frame(packButton, bg=couleur_fond)
         line2.pack(anchor="w")
