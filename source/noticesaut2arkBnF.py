@@ -504,12 +504,27 @@ def relancerNNA_nomAuteur(NumNot,systemid,nom):
 def accesspoint2arkAut(NumNot, nom_nett, prenom_nett, date_debut, date_fin):
     listeArk = []
     url = bib2ark.url_requete_sru('aut.accesspoint adj "' + " ".join([nom_nett, prenom_nett, date_debut]) + '"')
+    testdatefin = False
+    if (date_debut == "" and date_fin != ""):
+        url = bib2ark.url_requete_sru('aut.accesspoint adj "' + " ".join([nom_nett, prenom_nett]) + '" and aut.accesspoint all "' + date_fin + '"')
+        testdatefin = True
     #print(url)
     (test,results) = bib2ark.testURLetreeParse(url)
     if (test):
-        for record in results.xpath("//srw:recordIdentifier", namespaces=main.ns):
-            listeArk.append(record.text)
-            NumNotices2methode[NumNot].append("Point d'accès")
+        for record in results.xpath("//srw:records/srw:record", namespaces=main.ns):
+            ark = record.find("srw:recordIdentifier",namespaces=main.ns).text
+            if (testdatefin == True):
+                if (record.find("srw:recordData/mxc:record/mxc:datafield[@tag='103']/mxc:subfield[@code='a']", namespaces=main.ns) is not None):
+                    f103a_datefin = record.find("srw:recordData/mxc:record/mxc:datafield[@tag='103']/mxc:subfield[@code='a']", namespaces=main.ns).text[11:15]
+                    if (date_fin == f103a_datefin):
+                        listeArk.append(ark)
+                        NumNotices2methode[NumNot].append("Point d'accès avec date de fin")
+            elif (date_debut != ""):
+                listeArk.append(ark)
+                NumNotices2methode[NumNot].append("Point d'accès avec date de début")     
+            else:
+                listeArk.append(ark)
+                NumNotices2methode[NumNot].append("Point d'accès")     
     listeArk = ",".join(listeArk)
     return listeArk
 
