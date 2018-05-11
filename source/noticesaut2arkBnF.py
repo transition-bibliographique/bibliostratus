@@ -36,7 +36,7 @@ programID = "noticesaut2arkBnF"
 entry_file_list = []
 
 header_columns_init_aut2aut = ['N° Notice AUT', 'FRBNF', 'ARK', 'ISNI', 'Nom', 'Prénom', 'Date de naissance', 'Date de mort']
-
+header_columns_init_bib2aut = ["N° Notice AUT","N° notice BIB","ARK Bib","FRBNF Bib","Titre","ISNI","Nom","Prénom","Dates","Auteur"]
 #Pour chaque notice, on recense la méthode qui a permis de récupérer le ou les ARK
 NumNotices2methode = defaultdict(list)
 
@@ -213,8 +213,13 @@ def align_from_aut(form, entry_filename, headers, input_data_type, isni_option, 
     with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter='\t')
         if (headers):
-            next(entry_file)
+            try:
+                next(entry_file)
+            except UnicodeDecodeError:
+                main.popup_errors(form,main.errors["pb_input_utf8"],"Comment modifier l'encodage du fichier","https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e")
         for row in entry_file:
+            if (n == 0):
+                assert main.control_columns_number(form,row,len(header_columns_init_aut2aut))
             n += 1
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
@@ -274,8 +279,14 @@ def align_from_bib(form, entry_filename, headers, input_data_type, isni_option, 
     with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter='\t')
         if (headers):
-            next(entry_file)
+            try:
+                next(entry_file)
+            except UnicodeDecodeError:
+                main.popup_errors(form,main.errors["pb_input_utf8"],"Comment modifier l'encodage du fichier","https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e")
         for row in entry_file:
+            if (n == 0):
+                assert main.control_columns_number(form,row,len(header_columns_init_bib2aut))
+
             n += 1
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
@@ -740,7 +751,7 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
                             "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/aut_align_aut.tsv")
     bib2ark.radioButton_lienExample(frame_input_aut,input_data_type,2,couleur_fond,
                             "Liste de notices bibliographiques",
-                            "(N° Notice AUT | N° notice BIB | ARK Bib | FRBNF Bib | Titre | ISNI | Nom | Prénom | Dates Auteur)",
+                            "(" + " | ".join(header_columns_init_bib2aut) + ")",
                             "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/aut_align_bib.tsv")
     
     input_data_type.set(1)

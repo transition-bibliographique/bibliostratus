@@ -51,7 +51,8 @@ punctuation = [".",",",";",":","?","!","%","$","£","€","#","\\","\"","&","~",
 
 errors = {
         "no_internet" : "Attention : Le programme n'a pas d'accès à Internet.\nSi votre navigateur y a accès, vérifiez les paramètres de votre proxy",
-        "pb_input_utf8" : "Le fichier en entrée doit être en UTF-8 sans BOM.\nErreur d'encodage constatée",
+        "nb_colonnes_incorrect":"Le fichier contient un nombre insuffisant de colonnes.\n\nVérifiez les options indiquées dans le formulaire ou le format du fichier en entrée",
+        "pb_input_utf8" : "Erreur d'encodage constatée\n\nLe fichier en entrée doit être en UTF-8 sans BOM.",
         "pb_input_utf8_marcEdit" : """Erreur d'encodage constatée :
         Le fichier en entrée doit être en UTF-8 sans BOM.
         
@@ -256,6 +257,21 @@ def check_file_name(master,filename):
         open(filename,"r")
     except FileNotFoundError:
         popup_errors(master,"Le fichier " + filename + " n'existe pas")
+
+def control_columns_number(master,row,nb_columns):
+    """Vérifie le nombre de colonnes dans le fichier en entrée"""
+    last_col = nb_columns-1
+    test= True
+    try:
+        last_val = row[last_col]
+    except IndexError as err:
+        test = False
+    try:
+        assert test
+    except AssertionError:
+        popup_errors(master,errors["nb_colonnes_incorrect"])
+    return test
+        
 
 def popup_errors(master,text,online_help_text="",online_help_link=""):
     couleur_fond = "white"

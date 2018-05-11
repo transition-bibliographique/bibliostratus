@@ -1309,10 +1309,10 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
         try:
             next(entry_file)
         except UnicodeDecodeError:
-            main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"])
+            main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"],"Comment modifier l'encodage du fichier","https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e")
         for row in entry_file:
             if (n == 0):
-                controls_columns(form_bib2ark, header_columns_init_monimpr, row)
+                assert main.control_columns_number(form_bib2ark,row,len(header_columns_init_monimpr))
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
             n += 1
@@ -1404,10 +1404,12 @@ def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, i
         try:
             next(entry_file)
         except UnicodeDecodeError:
-            main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"])
+            main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"],"Comment modifier l'encodage du fichier","https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e")
         for row in entry_file:
             if (n == 0):
-                controls_columns(form_bib2ark, header_columns_init_cddvd, row)
+                assert main.control_columns_number(form_bib2ark,row,len(header_columns_init_cddvd))
+
+            
             #print(row)
             n += 1
             if (n%100 == 0):
@@ -1501,8 +1503,10 @@ def perimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
         try:
             next(entry_file)
         except UnicodeDecodeError:
-            main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"])
+            main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"],"Comment modifier l'encodage du fichier","https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e")
         for row in entry_file:
+            if (n == 0):
+                assert main.control_columns_number(form_bib2ark,row,len(header_columns_init_perimpr))
             n += 1
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
@@ -1555,18 +1559,6 @@ def perimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
                 row2file(liste_metadonnees,liste_reports)
             elif(file_nb ==  2):
                 row2files(liste_metadonnees,liste_reports)
-
-def controls_columns(form, header_columns_init, row):
-    """i = 0
-    text = ""
-    for el in header_columns_init:
-        text += "\n" + el + " : "
-        if (len(row) > i):
-            text += row[i]
-        i += 1
-    main.popup_errors(form,text)  """  
-    #tk.Label(zone_controles, text = row[0], bg = "white").pack()
-    #print(row[0])
 
 def launch(form_bib2ark,zone_controles, entry_filename, type_doc_bib, file_nb, meta_bib, id_traitement):
     main.check_file_name(form_bib2ark, entry_filename)
@@ -1699,8 +1691,8 @@ def radioButton_lienExample(frame,variable_button,val,couleur_fond,text1,text2,l
                    variable=variable_button, value=val, justify="left").pack(anchor="w", side="left")    
     if (link != ""):
         tk.Label(line1,text="  ",bg=couleur_fond).pack(anchor="w", side="left")
-        example_ico = tk.Button(line1, bd=0, justify="left", font="Arial 7 italic",
-                                    text="exemple", command=lambda: main.click2help(link))
+        example_ico = tk.Button(line1, bd=0, justify="left", font="Arial 7 underline",
+                                    text="exemple", fg="#0000ff", bg=couleur_fond, command=lambda: main.click2help(link))
         example_ico.pack(anchor="w", side="left")
     if (text2 != ""):
         line2 = tk.Frame(packButton, bg=couleur_fond)
