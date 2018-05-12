@@ -202,7 +202,7 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
      zone_access2programs,
      zone_actions,
      zone_ok_help_cancel,
-     zone_notes] = main.form_generic_frames(master,"[Biblio] Récupérer les notices complètes de la BnF à partir d'une liste d'ARK",
+     zone_notes] = main.form_generic_frames(master,"Bibliostratus : Récupérer les notices complètes de la BnF à partir d'une liste d'ARK",
                                       couleur_fond,couleur_bouton,
                                       access_to_network)
     

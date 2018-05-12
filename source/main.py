@@ -30,7 +30,7 @@ import preferences
 #import matplotlib.pyplot as plt
 
 version = 1.17
-lastupdate = "10/05/2018"
+lastupdate = "12/05/2018"
 programID = "bibliostratus"
 
 ns = {"srw":"http://www.loc.gov/zing/srw/", "mxc":"info:lc/xmlns/marcxchange-v2", "m":"http://catalogue.bnf.fr/namespaces/InterXMarc","mn":"http://catalogue.bnf.fr/namespaces/motsnotices"}
