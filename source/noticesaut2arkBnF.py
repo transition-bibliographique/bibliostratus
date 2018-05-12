@@ -219,7 +219,7 @@ def align_from_aut(form, entry_filename, headers, input_data_type, isni_option, 
                 main.popup_errors(form,main.errors["pb_input_utf8"],"Comment modifier l'encodage du fichier","https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e")
         for row in entry_file:
             if (n == 0):
-                assert main.control_columns_number(form,row,len(header_columns_init_aut2aut))
+                assert main.control_columns_number(form,row,header_columns_init_aut2aut)
             n += 1
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
@@ -285,7 +285,7 @@ def align_from_bib(form, entry_filename, headers, input_data_type, isni_option, 
                 main.popup_errors(form,main.errors["pb_input_utf8"],"Comment modifier l'encodage du fichier","https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e")
         for row in entry_file:
             if (n == 0):
-                assert main.control_columns_number(form,row,len(header_columns_init_bib2aut))
+                assert main.control_columns_number(form,row,header_columns_init_bib2aut)
 
             n += 1
             if (n%100 == 0):

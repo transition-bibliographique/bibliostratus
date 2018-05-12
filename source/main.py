@@ -258,9 +258,9 @@ def check_file_name(master,filename):
     except FileNotFoundError:
         popup_errors(master,"Le fichier " + filename + " n'existe pas")
 
-def control_columns_number(master,row,nb_columns):
+def control_columns_number(master,row,headers_columns):
     """Vérifie le nombre de colonnes dans le fichier en entrée"""
-    last_col = nb_columns-1
+    last_col = len(headers_columns)-1
     test= True
     try:
         last_val = row[last_col]
@@ -269,7 +269,16 @@ def control_columns_number(master,row,nb_columns):
     try:
         assert test
     except AssertionError:
-        popup_errors(master,errors["nb_colonnes_incorrect"])
+        i = 0
+        message = ""
+        for col in headers_columns:
+            val = ""
+            if (len(row) >= i+1):
+                val = row[i]
+            message = message + col + " : " + val + "\n"
+            i += 1
+        message = errors["nb_colonnes_incorrect"] + "\n\n\nFormat attendu - Ligne 1 :\n\n" + message
+        popup_errors(master,message)
     return test
         
 

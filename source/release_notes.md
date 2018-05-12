@@ -1,11 +1,12 @@
 ### version 1.17
-05/2018
+12/05/2018
 Corrections diverses dans les formulaires : homogénéisation, etc.
 - Module bleu (marc > tables) :
 	- tables de ebooks générés comme les imprimés -> deviennent alignables
 - Module blanc (Alignement AUT):
 	- Si pas de date de début, alignement sur point d'accès + date de fin
-	- Amélioration messages d'erreurs (colonnes manquantes)
+- Module blanc (Alignements BIB et AUT):
+	- Amélioration messages d'erreurs (colonnes manquantes en entrée)
 
 ### version 1.16
 02/05/2018

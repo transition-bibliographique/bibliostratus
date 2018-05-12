@@ -1312,7 +1312,7 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
             main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"],"Comment modifier l'encodage du fichier","https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e")
         for row in entry_file:
             if (n == 0):
-                assert main.control_columns_number(form_bib2ark,row,len(header_columns_init_monimpr))
+                assert main.control_columns_number(form_bib2ark,row,header_columns_init_monimpr)
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
             n += 1
@@ -1407,7 +1407,7 @@ def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, i
             main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"],"Comment modifier l'encodage du fichier","https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e")
         for row in entry_file:
             if (n == 0):
-                assert main.control_columns_number(form_bib2ark,row,len(header_columns_init_cddvd))
+                assert main.control_columns_number(form_bib2ark,row,header_columns_init_cddvd)
 
             
             #print(row)
@@ -1506,7 +1506,7 @@ def perimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
             main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"],"Comment modifier l'encodage du fichier","https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e")
         for row in entry_file:
             if (n == 0):
-                assert main.control_columns_number(form_bib2ark,row,len(header_columns_init_perimpr))
+                assert main.control_columns_number(form_bib2ark,row,header_columns_init_perimpr)
             n += 1
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
