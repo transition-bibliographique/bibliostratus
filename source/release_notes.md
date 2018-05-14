@@ -1,3 +1,8 @@
+### version 1.18
+05/2018
+- Module bleu (marc > tables) :
+	- option : exporter des métadonnées de notices bibliographiques en vue d'alignements avec des autorités (combinaison Titre-Auteur)
+
 ### version 1.17
 12/05/2018
 Corrections diverses dans les formulaires : homogénéisation, etc.

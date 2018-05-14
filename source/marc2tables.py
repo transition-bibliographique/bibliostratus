@@ -458,6 +458,41 @@ def autrecord2metas(numNot,doc_record,record):
     meta = [numNot,frbnf,ark,isni,lastname,firstname,firstdate,lastdate]
     return meta   
     
+def bibfield2autmetas(numNot,doc_record,record,field):
+    metas = []
+    no_aut = subfields2firstocc(field.get_subfields("3"))
+    no_bib = numNot
+    ark = record2ark(record2meta(record,["033$a"]))
+    frbnf = record2frbnf(record2meta(record,["035$a"]))    
+    title = record2title(
+                record2meta(record, ["200$a","200$e"])
+                )
+    isni = subfields2firstocc(field.get_subfields("o"))
+    firstname = subfields2firstocc(field.get_subfields("b"))
+    lastname = subfields2firstocc(field.get_subfields("a"))
+    dates_aut = subfields2firstocc(field.get_subfields("f"))
+    metas = [doc_record,no_aut,no_bib,ark,frbnf,title,isni,lastname,firstname,dates_aut]
+    return metas
+
+def subfields2firstocc(subfields):
+    if (subfields != []):
+        return subfields[0]
+    else:
+        return ""
+
+def bibrecord2autmetas(numNot,doc_record,record):
+    fields2metas = []
+    for f700 in record.get_fields("700"):
+        fields2metas.append(bibfield2autmetas(numNot,"ca",record,f700))
+    for f701 in record.get_fields("701"):
+        fields2metas.append(bibfield2autmetas(numNot,"ca",record,f701))
+    for f710 in record.get_fields("710"):
+        fields2metas.append(bibfield2autmetas(numNot,"cb",record,f710))
+    for f711 in record.get_fields("711"):
+        fields2metas.append(bibfield2autmetas(numNot,"cb",record,f711))
+    return fields2metas
+    
+
 def record2listemetas(id_traitement, record,rec_format=1):
     numNot = record2meta(record,["001"])
     doctype = record2doctype(record.leader,rec_format)
@@ -468,11 +503,26 @@ def record2listemetas(id_traitement, record,rec_format=1):
     meta = []
     if (rec_format == 2):
         meta = autrecord2metas(numNot,doc_record,record)
+    elif(rec_format == 3):
+        meta = bibrecord2autmetas(numNot,doc_record,record)
     else:
         meta = bibrecord2metas(numNot,doc_record,record)
 
     #print(meta)
-    if (doc_record in output_files_dict):
+    if (rec_format == 3):
+        for aut in meta:
+            doc_record = aut[0]
+            if (doc_record in output_files_dict):
+                stats[doc_record_type[doc_record]] += 1
+                output_files_dict[doc_record].write("\t".join(aut[1:]) + "\n")
+                print(doc_record, ' - ', aut[1])
+            else:
+                stats[doc_record_type[doc_record]] = 1
+                output_files_dict[doc_record] = write_reports(id_traitement,doc_record,rec_format)
+                output_files_dict[doc_record].write("\t".join(aut[1:]) + "\n")
+                print(doc_record, ' - ', aut[1])
+
+    elif (doc_record in output_files_dict):
         if (meta[0] not in liste_notices_pb_encodage):
             stats[doc_record_type[doc_record]] += 1
             output_files_dict[doc_record].write("\t".join(meta) + "\n")
@@ -480,27 +530,32 @@ def record2listemetas(id_traitement, record,rec_format=1):
 
     else:
         stats[doc_record_type[doc_record]] = 1
-        output_files_dict[doc_record] = write_reports(id_traitement,doc_record)
+        output_files_dict[doc_record] = write_reports(id_traitement,doc_record,rec_format)
         output_files_dict[doc_record].write("\t".join(meta) + "\n")
         print(doc_record, ' - ', meta[0])    
 
     #liste_resultats[doc_record].append(meta)
             
-def write_reports(id_traitement,doc_record):
+def write_reports(id_traitement,doc_record,rec_format):
     filename = doc_record_type[doc_record]
-    if (doc_record == "am" or doc_record == "lm"):
-        filename = "TEX-"+filename
-        header_columns = bib2ark.header_columns_init_monimpr
-    elif (doc_record == "im" or doc_record == "jm" or doc_record == "gm"):
-        header_columns = bib2ark.header_columns_init_cddvd
-        filename = "VID-"+filename
-    elif (doc_record == "ca"):
-        header_columns = aut2ark.header_columns_init_aut2aut
-    elif (len(doc_record)> 1 and doc_record[1] == "s"):
-        header_columns = bib2ark.header_columns_init_perimpr
-        filename = "PER-"+filename
-    else:
-        header_columns = ["NumNotice","FRBNF","ARK","Autres métadonnées..."]
+    header_columns = ["NumNotice","FRBNF","ARK","Autres métadonnées..."]
+    if (rec_format == 1):
+        if (doc_record == "am" or doc_record == "lm"):
+            filename = "TEX-"+filename
+            header_columns = bib2ark.header_columns_init_monimpr
+        elif (doc_record == "im" or doc_record == "jm" or doc_record == "gm"):
+            header_columns = bib2ark.header_columns_init_cddvd
+            filename = "VID-"+filename
+        elif (len(doc_record)> 1 and doc_record[1] == "s"):
+            header_columns = bib2ark.header_columns_init_perimpr
+            filename = "PER-"+filename
+    if (rec_format == 2):
+        if (doc_record == "ca"):
+            header_columns = aut2ark.header_columns_init_aut2aut
+    if (rec_format == 3):
+        if (doc_record == "ca"):
+            header_columns = aut2ark.header_columns_init_bib2aut
+
     file = create_file_doc_record(filename, id_traitement)
     file.write("\t".join(header_columns) + "\n")
     return file
@@ -565,7 +620,6 @@ def launch(form,entry_filename,file_format, rec_format, output_ID,master):
                 recordt_libelle = recordtypeAUT[recordt]
             dcrec_libelles = "-".join([doct_libelle,recordt_libelle])
             doc_record_type[dcrec] = dcrec_libelles
-                
     print("Fichier en entrée : ", entry_filename)
     if (file_format == 1 or file_format == 3):
         iso2tables(master,entry_filename, file_format, rec_format, output_ID)
@@ -722,9 +776,12 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
 
     tk.Radiobutton(cadre_input_type_rec,bg=couleur_fond, text="autorités (personnes)", variable=rec_format, value=2,
                    anchor="w", justify="left").pack(anchor="w")
+    tk.Label(cadre_input_type_rec,text="\n",bg=couleur_fond, font="Arial 1 normal").pack()
+    tk.Radiobutton(cadre_input_type_rec,bg=couleur_fond, text="biblio - pour alignement Autorités", variable=rec_format, value=3,
+                   anchor="w", justify="left").pack(anchor="w")
     rec_format.set(1)
     
-    tk.Label(cadre_input_type_rec, text="\n\n\n\n\n\n\n\n", bg=couleur_fond).pack()
+    tk.Label(cadre_input_type_rec, text="\n\n\n\n\n\n", bg=couleur_fond).pack()
     
 # =============================================================================
 #     Formulaire - Fichiers en sortie

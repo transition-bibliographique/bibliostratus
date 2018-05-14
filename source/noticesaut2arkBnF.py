@@ -36,7 +36,7 @@ programID = "noticesaut2arkBnF"
 entry_file_list = []
 
 header_columns_init_aut2aut = ['N° Notice AUT', 'FRBNF', 'ARK', 'ISNI', 'Nom', 'Prénom', 'Date de naissance', 'Date de mort']
-header_columns_init_bib2aut = ["N° Notice AUT","N° notice BIB","ARK Bib","FRBNF Bib","Titre","ISNI","Nom","Prénom","Dates","Auteur"]
+header_columns_init_bib2aut = ["N° Notice AUT","N° notice BIB","ARK Bib","FRBNF Bib","Titre","ISNI","Nom","Prénom","Dates auteur"]
 #Pour chaque notice, on recense la méthode qui a permis de récupérer le ou les ARK
 NumNotices2methode = defaultdict(list)
 
