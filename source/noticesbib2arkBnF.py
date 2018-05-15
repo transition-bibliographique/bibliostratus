@@ -922,7 +922,7 @@ def issn2ark(NumNot,issn_init,issn,titre,auteur,date):
     return listeArk 
 
 def issn2sru(NumNot,issn):
-    url = url_requete_sru('bib.issn all "' + issn + '"')
+    url = url_requete_sru('bib.issn adj "' + issn + '"')
     listeArk = []
     (test,pageSRU) = testURLetreeParse(url)
     if (test == True):
