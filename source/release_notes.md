@@ -2,6 +2,8 @@
 05/2018
 - Module bleu (marc > tables) :
 	- option : exporter des métadonnées de notices bibliographiques en vue d'alignements avec des autorités (combinaison Titre-Auteur)
+- Module blanc (alignements bibliographiques):
+	- Alignement sur l'ISSN : par expression exacte (option "ajd" du SRU) et non tous mots (option "all")
 
 ### version 1.17
 12/05/2018
