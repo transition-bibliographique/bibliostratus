@@ -485,10 +485,12 @@ def frbnf2ark(NumNot,frbnf,isbn,titre,auteur,date):
                 ark = oldfrbnf2ark(NumNot,frbnf,isbn,titre,auteur,date)
             elif (nb_resultats == 1):
                 ark = page.find("//srw:recordIdentifier", namespaces=main.ns).text
-                NumNotices2methode[NumNot].append("FRBNF > ARK")
+                if (ark !=""):
+                    NumNotices2methode[NumNot].append("FRBNF > ARK")
             else:
                 ark = ",".join([ark.text for ark in page.xpath("//srw:recordIdentifier", namespaces=main.ns)])
-                NumNotices2methode[NumNot].append("FRBNF > ARK")
+                if (ark != ""):
+                    NumNotices2methode[NumNot].append("FRBNF > ARK")
     return ark
 
         
@@ -1208,7 +1210,8 @@ def ean2ark(NumNot,ean,titre,auteur,date):
                 (test2,recordBNF) = ark2recordBNF(ark_current)
                 if (test2 ==  True):
                     ark = comparaisonTitres(NumNot,ark_current,"",ean,titre,auteur,date,"",recordBNF, "EAN")
-                    NumNotices2methode[NumNot].append("EAN > ARK")
+                    if (ark != ""):
+                        NumNotices2methode[NumNot].append("EAN > ARK")
                     listeARK.append(ark)
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
     if (listeARK == "" and auteur != ""):

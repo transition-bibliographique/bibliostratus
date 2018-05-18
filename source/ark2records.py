@@ -85,12 +85,10 @@ def bib2aut(ark, aut_file, format_BIB, format_file):
             if (nna not in listeNNA_AUT):
                 listeNNA_AUT.append(nna)
                 url = nn2url(nna, "aut", format_BIB)
-                try:
-                    etree.parse(request.urlopen(url))
-                except error.URLerror:
-                    print("Pb d'accès à la notice " + nna)
-                XMLrec = etree.parse(request.urlopen(url)).xpath("//srw:recordData/mxc:record",namespaces=main.ns)[0]
-                record2file(aut_file, XMLrec, format_file)
+                (test,record) = bib2ark.testURLetreeParse(url)
+                if (test and record.find("//srw:recordData/mxc:record",namespaces=main.ns) is not None):
+                    XMLrec = record.xpath("//srw:recordData/mxc:record",namespaces=main.ns)[0]
+                    record2file(aut_file, XMLrec, format_file)
 
    
 def file_create(record_type, format_file, outputID):
