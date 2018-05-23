@@ -4,6 +4,7 @@
 	- option : exporter des métadonnées de notices bibliographiques en vue d'alignements avec des autorités (combinaison Titre-Auteur)
 - Module blanc (alignements bibliographiques):
 	- Alignement sur l'ISSN : par expression exacte (option "ajd" du SRU) et non tous mots (option "all")
+	- Alignement Titre-Auteur-Date : contrôle sur la date pour vérifier qu'elle est bien présente en date d'édition (zone 100 ou 210$d).
 
 ### version 1.17
 12/05/2018

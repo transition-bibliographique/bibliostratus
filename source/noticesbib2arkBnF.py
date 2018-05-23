@@ -1070,19 +1070,23 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,type
                     if (recordBNF.find("//mxc:record/mxc:leader",namespaces=main.ns) is not None and recordBNF.find("//mxc:record/mxc:leader",namespaces=main.ns).text is not None):
                         typeRecord_current = recordBNF.find("//mxc:record/mxc:leader",namespaces=main.ns).text[7]
                         if (typeRecord_current == typeRecord):
-                            listeArk.append(comparaisonTitres(NumNot,ark_current,"","",nettoyageTitrePourControle(titre),auteur,date_nett,numeroTome,recordBNF,"Titre-Auteur-Date" + index))
-                            methode = "Titre-Auteur-Date"
-                            if (auteur == "-" and date_nett == "-"):
-                                methode = "Titre"
-                            elif (auteur == "-"):
-                                methode = "Titre-Date"
-                            elif (date_nett == "-"):
-                                methode = "Titre-Auteur"
-                            NumNotices2methode[NumNot].append(methode)
-                            if ("*" in date_nett):
-                                NumNotices2methode[NumNot].append("Date début tronquée")
-                            if (annee_plus_trois == True):
-                                NumNotices2methode[NumNot].append("Date début +/- 3 ans")
+                            ark = comparaisonTitres(NumNot,ark_current,"","",nettoyageTitrePourControle(titre),auteur,date_nett,numeroTome,recordBNF,"Titre-Auteur-Date" + index)
+                            if (date_nett != ""):
+                                ark = checkDate(ark,date_nett,recordBNF)
+                            if (ark != ""):
+                                listeArk.append(ark)
+                                methode = "Titre-Auteur-Date"
+                                if (auteur == "-" and date_nett == "-"):
+                                    methode = "Titre"
+                                elif (auteur == "-"):
+                                    methode = "Titre-Date"
+                                elif (date_nett == "-"):
+                                    methode = "Titre-Auteur"
+                                NumNotices2methode[NumNot].append(methode)
+                                if ("*" in date_nett):
+                                    NumNotices2methode[NumNot].append("Date début tronquée")
+                                if (annee_plus_trois == True):
+                                    NumNotices2methode[NumNot].append("Date début +/- 3 ans")
     listeArk = ",".join(ark for ark in listeArk if ark != "")
     #Si la liste retournée est vide, et qu'on est sur des périodiques
     # et que la date 
