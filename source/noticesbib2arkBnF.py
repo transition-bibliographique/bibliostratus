@@ -297,8 +297,8 @@ def comparaisonTitres(NumNot,ark_current,systemid,isbn,titre,auteur,date,numeroT
         ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"500$a")
     if (ark == ""):
         ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"500$e")
-    if (ark == ""):
-        ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"503$a")
+    #if (ark == ""):
+    #    ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"503$a")
     if (ark == ""):
         ark = comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,"503$e")
     if (ark == ""):
@@ -388,6 +388,7 @@ def comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,da
     field = sous_zone.split("$")[0]
     subfield = sous_zone.split("$")[1]
     titreBNF = nettoyageTitrePourControle(main.extract_subfield(recordBNF,field,subfield,1))
+    print(ark_current,titre,titreBNF,sous_zone)
     if (titre != "" and titreBNF != ""):
         if (titre == titreBNF):
             ark = ark_current
