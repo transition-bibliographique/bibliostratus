@@ -5,6 +5,7 @@
 - Module blanc (alignements bibliographiques):
 	- Alignement sur l'ISSN : par expression exacte (option "ajd" du SRU) et non tous mots (option "all")
 	- Alignement Titre-Auteur-Date : contrôle sur la date pour vérifier qu'elle est bien présente en date d'édition (zone 100 ou 210$d).
+	- fonction spécifique "par item". Facilite la prise en charge du même code par d'autres programmes (via API, interface web, etc.)
 
 ### version 1.17
 12/05/2018

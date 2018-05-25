@@ -388,7 +388,6 @@ def comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,da
     field = sous_zone.split("$")[0]
     subfield = sous_zone.split("$")[1]
     titreBNF = nettoyageTitrePourControle(main.extract_subfield(recordBNF,field,subfield,1))
-    print(ark_current,titre,titreBNF,sous_zone)
     if (titre != "" and titreBNF != ""):
         if (titre == titreBNF):
             ark = ark_current
@@ -1302,14 +1301,91 @@ def extract_cols_from_row(row,liste):
             i += 1
         return tuple(liste_values)    
 
-def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
+def monimpr_item(row,n,form_bib2ark,parametres,liste_reports):
+    """Alignement pour 1 item (1 ligne) monographie imprimée"""
+    if (n == 0):
+        assert main.control_columns_number(form_bib2ark,row,header_columns_init_monimpr)
+    if (n%100 == 0):
+        main.check_access2apis(n,dict_check_apis)
+    #print(row)
+    (NumNot,frbnf,current_ark,isbn,ean,titre,auteur,date,tome,publisher) = extract_cols_from_row(row,
+        ["NumNot","frbnf","ark initial","isbn","ean","titre","auteur","date","tome","editeur"])
     
+    isbn_nett = nettoyageIsbnPourControle(isbn)
+    isbn_propre = nettoyage_isbn(isbn)
+    ean_nett = nettoyageIsbnPourControle(ean)
+    ean_propre = nettoyage_isbn(ean)
+    titre_nett= nettoyageTitrePourControle(titre)
+    auteur_nett = nettoyageAuteur(auteur, False)
+    date_nett = nettoyageDate(date)
+    tome_nett = convert_volumes_to_int(tome)
+    publisher_nett = nettoyageAuteur(publisher, False)
+    if (publisher_nett == ""):
+        publisher_nett = publisher
+    #Actualisation de l'ARK à partir de l'ARK
+    ark = ""
+    if (current_ark != ""):
+        ark = ark2ark(NumNot,current_ark)
+    
+    #A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
+    elif (frbnf != ""):
+        ark = frbnf2ark(NumNot,frbnf,isbn_nett,titre_nett,auteur_nett,date_nett)
+        ark = ",".join([ark1 for ark1 in ark.split(",") if ark1 != ''])
+    #A défaut, recherche sur ISBN
+    #Si plusieurs résultats, contrôle sur l'auteur
+    if (ark == "" and isbn_nett != ""):
+        ark = isbn2ark(NumNot,isbn,isbn_propre,titre_nett,auteur_nett,date_nett)
+        
+    #Si la recherche ISBN + contrôle Titre/Date n'a rien donné -> on cherche ISBN seul
+    if (ark == "" and isbn_nett != ""):
+        ark = isbn2ark(NumNot,isbn,isbn_propre,"","","")
+    #A défaut, recherche sur EAN
+    if (ark == "" and ean != ""):
+        ark = ean2ark(NumNot,ean_propre,titre_nett,auteur_nett,date_nett)
+
+
+    #Si la recherche EAN + contrôles Titre/Date n'a rien donné -> on cherche EAN seul
+    if (ark == "" and ean != ""):
+        ark = ean2ark(NumNot,ean_propre,"","","")
+
+    #A défaut, recherche sur Titre-Auteur-Date
+    if (ark == "" and titre != ""):
+        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,tome_nett,"m","a", False, publisher_nett)
+        #print("1." + NumNot + " : " + ark)
+    if (ark == "" and titre != ""):
+        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,tome_nett,"m","a",True, publisher_nett)
+    
+    """if (ark == "" and titre != ""):
+        ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"monimpr")"""
+    
+    print(str(n) + ". " + NumNot + " : " + ark)
+    nbARK = len(ark.split(","))
+    if (ark == ""):
+        nbARK = 0   
+    if (ark == "Pb FRBNF"):
+        nb_notices_nb_ARK["Pb FRBNF"] += 1
+    else:
+        nb_notices_nb_ARK[nbARK] += 1
+    typeConversionNumNot = ""
+    if (NumNot in NumNotices2methode):
+        typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
+        if (len(set(NumNotices2methode[NumNot])) == 1):
+            typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
+    liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,current_ark,frbnf,isbn,ean,titre,auteur,date,tome, publisher]
+    if (parametres["meta_bib"] == 1):
+        liste_metadonnees.extend(ark2metadc(ark))
+    if (parametres["file_nb"] ==  1):
+        row2file(liste_metadonnees,liste_reports)
+    elif(parametres["file_nb"] ==  2):
+        row2files(liste_metadonnees,liste_reports)    
+
+def monimpr(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres):
     header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","FRBNF","ISBN","EAN","Titre","auteur","date","Tome/Volume", "editeur"]
-    if (meta_bib == 1):
+    if (parametres["meta_bib"] == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
-    if (file_nb ==  1):
+    if (parametres["file_nb"] ==  1):
         row2file(header_columns,liste_reports)
-    elif(file_nb ==  2):
+    elif(parametres["file_nb"] ==  2):
         row2files(header_columns,liste_reports)
     n = 0
     with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
@@ -1319,91 +1395,94 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
         except UnicodeDecodeError:
             main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"],"Comment modifier l'encodage du fichier","https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e")
         for row in entry_file:
-            if (n == 0):
-                assert main.control_columns_number(form_bib2ark,row,header_columns_init_monimpr)
-            if (n%100 == 0):
-                main.check_access2apis(n,dict_check_apis)
+            monimpr_item(row,n,form_bib2ark,parametres,liste_reports)
             n += 1
-            #print(row)
-            (NumNot,frbnf,current_ark,isbn,ean,titre,auteur,date,tome,publisher) = extract_cols_from_row(row,
-                ["NumNot","frbnf","ark initial","isbn","ean","titre","auteur","date","tome","editeur"])
             
-            isbn_nett = nettoyageIsbnPourControle(isbn)
-            isbn_propre = nettoyage_isbn(isbn)
-            ean_nett = nettoyageIsbnPourControle(ean)
-            ean_propre = nettoyage_isbn(ean)
-            titre_nett= nettoyageTitrePourControle(titre)
-            auteur_nett = nettoyageAuteur(auteur, False)
-            date_nett = nettoyageDate(date)
-            tome_nett = convert_volumes_to_int(tome)
-            publisher_nett = nettoyageAuteur(publisher, False)
-            if (publisher_nett == ""):
-                publisher_nett = publisher
-            #Actualisation de l'ARK à partir de l'ARK
-            ark = ""
-            if (current_ark != ""):
-                ark = ark2ark(NumNot,current_ark)
-            
-            #A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
-            elif (frbnf != ""):
-                ark = frbnf2ark(NumNot,frbnf,isbn_nett,titre_nett,auteur_nett,date_nett)
-                ark = ",".join([ark1 for ark1 in ark.split(",") if ark1 != ''])
-            #A défaut, recherche sur ISBN
-            #Si plusieurs résultats, contrôle sur l'auteur
-            if (ark == "" and isbn_nett != ""):
-                ark = isbn2ark(NumNot,isbn,isbn_propre,titre_nett,auteur_nett,date_nett)
-                
-            #Si la recherche ISBN + contrôle Titre/Date n'a rien donné -> on cherche ISBN seul
-            if (ark == "" and isbn_nett != ""):
-                ark = isbn2ark(NumNot,isbn,isbn_propre,"","","")
-            #A défaut, recherche sur EAN
-            if (ark == "" and ean != ""):
-                ark = ean2ark(NumNot,ean_propre,titre_nett,auteur_nett,date_nett)
+def cddvd_item(row,n,form_bib2ark,parametres,liste_reports):
+    if (n == 0):
+        assert main.control_columns_number(form_bib2ark,row,header_columns_init_cddvd)
+    if (n%100 == 0):
+        main.check_access2apis(n,dict_check_apis)
+    (NumNot,frbnf,current_ark,ean,no_commercial,titre,auteur,date, publisher) = extract_cols_from_row(row,
+        ["NumNot","frbnf","ark initial","ean","no_commercial","titre","auteur","date","editeur"])
+    ean_nett = nettoyageIsbnPourControle(ean)
+    ean_propre = nettoyage_isbn(ean)
+    no_commercial_propre = nettoyage_no_commercial(no_commercial)
+    titre_nett= nettoyageTitrePourControle(titre)
+    auteur_nett = nettoyageAuteur(auteur,False)
+    date_nett = nettoyageDate(date)
+    publisher_nett = nettoyageAuteur(publisher, False)
+    if (publisher_nett == ""):
+        publisher_nett = publisher
+    #Actualisation de l'ARK à partir de l'ARK
+    ark = ""
+    if (current_ark != ""):
+        ark = ark2ark(NumNot,current_ark)
+    
+    #A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
+    elif (frbnf != ""):
+        ark = frbnf2ark(NumNot,frbnf,ean_nett,titre_nett,auteur_nett,date_nett)
+        ark = ",".join([ark1 for ark1 in ark.split(",") if ark1 != ''])
+    #A défaut, recherche sur EAN
+    #Si plusieurs résultats, contrôle sur l'auteur
+    if (ark == "" and ean_nett != ""):
+        ark = ean2ark(NumNot,ean_propre,titre_nett,auteur_nett,date_nett)
+    #Si la recherche EAN + contrôle n'a rien donné -> on cherche EAN seul
+    if (ark == "" and ean_nett != ""):
+        ark = ean2ark(NumNot,ean_propre,"","","")
 
-
-            #Si la recherche EAN + contrôles Titre/Date n'a rien donné -> on cherche EAN seul
-            if (ark == "" and ean != ""):
-                ark = ean2ark(NumNot,ean_propre,"","","")
-
-            #A défaut, recherche sur Titre-Auteur-Date
-            if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,tome_nett,"m","a", False, publisher_nett)
-                #print("1." + NumNot + " : " + ark)
-            if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,tome_nett,"m","a",True, publisher_nett)
-            
-            """if (ark == "" and titre != ""):
-                ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"monimpr")"""
-            
-            print(str(n) + ". " + NumNot + " : " + ark)
-            nbARK = len(ark.split(","))
-            if (ark == ""):
-                nbARK = 0   
-            if (ark == "Pb FRBNF"):
-                nb_notices_nb_ARK["Pb FRBNF"] += 1
-            else:
-                nb_notices_nb_ARK[nbARK] += 1
-            typeConversionNumNot = ""
-            if (NumNot in NumNotices2methode):
-                typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
-                if (len(set(NumNotices2methode[NumNot])) == 1):
-                    typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
-            liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,current_ark,frbnf,isbn,ean,titre,auteur,date,tome, publisher]
-            if (meta_bib == 1):
-                liste_metadonnees.extend(ark2metadc(ark))
-            if (file_nb ==  1):
-                row2file(liste_metadonnees,liste_reports)
-            elif(file_nb ==  2):
-                row2files(liste_metadonnees,liste_reports)
+    #A défaut, recherche sur no_commercial
+    if (ark == "" and no_commercial != ""):
+        ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,False, publisher_nett)
+    
+    #Si la recherche N° commercial + contrôle n'a rien donné -> on cherche N° commercial seul
+    #if (ark == "" and no_commercial != ""):
+    #    ark = no_commercial2ark(NumNot,no_commercial_propre,"","","",False, "")
         
+    #Si la recherche sur bib.comref n'a rien donné -> recherche du numéro partout dans la notice
+    #if (ark == "" and no_commercial != ""):
+    #    ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,True, publisher_nett)
+        
+    #A défaut, recherche sur Titre-Auteur-Date
+    if (ark == "" and titre != ""):
+        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m","g r h",False)
+    #A défaut, on recherche Titre-Auteur dans tous champs (+Date comme date)
+    if (ark == "" and titre != ""):
+        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m","g r h",True)
+    """
+    if (ark == "" and titre != ""):
+        ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"cddvd")
+    """
+    print(str(n) + "." + NumNot + " : " + ark)
+    nbARK = len(ark.split(","))
+    if (ark == ""):
+        nbARK = 0   
+    if (ark == "Pb FRBNF"):
+        nb_notices_nb_ARK["Pb FRBNF"] += 1
+    else:
+        nb_notices_nb_ARK[nbARK] += 1
 
-def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
+    typeConversionNumNot = ""
+    if (NumNot in NumNotices2methode):
+        typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
+        if (len(set(NumNotices2methode[NumNot])) == 1):
+            typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
+    liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,frbnf,current_ark,ean,
+                 no_commercial_propre,titre,auteur,date, publisher]
+    if (parametres["meta_bib"] == 1):
+        liste_metadonnees.extend(ark2metadc(ark))
+    if (parametres["file_nb"] ==  1):
+        row2file(liste_metadonnees,liste_reports)
+    elif(parametres["file_nb"] ==  2):
+        row2files(liste_metadonnees,liste_reports)
+
+def cddvd(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres):
     header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","FRBNF","EAN","no_commercial_propre","titre","auteur","date", "editeur"]
-    if (meta_bib == 1):
+    if (parametres["meta_bib"] == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
-    if (file_nb ==  1):
+    if (parametres["file_nb"] ==  1):
         row2file(header_columns,liste_reports)
-    elif(file_nb ==  2):
+    elif(parametres["file_nb"] ==  2):
         row2files(header_columns,liste_reports)
     #results2file(nb_fichiers_a_produire)
     n = 0
@@ -1414,96 +1493,73 @@ def cddvd(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, i
         except UnicodeDecodeError:
             main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"],"Comment modifier l'encodage du fichier","https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e")
         for row in entry_file:
-            if (n == 0):
-                assert main.control_columns_number(form_bib2ark,row,header_columns_init_cddvd)
-
-            
-            #print(row)
+            cddvd_item(row,n,form_bib2ark,parametres,liste_reports)
             n += 1
-            if (n%100 == 0):
-                main.check_access2apis(n,dict_check_apis)
-            (NumNot,frbnf,current_ark,ean,no_commercial,titre,auteur,date, publisher) = extract_cols_from_row(row,
-                ["NumNot","frbnf","ark initial","ean","no_commercial","titre","auteur","date","editeur"])
-            ean_nett = nettoyageIsbnPourControle(ean)
-            ean_propre = nettoyage_isbn(ean)
-            no_commercial_propre = nettoyage_no_commercial(no_commercial)
-            titre_nett= nettoyageTitrePourControle(titre)
-            auteur_nett = nettoyageAuteur(auteur,False)
-            date_nett = nettoyageDate(date)
-            publisher_nett = nettoyageAuteur(publisher, False)
-            if (publisher_nett == ""):
-                publisher_nett = publisher
-            #Actualisation de l'ARK à partir de l'ARK
-            ark = ""
-            if (current_ark != ""):
-                ark = ark2ark(NumNot,current_ark)
-            
-            #A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
-            elif (frbnf != ""):
-                ark = frbnf2ark(NumNot,frbnf,ean_nett,titre_nett,auteur_nett,date_nett)
-                ark = ",".join([ark1 for ark1 in ark.split(",") if ark1 != ''])
-            #A défaut, recherche sur EAN
-            #Si plusieurs résultats, contrôle sur l'auteur
-            if (ark == "" and ean_nett != ""):
-                ark = ean2ark(NumNot,ean_propre,titre_nett,auteur_nett,date_nett)
-            #Si la recherche EAN + contrôle n'a rien donné -> on cherche EAN seul
-            if (ark == "" and ean_nett != ""):
-                ark = ean2ark(NumNot,ean_propre,"","","")
 
-            #A défaut, recherche sur no_commercial
-            if (ark == "" and no_commercial != ""):
-                ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,False, publisher_nett)
-            
-            #Si la recherche N° commercial + contrôle n'a rien donné -> on cherche N° commercial seul
-            #if (ark == "" and no_commercial != ""):
-            #    ark = no_commercial2ark(NumNot,no_commercial_propre,"","","",False, "")
-                
-            #Si la recherche sur bib.comref n'a rien donné -> recherche du numéro partout dans la notice
-            #if (ark == "" and no_commercial != ""):
-            #    ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,True, publisher_nett)
-                
-            #A défaut, recherche sur Titre-Auteur-Date
-            if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m","g r h",False)
-            #A défaut, on recherche Titre-Auteur dans tous champs (+Date comme date)
-            if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m","g r h",True)
-            """
-            if (ark == "" and titre != ""):
-                ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"cddvd")
-            """
-            print(str(n) + "." + NumNot + " : " + ark)
-            nbARK = len(ark.split(","))
-            if (ark == ""):
-                nbARK = 0   
-            if (ark == "Pb FRBNF"):
-                nb_notices_nb_ARK["Pb FRBNF"] += 1
-            else:
-                nb_notices_nb_ARK[nbARK] += 1
+def perimpr_item(row,n,form_bib2ark,parametres,liste_reports):
+    if (n == 0):
+        assert main.control_columns_number(form_bib2ark,row,header_columns_init_perimpr)
+    if (n%100 == 0):
+        main.check_access2apis(n,dict_check_apis)
+    #print(row)
+    (NumNot,frbnf,current_ark,issn,titre,auteur,date,pubPlace) = extract_cols_from_row(row,
+        ["NumNot","frbnf","ark initial","issn","titre","auteur","date","lieu"])
 
-            typeConversionNumNot = ""
-            if (NumNot in NumNotices2methode):
-                typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
-                if (len(set(NumNotices2methode[NumNot])) == 1):
-                    typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
-            liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,frbnf,current_ark,ean,
-                         no_commercial_propre,titre,auteur,date, publisher]
-            if (meta_bib == 1):
-                liste_metadonnees.extend(ark2metadc(ark))
-            if (file_nb ==  1):
-                row2file(liste_metadonnees,liste_reports)
-            elif(file_nb ==  2):
-                row2files(liste_metadonnees,liste_reports)
-
-
+    issn_nett = nettoyageIssnPourControle(issn)
+    issn_propre = nettoyage_isbn(issn)
+    titre_nett= nettoyageTitrePourControle(titre)
+    auteur_nett = nettoyageAuteur(auteur,False)
+    date_nett = nettoyageDate(date)
+    pubPlace_nett = nettoyagePubPlace(pubPlace)
+    #Actualisation de l'ARK à partir de l'ARK
+    ark = ""
+    if (current_ark != ""):
+        ark = ark2ark(NumNot,current_ark)
+    
+    #A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
+    elif (frbnf != ""):
+        ark = frbnf2ark(NumNot,frbnf,issn_nett,titre_nett,auteur_nett,date_nett)
+        ark = ",".join(ark1 for ark1 in ark.split(",") if ark1 != '')
+    #A défaut, recherche sur ISSN
+    if (ark == "" and issn_nett != ""):
+        ark = issn2ark(NumNot,issn,issn_propre,titre_nett,auteur_nett,date_nett)
+    #A défaut, recherche sur Titre-Auteur-Date
+    if (ark == "" and titre != ""):
+        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","s","a",False,pubPlace_nett)
+    #A défaut, recherche sur T-A-D tous mots
+    if (ark == "" and titre != ""):
+        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","s","a",True,pubPlace_nett)
+    print(str(n) + ". " + NumNot + " : " + ark)
+    nbARK = len(ark.split(","))
+    if (ark == ""):
+        nbARK = 0   
+    if (ark == "Pb FRBNF"):
+        nb_notices_nb_ARK["Pb FRBNF"] += 1
+    else:
+        nb_notices_nb_ARK[nbARK] += 1
+                         
+    typeConversionNumNot = ""
+    if (NumNot in NumNotices2methode):
+        typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
+        if (len(set(NumNotices2methode[NumNot])) == 1):
+            typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
+    liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,frbnf,current_ark,issn,titre,auteur,date,pubPlace]
+    if (parametres["meta_bib"] == 1):
+        liste_metadonnees.extend(ark2metadc(ark))
+    if (parametres["file_nb"] ==  1):
+        row2file(liste_metadonnees,liste_reports)
+    elif(parametres["file_nb"]  ==  2):
+        row2files(liste_metadonnees,liste_reports)
+    
+    
 #Si option du formulaire = périodiques imprimés
-def perimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib):
+def perimpr(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres):
     header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","frbnf","ISSN","titre","auteur","date","lieu"]
-    if (meta_bib == 1):
+    if (parametres["meta_bib"] == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
-    if (file_nb ==  1):
+    if (parametres["file_nb"] ==  1):
         row2file(header_columns,liste_reports)
-    elif(file_nb ==  2):
+    elif(parametres["file_nb"] ==  2):
         row2files(header_columns,liste_reports)
     n = 0
     with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
@@ -1513,62 +1569,14 @@ def perimpr(form_bib2ark, zone_controles, entry_filename, type_doc_bib, file_nb,
         except UnicodeDecodeError:
             main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"],"Comment modifier l'encodage du fichier","https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e")
         for row in entry_file:
-            if (n == 0):
-                assert main.control_columns_number(form_bib2ark,row,header_columns_init_perimpr)
+            perimpr_item(row,n,form_bib2ark,parametres,liste_reports)
             n += 1
-            if (n%100 == 0):
-                main.check_access2apis(n,dict_check_apis)
-            #print(row)
-            (NumNot,frbnf,current_ark,issn,titre,auteur,date,pubPlace) = extract_cols_from_row(row,
-                ["NumNot","frbnf","ark initial","issn","titre","auteur","date","lieu"])
-
-            issn_nett = nettoyageIssnPourControle(issn)
-            issn_propre = nettoyage_isbn(issn)
-            titre_nett= nettoyageTitrePourControle(titre)
-            auteur_nett = nettoyageAuteur(auteur,False)
-            date_nett = nettoyageDate(date)
-            pubPlace_nett = nettoyagePubPlace(pubPlace)
-            #Actualisation de l'ARK à partir de l'ARK
-            ark = ""
-            if (current_ark != ""):
-                ark = ark2ark(NumNot,current_ark)
-            
-            #A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
-            elif (frbnf != ""):
-                ark = frbnf2ark(NumNot,frbnf,issn_nett,titre_nett,auteur_nett,date_nett)
-                ark = ",".join(ark1 for ark1 in ark.split(",") if ark1 != '')
-            #A défaut, recherche sur ISSN
-            if (ark == "" and issn_nett != ""):
-                ark = issn2ark(NumNot,issn,issn_propre,titre_nett,auteur_nett,date_nett)
-            #A défaut, recherche sur Titre-Auteur-Date
-            if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","s","a",False,pubPlace_nett)
-            #A défaut, recherche sur T-A-D tous mots
-            if (ark == "" and titre != ""):
-                ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","s","a",True,pubPlace_nett)
-            print(str(n) + ". " + NumNot + " : " + ark)
-            nbARK = len(ark.split(","))
-            if (ark == ""):
-                nbARK = 0   
-            if (ark == "Pb FRBNF"):
-                nb_notices_nb_ARK["Pb FRBNF"] += 1
-            else:
-                nb_notices_nb_ARK[nbARK] += 1
-                                 
-            typeConversionNumNot = ""
-            if (NumNot in NumNotices2methode):
-                typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
-                if (len(set(NumNotices2methode[NumNot])) == 1):
-                    typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
-            liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,frbnf,current_ark,issn,titre,auteur,date,pubPlace]
-            if (meta_bib == 1):
-                liste_metadonnees.extend(ark2metadc(ark))
-            if (file_nb ==  1):
-                row2file(liste_metadonnees,liste_reports)
-            elif(file_nb ==  2):
-                row2files(liste_metadonnees,liste_reports)
 
 def launch(form_bib2ark,zone_controles, entry_filename, type_doc_bib, file_nb, meta_bib, id_traitement):
+    parametres = {"meta_bib":meta_bib,
+                  "type_doc_bib":type_doc_bib,
+                  "file_nb":file_nb,
+                  "id_traitement":id_traitement}
     main.check_file_name(form_bib2ark, entry_filename)
     
     #results2file(nb_fichiers_a_produire)
@@ -1578,11 +1586,11 @@ def launch(form_bib2ark,zone_controles, entry_filename, type_doc_bib, file_nb, m
     liste_reports = create_reports(id_traitement, file_nb)    
     
     if (type_doc_bib == 1):
-        monimpr(form_bib2ark,zone_controles, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib)
+        monimpr(form_bib2ark,zone_controles, entry_filename, liste_reports, parametres)
     elif (type_doc_bib == 2):
-        cddvd(form_bib2ark,zone_controles, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib)
+        cddvd(form_bib2ark,zone_controles, entry_filename, liste_reports, parametres)
     elif (type_doc_bib == 3):
-        perimpr(form_bib2ark,zone_controles, entry_filename, type_doc_bib, file_nb, id_traitement, liste_reports, meta_bib)
+        perimpr(form_bib2ark,zone_controles, entry_filename, liste_reports, parametres)
 
     else:
         print("Erreur : type de document non reconnu")
@@ -1836,7 +1844,7 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     
     b = tk.Button(zone_ok_help_cancel, bg=couleur_bouton, fg="white", font="Arial 10 bold", 
                   text = "Aligner les\nnotices BIB", 
-                  command = lambda: launch(form_bib2ark,zone_controles , entry_file_list[0], type_doc_bib.get(), file_nb.get(), meta_bib.get(), id_traitement.get()), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
+                  command = lambda: launch(form_bib2ark,zone_controles, entry_file_list[0], type_doc_bib.get(), file_nb.get(), meta_bib.get(), id_traitement.get()), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
     
     tk.Label(zone_ok_help_cancel, font="bold", text="", bg=couleur_fond).pack()
