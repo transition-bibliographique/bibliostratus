@@ -1055,7 +1055,6 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,type
                 url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur_nett + ' ' + pubPlace_nett + '" and bib.anywhere ' + param_date + ' "' + date_nett + '" and bib.doctype any "' + typeDoc + '"')
                 index = " dans toute la notice"
             (test,results) = testURLetreeParse(url)
-        print(url)
         if (test == True):
             i = 1
             total_rec = int(results.find("//srw:numberOfRecords", namespaces=main.ns).text)
