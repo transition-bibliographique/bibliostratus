@@ -55,7 +55,6 @@ listeChiffres = ["0","1","2","3","4","5","6","7","8","9"]
 lettres = ["a","b","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
 lettres_sauf_x = ["a","b","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","y","z"]
 ponctuation = [".",",",";",":","?","!","%","$","£","€","#","\\","\"","&","~","{","(","[","`","\\","_","@",")","]","}","=","+","*","\/","<",">",")","}"]
-
 header_columns_init_monimpr = ["Num Not", "FRBNF", "ARK", "ISBN", "EAN", "Titre", "Auteur", "Date", "Volume-Tome", "Editeur"]
 header_columns_init_cddvd = ["Num Not", "FRBNF", "ARK", "EAN", "N° commercial", "Titre", "Auteur", "Date", "Editeur"]
 header_columns_init_perimpr = ["Num Not", "FRBNF", "ARK", "ISSN", "Titre", "Auteur", "Date", "Lieu de publication"]
@@ -72,7 +71,7 @@ def create_reports(id_traitement_code, nb_fichiers_a_produire):
     
     #report_type_convert_file_name = id_traitement_code + "-" + "NumNotices-TypeConversion.txt"
     #report_type_convert_file = open(report_type_convert_file_name,"w")
-    #report_type_convert_file.write("NumNotice\tMéthode pour trouver l'ARK\n")
+    #report_type_convert_file.write("NumNotice    tMéthode pour trouver l'ARK    n")
     if (nb_fichiers_a_produire == 1):
         reports = create_reports_1file(id_traitement_code)
     else:
@@ -367,16 +366,25 @@ def checkDate(ark,date_init,recordBNF):
         dateBNF.extend([dateBNF_100 + 1, dateBNF_100-1])
     dateBNF.append(dateBNF_100)
     dateBNF_210d = unidecode(main.extract_subfield(recordBNF,"210","d",1,sep="~").lower())
+    dateBNF_306a = unidecode(main.extract_subfield(recordBNF,"306","a",1,sep="~").lower())
     for lettre in lettres:
         dateBNF_210d = dateBNF_210d.replace(lettre,"~")
+        dateBNF_306a = dateBNF_306a.replace(lettre,"~")
     for signe in ponctuation:
         dateBNF_210d = dateBNF_210d.replace(signe,"~")
+        dateBNF_306a = dateBNF_306a.replace(signe,"~")
     dateBNF_210d = [el for el in dateBNF_210d.split("~") if el != ""]
+    dateBNF_306a = [el for el in dateBNF_306a.split("~") if el != ""]
     for date in dateBNF_210d:
         if (main.RepresentsInt(date) is True):
             date = int(date)
             dateBNF.extend([date + 1, date-1])
+    for date in dateBNF_306a:
+        if (main.RepresentsInt(date) is True):
+            date = int(date)
+            dateBNF.extend([date + 1, date-1])
     dateBNF.extend(dateBNF_210d)
+    dateBNF.extend(dateBNF_306a)
     dateBNF = " ".join([str(date) for date in dateBNF])
     if (len(str(date_init))>3 and str(date_init)[0:4] in dateBNF):
         ark_checked = ark
@@ -447,7 +455,7 @@ def systemid2ark(NumNot,systemid,tronque,isbn,titre,auteur,date):
 def rechercheNNB(NumNot,nnb,isbn,titre,auteur,date):
     ark = ""
     if (nnb.isdigit() is False):
-        #pb_frbnf_source.write("\t".join[NumNot,nnb] + "\n")
+        #pb_frbnf_source.write("    t".join[NumNot,nnb] + "    n")
         ark = "Pb FRBNF"
     elif (30000000 < int(nnb) < 50000000):
         url = url_requete_sru('bib.recordid any "' + nnb + '"')
@@ -496,7 +504,7 @@ def frbnf2ark(NumNot,frbnf,isbn,titre,auteur,date):
         
 def row2file(liste_metadonnees,liste_reports):
     liste_metadonnees_to_report = [str(el) for el in liste_metadonnees]
-    liste_reports[0].write("\t".join(liste_metadonnees_to_report ) + "\n")
+    liste_reports[0].write("    t".join(liste_metadonnees_to_report ) + "    n")
 
 def row2files(liste_metadonnees,liste_reports):
      #["NumNot","nbARK","ark trouvé","Méthode","ark initial","FRBNF","ISBN","EAN","Titre","auteur","date","Tome/Volume", "editeur"]
@@ -504,13 +512,13 @@ def row2files(liste_metadonnees,liste_reports):
     nbARK = liste_metadonnees[1]
     ark = liste_metadonnees[2]
     if (ark == "Pb FRBNF"):
-        liste_reports[0].write("\t".join(liste_metadonnees_to_report) + "\n")
+        liste_reports[0].write("    t".join(liste_metadonnees_to_report) + "    n")
     elif (nbARK == 0):
-        liste_reports[1].write("\t".join(liste_metadonnees_to_report) + "\n")
+        liste_reports[1].write("    t".join(liste_metadonnees_to_report) + "    n")
     elif (nbARK == 1):
-        liste_reports[2].write("\t".join(liste_metadonnees_to_report) + "\n")
+        liste_reports[2].write("    t".join(liste_metadonnees_to_report) + "    n")
     else:
-        liste_reports[3].write("\t".join(liste_metadonnees_to_report) + "\n")
+        liste_reports[3].write("    t".join(liste_metadonnees_to_report) + "    n")
         
 def nettoyage_isbn(isbn):
     isbn_nett = isbn.split(";")[0].split(",")[0].split("(")[0].split("[")[0]
@@ -1388,8 +1396,8 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, liste_reports, paramet
     elif(parametres["file_nb"] ==  2):
         row2files(header_columns,liste_reports)
     n = 0
-    with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
-        entry_file = csv.reader(csvfile, delimiter='\t')
+    with open(entry_filename, newline='    n',encoding="utf-8") as csvfile:
+        entry_file = csv.reader(csvfile, delimiter='    t')
         try:
             next(entry_file)
         except UnicodeDecodeError:
@@ -1584,8 +1592,8 @@ def cd(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres):
         row2files(header_columns,liste_reports)
     #results2file(nb_fichiers_a_produire)
     n = 0
-    with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
-        entry_file = csv.reader(csvfile, delimiter='\t')
+    with open(entry_filename, newline='    n',encoding="utf-8") as csvfile:
+        entry_file = csv.reader(csvfile, delimiter='    t')
         try:
             next(entry_file)
         except UnicodeDecodeError:
@@ -1662,8 +1670,8 @@ def perimpr(form_bib2ark, zone_controles, entry_filename, liste_reports, paramet
     elif(parametres["file_nb"] ==  2):
         row2files(header_columns,liste_reports)
     n = 0
-    with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
-        entry_file = csv.reader(csvfile, delimiter='\t')
+    with open(entry_filename, newline='    n',encoding="utf-8") as csvfile:
+        entry_file = csv.reader(csvfile, delimiter='    t')
         try:
             next(entry_file)
         except UnicodeDecodeError:
@@ -1715,7 +1723,7 @@ def fin_traitements(form_bib2ark,liste_reports,nb_notices_nb_ARK):
 def stats_extraction(liste_reports,nb_notices_nb_ARK):
     """Ecriture des rapports de statistiques générales d'alignements"""
     for key in nb_notices_nb_ARK:
-        liste_reports[-1].write(str(key) + "\t" + str(nb_notices_nb_ARK[key]) + "\n")
+        liste_reports[-1].write(str(key) + "    t" + str(nb_notices_nb_ARK[key]) + "    n")
     """if ("Pb FRBNF" in sorted(nb_notices_nb_ARK)):
         nb_notices_nb_ARK[-2] = nb_notices_nb_ARK.pop('Pb FRBNF')"""
     """plt.bar(list(nb_notices_nb_ARK.keys()), nb_notices_nb_ARK.values(), color='skyblue')
@@ -1724,45 +1732,45 @@ def stats_extraction(liste_reports,nb_notices_nb_ARK):
 def url_access_pbs_report(liste_reports):
     """A la suite des stats générales, liste des erreurs rencontrées (plantage URL) + ISBN différents en entrée et en sortie"""
     if (len(url_access_pbs) > 0):
-        liste_reports[-1].write("\n\nProblème d'accès à certaines URL :\nURL\tType de problème\n")
+        liste_reports[-1].write("    n    nProblème d'accès à certaines URL :    nURL    tType de problème    n")
         for pb in url_access_pbs:
-            liste_reports[-1].write("\t".join(pb) + "\n")
+            liste_reports[-1].write("    t".join(pb) + "    n")
     if (len(NumNotices_conversionISBN) > 0):
-        liste_reports[-1].write("".join(["\n\n",10*"-","\n"]))
-        liste_reports[-1].write("Liste des notices dont l'ISBN en entrée est différent de celui dans la notice trouvée\n")
-        liste_reports[-1].write("\t".join(["NumNotice",
+        liste_reports[-1].write("".join(["    n    n",10*"-","    n"]))
+        liste_reports[-1].write("Liste des notices dont l'ISBN en entrée est différent de celui dans la notice trouvée    n")
+        liste_reports[-1].write("    t".join(["NumNotice",
                                                 "ISBN initial",
                                                 "ISBN converti",
                                                 "Notice trouvée dans le Sudoc ?",
-                                                ]) + "\n")
+                                                ]) + "    n")
         for record in NumNotices_conversionISBN:
-            liste_reports[-1].write("\t".join([record,
+            liste_reports[-1].write("    t".join([record,
                                                 NumNotices_conversionISBN[record]["isbn initial"],
                                                 NumNotices_conversionISBN[record]["isbn trouvé"],
                                                 NumNotices_conversionISBN[record]["via Sudoc"],
-                                                ]) + "\n")
+                                                ]) + "    n")
 def check_access_to_apis(liste_reports):
     """Contrôles réguliers de l'accès aux API Abes et BnF -> enregistrés dans 
     le dictionnaire dict_check_apis.
     Si celui-ci contient au moins un "False", on génère une rubrique 
     dans le rapport Stats"""
     if (False in dict_check_apis["testAbes"]):
-        liste_reports[-1].write("\n\nProblème d'accès aux API Abes\n")
+        liste_reports[-1].write("    n    nProblème d'accès aux API Abes    n")
         for key in dict_check_apis["testAbes"]:
             if (dict_check_apis["testAbes"][key] is False):
-                liste_reports[-1].write("".join([str(key)," : API Abes down\n"]))
+                liste_reports[-1].write("".join([str(key)," : API Abes down    n"]))
     if (False in dict_check_apis["testBnF"]):
-        liste_reports[-1].write("\n\nProblème d'accès aux API BnF\n")
+        liste_reports[-1].write("    n    nProblème d'accès aux API BnF    n")
         for key in dict_check_apis["testBnF"]:
             if (dict_check_apis["testBnF"][key] is False):
-                liste_reports[-1].write("".join([str(key)," : API BnF down\n"]))
+                liste_reports[-1].write("".join([str(key)," : API BnF down    n"]))
 
 
 def typesConversionARK(liste_reports):
     """Dans un rapport spécifique, pour chaque notice en entrée, mention de la méthode d'alignement (ISBN, ISNI, etc.)"""
     """for key in NumNotices2methode:
         value = " / ".join(NumNotices2methode[key])
-        liste_reports[-1].write(key + "\t" + value + "\n")"""
+        liste_reports[-1].write(key + "    t" + value + "    n")"""
 
 def annuler(form_bib2ark):
     """Fermeture du formulaire (bouton "Annuler")"""
@@ -1880,13 +1888,13 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     #définition input URL (u)
     tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée :", justify="left", font="bold").pack()
     
-    tk.Label(cadre_input_file,bg=couleur_fond, text="Fichier contenant les notices : \n\n").pack(side="left")
+    tk.Label(cadre_input_file,bg=couleur_fond, text="Fichier contenant les notices :\n\n").pack(side="left")
     """entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
     entry_filename.pack(side="left")
     entry_filename.focus_set()"""
     main.download_zone(cadre_input_file, "Sélectionner un fichier\nSéparateur TAB, Encodage UTF-8",entry_file_list,couleur_fond,zone_notes)
     
-    #tk.Label(cadre_input_infos_format,bg=couleur_fond, text=4*"\t"+"Séparateur TAB, Encodage UTF-8", justify="right").pack(anchor="s")
+    #tk.Label(cadre_input_infos_format,bg=couleur_fond, text=4*"    t"+"Séparateur TAB, Encodage UTF-8", justify="right").pack(anchor="s")
     
     
     tk.Label(cadre_input_type_docs_zone,bg=couleur_fond, text="Type de documents  ", font="Arial 10 bold", justify="left").pack(anchor="w", side="left")
@@ -1923,7 +1931,7 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
 
 
     tk.Radiobutton(cadre_output_nb_fichier,bg=couleur_fond, text="1 fichier", variable=file_nb , value=1, justify="left").pack(anchor="w")
-    tk.Radiobutton(cadre_output_nb_fichier,bg=couleur_fond, text="Plusieurs fichiers \n(Pb / 0 / 1 / plusieurs ARK trouvés)", justify="left", variable=file_nb , value=2).pack(anchor="w")
+    tk.Radiobutton(cadre_output_nb_fichier,bg=couleur_fond, text="Plusieurs fichiers\n(Pb / 0 / 1 / plusieurs ARK trouvés)", justify="left", variable=file_nb , value=2).pack(anchor="w")
     file_nb.set(1)
     #Récupérer les métadonnées BIB (dublin core)
     tk.Label(cadre_output_nb_fichier,bg=couleur_fond, fg=couleur_bouton, text="\n").pack()    

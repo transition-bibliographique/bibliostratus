@@ -8,6 +8,7 @@
 	- Alignement Titre-Auteur-Date : contrôle sur la date pour vérifier qu'elle est bien présente en date d'édition (zone 100 ou 210$d).
 	- fonction spécifique "par item". Facilite la prise en charge du même code par d'autres programmes (via API, interface web, etc.)
 	- distinction entre enregistrements sonores (AUD) et vidéos (VID) : alignement sur l'un ou sur l'autre de ces deux types de documents
+	- Contrôle sur la date : ajout de la date de copyright (302$a) en plus de la zone 100 et 210$d
 
 ### version 1.17
 12/05/2018
