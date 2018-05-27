@@ -157,14 +157,6 @@ def path2value(record, field_subfield):
             value = record[field_subfield].data
     return value
 
-def RepresentsInt(s):
-    try: 
-        int(s)
-        return True
-    except ValueError:
-        return False
-
-
 def record2meta(record, liste_elements, alternate_list=[]):
     zone = []
     for el in liste_elements:
@@ -190,7 +182,7 @@ def record2title(f200a_e):
 
 def record2date(f100a,f210d):
     date = ""
-    if (RepresentsInt(f100a[9:13]) == True):
+    if (main.RepresentsInt(f100a[9:13]) == True):
         date = f100a[9:13]
     else:
         date = f210d
@@ -543,9 +535,12 @@ def write_reports(id_traitement,doc_record,rec_format):
         if (doc_record == "am" or doc_record == "lm"):
             filename = "TEX-"+filename
             header_columns = bib2ark.header_columns_init_monimpr
-        elif (doc_record == "im" or doc_record == "jm" or doc_record == "gm"):
+        elif (doc_record == "gm"):
             header_columns = bib2ark.header_columns_init_cddvd
             filename = "VID-"+filename
+        elif (doc_record == "im" or doc_record == "jm"):
+            header_columns = bib2ark.header_columns_init_cddvd
+            filename = "AUD-"+filename
         elif (len(doc_record)> 1 and doc_record[1] == "s"):
             header_columns = bib2ark.header_columns_init_perimpr
             filename = "PER-"+filename
@@ -749,7 +744,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
                                    font="Arial 8 italic",
                                    border=0,
                                    text = "Je ne sais pas / Je ne comprends pas", 
-              command=lambda: main.click2help("https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#lencodage-des-fichiers-en-entr%C3%A9e"), 
+              command=lambda: main.click2url("https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#lencodage-des-fichiers-en-entr%C3%A9e"), 
               )
     lien_help_encodage.pack()
     tk.Label(cadre_input_type_docs, bg=couleur_fond,text="\n\n\n").pack()
@@ -840,14 +835,14 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     
     call4help = tk.Button(cadre_valider,
                           text=main.texte_bouton_help, 
-                          command=lambda: main.click2help(main.url_online_help), 
+                          command=lambda: main.click2url(main.url_online_help), 
                           pady=5, padx=5, width=12)
     call4help.pack()
     tk.Label(cadre_valider, text="\n",bg=couleur_fond, font="Arial 1 normal").pack()
     
     forum_button = tk.Button(cadre_valider, 
                           text=main.texte_bouton_forum, 
-                          command=lambda: main.click2help(main.url_forum_aide), 
+                          command=lambda: main.click2url(main.url_forum_aide), 
                           pady=5, padx=5, width=12)
     forum_button.pack()
     

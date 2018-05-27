@@ -1055,6 +1055,7 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,type
                 url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur_nett + ' ' + pubPlace_nett + '" and bib.anywhere ' + param_date + ' "' + date_nett + '" and bib.doctype any "' + typeDoc + '"')
                 index = " dans toute la notice"
             (test,results) = testURLetreeParse(url)
+        print(url)
         if (test == True):
             i = 1
             total_rec = int(results.find("//srw:numberOfRecords", namespaces=main.ns).text)
@@ -1121,7 +1122,7 @@ def tad2ppn(NumNot,titre,auteur,auteur_nett,date,typeRecord):
                    "&period=",
                    date,
                    "&pageID=1&wp=true&idref=true&loc=true"])
-    print(url)
+
     (test,results) = testURLetreeParse(url)
     if (test == True):
         nb_results = str(results.find(".//results").text)
@@ -1153,7 +1154,7 @@ def tad2ppn_pages_suivantes(NumNot,titre,auteur,auteur_nett,date,typeRecord,url,
 
 def checkTypeRecord(ark,typeRecord_attendu):
     url = url_requete_sru('bib.ark any "' + ark + '"')
-    print(url)
+    #print(url)
     ark_checked = ""
     (test,record) = testURLetreeParse(url)
     if (test == True):
@@ -1309,7 +1310,7 @@ def monimpr_item(row,n,form_bib2ark,parametres,liste_reports):
         main.check_access2apis(n,dict_check_apis)
     #print(row)
     (NumNot,frbnf,current_ark,isbn,ean,titre,auteur,date,tome,publisher) = extract_cols_from_row(row,
-        ["NumNot","frbnf","ark initial","isbn","ean","titre","auteur","date","tome","editeur"])
+        header_columns_init_monimpr)
     
     isbn_nett = nettoyageIsbnPourControle(isbn)
     isbn_propre = nettoyage_isbn(isbn)
@@ -1398,13 +1399,13 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, liste_reports, paramet
             monimpr_item(row,n,form_bib2ark,parametres,liste_reports)
             n += 1
             
-def cddvd_item(row,n,form_bib2ark,parametres,liste_reports):
+def dvd_item(row,n,form_bib2ark,parametres,liste_reports):
     if (n == 0):
         assert main.control_columns_number(form_bib2ark,row,header_columns_init_cddvd)
     if (n%100 == 0):
         main.check_access2apis(n,dict_check_apis)
     (NumNot,frbnf,current_ark,ean,no_commercial,titre,auteur,date, publisher) = extract_cols_from_row(row,
-        ["NumNot","frbnf","ark initial","ean","no_commercial","titre","auteur","date","editeur"])
+        header_columns_init_cddvd)
     ean_nett = nettoyageIsbnPourControle(ean)
     ean_propre = nettoyage_isbn(ean)
     no_commercial_propre = nettoyage_no_commercial(no_commercial)
@@ -1445,10 +1446,10 @@ def cddvd_item(row,n,form_bib2ark,parametres,liste_reports):
         
     #A défaut, recherche sur Titre-Auteur-Date
     if (ark == "" and titre != ""):
-        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m","g r h",False)
+        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m","r h",False)
     #A défaut, on recherche Titre-Auteur dans tous champs (+Date comme date)
     if (ark == "" and titre != ""):
-        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m","g r h",True)
+        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m","r h",True)
     """
     if (ark == "" and titre != ""):
         ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"cddvd")
@@ -1476,7 +1477,7 @@ def cddvd_item(row,n,form_bib2ark,parametres,liste_reports):
     elif(parametres["file_nb"] ==  2):
         row2files(liste_metadonnees,liste_reports)
 
-def cddvd(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres):
+def dvd(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres):
     header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","FRBNF","EAN","no_commercial_propre","titre","auteur","date", "editeur"]
     if (parametres["meta_bib"] == 1):
         header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
@@ -1493,8 +1494,108 @@ def cddvd(form_bib2ark, zone_controles, entry_filename, liste_reports, parametre
         except UnicodeDecodeError:
             main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"],"Comment modifier l'encodage du fichier","https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e")
         for row in entry_file:
-            cddvd_item(row,n,form_bib2ark,parametres,liste_reports)
+            dvd_item(row,n,form_bib2ark,parametres,liste_reports)
             n += 1
+
+def cd_item(row,n,form_bib2ark,parametres,liste_reports):
+    if (n == 0):
+        assert main.control_columns_number(form_bib2ark,row,header_columns_init_cddvd)
+    if (n%100 == 0):
+        main.check_access2apis(n,dict_check_apis)
+    (NumNot,frbnf,current_ark,ean,no_commercial,titre,auteur,date, publisher) = extract_cols_from_row(row,
+        header_columns_init_cddvd)
+    ean_nett = nettoyageIsbnPourControle(ean)
+    ean_propre = nettoyage_isbn(ean)
+    no_commercial_propre = nettoyage_no_commercial(no_commercial)
+    titre_nett= nettoyageTitrePourControle(titre)
+    auteur_nett = nettoyageAuteur(auteur,False)
+    date_nett = nettoyageDate(date)
+    publisher_nett = nettoyageAuteur(publisher, False)
+    if (publisher_nett == ""):
+        publisher_nett = publisher
+    #Actualisation de l'ARK à partir de l'ARK
+    ark = ""
+    if (current_ark != ""):
+        ark = ark2ark(NumNot,current_ark)
+    
+    #A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
+    elif (frbnf != ""):
+        ark = frbnf2ark(NumNot,frbnf,ean_nett,titre_nett,auteur_nett,date_nett)
+        ark = ",".join([ark1 for ark1 in ark.split(",") if ark1 != ''])
+    #A défaut, recherche sur EAN
+    #Si plusieurs résultats, contrôle sur l'auteur
+    if (ark == "" and ean_nett != ""):
+        ark = ean2ark(NumNot,ean_propre,titre_nett,auteur_nett,date_nett)
+    #Si la recherche EAN + contrôle n'a rien donné -> on cherche EAN seul
+    if (ark == "" and ean_nett != ""):
+        ark = ean2ark(NumNot,ean_propre,"","","")
+
+    #A défaut, recherche sur no_commercial
+    if (ark == "" and no_commercial != ""):
+        ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,False, publisher_nett)
+    
+    #Si la recherche N° commercial + contrôle n'a rien donné -> on cherche N° commercial seul
+    #if (ark == "" and no_commercial != ""):
+    #    ark = no_commercial2ark(NumNot,no_commercial_propre,"","","",False, "")
+        
+    #Si la recherche sur bib.comref n'a rien donné -> recherche du numéro partout dans la notice
+    #if (ark == "" and no_commercial != ""):
+    #    ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,True, publisher_nett)
+        
+    #A défaut, recherche sur Titre-Auteur-Date
+    if (ark == "" and titre != ""):
+        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m","g r",False)
+    #A défaut, on recherche Titre-Auteur dans tous champs (+Date comme date)
+    if (ark == "" and titre != ""):
+        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m","g r",True)
+    """
+    if (ark == "" and titre != ""):
+        ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"cddvd")
+    """
+    print(str(n) + "." + NumNot + " : " + ark)
+    nbARK = len(ark.split(","))
+    if (ark == ""):
+        nbARK = 0   
+    if (ark == "Pb FRBNF"):
+        nb_notices_nb_ARK["Pb FRBNF"] += 1
+    else:
+        nb_notices_nb_ARK[nbARK] += 1
+
+    typeConversionNumNot = ""
+    if (NumNot in NumNotices2methode):
+        typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
+        if (len(set(NumNotices2methode[NumNot])) == 1):
+            typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
+    liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,frbnf,current_ark,ean,
+                 no_commercial_propre,titre,auteur,date, publisher]
+    if (parametres["meta_bib"] == 1):
+        liste_metadonnees.extend(ark2metadc(ark))
+    if (parametres["file_nb"] ==  1):
+        row2file(liste_metadonnees,liste_reports)
+    elif(parametres["file_nb"] ==  2):
+        row2files(liste_metadonnees,liste_reports)
+
+def cd(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres):
+    header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","FRBNF","EAN","no_commercial_propre","titre","auteur","date", "editeur"]
+    if (parametres["meta_bib"] == 1):
+        header_columns.extend(["[BnF] Titre","[BnF] 1er auteur Prénom","[BnF] 1er auteur Nom","[BnF] Tous auteurs","[BnF] Date"])
+    if (parametres["file_nb"] ==  1):
+        row2file(header_columns,liste_reports)
+    elif(parametres["file_nb"] ==  2):
+        row2files(header_columns,liste_reports)
+    #results2file(nb_fichiers_a_produire)
+    n = 0
+    with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
+        entry_file = csv.reader(csvfile, delimiter='\t')
+        try:
+            next(entry_file)
+        except UnicodeDecodeError:
+            main.popup_errors(form_bib2ark,main.errors["pb_input_utf8"],"Comment modifier l'encodage du fichier","https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e")
+        for row in entry_file:
+            cd_item(row,n,form_bib2ark,parametres,liste_reports)
+            n += 1
+
+
 
 def perimpr_item(row,n,form_bib2ark,parametres,liste_reports):
     if (n == 0):
@@ -1503,7 +1604,7 @@ def perimpr_item(row,n,form_bib2ark,parametres,liste_reports):
         main.check_access2apis(n,dict_check_apis)
     #print(row)
     (NumNot,frbnf,current_ark,issn,titre,auteur,date,pubPlace) = extract_cols_from_row(row,
-        ["NumNot","frbnf","ark initial","issn","titre","auteur","date","lieu"])
+        header_columns_init_perimpr)
 
     issn_nett = nettoyageIssnPourControle(issn)
     issn_propre = nettoyage_isbn(issn)
@@ -1588,8 +1689,10 @@ def launch(form_bib2ark,zone_controles, entry_filename, type_doc_bib, file_nb, m
     if (type_doc_bib == 1):
         monimpr(form_bib2ark,zone_controles, entry_filename, liste_reports, parametres)
     elif (type_doc_bib == 2):
-        cddvd(form_bib2ark,zone_controles, entry_filename, liste_reports, parametres)
+        dvd(form_bib2ark,zone_controles, entry_filename, liste_reports, parametres)
     elif (type_doc_bib == 3):
+        cd(form_bib2ark,zone_controles, entry_filename, liste_reports, parametres)
+    elif (type_doc_bib == 4):
         perimpr(form_bib2ark,zone_controles, entry_filename, liste_reports, parametres)
 
     else:
@@ -1662,37 +1765,36 @@ def typesConversionARK(liste_reports):
         value = " / ".join(NumNotices2methode[key])
         liste_reports[-1].write(key + "\t" + value + "\n")"""
 
-def click2help():
-    """Fonction d'ouverture du navigateur pour avoir de l'aide sur le logiciel"""
-    url = "https://github.com/Transition-bibliographique/bibliostratus"
-    webbrowser.open_new(url)
-
 def annuler(form_bib2ark):
     """Fermeture du formulaire (bouton "Annuler")"""
     form_bib2ark.destroy()
-    
 
-def check_last_compilation(programID):
-    """Compare pour un programme donné le numéro de version du fichier en cours et la dernière version indiquée comme telle en ligne. Renvoie une liste à deux éléments : n° de la dernière version publiée ; affichage du bouton de téléchargement (True/False)"""
-    programID_last_compilation = 0
-    display_update_button = False
-    url = "https://raw.githubusercontent.com/Lully/bnf-sru/master/last_compilations.json"
-    last_compilations = request.urlopen(url)
-    reader = codecs.getreader("utf-8")
-    last_compilations = json.load(reader(last_compilations))["last_compilations"][0]
-    if (programID in last_compilations):
-        programID_last_compilation = last_compilations[programID]
-    if (programID_last_compilation > version):
-        display_update_button = True
-    return [programID_last_compilation,display_update_button]
 
+#==============================================================================
+# def check_last_compilation(programID):
+#     """Compare pour un programme donné le numéro de version du fichier en cours et la dernière version indiquée comme telle en ligne. Renvoie une liste à deux éléments : n° de la dernière version publiée ; affichage du bouton de téléchargement (True/False)"""
+#     programID_last_compilation = 0
+#     display_update_button = False
+#     url = "https://raw.githubusercontent.com/Lully/bnf-sru/master/last_compilations.json"
+#     last_compilations = request.urlopen(url)
+#     reader = codecs.getreader("utf-8")
+#     last_compilations = json.load(reader(last_compilations))["last_compilations"][0]
+#     if (programID in last_compilations):
+#         programID_last_compilation = last_compilations[programID]
+#     if (programID_last_compilation > version):
+#         display_update_button = True
+#     return [programID_last_compilation,display_update_button]
+# 
+#==============================================================================
 #La vérification de la dernière version n'est faite que si le programme est lancé en standalone
 #last_version = [0,False]
 
-def download_last_update():
-    """Fournit l'URL de téléchargement de la dernière version"""
-    url = "https://github.com/Transition-bibliographique/bibliostratus/blob/master/noticesbib2arkBnF.py"
-    webbrowser.open(url)
+#==============================================================================
+# def download_last_update():
+#     """Fournit l'URL de téléchargement de la dernière version"""
+#     url = "https://github.com/Transition-bibliographique/bibliostratus/blob/master/noticesbib2arkBnF.py"
+#     webbrowser.open(url)
+#==============================================================================
 #==============================================================================
 # Création de la boîte de dialogue
 #==============================================================================
@@ -1708,7 +1810,7 @@ def radioButton_lienExample(frame,variable_button,val,couleur_fond,text1,text2,l
     if (link != ""):
         tk.Label(line1,text="  ",bg=couleur_fond).pack(anchor="w", side="left")
         example_ico = tk.Button(line1, bd=0, justify="left", font="Arial 7 underline",
-                                    text="exemple", fg="#0000ff", bg=couleur_fond, command=lambda: main.click2help(link))
+                                    text="exemple", fg="#0000ff", bg=couleur_fond, command=lambda: main.click2url(link))
         example_ico.pack(anchor="w", side="left")
     if (text2 != ""):
         line2 = tk.Frame(packButton, bg=couleur_fond)
@@ -1796,10 +1898,14 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
                             "(Colonnes : " + " | ".join(header_columns_init_monimpr) + ")",
                             "https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/examples/mon_impr.tsv")
     radioButton_lienExample(cadre_input_type_docs,type_doc_bib,2,couleur_fond,
-                            "[VID] Audiovisuel (CD / DVD)",
+                            "[VID] Audiovisuel (DVD)",
                             "(" + " | ".join(header_columns_init_cddvd) + ")",
-                            "https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/examples/adv.tsv")
+                            "")
     radioButton_lienExample(cadre_input_type_docs,type_doc_bib,3,couleur_fond,
+                            "[AUD] Enregistrements sonores",
+                            "(" + " | ".join(header_columns_init_cddvd) + ")",
+                            "https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/examples/audio.tsv")
+    radioButton_lienExample(cadre_input_type_docs,type_doc_bib,4,couleur_fond,
                             "[PER] Périodiques",
                             "(" + " | ".join(header_columns_init_perimpr) + ")",
                             "https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/examples/per.tsv")
@@ -1851,14 +1957,14 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     
     call4help = tk.Button(zone_ok_help_cancel,
                           text=main.texte_bouton_help, 
-                          command=lambda: main.click2help(main.url_online_help), 
+                          command=lambda: main.click2url(main.url_online_help), 
                           pady=5, padx=5, width=12)
     call4help.pack()
     tk.Label(zone_ok_help_cancel, text="\n",bg=couleur_fond, font="Arial 1 normal").pack()
     
     forum_button = tk.Button(zone_ok_help_cancel, 
                           text=main.texte_bouton_forum, 
-                          command=lambda: main.click2help(main.url_forum_aide), 
+                          command=lambda: main.click2url(main.url_forum_aide), 
                           pady=5, padx=5, width=12)
     forum_button.pack()
     

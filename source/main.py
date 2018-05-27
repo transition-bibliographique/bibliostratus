@@ -29,7 +29,7 @@ import preferences
 
 #import matplotlib.pyplot as plt
 
-version = 1.17
+version = 1.18
 lastupdate = "12/05/2018"
 programID = "bibliostratus"
 
@@ -64,7 +64,7 @@ Vérifier les options choisies\npour le format de fichier en entrée
 Si l'erreur persiste, convertissez le fichier dans un autre format avec MarcEdit"""
         }
 
-def click2help(url):
+def click2url(url):
     webbrowser.open(url)
 def annuler(master):
     master.destroy()
@@ -297,7 +297,7 @@ def popup_errors(master,text,online_help_text="",online_help_link=""):
         help_button = tk.Button(zone_access2programs, bd=2, justify="left", font="Arial 10 italic",
                                 bg="#ffffff",
                                 padx=5,pady=5,
-                                    text=online_help_text, command=lambda: click2help(online_help_link))
+                                    text=online_help_text, command=lambda: click2url(online_help_link))
         help_button.pack()
     tk.Label(zone_access2programs, bg=couleur_fond, text="\n").pack()
     cancel = tk.Button(zone_access2programs, text="Fermer", command=lambda: annuler(master), padx=10, pady=1, width=15)
@@ -491,14 +491,14 @@ def formulaire_main(access_to_network, last_version):
 
     call4help = tk.Button(frame_help_cancel,
                           text=texte_bouton_help, 
-                          command=lambda: click2help(url_online_help), 
+                          command=lambda: click2url(url_online_help), 
                           pady=25, padx=5, width=12)
     call4help.pack()
     tk.Label(frame_help_cancel, text="\n",bg=couleur_fond, font="Arial 1 normal").pack()
     
     forum_button = tk.Button(frame_help_cancel, 
                           text=texte_bouton_forum, 
-                          command=lambda: click2help(url_forum_aide), 
+                          command=lambda: click2url(url_forum_aide), 
                           pady=15, padx=5, width=12)
     forum_button.pack()
     

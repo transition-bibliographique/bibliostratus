@@ -440,7 +440,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     
     tk.Label(cadre_valider, font="bold", text="", bg=couleur_fond).pack()
     
-    call4help = tk.Button(cadre_valider, text="Besoin d'aide ?", command=lambda: main.click2help("https://github.com/Transition-bibliographique/alignements-donnees-bnf/"), padx=10, pady=1, width=15)
+    call4help = tk.Button(cadre_valider, text="Besoin d'aide ?", command=lambda: main.click2openurl("https://github.com/Transition-bibliographique/alignements-donnees-bnf/"), padx=10, pady=1, width=15)
     call4help.pack()
     
     cancel = tk.Button(cadre_valider, bg=couleur_fond, text="Annuler", command=lambda: main.annuler(form), padx=10, pady=1, width=15)

@@ -52,7 +52,7 @@ errors = {
         Si vous utilisez un fichier iso2709, convertissez-le d'abord en XML avec MarcEdit"""
         }
 
-def click2help(url):
+def click2openurl(url):
     webbrowser.open(url)
 def annuler(master):
     master.destroy()
@@ -262,7 +262,7 @@ def popup_errors(master,text,online_help_text="",online_help_link=""):
         help_button = tk.Button(zone_access2programs, bd=2, justify="left", font="Arial 10 italic",
                                 bg="#ffffff",
                                 padx=5,pady=5,
-                                    text=online_help_text, command=lambda: click2help(online_help_link))
+                                    text=online_help_text, command=lambda: click2openurl(online_help_link))
         help_button.pack()
     tk.Label(zone_access2programs, bg=couleur_fond, text="\n").pack()
     cancel = tk.Button(zone_access2programs, text="Fermer", command=lambda: annuler(master), padx=10, pady=1, width=15)
@@ -425,7 +425,7 @@ def formulaire_main(access_to_network, last_version):
     tk.Label(zone_ok_help_cancel,text=" ", pady=5, bg=couleur_fond).pack()
     
 
-    call4help = tk.Button(frame_help_cancel, text="Besoin d'aide ?", command=lambda: click2help("https://github.com/Transition-bibliographique/alignements-donnees-bnf"), pady=5, padx=5, width=12)
+    call4help = tk.Button(frame_help_cancel, text="Besoin d'aide ?", command=lambda: click2openurl("https://github.com/Transition-bibliographique/alignements-donnees-bnf"), pady=5, padx=5, width=12)
     call4help.pack()
     cancel = tk.Button(frame_help_cancel, text="Annuler", command=lambda: annuler(master), pady=5, padx=5, width=12)
     cancel.pack()

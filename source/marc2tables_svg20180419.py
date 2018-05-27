@@ -730,7 +730,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
                                    font="Arial 8 italic",
                                    border=0,
                                    text = "Je ne sais pas / Je ne comprends pas", 
-              command=lambda: main.click2help("https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#lencodage-des-fichiers-en-entr%C3%A9e"), 
+              command=lambda: main.click2openurl("https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#lencodage-des-fichiers-en-entr%C3%A9e"), 
               )
     lien_help_encodage.pack()
 
@@ -815,14 +815,14 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     
     call4help = tk.Button(cadre_valider,
                           text=main.texte_bouton_help, 
-                          command=lambda: main.click2help(main.url_online_help), 
+                          command=lambda: main.click2openurl(main.url_online_help), 
                           pady=5, padx=5, width=12)
     call4help.pack()
     tk.Label(cadre_valider, text="\n",bg=couleur_fond, font="Arial 1 normal").pack()
     
     forum_button = tk.Button(cadre_valider, 
                           text=main.texte_bouton_forum, 
-                          command=lambda: main.click2help(main.url_forum_aide), 
+                          command=lambda: main.click2openurl(main.url_forum_aide), 
                           pady=5, padx=5, width=12)
     forum_button.pack()
     
