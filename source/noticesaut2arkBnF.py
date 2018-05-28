@@ -36,7 +36,8 @@ programID = "noticesaut2arkBnF"
 entry_file_list = []
 
 header_columns_init_aut2aut = ['N° Notice AUT', 'FRBNF', 'ARK', 'ISNI', 'Nom', 'Prénom', 'Date de naissance', 'Date de mort']
-header_columns_init_bib2aut = ["N° Notice AUT","N° notice BIB","ARK Bib","FRBNF Bib","Titre","ISNI","Nom","Prénom","Dates auteur"]
+header_columns_init_bib2aut = ["N° Notice AUT","N° notice BIB","ARK Bib","FRBNF Bib","Titre","Date de publication","ISNI","Nom","Prénom","Dates auteur"]
+
 #Pour chaque notice, on recense la méthode qui a permis de récupérer le ou les ARK
 NumNotices2methode = defaultdict(list)
 
@@ -225,7 +226,7 @@ def align_from_aut(form, entry_filename, headers, input_data_type, isni_option, 
                 main.check_access2apis(n,dict_check_apis)
             (NumNot,frbnf_aut_init,ark_aut_init,isni,
              nom,prenom,date_debut,date_fin) = bib2ark.extract_cols_from_row(row,
-                                           ["NumNot","ark_aut_init","frbnf_aut_init","isni","nom","prenom","date_debut","date_fin"])
+                                           header_columns_init_aut2aut)
             ark_aut_init = nettoyageArk(ark_aut_init)
             isni_nett = nettoyage_isni(isni)
             nom_nett = main.clean_string(nom, False, True)
@@ -290,22 +291,28 @@ def align_from_bib(form, entry_filename, headers, input_data_type, isni_option, 
             n += 1
             if (n%100 == 0):
                 main.check_access2apis(n,dict_check_apis)
-            (NumNot,NumNotBIB,ark_bib_init,frbnf_bib_init,titre,
-             nom,prenom,dates_auteur) = bib2ark.extract_cols_from_row(row,
-                                           ["NumNotAUT","NumNotBIB","ark_bib_init","frbnf_bib_init","titre","nom","prenom","dates_auteur"])
+            (NumNot,NumNotBib,ark_bib_init,frbnf_bib_init,titre,pubDate,
+             isni,nom,prenom,dates_auteur) = bib2ark.extract_cols_from_row(row,
+                                           header_columns_init_bib2aut)
 
-            NumNot = row[0]
-            NumNotBib = row[1]
-            ark_bib_init = row[2]
-            frbnf_bib_init = row[3]
-            titre = row[4]
+#==============================================================================
+#             NumNot = row[0]
+#             NumNotBib = row[1]
+#             ark_bib_init = row[2]
+#             frbnf_bib_init = row[3]
+#             titre = row[4]
+#==============================================================================
             titre_nett = main.clean_string(titre, False, True)
-            isni = row[5]
-            nom = row[6]
+            pubDate_nett = bib2ark.nettoyageDate(pubDate)
+#==============================================================================
+#             isni = row[5]
+#             nom = row[6]
+#==============================================================================
+            isni_nett = nettoyage_isni(isni)
             nom_nett = main.clean_string(nom, False, True)
-            prenom = row[7]
+            #'prenom = row[7]
             prenom_nett = main.clean_string(prenom, False, True)
-            dates_auteur = row[8]
+            #dates_auteur = row[8]
             dates_auteur_nett = dates_auteur
             date_debut = dates_auteur
             if (dates_auteur.find("av")>0):
@@ -314,14 +321,14 @@ def align_from_bib(form, entry_filename, headers, input_data_type, isni_option, 
                 date_debut = dates_auteur[:dates_auteur.find("-")]
             date_debut = main.clean_string(date_debut,False,True)
             ark_trouve = ""
-            if (ark_trouve == "" and isni != ""):
-                ark_trouve = isni2ark(NumNot, isni)
+            if (ark_trouve == "" and isni_nett != ""):
+                ark_trouve = isni2ark(NumNot, isni_nett)
             if (ark_trouve == "" and ark_bib_init != ""):
                 ark_trouve = arkBib2arkAut(NumNot, ark_bib_init, nom_nett, prenom_nett, date_debut)
             if (ark_trouve == "" and frbnf_bib_init != ""):
                 ark_trouve = frbnfBib2arkAut(NumNot, frbnf_bib_init, nom_nett, prenom_nett, date_debut)
             if (ark_trouve == "" and nom != ""):
-                ark_trouve = bib2arkAUT(NumNot, titre_nett, nom_nett, prenom_nett, date_debut)
+                ark_trouve = bib2arkAUT(NumNot, titre_nett, pubDate_nett, nom_nett, prenom_nett, date_debut)
             print(str(n) + ". " + NumNot + " : " + ark_trouve)
             nbARK = len(ark_trouve.split(","))
             if (ark_trouve == ""):
@@ -539,10 +546,14 @@ def accesspoint2arkAut(NumNot, nom_nett, prenom_nett, date_debut, date_fin):
     listeArk = ",".join(listeArk)
     return listeArk
 
-def bib2arkAUT(NumNot, titre, nom, prenom, date_debut):
+def bib2arkAUT(NumNot, titre, pubDate, nom, prenom, date_debut):
     listeArk = []
+    if (pubDate == ""):
+        pubDate = "-"
     url = bib2ark.url_requete_sru("".join(['bib.title all "',titre,
-                                          '" and bib.author all "',nom," ",prenom,'"']))
+                                          '" and bib.author all "',nom, " ",prenom,
+                                          '" and bib.publicationdate all "',pubDate,'"'
+                                          ]))
     (test,results) = bib2ark.testURLetreeParse(url)
     if (test):
         for record in results.xpath("//srw:recordData/mxc:record",namespaces=main.ns):
@@ -621,6 +632,8 @@ def compareFullAccessPoint(NumNot,ark_current, recordBNF, nom, prenom, date_debu
 
 
 def extractARKautfromBIB(record,nom,prenom,date_debut):
+    """Récupère tous les auteurs d'une notice bibliographique
+    et compare chacun avec un nom-prénom d'auteur en entrée"""
     listeNNA = []
     listeArk = []
     listeFieldsAuteur = defaultdict(dict)
@@ -638,7 +651,6 @@ def extractARKautfromBIB(record,nom,prenom,date_debut):
                     listeFieldsAuteur[i]["prenom"] = main.clean_string(subfield.text,False,True)
                 if (subfield.get("code")=="f"):
                     listeFieldsAuteur[i]["dates"] = main.clean_string(subfield.text,False,True)
-
     for auteur in listeFieldsAuteur:
         if (nom in listeFieldsAuteur[auteur]["nom"] or listeFieldsAuteur[auteur]["nom"] in nom):
             if (prenom != "" and "prenom" in listeFieldsAuteur[auteur]):
@@ -648,11 +660,11 @@ def extractARKautfromBIB(record,nom,prenom,date_debut):
                             listeNNA.append(listeFieldsAuteur[auteur]["nna"])
                     else:
                         listeNNA.append(listeFieldsAuteur[auteur]["nna"])
-                elif (date_debut != "" and "dates" in listeFieldsAuteur[auteur]):
-                    if (date_debut in listeFieldsAuteur[auteur]["dates"] or listeFieldsAuteur[auteur]["dates"] in date_debut):
-                        listeNNA.append(listeFieldsAuteur[auteur]["nna"])
-                elif ("nna" in listeFieldsAuteur[auteur]):
+            elif (date_debut != "" and "dates" in listeFieldsAuteur[auteur]):
+                if (date_debut in listeFieldsAuteur[auteur]["dates"] or listeFieldsAuteur[auteur]["dates"] in date_debut):
                     listeNNA.append(listeFieldsAuteur[auteur]["nna"])
+            elif ("nna" in listeFieldsAuteur[auteur]):
+                listeNNA.append(listeFieldsAuteur[auteur]["nna"])
     for nna in listeNNA:
         listeArk.append(nna2ark(nna))
     return listeArk

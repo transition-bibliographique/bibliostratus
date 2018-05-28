@@ -3,12 +3,16 @@
 - Module bleu (marc > tables) :
 	- option : exporter des métadonnées de notices bibliographiques en vue d'alignements avec des autorités (combinaison Titre-Auteur)
 	- nouveau code AUD d'alignement pour les enregistrements sonores, distincts des enregistrements audiovisuels
+	- Extraction biblio pour alignement d'autorités : ajout de la date de publication dans les critères d'alignement
 - Module blanc (alignements bibliographiques):
 	- Alignement sur l'ISSN : par expression exacte (option "ajd" du SRU) et non tous mots (option "all")
 	- Alignement Titre-Auteur-Date : contrôle sur la date pour vérifier qu'elle est bien présente en date d'édition (zone 100 ou 210$d).
 	- fonction spécifique "par item". Facilite la prise en charge du même code par d'autres programmes (via API, interface web, etc.)
 	- distinction entre enregistrements sonores (AUD) et vidéos (VID) : alignement sur l'un ou sur l'autre de ces deux types de documents
 	- Contrôle sur la date : ajout de la date de copyright (302$a) en plus de la zone 100 et 210$d
+- Module blanc (alignements autorités) :
+	- Alignement à partir de métadonnées bibliographiques (combinaison Titre-Nom d'auteur) : ajout du critère "Date de publication"
+	- Alignement à partir de métadonnées bibliographiques : Alignement sur nom de famille et sur prénom (et pas sur nom de famille seul)
 
 ### version 1.17
 12/05/2018
