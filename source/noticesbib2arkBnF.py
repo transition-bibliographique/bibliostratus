@@ -1723,7 +1723,7 @@ def fin_traitements(form_bib2ark,liste_reports,nb_notices_nb_ARK):
 def stats_extraction(liste_reports,nb_notices_nb_ARK):
     """Ecriture des rapports de statistiques générales d'alignements"""
     for key in nb_notices_nb_ARK:
-        liste_reports[-1].write(str(key) + "    t" + str(nb_notices_nb_ARK[key]) + "    n")
+        liste_reports[-1].write(str(key) + "\t" + str(nb_notices_nb_ARK[key]) + "\n")
     """if ("Pb FRBNF" in sorted(nb_notices_nb_ARK)):
         nb_notices_nb_ARK[-2] = nb_notices_nb_ARK.pop('Pb FRBNF')"""
     """plt.bar(list(nb_notices_nb_ARK.keys()), nb_notices_nb_ARK.values(), color='skyblue')
@@ -1732,45 +1732,45 @@ def stats_extraction(liste_reports,nb_notices_nb_ARK):
 def url_access_pbs_report(liste_reports):
     """A la suite des stats générales, liste des erreurs rencontrées (plantage URL) + ISBN différents en entrée et en sortie"""
     if (len(url_access_pbs) > 0):
-        liste_reports[-1].write("    n    nProblème d'accès à certaines URL :    nURL    tType de problème    n")
+        liste_reports[-1].write("\n\nProblème d'accès à certaines URL :\nURL\tType de problème\n")
         for pb in url_access_pbs:
-            liste_reports[-1].write("    t".join(pb) + "    n")
+            liste_reports[-1].write("\t".join(pb) + "\n")
     if (len(NumNotices_conversionISBN) > 0):
-        liste_reports[-1].write("".join(["    n    n",10*"-","    n"]))
-        liste_reports[-1].write("Liste des notices dont l'ISBN en entrée est différent de celui dans la notice trouvée    n")
-        liste_reports[-1].write("    t".join(["NumNotice",
+        liste_reports[-1].write("".join(["\n\n",10*"-","\n"]))
+        liste_reports[-1].write("Liste des notices dont l'ISBN en entrée est différent de celui dans la notice trouvée\n")
+        liste_reports[-1].write("\t".join(["NumNotice",
                                                 "ISBN initial",
                                                 "ISBN converti",
                                                 "Notice trouvée dans le Sudoc ?",
-                                                ]) + "    n")
+                                                ]) + "\n")
         for record in NumNotices_conversionISBN:
-            liste_reports[-1].write("    t".join([record,
+            liste_reports[-1].write("\t".join([record,
                                                 NumNotices_conversionISBN[record]["isbn initial"],
                                                 NumNotices_conversionISBN[record]["isbn trouvé"],
                                                 NumNotices_conversionISBN[record]["via Sudoc"],
-                                                ]) + "    n")
+                                                ]) + "\n")
 def check_access_to_apis(liste_reports):
     """Contrôles réguliers de l'accès aux API Abes et BnF -> enregistrés dans 
     le dictionnaire dict_check_apis.
     Si celui-ci contient au moins un "False", on génère une rubrique 
     dans le rapport Stats"""
     if (False in dict_check_apis["testAbes"]):
-        liste_reports[-1].write("    n    nProblème d'accès aux API Abes    n")
+        liste_reports[-1].write("\n\nProblème d'accès aux API Abes\n")
         for key in dict_check_apis["testAbes"]:
             if (dict_check_apis["testAbes"][key] is False):
-                liste_reports[-1].write("".join([str(key)," : API Abes down    n"]))
+                liste_reports[-1].write("".join([str(key)," : API Abes down\n"]))
     if (False in dict_check_apis["testBnF"]):
-        liste_reports[-1].write("    n    nProblème d'accès aux API BnF    n")
+        liste_reports[-1].write("\n\nProblème d'accès aux API BnF\n")
         for key in dict_check_apis["testBnF"]:
             if (dict_check_apis["testBnF"][key] is False):
-                liste_reports[-1].write("".join([str(key)," : API BnF down    n"]))
+                liste_reports[-1].write("".join([str(key)," : API BnF down\n"]))
 
 
 def typesConversionARK(liste_reports):
     """Dans un rapport spécifique, pour chaque notice en entrée, mention de la méthode d'alignement (ISBN, ISNI, etc.)"""
     """for key in NumNotices2methode:
         value = " / ".join(NumNotices2methode[key])
-        liste_reports[-1].write(key + "    t" + value + "    n")"""
+        liste_reports[-1].write(key + "\t" + value + "\n")"""
 
 def annuler(form_bib2ark):
     """Fermeture du formulaire (bouton "Annuler")"""
