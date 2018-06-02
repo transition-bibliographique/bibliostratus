@@ -37,10 +37,15 @@ dict_format_records={
         2:"unimarcxchange-anl",
         3:"intermarcxchange",
         4:"intermarcxchange-anl"}
-listefieldsLiensAUT = ["100","141","143","144","145",
-                       "600","603","606","607","609","610","616","617",
-                       "700","702","703","709","710","712","713","719","731"]
-
+listefieldsLiensAUT = {
+        "unimarc":["100","700","702","703","709","710","712","713","719","731"],
+     "intermarc":["100","700","702","703","709","710","712","713","719","731"]}
+listefieldsLiensSUB = {
+        "unimarc":["600","603","606","607","609","610","616","617"],
+        "intermarc":["600","603","606","607","609","610","616","617"]}
+listefieldsLiensWORK = {
+        "unimarc":["500"],
+        "intermarc":["141","144","145"]}
 
 def ark2url(ark, type_record, format_BIB):
     query = type_record + '.persistentid any "' + ark + '"'
@@ -50,12 +55,18 @@ def ark2url(ark, type_record, format_BIB):
     url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + "&recordSchema=" + format_BIB + "&maximumRecords=20&startRecord=1&origin=bibliostratus"
     return url
 
-def nn2url(nn, type_record, format_BIB):
-    query = type_record + '.recordid any "' + nn + '"'
-    if (type_record == "aut"):
-        query += ' and aut.status any "sparse validated"'
-    query = urllib.parse.quote(query)
-    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + "&recordSchema=" + format_BIB + "&maximumRecords=20&startRecord=1"
+def nn2url(nn, type_record, format_BIB,source="bnf"):
+    if (source == "bnf"):
+        query = type_record + '.recordid any "' + nn + '"'
+        if (type_record == "aut"):
+            query += ' and aut.status any "sparse validated"'
+        query = urllib.parse.quote(query)
+        url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + "&recordSchema=" + format_BIB + "&maximumRecords=20&startRecord=1"
+    elif (source == "sudoc"):
+        url = "http://www.sudoc.fr/" + nn + ".xml"
+    elif (source == "idref"):
+        url = "http://www.idref.fr/" + nn + ".xml"
+    
     return url
 
 def ark2record(ark, type_record, format_BIB, renvoyerNotice=False):
@@ -76,19 +87,51 @@ def XMLrecord2string(record):
     record_str = record_str.replace("b'","").replace("      '","\n").replace("\\n","\n").replace("\\t","\t").replace("\\r","\n")
     return (record_str)
 
-def bib2aut(ark, aut_file, format_BIB, format_file):
-    bib_record = ark2record(ark, "bib", "intermarcxchange", True)
-    for field in listefieldsLiensAUT:
+def extract_nna_from_bib_record(record,field,source):
+    """Extraction de la liste des identifiants d'auteurs à partir
+    d'une zone de notice bib"""
+    liste_nna = []
+    if (source == "bnf"):
         path = '//mxc:datafield[@tag="' + field + '"]/mxc:subfield[@code="3"]'
-        for datafield in bib_record.xpath(path, namespaces=main.ns):
-            nna = datafield.text
-            if (nna not in listeNNA_AUT):
-                listeNNA_AUT.append(nna)
-                url = nn2url(nna, "aut", format_BIB)
-                (test,record) = bib2ark.testURLetreeParse(url)
-                if (test and record.find("//srw:recordData/mxc:record",namespaces=main.ns) is not None):
-                    XMLrec = record.xpath("//srw:recordData/mxc:record",namespaces=main.ns)[0]
-                    record2file(aut_file, XMLrec, format_file)
+    elif(source == "sudoc" or source == "idref"):
+        path = '//datafield[@tag="' + field + '"]/subfield[@code="3"]'
+    for datafield in record.xpath(path, namespaces=main.ns):
+        nna = datafield.text
+        if (nna not in listeNNA_AUT):
+            listeNNA_AUT.append(nna)
+            liste_nna.append(nna)
+    return liste_nna
+
+
+def bib2aut(XMLrecord, ark, aut_file, format_BIB, format_file, AUTlieesAUT, AUTlieesSUB, AUTlieesWORK):
+    """Si une des option "Récupérer les notices d'autorité liées" est cochée
+    récupération des identifiants de ces AUT pour les récupérer"""
+    source = "bnf"
+    if ("ppn" in ark.lower()):
+        source = "sudoc"
+    liste_nna = []
+    listefields = []
+    format_marc = format_BIB.split("x")[0]
+    if (AUTlieesAUT == 1):
+        listefields.extend(listefieldsLiensAUT[format_marc])
+    if (AUTlieesSUB == 1):
+        listefields.extend(listefieldsLiensSUB[format_marc])
+    if (AUTlieesWORK == 1):
+        listefields.extend(listefieldsLiensWORK[format_marc])
+    for field in listefields:
+        liste_nna.extend(extract_nna_from_bib_record(XMLrecord,field,source))
+
+    for nna in liste_nna:
+        if (source == "sudoc"):
+            source = "idref"
+        url = nn2url(nna, "aut", format_BIB, source)
+        (test,record) = bib2ark.testURLetreeParse(url)
+        if (test and source=="bnf" and record.find("//srw:recordData/mxc:record",namespaces=main.ns) is not None):
+            XMLrec = record.xpath("//srw:recordData/mxc:record",namespaces=main.ns)[0]
+            record2file(aut_file, XMLrec, format_file)
+        elif (test and source=="idref" and record.find("//record") is not None):
+            XMLrec = record.xpath("//record")[0]
+            record2file(aut_file, XMLrec, format_file)
 
    
 def file_create(record_type, format_file, outputID):
@@ -140,8 +183,9 @@ def record2file(file, XMLrec, format_file):
         file.write(record)
 
 
-def callback(master, form, filename, type_records_form, headers, AUTliees, outputID, format_records=1, format_file=1):
+def callback(master, form, filename, type_records_form, headers, AUTlieesAUT,AUTlieesSUB, AUTlieesWORK, outputID, format_records=1, format_file=1):
     main.generic_input_controls(master, filename)
+    AUTliees = AUTlieesAUT+AUTlieesSUB+ AUTlieesWORK
     type_records = "bib"
     if (type_records_form == 2):
         type_records = "aut"
@@ -157,7 +201,8 @@ def callback(master, form, filename, type_records_form, headers, AUTliees, outpu
         for line in entry_file:
             j = j+1
             ark = line[0]
-            ark = ark[ark.find("ark:/12148"):]
+            if ("ark:/12148" in ark):
+                ark = ark[ark.find("ark:/12148"):]
             if (len(ark)>1 and ark not in listeARK_BIB):
                 print(str(j) + ". " + ark)
                 listeARK_BIB.append(ark)
@@ -167,7 +212,7 @@ def callback(master, form, filename, type_records_form, headers, AUTliees, outpu
                     for XMLrec in page.xpath("//srw:record/srw:recordData/mxc:record", namespaces=main.ns):
                         record2file(bib_file, XMLrec, format_file)
                         if (AUTliees == 1):
-                            bib2aut(ark, aut_file, format_BIB, format_file)
+                            bib2aut(XMLrec, ark, aut_file, format_BIB, format_file, AUTlieesAUT,AUTlieesSUB, AUTlieesWORK)
         file_fin(bib_file, format_file)
         if (AUTliees == 1):
             file_fin(aut_file, format_file)
@@ -270,11 +315,22 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
     
    
     #notices d'autorité liées
-    AUTliees = tk.IntVar()
-    b = tk.Checkbutton(frame_input_aut, text="Récupérer aussi les notices d'autorité liées", 
-                       variable=AUTliees,
-                       bg=couleur_fond, justify="left").pack(anchor="w")
+    tk.Label(frame_input_aut,text="Récupérer aussi les notices d'autorité liées", 
+             bg=couleur_fond,justify="left", font="Arial 9 bold").pack(anchor="w")
+    AUTlieesAUT = tk.IntVar()
+    tk.Checkbutton(frame_input_aut, text="auteurs", 
+                       variable=AUTlieesAUT,
+                       bg=couleur_fond, justify="left").pack(anchor="w", side="left")
     #tk.Label(frame_input_aut, text="\n", bg=couleur_fond).pack()
+    AUTlieesSUB = tk.IntVar()
+    tk.Checkbutton(frame_input_aut, text="sujets", 
+                       variable=AUTlieesSUB,
+                       bg=couleur_fond, justify="left").pack(anchor="w", side="left")
+    AUTlieesWORK = tk.IntVar()
+    tk.Checkbutton(frame_input_aut, text="oeuvres", 
+                       variable=AUTlieesWORK,
+                       bg=couleur_fond, justify="left").pack(anchor="w", side="left")
+
     
     #Choix du format
     tk.Label(frame_output_options_marc, text="Notices à récupérer en :").pack(anchor="nw")
@@ -294,7 +350,7 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
              bg=couleur_fond).pack(side="left", anchor="w")
     outputID = tk.Entry(frame_output_file, bg=couleur_fond)
     outputID.pack(side="left", anchor="w")
-    tk.Label(frame_output_file, text="\n\n\n\n\n", bg=couleur_fond).pack(side="left")
+    tk.Label(frame_output_file, text="\n\n\n\n\n\n\n", bg=couleur_fond).pack(side="left")
     
 
              
@@ -310,7 +366,7 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
     
     #file_format.focus_set()
     b = tk.Button(zone_ok_help_cancel, text = "OK", 
-                  command = lambda: callback(master, form, entry_file_list[0], type_records.get(), headers.get(), AUTliees.get(), outputID.get(), format_records_choice.get(), format_file.get()), 
+                  command = lambda: callback(master, form, entry_file_list[0], type_records.get(), headers.get(), AUTlieesAUT.get(),AUTlieesSUB.get(), AUTlieesWORK.get(), outputID.get(), format_records_choice.get(), format_file.get()), 
                   width = 15, borderwidth=1, pady=20, fg="white",
                   bg=couleur_bouton)
     b.pack()
