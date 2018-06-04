@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Oct 13 18:30:30 2017
-
+ 
 @author: Etienne Cavalié
 
 Programme d'identification des ARK BnF à partir de numéros FRBNF

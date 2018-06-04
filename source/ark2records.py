@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Oct 30 17:55:32 2017
-
+ 
 @author: Etienne Cavalié
 
 A partir d'un fichier contenant une liste d'ARK de notices biblio, récupérer les notices complètes (en XML)
