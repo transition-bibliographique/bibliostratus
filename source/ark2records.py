@@ -53,6 +53,10 @@ def ark2url(ark, type_record, format_BIB):
         query += ' and aut.status any "sparse validated"'
     query = urllib.parse.quote(query)
     url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + "&recordSchema=" + format_BIB + "&maximumRecords=20&startRecord=1&origin=bibliostratus"
+    if (ark[0:3].lower() == "ppn" and type_record == "bib"):
+        url = "https://www.sudoc.fr/" + ark[3:] + ".xml"
+    elif (ark[0:3].lower() == "ppn" and type_record == "aut"):
+        url = "https://www.idref.fr/" + ark[3:] + ".xml"
     return url
 
 def nn2url(nn, type_record, format_BIB,source="bnf"):
@@ -182,6 +186,14 @@ def record2file(file, XMLrec, format_file):
         record = XMLrecord2string(XMLrec)
         file.write(record)
 
+def page2nbresults(page,ark):
+    if (ark[0:3].lower() == "ppn"):
+        nbresults = 0
+        if (page.find("//leader") is not None):
+            nbresults = "1"
+    else:
+        nbresults = page.find("//srw:numberOfRecords", namespaces=main.ns).text
+    return nbresults
 
 def callback(master, form, filename, type_records_form, headers, AUTlieesAUT,AUTlieesSUB, AUTlieesWORK, outputID, format_records=1, format_file=1):
     main.generic_input_controls(master, filename)
@@ -201,18 +213,25 @@ def callback(master, form, filename, type_records_form, headers, AUTlieesAUT,AUT
         for line in entry_file:
             j = j+1
             ark = line[0]
+            ark = ark.replace("http://www.sudoc.fr/","ppn").replace("https://www.sudoc.fr/","ppn")
             if ("ark:/12148" in ark):
                 ark = ark[ark.find("ark:/12148"):]
             if (len(ark)>1 and ark not in listeARK_BIB):
                 print(str(j) + ". " + ark)
                 listeARK_BIB.append(ark)
-                page = etree.parse(request.urlopen(ark2url(ark, type_records, format_BIB)))
-                nbResults = page.find("//srw:numberOfRecords", namespaces=main.ns).text
-                if (nbResults == "1"):
-                    for XMLrec in page.xpath("//srw:record/srw:recordData/mxc:record", namespaces=main.ns):
-                        record2file(bib_file, XMLrec, format_file)
-                        if (AUTliees == 1):
-                            bib2aut(XMLrec, ark, aut_file, format_BIB, format_file, AUTlieesAUT,AUTlieesSUB, AUTlieesWORK)
+                (test,page) = bib2ark.testURLetreeParse(ark2url(ark, type_records, format_BIB))
+                if(test):
+                    nbResults  = page2nbresults(page,ark)
+                    if (nbResults == "1" and "ark" in ark):
+                        for XMLrec in page.xpath("//srw:record/srw:recordData/mxc:record", namespaces=main.ns):
+                            record2file(bib_file, XMLrec, format_file)
+                            if (AUTliees == 1):
+                                bib2aut(XMLrec, ark, aut_file, format_BIB, format_file, AUTlieesAUT,AUTlieesSUB, AUTlieesWORK)
+                    elif (nbResults == "1" and "ppn" in ark.lower()):
+                        for XMLrec in page.xpath("//record"):
+                            record2file(bib_file, XMLrec, format_file)
+                            if (AUTliees == 1):
+                                bib2aut(XMLrec, ark, aut_file, format_BIB, format_file, AUTlieesAUT,AUTlieesSUB, AUTlieesWORK)
         file_fin(bib_file, format_file)
         if (AUTliees == 1):
             file_fin(aut_file, format_file)
@@ -404,3 +423,4 @@ if __name__ == '__main__':
     #    last_version = main.check_last_compilation(programID)
     main.formulaire_main(access_to_network, last_version)
     #formulaire_ark2records(access_to_network,[version, False])
+

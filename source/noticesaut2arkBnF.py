@@ -201,99 +201,83 @@ def accesspoint2isniorg(NumNot, nom_nett, prenom_nett, date_debut_nett, date_fin
     isnis = ",".join(isnis)
     return isnis
 
-def align_from_aut(form, entry_filename, headers, input_data_type, isni_option, file_nb, id_traitement, liste_reports, meta_bnf):
+def align_from_aut_item(row,n,form_aut2ark,parametres,liste_reports):
+    if (n == 0):
+        assert main.control_columns_number(form_aut2ark,row,header_columns_init_aut2aut)
+    n += 1
+    if (n%100 == 0):
+        main.check_access2apis(n,dict_check_apis)
+    (NumNot,frbnf_aut_init,ark_aut_init,isni,
+     nom,prenom,date_debut,date_fin) = bib2ark.extract_cols_from_row(row,
+                                   header_columns_init_aut2aut)
+    ark_aut_init = nettoyageArk(ark_aut_init)
+    isni_nett = nettoyage_isni(isni)
+    nom_nett = main.clean_string(nom, False, True)
+    prenom_nett = main.clean_string(prenom, False, True)
+    date_debut_nett = date_debut
+    date_fin_nett = date_fin
+    ark_trouve = ""
+    if (ark_trouve == "" and ark_aut_init != ""):
+        ark_trouve = arkAut2arkAut(NumNot, ark_aut_init)
+    if (ark_trouve == "" and isni_nett != ""):
+        ark_trouve = isni2ark(NumNot, isni_nett)
+    if (ark_trouve == "" and frbnf_aut_init != ""):
+        ark_trouve = frbnfAut2arkAut(NumNot, frbnf_aut_init, nom_nett, prenom_nett, date_debut_nett)
+    if (ark_trouve == "" and nom != ""):
+        ark_trouve = accesspoint2arkAut(NumNot, nom_nett, prenom_nett, date_debut_nett, date_fin_nett)
+    if (ark_trouve == "" and parametres["isni_option"] == 1):
+        ark_trouve = accesspoint2isniorg(NumNot, nom_nett, prenom_nett, date_debut_nett, date_fin_nett)
+    print(str(n) + ". " + NumNot + " : " + ark_trouve)
+    nbARK = len(ark_trouve.split(","))
+    if (ark_trouve == ""):
+        nbARK = 0   
+    if (ark_trouve == "Pb FRBNF"):
+        nb_notices_nb_ARK["Pb FRBNF"] += 1
+    else:
+        nb_notices_nb_ARK[nbARK] += 1
+    typeConversionNumNot = ""
+    if (NumNot in NumNotices2methode):
+        typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
+        if (len(set(NumNotices2methode[NumNot])) == 1):
+            typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
+    liste_metadonnees = [NumNot,nbARK,ark_trouve,typeConversionNumNot,ark_aut_init,frbnf_aut_init,isni,nom,prenom,date_debut,date_fin]
+    if (parametres["meta_bnf"] == 1):
+        liste_metadonnees.extend(ark2metadc(ark_trouve))
+    if (parametres["file_nb"] ==  1):
+        row2file(liste_metadonnees,liste_reports)
+    elif(parametres["file_nb"] ==  2):
+        row2files(liste_metadonnees,liste_reports)
+
+def align_from_aut(form, entry_filename, liste_reports, parametres):
     """Aligner ses données d'autorité avec les autorités BnF à partir d'une extraction tabulée de la base d'autorités"""
     header_columns = ["NumNot","nbARK","ark AUT trouvé","Méthode","ARK AUT initial","frbnf AUT initial","ISNI","Nom","Complément nom","Date début","Date fin"]
-    if (meta_bnf == 1):
+    if (parametres['meta_bnf'] == 1):
         header_columns.extend(["[BnF] Nom","[BnF] Complément Nom","[BnF] Dates"])
-    if (file_nb ==  1):
+    if (parametres['file_nb'] ==  1):
         row2file(header_columns,liste_reports)
-    elif(file_nb ==  2):
+    elif(parametres['file_nb'] ==  2):
         row2files(header_columns,liste_reports)
     n = 0
     with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter='\t')
-        if (headers):
+        if (parametres['headers']):
             try:
                 next(entry_file)
             except UnicodeDecodeError:
                 main.popup_errors(form,main.errors["pb_input_utf8"],"Comment modifier l'encodage du fichier","https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e")
         for row in entry_file:
-            if (n == 0):
-                assert main.control_columns_number(form,row,header_columns_init_aut2aut)
+            align_from_aut_item(row,n,form,parametres,liste_reports)
             n += 1
-            if (n%100 == 0):
-                main.check_access2apis(n,dict_check_apis)
-            (NumNot,frbnf_aut_init,ark_aut_init,isni,
-             nom,prenom,date_debut,date_fin) = bib2ark.extract_cols_from_row(row,
-                                           header_columns_init_aut2aut)
-            ark_aut_init = nettoyageArk(ark_aut_init)
-            isni_nett = nettoyage_isni(isni)
-            nom_nett = main.clean_string(nom, False, True)
-            prenom_nett = main.clean_string(prenom, False, True)
-            date_debut_nett = date_debut
-            date_fin_nett = date_fin
-            ark_trouve = ""
-            if (ark_trouve == "" and ark_aut_init != ""):
-                ark_trouve = arkAut2arkAut(NumNot, ark_aut_init)
-            if (ark_trouve == "" and isni_nett != ""):
-                ark_trouve = isni2ark(NumNot, isni_nett)
-            if (ark_trouve == "" and frbnf_aut_init != ""):
-                ark_trouve = frbnfAut2arkAut(NumNot, frbnf_aut_init, nom_nett, prenom_nett, date_debut_nett)
-            if (ark_trouve == "" and nom != ""):
-                ark_trouve = accesspoint2arkAut(NumNot, nom_nett, prenom_nett, date_debut_nett, date_fin_nett)
-            if (ark_trouve == "" and isni_option == 1):
-                ark_trouve = accesspoint2isniorg(NumNot, nom_nett, prenom_nett, date_debut_nett, date_fin_nett)
-            print(str(n) + ". " + NumNot + " : " + ark_trouve)
-            nbARK = len(ark_trouve.split(","))
-            if (ark_trouve == ""):
-                nbARK = 0   
-            if (ark_trouve == "Pb FRBNF"):
-                nb_notices_nb_ARK["Pb FRBNF"] += 1
-            else:
-                nb_notices_nb_ARK[nbARK] += 1
-            typeConversionNumNot = ""
-            if (NumNot in NumNotices2methode):
-                typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
-                if (len(set(NumNotices2methode[NumNot])) == 1):
-                    typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
-            liste_metadonnees = [NumNot,nbARK,ark_trouve,typeConversionNumNot,ark_aut_init,frbnf_aut_init,isni,nom,prenom,date_debut,date_fin]
-            if (meta_bnf == 1):
-                liste_metadonnees.extend(ark2metadc(ark_trouve))
-            if (file_nb ==  1):
-                row2file(liste_metadonnees,liste_reports)
-            elif(file_nb ==  2):
-                row2files(liste_metadonnees,liste_reports)
-    
 
-
-def align_from_bib(form, entry_filename, headers, input_data_type, isni_option, file_nb, id_traitement, liste_reports, meta_bnf):
-    """Alignement de ses données d'autorité avec les autorités BnF à partir d'une extraction de sa base bibliographique (métadonnées BIB + Nom, prénom et dates de l'auteur)"""
-    header_columns = ["NumNot","nbARK","ark AUT trouvé","ark BIB initial","frbnf BIB initial","Titre","ISNI","Nom","Complément nom","dates Auteur"]
-    if (meta_bnf == 1):
-        header_columns.extend(["[BnF] Nom","[BnF] Complément Nom","[BnF] Dates"])
-    if (file_nb ==  1):
-        row2file(header_columns,liste_reports)
-    elif(file_nb ==  2):
-        row2files(header_columns,liste_reports)
-    n = 0
-    with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
-        entry_file = csv.reader(csvfile, delimiter='\t')
-        if (headers):
-            try:
-                next(entry_file)
-            except UnicodeDecodeError:
-                main.popup_errors(form,main.errors["pb_input_utf8"],"Comment modifier l'encodage du fichier","https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e")
-        for row in entry_file:
-            if (n == 0):
-                assert main.control_columns_number(form,row,header_columns_init_bib2aut)
-
-            n += 1
-            if (n%100 == 0):
-                main.check_access2apis(n,dict_check_apis)
-            (NumNot,NumNotBib,ark_bib_init,frbnf_bib_init,titre,pubDate,
-             isni,nom,prenom,dates_auteur) = bib2ark.extract_cols_from_row(row,
-                                           header_columns_init_bib2aut)
+def align_from_bib_item(row,n,form_aut2ark,parametres,liste_reports):
+    if (n == 0):
+        assert main.control_columns_number(form_aut2ark,row,header_columns_init_bib2aut)
+    n += 1
+    if (n%100 == 0):
+        main.check_access2apis(n,dict_check_apis)
+    (NumNot,NumNotBib,ark_bib_init,frbnf_bib_init,titre,pubDate,
+     isni,nom,prenom,dates_auteur) = bib2ark.extract_cols_from_row(row,
+                                   header_columns_init_bib2aut)
 
 #==============================================================================
 #             NumNot = row[0]
@@ -302,53 +286,76 @@ def align_from_bib(form, entry_filename, headers, input_data_type, isni_option, 
 #             frbnf_bib_init = row[3]
 #             titre = row[4]
 #==============================================================================
-            titre_nett = main.clean_string(titre, False, True)
-            pubDate_nett = bib2ark.nettoyageDate(pubDate)
+    titre_nett = main.clean_string(titre, False, True)
+    pubDate_nett = bib2ark.nettoyageDate(pubDate)
 #==============================================================================
 #             isni = row[5]
 #             nom = row[6]
 #==============================================================================
-            isni_nett = nettoyage_isni(isni)
-            nom_nett = main.clean_string(nom, False, True)
-            #'prenom = row[7]
-            prenom_nett = main.clean_string(prenom, False, True)
-            #dates_auteur = row[8]
-            dates_auteur_nett = dates_auteur
-            date_debut = dates_auteur
-            if (dates_auteur.find("av")>0):
-                date_debut = dates_auteur[:dates_auteur.find("av")]
-            elif (dates_auteur.find("-")>0):
-                date_debut = dates_auteur[:dates_auteur.find("-")]
-            date_debut = main.clean_string(date_debut,False,True)
-            ark_trouve = ""
-            if (ark_trouve == "" and isni_nett != ""):
-                ark_trouve = isni2ark(NumNot, isni_nett)
-            if (ark_trouve == "" and ark_bib_init != ""):
-                ark_trouve = arkBib2arkAut(NumNot, ark_bib_init, nom_nett, prenom_nett, date_debut)
-            if (ark_trouve == "" and frbnf_bib_init != ""):
-                ark_trouve = frbnfBib2arkAut(NumNot, frbnf_bib_init, nom_nett, prenom_nett, date_debut)
-            if (ark_trouve == "" and nom != ""):
-                ark_trouve = bib2arkAUT(NumNot, titre_nett, pubDate_nett, nom_nett, prenom_nett, date_debut)
-            print(str(n) + ". " + NumNot + " : " + ark_trouve)
-            nbARK = len(ark_trouve.split(","))
-            if (ark_trouve == ""):
-                nbARK = 0   
-            if (ark_trouve == "Pb FRBNF"):
-                nb_notices_nb_ARK["Pb FRBNF"] += 1
-            else:
-                nb_notices_nb_ARK[nbARK] += 1
-            typeConversionNumNot = ""
-            if (NumNot in NumNotices2methode):
-                typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
-                if (len(set(NumNotices2methode[NumNot])) == 1):
-                    typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
-            liste_metadonnees = [nbARK,NumNot,ark_trouve,typeConversionNumNot,NumNotBib,ark_bib_init,frbnf_bib_init,titre,isni,nom,prenom,dates_auteur]
-            if (meta_bnf == 1):
-                liste_metadonnees.extend(ark2metadc(ark_trouve))
-            if (file_nb ==  1):
-                row2file(liste_metadonnees,liste_reports)
-            elif(file_nb ==  2):
-                row2files(liste_metadonnees,liste_reports)
+    isni_nett = nettoyage_isni(isni)
+    nom_nett = main.clean_string(nom, False, True)
+    #'prenom = row[7]
+    prenom_nett = main.clean_string(prenom, False, True)
+    #dates_auteur = row[8]
+    dates_auteur_nett = dates_auteur
+    date_debut = dates_auteur
+    if (dates_auteur.find("av")>0):
+        date_debut = dates_auteur[:dates_auteur.find("av")]
+    elif (dates_auteur.find("-")>0):
+        date_debut = dates_auteur[:dates_auteur.find("-")]
+    date_debut = main.clean_string(date_debut,False,True)
+    ark_trouve = ""
+    if (ark_trouve == "" and isni_nett != ""):
+        ark_trouve = isni2ark(NumNot, isni_nett)
+    if (ark_trouve == "" and ark_bib_init != ""):
+        ark_trouve = arkBib2arkAut(NumNot, ark_bib_init, nom_nett, prenom_nett, date_debut)
+    if (ark_trouve == "" and frbnf_bib_init != ""):
+        ark_trouve = frbnfBib2arkAut(NumNot, frbnf_bib_init, nom_nett, prenom_nett, date_debut)
+    if (ark_trouve == "" and nom != ""):
+        ark_trouve = bib2arkAUT(NumNot, titre_nett, pubDate_nett, nom_nett, prenom_nett, date_debut)
+    print(str(n) + ". " + NumNot + " : " + ark_trouve)
+    nbARK = len(ark_trouve.split(","))
+    if (ark_trouve == ""):
+        nbARK = 0   
+    if (ark_trouve == "Pb FRBNF"):
+        nb_notices_nb_ARK["Pb FRBNF"] += 1
+    else:
+        nb_notices_nb_ARK[nbARK] += 1
+    typeConversionNumNot = ""
+    if (NumNot in NumNotices2methode):
+        typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
+        if (len(set(NumNotices2methode[NumNot])) == 1):
+            typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
+    liste_metadonnees = [nbARK,NumNot,ark_trouve,typeConversionNumNot,NumNotBib,ark_bib_init,frbnf_bib_init,titre,isni,nom,prenom,dates_auteur]
+    if (parametres['meta_bnf'] == 1):
+        liste_metadonnees.extend(ark2metadc(ark_trouve))
+    if (parametres['file_nb'] ==  1):
+        row2file(liste_metadonnees,liste_reports)
+    elif(parametres['file_nb'] ==  2):
+        row2files(liste_metadonnees,liste_reports)
+    
+    
+
+def align_from_bib(form, entry_filename, liste_reports, parametres):
+    """Alignement de ses données d'autorité avec les autorités BnF à partir d'une extraction de sa base bibliographique (métadonnées BIB + Nom, prénom et dates de l'auteur)"""
+    header_columns = ["NumNot","nbARK","ark AUT trouvé","ark BIB initial","frbnf BIB initial","Titre","ISNI","Nom","Complément nom","dates Auteur"]
+    if (parametres['meta_bnf'] == 1):
+        header_columns.extend(["[BnF] Nom","[BnF] Complément Nom","[BnF] Dates"])
+    if (parametres['file_nb'] ==  1):
+        row2file(header_columns,liste_reports)
+    elif(parametres['file_nb ']==  2):
+        row2files(header_columns,liste_reports)
+    n = 0
+    with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
+        entry_file = csv.reader(csvfile, delimiter='\t')
+        if (parametres['headers']):
+            try:
+                next(entry_file)
+            except UnicodeDecodeError:
+                main.popup_errors(form,main.errors["pb_input_utf8"],"Comment modifier l'encodage du fichier","https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e")
+        for row in entry_file:
+            align_from_bib_item(row,n,form,parametres,liste_reports)
+            n += 1
 
 def nettoyageArk(ark):
     ark_nett = ""
@@ -678,12 +685,18 @@ def extractARKautfromBIB(record,nom,prenom,date_debut):
 def launch(form, entry_filename, headers, input_data_type, isni_option, file_nb, id_traitement, meta_bnf):
     #main.check_file_name(entry_filename)
     #results2file(nb_fichiers_a_produire)
+    parametres = {"headers":headers,
+                  "input_data_type":input_data_type,
+                  "isni_option":isni_option,
+                  "file_nb":file_nb,
+                  "meta_bnf":meta_bnf,
+                  "id_traitement":id_traitement}
     liste_reports = create_reports(id_traitement, file_nb)    
     
     if (input_data_type == 1):
-        align_from_aut(form, entry_filename, headers, input_data_type, isni_option, file_nb, id_traitement, liste_reports, meta_bnf)
+        align_from_aut(form, entry_filename, liste_reports, parametres)
     elif (input_data_type == 2):
-        align_from_bib(form, entry_filename, headers, input_data_type, isni_option, file_nb, id_traitement, liste_reports, meta_bnf)
+        align_from_bib(form, entry_filename, liste_reports, parametres)
     else:
         main.popup_errors("Format en entrée non défini")
     bib2ark.fin_traitements(form,liste_reports,nb_notices_nb_ARK)
