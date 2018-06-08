@@ -71,7 +71,7 @@ def create_reports(id_traitement_code, nb_fichiers_a_produire):
     
     #report_type_convert_file_name = id_traitement_code + "-" + "NumNotices-TypeConversion.txt"
     #report_type_convert_file = open(report_type_convert_file_name,"w")
-    #report_type_convert_file.write("NumNotice    tMéthode pour trouver l'ARK    n")
+    #report_type_convert_file.write("NumNotice\tMéthode pour trouver l'ARK\n")
     if (nb_fichiers_a_produire == 1):
         reports = create_reports_1file(id_traitement_code)
     else:
@@ -455,7 +455,7 @@ def systemid2ark(NumNot,systemid,tronque,isbn,titre,auteur,date):
 def rechercheNNB(NumNot,nnb,isbn,titre,auteur,date):
     ark = ""
     if (nnb.isdigit() is False):
-        #pb_frbnf_source.write("    t".join[NumNot,nnb] + "    n")
+        #pb_frbnf_source.write("\t".join[NumNot,nnb] + "\n")
         ark = "Pb FRBNF"
     elif (30000000 < int(nnb) < 50000000):
         url = url_requete_sru('bib.recordid any "' + nnb + '"')
@@ -504,7 +504,7 @@ def frbnf2ark(NumNot,frbnf,isbn,titre,auteur,date):
         
 def row2file(liste_metadonnees,liste_reports):
     liste_metadonnees_to_report = [str(el) for el in liste_metadonnees]
-    liste_reports[0].write("    t".join(liste_metadonnees_to_report ) + "    n")
+    liste_reports[0].write("\t".join(liste_metadonnees_to_report ) + "\n")
 
 def row2files(liste_metadonnees,liste_reports):
      #["NumNot","nbARK","ark trouvé","Méthode","ark initial","FRBNF","ISBN","EAN","Titre","auteur","date","Tome/Volume", "editeur"]
@@ -512,13 +512,13 @@ def row2files(liste_metadonnees,liste_reports):
     nbARK = liste_metadonnees[1]
     ark = liste_metadonnees[2]
     if (ark == "Pb FRBNF"):
-        liste_reports[0].write("    t".join(liste_metadonnees_to_report) + "    n")
+        liste_reports[0].write("\t".join(liste_metadonnees_to_report) + "\n")
     elif (nbARK == 0):
-        liste_reports[1].write("    t".join(liste_metadonnees_to_report) + "    n")
+        liste_reports[1].write("\t".join(liste_metadonnees_to_report) + "\n")
     elif (nbARK == 1):
-        liste_reports[2].write("    t".join(liste_metadonnees_to_report) + "    n")
+        liste_reports[2].write("\t".join(liste_metadonnees_to_report) + "\n")
     else:
-        liste_reports[3].write("    t".join(liste_metadonnees_to_report) + "    n")
+        liste_reports[3].write("\t".join(liste_metadonnees_to_report) + "\n")
         
 def nettoyage_isbn(isbn):
     isbn_nett = isbn.split(";")[0].split(",")[0].split("(")[0].split("[")[0]
@@ -1396,8 +1396,8 @@ def monimpr(form_bib2ark, zone_controles, entry_filename, liste_reports, paramet
     elif(parametres["file_nb"] ==  2):
         row2files(header_columns,liste_reports)
     n = 0
-    with open(entry_filename, newline='    n',encoding="utf-8") as csvfile:
-        entry_file = csv.reader(csvfile, delimiter='    t')
+    with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
+        entry_file = csv.reader(csvfile, delimiter='\t')
         try:
             next(entry_file)
         except UnicodeDecodeError:
@@ -1592,8 +1592,8 @@ def cd(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres):
         row2files(header_columns,liste_reports)
     #results2file(nb_fichiers_a_produire)
     n = 0
-    with open(entry_filename, newline='    n',encoding="utf-8") as csvfile:
-        entry_file = csv.reader(csvfile, delimiter='    t')
+    with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
+        entry_file = csv.reader(csvfile, delimiter='\t')
         try:
             next(entry_file)
         except UnicodeDecodeError:
@@ -1670,8 +1670,8 @@ def perimpr(form_bib2ark, zone_controles, entry_filename, liste_reports, paramet
     elif(parametres["file_nb"] ==  2):
         row2files(header_columns,liste_reports)
     n = 0
-    with open(entry_filename, newline='    n',encoding="utf-8") as csvfile:
-        entry_file = csv.reader(csvfile, delimiter='    t')
+    with open(entry_filename, newline='\n',encoding="utf-8") as csvfile:
+        entry_file = csv.reader(csvfile, delimiter='\t')
         try:
             next(entry_file)
         except UnicodeDecodeError:
@@ -1894,7 +1894,7 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     entry_filename.focus_set()"""
     main.download_zone(cadre_input_file, "Sélectionner un fichier\nSéparateur TAB, Encodage UTF-8",entry_file_list,couleur_fond,zone_notes)
     
-    #tk.Label(cadre_input_infos_format,bg=couleur_fond, text=4*"    t"+"Séparateur TAB, Encodage UTF-8", justify="right").pack(anchor="s")
+    #tk.Label(cadre_input_infos_format,bg=couleur_fond, text=4*"\t"+"Séparateur TAB, Encodage UTF-8", justify="right").pack(anchor="s")
     
     
     tk.Label(cadre_input_type_docs_zone,bg=couleur_fond, text="Type de documents  ", font="Arial 10 bold", justify="left").pack(anchor="w", side="left")

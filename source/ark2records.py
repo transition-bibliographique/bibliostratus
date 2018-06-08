@@ -47,30 +47,30 @@ listefieldsLiensWORK = {
         "unimarc":["500"],
         "intermarc":["141","144","145"]}
 
-def ark2url(ark, type_record, format_BIB):
-    query = type_record + '.persistentid any "' + ark + '"'
-    if (type_record == "aut"):
+def ark2url(ark, parametres):
+    query = parametres["type_records"] + '.persistentid any "' + ark + '"'
+    if (parametres["type_records"] == "aut"):
         query += ' and aut.status any "sparse validated"'
     query = urllib.parse.quote(query)
-    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + "&recordSchema=" + format_BIB + "&maximumRecords=20&startRecord=1&origin=bibliostratus"
-    if (ark[0:3].lower() == "ppn" and type_record == "bib"):
+    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + "&recordSchema=" + parametres["format_BIB"] + "&maximumRecords=20&startRecord=1&origin=bibliostratus"
+    if (ark[0:3].lower() == "ppn" and parametres["type_records"] == "bib"):
         url = "https://www.sudoc.fr/" + ark[3:] + ".xml"
-    elif (ark[0:3].lower() == "ppn" and type_record == "aut"):
+    elif (ark[0:3].lower() == "ppn" and parametres["type_records"] == "aut"):
         url = "https://www.idref.fr/" + ark[3:] + ".xml"
     return url
 
-def nn2url(nn, type_record, format_BIB,source="bnf"):
+    
+def nn2url(nn, type_record, parametres,source="bnf"):
     if (source == "bnf"):
         query = type_record + '.recordid any "' + nn + '"'
         if (type_record == "aut"):
             query += ' and aut.status any "sparse validated"'
         query = urllib.parse.quote(query)
-        url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + "&recordSchema=" + format_BIB + "&maximumRecords=20&startRecord=1"
+        url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + "&recordSchema=" + parametres["format_BIB"] + "&maximumRecords=20&startRecord=1"
     elif (source == "sudoc"):
         url = "http://www.sudoc.fr/" + nn + ".xml"
     elif (source == "idref"):
         url = "http://www.idref.fr/" + nn + ".xml"
-    
     return url
 
 def ark2record(ark, type_record, format_BIB, renvoyerNotice=False):
@@ -107,7 +107,7 @@ def extract_nna_from_bib_record(record,field,source):
     return liste_nna
 
 
-def bib2aut(XMLrecord, ark, aut_file, format_BIB, format_file, AUTlieesAUT, AUTlieesSUB, AUTlieesWORK):
+def bib2aut(XMLrecord, ark, parametres):
     """Si une des option "Récupérer les notices d'autorité liées" est cochée
     récupération des identifiants de ces AUT pour les récupérer"""
     source = "bnf"
@@ -115,33 +115,32 @@ def bib2aut(XMLrecord, ark, aut_file, format_BIB, format_file, AUTlieesAUT, AUTl
         source = "sudoc"
     liste_nna = []
     listefields = []
-    format_marc = format_BIB.split("x")[0]
-    if (AUTlieesAUT == 1):
+    format_marc = parametres["format_BIB"].split("x")[0]
+    if (parametres["AUTlieesAUT"] == 1):
         listefields.extend(listefieldsLiensAUT[format_marc])
-    if (AUTlieesSUB == 1):
+    if (parametres["AUTlieesSUB"] == 1):
         listefields.extend(listefieldsLiensSUB[format_marc])
-    if (AUTlieesWORK == 1):
+    if (parametres["AUTlieesWORK"] == 1):
         listefields.extend(listefieldsLiensWORK[format_marc])
     for field in listefields:
         liste_nna.extend(extract_nna_from_bib_record(XMLrecord,field,source))
-
     for nna in liste_nna:
         if (source == "sudoc"):
             source = "idref"
-        url = nn2url(nna, "aut", format_BIB, source)
+        url = nn2url(nna, "aut", parametres, source)
         (test,record) = bib2ark.testURLetreeParse(url)
         if (test and source=="bnf" and record.find("//srw:recordData/mxc:record",namespaces=main.ns) is not None):
-            XMLrec = record.xpath("//srw:recordData/mxc:record",namespaces=main.ns)[0]
-            record2file(aut_file, XMLrec, format_file)
+            XMLrec = record.xpath(".//srw:recordData/mxc:record",namespaces=main.ns)[0]
+            record2file(parametres["aut_file"], XMLrec, parametres["format_file"])
         elif (test and source=="idref" and record.find("//record") is not None):
-            XMLrec = record.xpath("//record")[0]
-            record2file(aut_file, XMLrec, format_file)
+            XMLrec = record.xpath(".//record")[0]
+            record2file(parametres["aut_file"], XMLrec, parametres["format_file"])
 
    
-def file_create(record_type, format_file, outputID):
+def file_create(record_type, parametres):
     file = object
-    id_filename = "-".join([outputID, record_type])
-    if (format_file == 2):
+    id_filename = "-".join([parametres["outputID"], record_type])
+    if (parametres["format_file"] == 2):
         filename = id_filename + ".xml"
         file = open(filename, "w", encoding="utf-8")
         file.write("<?xml version='1.0'?>\n")
@@ -195,43 +194,64 @@ def page2nbresults(page,ark):
         nbresults = page.find("//srw:numberOfRecords", namespaces=main.ns).text
     return nbresults
 
+def extract1record(row,j,form,headers,parametres):
+    ark = row[0]
+    ark = ark.replace("http://www.sudoc.fr/","ppn").replace("https://www.sudoc.fr/","ppn")
+    if ("ark:/12148" in ark):
+        ark = ark[ark.find("ark:/12148"):]
+    if (len(ark)>1 and ark not in listeARK_BIB):
+        print(str(j) + ". " + ark)
+        listeARK_BIB.append(ark)
+        (test,page) = bib2ark.testURLetreeParse(ark2url(ark, parametres))
+        if(test):
+            nbResults  = page2nbresults(page,ark)
+            if (nbResults == "1" and "ark" in ark):
+                for XMLrec in page.xpath("//srw:record/srw:recordData/mxc:record", namespaces=main.ns):
+                    record2file(parametres["bib_file"], XMLrec, parametres["format_file"])
+                    if (parametres["AUTliees"] > 0):
+                        bib2aut(XMLrec, ark, parametres)
+            elif (nbResults == "1" and "ppn" in ark.lower()):
+                for XMLrec in page.xpath("//record"):
+                    record2file(parametres["bib_file"], XMLrec, parametres["format_file"])
+                    if (parametres["AUTliees"] > 0):
+                        bib2aut(XMLrec, ark, parametres)
+
 def callback(master, form, filename, type_records_form, headers, AUTlieesAUT,AUTlieesSUB, AUTlieesWORK, outputID, format_records=1, format_file=1):
-    main.generic_input_controls(master, filename)
     AUTliees = AUTlieesAUT+AUTlieesSUB+ AUTlieesWORK
+    format_BIB = dict_format_records[format_records]
     type_records = "bib"
     if (type_records_form == 2):
         type_records = "aut"
-    format_BIB = dict_format_records[format_records]
-    bib_file = file_create(type_records, format_file, outputID)
-    if (AUTliees == 1):
-        aut_file = file_create("aut", format_file, outputID)
+    parametres = {
+            "type_records":type_records,
+            "type_records_form":type_records_form,
+            "AUTliees":AUTliees,
+            "AUTlieesAUT":AUTlieesAUT,
+            "AUTlieesSUB":AUTlieesSUB,
+            "AUTlieesWORK":AUTlieesWORK,
+            "outputID":outputID,
+            "format_records":format_records,
+            "format_file":format_file,
+            "format_BIB":format_BIB
+            }
+    main.generic_input_controls(master, filename)
+    
+    
+    
+    bib_file = file_create(type_records, parametres)
+    parametres["bib_file"] = bib_file
+    if (parametres["AUTliees"] > 0):
+        aut_file = file_create("aut", parametres)
+        parametres["aut_file"] = aut_file
     with open(filename, newline='\n',encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter='\t')
         if (headers == True):
             next(entry_file, None)
         j = 0
-        for line in entry_file:
+        for row in entry_file:
+            extract1record(row,j,form,headers,parametres)
             j = j+1
-            ark = line[0]
-            ark = ark.replace("http://www.sudoc.fr/","ppn").replace("https://www.sudoc.fr/","ppn")
-            if ("ark:/12148" in ark):
-                ark = ark[ark.find("ark:/12148"):]
-            if (len(ark)>1 and ark not in listeARK_BIB):
-                print(str(j) + ". " + ark)
-                listeARK_BIB.append(ark)
-                (test,page) = bib2ark.testURLetreeParse(ark2url(ark, type_records, format_BIB))
-                if(test):
-                    nbResults  = page2nbresults(page,ark)
-                    if (nbResults == "1" and "ark" in ark):
-                        for XMLrec in page.xpath("//srw:record/srw:recordData/mxc:record", namespaces=main.ns):
-                            record2file(bib_file, XMLrec, format_file)
-                            if (AUTliees == 1):
-                                bib2aut(XMLrec, ark, aut_file, format_BIB, format_file, AUTlieesAUT,AUTlieesSUB, AUTlieesWORK)
-                    elif (nbResults == "1" and "ppn" in ark.lower()):
-                        for XMLrec in page.xpath("//record"):
-                            record2file(bib_file, XMLrec, format_file)
-                            if (AUTliees == 1):
-                                bib2aut(XMLrec, ark, aut_file, format_BIB, format_file, AUTlieesAUT,AUTlieesSUB, AUTlieesWORK)
+            
         file_fin(bib_file, format_file)
         if (AUTliees == 1):
             file_fin(aut_file, format_file)

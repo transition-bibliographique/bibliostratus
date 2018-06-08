@@ -1,5 +1,5 @@
-### version 1.18
-05/2018
+### version 1.19
+08/06/2018
 - Module bleu (marc > tables) :
 	- option : exporter des métadonnées de notices bibliographiques en vue d'alignements avec des autorités (combinaison Titre-Auteur)
 	- nouveau code AUD d'alignement pour les enregistrements sonores, distincts des enregistrements audiovisuels
