@@ -25,6 +25,7 @@ import codecs
 import json
 import http.client
 import main as main
+from funcs import Bib_record
 
 
 #import matplotlib.pyplot as plt
@@ -918,9 +919,6 @@ def isbn2ark(NumNot,isbn_init,isbn,titre,auteur,date):
         if (resultatsIsbn2ARK != ""):
             add_to_conversionIsbn(NumNot,isbn_init,isbnConverti,False)
 
-#Si pas de résultats : on relance une recherche dans le Sudoc    
-    if (resultatsIsbn2ARK == ""):
-        resultatsIsbn2ARK = isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date)
     return resultatsIsbn2ARK
 
 def issn2ark(NumNot,issn_init,issn,titre,auteur,date):
@@ -1229,9 +1227,6 @@ def ean2ark(NumNot,ean,titre,auteur,date):
     if (listeARK == "" and auteur != ""):
         listeARK = eanauteur2sru(NumNot,ean,titre,auteur,date)
 
-#Si pas de résultats : on relance une recherche dans le Sudoc    
-    if (listeARK == ""):
-        listeARK = ean2sudoc(NumNot,ean,titre,auteur,date)
     return listeARK
 
 def nettoyage_no_commercial(no_commercial_propre):
@@ -1309,6 +1304,12 @@ def extract_cols_from_row(row,liste):
             i += 1
         return tuple(liste_values)    
 
+def record2dic(row,option):
+    """A partir d'une, et de l'indication de l'option "type de notice" (TEX, VID, AUD, PER)
+    renvoi d'un dictionnaire fournissant les valeurs des différents champs"""
+    input_record = Bib_record(row, option)
+    return input_record
+
 def monimpr_item(row,n,form_bib2ark,parametres,liste_reports):
     """Alignement pour 1 item (1 ligne) monographie imprimée"""
     if (n == 0):
@@ -1316,57 +1317,95 @@ def monimpr_item(row,n,form_bib2ark,parametres,liste_reports):
     if (n%100 == 0):
         main.check_access2apis(n,dict_check_apis)
     #print(row)
-    (NumNot,frbnf,current_ark,isbn,ean,titre,auteur,date,tome,publisher) = extract_cols_from_row(row,
-        header_columns_init_monimpr)
+#==============================================================================
+#     (NumNot,frbnf,current_ark,isbn,ean,titre,auteur,date,tome,publisher) = extract_cols_from_row(row,
+#         header_columns_init_monimpr)
+#     
+#     isbn_nett = nettoyageIsbnPourControle(isbn)
+#     isbn_propre = nettoyage_isbn(isbn)
+#     ean_nett = nettoyageIsbnPourControle(ean)
+#     ean_propre = nettoyage_isbn(ean)
+#     titre_nett= nettoyageTitrePourControle(titre)
+#     auteur_nett = nettoyageAuteur(auteur, False)
+#     date_nett = nettoyageDate(date)
+#     tome_nett = convert_volumes_to_int(tome)
+#     publisher_nett = nettoyageAuteur(publisher, False)
+#     if (publisher_nett == ""):
+#         publisher_nett = publisher
+#     #Actualisation de l'ARK à partir de l'ARK
+#==============================================================================
+    input_record = Bib_record(row,1)
     
-    isbn_nett = nettoyageIsbnPourControle(isbn)
-    isbn_propre = nettoyage_isbn(isbn)
-    ean_nett = nettoyageIsbnPourControle(ean)
-    ean_propre = nettoyage_isbn(ean)
-    titre_nett= nettoyageTitrePourControle(titre)
-    auteur_nett = nettoyageAuteur(auteur, False)
-    date_nett = nettoyageDate(date)
-    tome_nett = convert_volumes_to_int(tome)
-    publisher_nett = nettoyageAuteur(publisher, False)
-    if (publisher_nett == ""):
-        publisher_nett = publisher
-    #Actualisation de l'ARK à partir de l'ARK
     ark = ""
-    if (current_ark != ""):
-        ark = ark2ark(NumNot,current_ark)
+    if (input_record.ark_init != ""):
+        ark = ark2ark(input_record.ark_init,input_record.ark_init)
     
     #A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
-    elif (frbnf != ""):
-        ark = frbnf2ark(NumNot,frbnf,isbn_nett,titre_nett,auteur_nett,date_nett)
+    elif (input_record.frbnf != ""):
+        ark = frbnf2ark(input_record.NumNot,input_record.frbnf,
+                        input_record.isbn_nett,
+                        input_record.titre_nett,
+                        input_record.auteur_nett,
+                        input_record.date_nett)
         ark = ",".join([ark1 for ark1 in ark.split(",") if ark1 != ''])
     #A défaut, recherche sur ISBN
     #Si plusieurs résultats, contrôle sur l'auteur
-    if (ark == "" and isbn_nett != ""):
-        ark = isbn2ark(NumNot,isbn,isbn_propre,titre_nett,auteur_nett,date_nett)
-        
-    #Si la recherche ISBN + contrôle Titre/Date n'a rien donné -> on cherche ISBN seul
-    if (ark == "" and isbn_nett != ""):
-        ark = isbn2ark(NumNot,isbn,isbn_propre,"","","")
-    #A défaut, recherche sur EAN
-    if (ark == "" and ean != ""):
-        ark = ean2ark(NumNot,ean_propre,titre_nett,auteur_nett,date_nett)
+    if (ark == "" and input_record.isbn_nett != ""):
+        ark = isbn2ark(input_record.NumNot,input_record.isbn_init,
+                       input_record.isbn_propre,
+                       input_record.titre_nett,
+                       input_record.auteur_nett,
+                       input_record.date_nett)
 
+    #Si la recherche ISBN + contrôle Titre/Date n'a rien donné -> on cherche ISBN seul
+    if (ark == "" and input_record.isbn_nett != ""):
+        ark = isbn2ark(input_record.NumNot,input_record.isbn_init,input_record.isbn_propre,"","","")
+
+    #Si pas de résultats : on relance une recherche dans le Sudoc    
+    if (ark == "" and input_record.isbn_nett != ""):
+        ark = isbn2sudoc(input_record.NumNot,input_record.isbn_propre,
+                         input_record.isbn_converti,
+                         input_record.titre,input_record.auteur,
+                         input_record.date)
+
+    #A défaut, recherche sur EAN
+    if (ark == "" and input_record.ean != ""):
+        ark = ean2ark(input_record.NumNot,input_record.ean_propre,
+                      input_record.titre_nett,
+                      input_record.auteur_nett,
+                      input_record.date_nett)
 
     #Si la recherche EAN + contrôles Titre/Date n'a rien donné -> on cherche EAN seul
-    if (ark == "" and ean != ""):
-        ark = ean2ark(NumNot,ean_propre,"","","")
+    if (ark == "" and input_record.ean != ""):
+        ark = ean2ark(input_record.NumNot,input_record.ean_propre,"","","")
+
+    #Si pas de résultats : on relance une recherche dans le Sudoc    
+    if (ark == ""):
+        ark = ean2sudoc(input_record.NumNot,input_record.ean_propre,
+                        input_record.titre,input_record.auteur,input_record.date)
+
+    #Si pas de résultats : on relance une recherche dans le Sudoc avec l'EAN seul 
+    if (ark == ""):
+        ark = ean2sudoc(input_record.NumNot,input_record.ean_propre,"","","")
+
 
     #A défaut, recherche sur Titre-Auteur-Date
-    if (ark == "" and titre != ""):
-        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,tome_nett,"m","a", False, publisher_nett)
+    if (ark == "" and input_record.titre != ""):
+        ark = tad2ark(input_record.NumNot,input_record.titre,input_record.auteur,
+                      input_record.auteur_nett,
+                      input_record.date_nett,
+                      input_record.tome_nett,"m","a", False, 
+                      input_record.publisher_nett)
         #print("1." + NumNot + " : " + ark)
-    if (ark == "" and titre != ""):
-        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,tome_nett,"m","a",True, publisher_nett)
+    if (ark == "" and input_record.titre != ""):
+        ark = tad2ark(input_record.NumNot,input_record.titre,input_record.auteur,
+                      input_record.auteur_nett,input_record.date_nett,
+                      input_record.tome_nett,"m","a",True, input_record.publisher_nett)
     
     """if (ark == "" and titre != ""):
         ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"monimpr")"""
     
-    print(str(n) + ". " + NumNot + " : " + ark)
+    print(str(n) + ". " + input_record.NumNot + " : " + ark)
     nbARK = len(ark.split(","))
     if (ark == ""):
         nbARK = 0   
@@ -1375,11 +1414,15 @@ def monimpr_item(row,n,form_bib2ark,parametres,liste_reports):
     else:
         nb_notices_nb_ARK[nbARK] += 1
     typeConversionNumNot = ""
-    if (NumNot in NumNotices2methode):
-        typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
-        if (len(set(NumNotices2methode[NumNot])) == 1):
-            typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
-    liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,current_ark,frbnf,isbn,ean,titre,auteur,date,tome, publisher]
+    if (input_record.NumNot in NumNotices2methode):
+        typeConversionNumNot = ",".join(NumNotices2methode[input_record.NumNot])
+        if (len(set(NumNotices2methode[input_record.NumNot])) == 1):
+            typeConversionNumNot = list(set(NumNotices2methode[input_record.NumNot]))[0]
+    liste_metadonnees = [input_record.NumNot,nbARK,ark,typeConversionNumNot,
+                         input_record.ark_init,input_record.frbnf,
+                         input_record.isbn_init,input_record.ean,input_record.titre,
+                         input_record.auteur,input_record.date,input_record.tome, 
+                         input_record.publisher]
     if (parametres["meta_bib"] == 1):
         liste_metadonnees.extend(ark2metadc(ark))
     if (parametres["file_nb"] ==  1):
@@ -1442,6 +1485,14 @@ def dvd_item(row,n,form_bib2ark,parametres,liste_reports):
     #A défaut, recherche sur no_commercial
     if (ark == "" and no_commercial != ""):
         ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,False, publisher_nett)
+
+    #Si pas de résultats : on relance une recherche dans le Sudoc    
+    if (ark == ""):
+        ark = ean2sudoc(NumNot,ean_propre,titre,auteur,date)
+    #Si pas de résultats : on relance une recherche dans le Sudoc    
+    if (ark == ""):
+        ark = ean2sudoc(NumNot,ean_propre,"","","")
+
     
     #Si la recherche N° commercial + contrôle n'a rien donné -> on cherche N° commercial seul
     #if (ark == "" and no_commercial != ""):

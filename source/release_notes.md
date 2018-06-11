@@ -1,3 +1,10 @@
+###version 1.20
+juin 2018
+- Module blanc (alignement BIB):
+	- Option BnF > Sudoc ou Sudoc > BnF
+	
+
+
 ### version 1.19
 08/06/2018
 - Module bleu (marc > tables) :
@@ -5,7 +12,7 @@
 	- nouveau code AUD d'alignement pour les enregistrements sonores, distincts des enregistrements audiovisuels
 	- Extraction biblio pour alignement d'autorités : ajout de la date de publication dans les critères d'alignement
 - Module blanc (alignements bibliographiques):
-	- Alignement sur l'ISSN : par expression exacte (option "ajd" du SRU) et non tous mots (option "all")
+	- Alignement sur l'ISSN : par expression exacte (option "adj" du SRU) et non tous mots (option "all")
 	- Alignement Titre-Auteur-Date : contrôle sur la date pour vérifier qu'elle est bien présente en date d'édition (zone 100 ou 210$d).
 	- fonction spécifique "par item". Facilite la prise en charge du même code par d'autres programmes (via API, interface web, etc.)
 	- distinction entre enregistrements sonores (AUD) et vidéos (VID) : alignement sur l'un ou sur l'autre de ces deux types de documents
