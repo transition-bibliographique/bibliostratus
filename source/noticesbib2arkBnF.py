@@ -1373,6 +1373,8 @@ def item2ppn_by_id(input_record):
     if (ark == ""):
         ark = ean2sudoc(input_record.NumNot,input_record.ean.propre,"","","")
     if (ark == ""):
+        ark = isbn2sudoc(input_record)
+    if (ark == ""):
         ark = issn2sudoc(input_record.NumNot, input_record.issn.init, 
                          input_record.issn.propre, 
                          input_record.titre.controles, 
