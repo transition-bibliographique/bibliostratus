@@ -64,6 +64,10 @@ def nettoyageIssnPourControle(issn):
         issn = issn[0:8]
     return issn
 
+def nettoyage_no_commercial(no_commercial_propre):
+    no_commercial_propre = unidecode(no_commercial_propre.lower())
+    return no_commercial_propre
+
 def nettoyageAuteur(auteur,justeunmot=True):
     listeMots = [" par "," avec "," by "," Mr. "," M. "," Mme "," Mrs "]
     for mot in listeMots:
@@ -86,7 +90,13 @@ def nettoyageAuteur(auteur,justeunmot=True):
 def nettoyageTitrePourControle(titre):
     titre = nettoyage(titre,True)
     return titre
-    
+
+def nettoyageTitrePourRecherche(titre):
+    titre = nettoyage(titre,False)
+    titre = titre.split(" ")
+    titre = [mot for mot in titre if len(mot) > 1]
+    titre = " ".join(titre)
+    return titre    
 
 def nettoyageDate(date):
     date = unidecode(date.lower())
@@ -236,6 +246,25 @@ def convert_volumes_to_int(n):
 
 
 
+
+class international_id: 
+    """Classe définissant les propriétés d'une notice mise en entrée 
+    du module d'alignemen
+    - son nom
+    - son prénom
+    - son âge
+    - son lieu de résidence"""
+
+    def __init__(self, string): # Notre méthode constructeur
+        """Pour l'instant, on ne va définir qu'un seul attribut"""
+        self.init = string
+        self.nett = nettoyageIsbnPourControle(self.init)
+        self.propre = nettoyage_isbn(self.init)
+        self.converti = conversionIsbn(self.propre)
+    def __str__(self):
+        """Méthode permettant d'afficher plus joliment notre objet"""
+        return "{}".format(self.init)
+
 class Bib_record: 
     """Classe définissant les propriétés d'une notice mise en entrée 
     du module d'alignemen
@@ -249,44 +278,54 @@ class Bib_record:
         self.NumNot = input_row[0]
         self.frbnf = input_row[1]
         self.ark_init = input_row[2]
-        self.isbn_init = ""
+        self.isbn = ""
         self.ean = ""
         self.titre = ""
         self.auteur = ""
         self.date = ""
         self.tome = ""
         self.publisher = ""
-        self.comref = ""
+        self.no_commercial = ""
         self.issn = ""
         self.pubPlace = ""
+        self.metas_init = input_row[1:]
         if (option_record == 1):
-            self.isbn_init = input_row[3]
-            self.ean = input_row[4]
+            self.type = "TEX"
+            self.intermarc_type_doc = "a"
+            self.intermarc_type_record = "m"
+            self.isbn = international_id(input_row[3])
+            self.ean = international_id(input_row[4])
             self.titre = input_row[5]
             self.auteur = input_row[6]
             self.date = input_row[7]
             self.tome = input_row[8]
             self.publisher = input_row[9]
+        if (option_record == 2):
+            self.type = "VID"
+            self.intermarc_type_doc = "h r"
+        if (option_record == 3):
+            self.type = "AUD"
+            self.intermarc_type_doc = "g r"
         if (option_record == 2 or option_record == 3):
-            self.ean = input_row[3]
-            self.comref = input_row[4]
+            self.intermarc_type_record = "m"
+            self.ean = international_id(input_row[3])
+            self.no_commercial = input_row[4]
             self.titre = input_row[5]
             self.auteur = input_row[6]
             self.date = input_row[7]
             self.publisher = input_row[8]
         if (option_record == 4):
-            self.issn = input_row[3]
+            self.type = "PER"
+            self.intermarc_type_record = "s"
+            self.intermarc_type_doc = "a"
+            self.issn = international_id(input_row[3])
             self.titre = input_row[4]
             self.auteur = input_row[5]
             self.date = input_row[6]
             self.pubPlace = input_row[7]
-        self.isbn_nett = nettoyageIsbnPourControle(self.isbn_init)
-        self.isbn_propre = nettoyage_isbn(self.isbn_init)
-        self.isbn_converti = conversionIsbn(self.isbn_propre)
-        self.ean_nett = nettoyageIsbnPourControle(self.ean)
-        self.ean_propre = nettoyage_isbn(self.ean)
         self.titre_nett= nettoyageTitrePourControle(self.titre)
         self.auteur_nett = nettoyageAuteur(self.auteur, False)
+        self.no_commercial_propre = nettoyage_no_commercial(self.no_commercial)
         self.date_nett = nettoyageDate(self.date)
         self.tome_nett = convert_volumes_to_int(self.tome)
         self.publisher_nett = nettoyageAuteur(self.publisher, False)

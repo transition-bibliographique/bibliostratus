@@ -20,13 +20,10 @@ import urllib.error as error
 import csv
 import tkinter as tk
 from collections import defaultdict
-import webbrowser
-import codecs
-import json
 import http.client
 import main as main
 from funcs import Bib_record
-
+import funcs
 
 #import matplotlib.pyplot as plt
 
@@ -110,129 +107,131 @@ nsSudoc = {"rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#", "bibo":"http://p
 
 
 #fonction de mise à jour de l'ARK s'il existe un ARK
-def ark2ark(NumNot,ark):
-    url = url_requete_sru('bib.persistentid all "' + ark + '"')
+def ark2ark(input_record):
+    url = url_requete_sru('bib.persistentid all "' + input_record.ark_init + '"')
     (test,page) = testURLetreeParse(url)
     nv_ark = ""
     if (test == True):
         if (page.find("//srw:recordIdentifier", namespaces=main.ns) is not None):
             nv_ark = page.find("//srw:recordIdentifier", namespaces=main.ns).text
-            NumNotices2methode[NumNot].append("Actualisation ARK")
+            NumNotices2methode[input_record.NumNot].append("Actualisation ARK")
     return nv_ark
 
 #nettoyage des chaines de caractères (titres, auteurs, isbn) : suppression ponctuation, espaces (pour les titres et ISBN) et diacritiques
-def nettoyage(string,remplacerEspaces=True,remplacerTirets=True):
-    string = unidecode(string.lower())
-    for signe in ponctuation:
-        string = string.replace(signe,"")
-    string = string.replace("'"," ")
-    if (remplacerTirets == True):
-        string = string.replace("-"," ")
-    if (remplacerEspaces == True):
-        string = string.replace(" ","")
-    return string
-
-def nettoyageTitrePourControle(titre):
-    titre = nettoyage(titre,True)
-    return titre
-    
-def nettoyageTitrePourRecherche(titre):
-    titre = nettoyage(titre,False)
-    titre = titre.split(" ")
-    titre = [mot for mot in titre if len(mot) > 1]
-    titre = " ".join(titre)
-    return titre
-    
-def nettoyage_lettresISBN(isbn):
-    isbn = unidecode(isbn.lower())
-    char_cle = "0123456789xX"
-    for signe in ponctuation:
-        isbn = isbn.replace(signe,"")
-    prefix = isbn[0:-1]
-    cle = isbn[-1]
-    for lettre in lettres:
-        prefix = prefix.replace(lettre, "")
-    if (cle in char_cle):
-        cle = cle.upper()
-    else:
-        cle = ""
-    return prefix+cle
-
-def nettoyageIsbnPourControle(isbn):
-    isbn = nettoyage(isbn)
-    if (isbn != ""):
-        isbn = nettoyage_lettresISBN(isbn)
-    if (len(isbn) < 10):
-        isbn = ""
-    elif (isbn[0:3] == "978" or isbn[0:3] == "979"):
-        isbn = isbn[3:12]
-    else:
-        isbn = isbn[0:10]
-    return isbn
-
-def nettoyageIssnPourControle(issn):
-    issn = nettoyage(issn).replace(" ","")
-    if (issn != ""):
-        issn = nettoyage_lettresISBN(issn)
-    if (len(issn) < 8):
-        issn = ""
-    else:
-        issn = issn[0:8]
-    return issn
-
-def nettoyageAuteur(auteur,justeunmot=True):
-    listeMots = [" par "," avec "," by "," Mr. "," M. "," Mme "," Mrs "]
-    for mot in listeMots:
-        auteur = auteur.replace(mot,"")
-    for chiffre in listeChiffres:
-        auteur = auteur.replace(chiffre,"")
-    auteur = nettoyage(auteur.lower(),False)
-    auteur = auteur.split(" ")
-    auteur = sorted(auteur,key=len,reverse=True)
-    auteur = [auteur1 for auteur1 in auteur if len(auteur1) > 1]
-    if (auteur is not None and auteur != []):
-        if (justeunmot==True):
-            auteur = auteur[0]
-        else:
-            auteur = " ".join(auteur)
-    else:
-        auteur = ""
-    return auteur
-
-def nettoyageDate(date):
-    date = unidecode(date.lower())
-    for lettre in lettres:
-        date = date.replace(lettre,"")
-    for signe in ponctuation:
-        date = date.split(signe)
-        date = " ".join(annee for annee in date if annee != "")
-    return date
-
-def nettoyageTome(numeroTome):
-    if (numeroTome):
-        numeroTome = unidecode(numeroTome.lower())
-        for lettre in lettres:
-            numeroTome = numeroTome.replace(lettre,"")
-        for signe in ponctuation:
-            numeroTome = numeroTome.split(signe)
-            numeroTome = "~".join(numero for numero in numeroTome)
-        numeroTome = numeroTome.split("~")
-        numeroTome = [numero for numero in numeroTome if numero != ""]
-        if (numeroTome != []):
-            numeroTome = numeroTome[-1]
-        numeroTome = ltrim(numeroTome)
-    return numeroTome
-
-    
-def nettoyagePubPlace(pubPlace) :
-    """Nettoyage du lieu de publication"""
-    pubPlace = unidecode(pubPlace.lower())
-    for chiffre in listeChiffres:
-        pubPlace = pubPlace.replace(chiffre,"")
-    for signe in ponctuation:
-        pubPlace = pubPlace.split(signe)
-        pubPlace = " ".join(mot for mot in pubPlace if mot != "")
-    return pubPlace
+# =============================================================================
+# def nettoyage(string,remplacerEspaces=True,remplacerTirets=True):
+#     string = unidecode(string.lower())
+#     for signe in ponctuation:
+#         string = string.replace(signe,"")
+#     string = string.replace("'"," ")
+#     if (remplacerTirets == True):
+#         string = string.replace("-"," ")
+#     if (remplacerEspaces == True):
+#         string = string.replace(" ","")
+#     return string
+# 
+# def nettoyageTitrePourControle(titre):
+#     titre = nettoyage(titre,True)
+#     return titre
+#     
+# def nettoyageTitrePourRecherche(titre):
+#     titre = nettoyage(titre,False)
+#     titre = titre.split(" ")
+#     titre = [mot for mot in titre if len(mot) > 1]
+#     titre = " ".join(titre)
+#     return titre
+#     
+# def nettoyage_lettresISBN(isbn):
+#     isbn = unidecode(isbn.lower())
+#     char_cle = "0123456789xX"
+#     for signe in ponctuation:
+#         isbn = isbn.replace(signe,"")
+#     prefix = isbn[0:-1]
+#     cle = isbn[-1]
+#     for lettre in lettres:
+#         prefix = prefix.replace(lettre, "")
+#     if (cle in char_cle):
+#         cle = cle.upper()
+#     else:
+#         cle = ""
+#     return prefix+cle
+# 
+# def nettoyageIsbnPourControle(isbn):
+#     isbn = nettoyage(isbn)
+#     if (isbn != ""):
+#         isbn = nettoyage_lettresISBN(isbn)
+#     if (len(isbn) < 10):
+#         isbn = ""
+#     elif (isbn[0:3] == "978" or isbn[0:3] == "979"):
+#         isbn = isbn[3:12]
+#     else:
+#         isbn = isbn[0:10]
+#     return isbn
+# 
+# def nettoyageIssnPourControle(issn):
+#     issn = nettoyage(issn).replace(" ","")
+#     if (issn != ""):
+#         issn = nettoyage_lettresISBN(issn)
+#     if (len(issn) < 8):
+#         issn = ""
+#     else:
+#         issn = issn[0:8]
+#     return issn
+# 
+# def nettoyageAuteur(auteur,justeunmot=True):
+#     listeMots = [" par "," avec "," by "," Mr. "," M. "," Mme "," Mrs "]
+#     for mot in listeMots:
+#         auteur = auteur.replace(mot,"")
+#     for chiffre in listeChiffres:
+#         auteur = auteur.replace(chiffre,"")
+#     auteur = nettoyage(auteur.lower(),False)
+#     auteur = auteur.split(" ")
+#     auteur = sorted(auteur,key=len,reverse=True)
+#     auteur = [auteur1 for auteur1 in auteur if len(auteur1) > 1]
+#     if (auteur is not None and auteur != []):
+#         if (justeunmot==True):
+#             auteur = auteur[0]
+#         else:
+#             auteur = " ".join(auteur)
+#     else:
+#         auteur = ""
+#     return auteur
+# 
+# def nettoyageDate(date):
+#     date = unidecode(date.lower())
+#     for lettre in lettres:
+#         date = date.replace(lettre,"")
+#     for signe in ponctuation:
+#         date = date.split(signe)
+#         date = " ".join(annee for annee in date if annee != "")
+#     return date
+# 
+# def nettoyageTome(numeroTome):
+#     if (numeroTome):
+#         numeroTome = unidecode(numeroTome.lower())
+#         for lettre in lettres:
+#             numeroTome = numeroTome.replace(lettre,"")
+#         for signe in ponctuation:
+#             numeroTome = numeroTome.split(signe)
+#             numeroTome = "~".join(numero for numero in numeroTome)
+#         numeroTome = numeroTome.split("~")
+#         numeroTome = [numero for numero in numeroTome if numero != ""]
+#         if (numeroTome != []):
+#             numeroTome = numeroTome[-1]
+#         numeroTome = ltrim(numeroTome)
+#     return numeroTome
+# 
+#     
+# def nettoyagePubPlace(pubPlace) :
+#     """Nettoyage du lieu de publication"""
+#     pubPlace = unidecode(pubPlace.lower())
+#     for chiffre in listeChiffres:
+#         pubPlace = pubPlace.replace(chiffre,"")
+#     for signe in ponctuation:
+#         pubPlace = pubPlace.split(signe)
+#         pubPlace = " ".join(mot for mot in pubPlace if mot != "")
+#     return pubPlace
+# =============================================================================
 
 #Si la recherche NNB avec comporaison Mots du titre n'a rien donné, on recherche sur N° interne BnF + Auteur (en ne gardant que le mot le plus long du champ Auteur)
 def relancerNNBAuteur(NumNot,systemid,isbn,titre,auteur,date):
@@ -270,12 +269,12 @@ def comparaisonIsbn(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF
     #Si le FRBNF de la notice source est présent comme ancien numéro de notice 
     #dans la notice BnF, on compare les ISBN en 010, ou à défaut les EAN
     #ou à défaut les ISSN (il peut s'agir d'un périodique)
-    isbnBNF = nettoyage(main.extract_subfield(recordBNF,"010","a",1))
+    isbnBNF = funcs.nettoyage(main.extract_subfield(recordBNF,"010","a",1))
     if (isbnBNF == ""):
-        isbnBNF = nettoyage(main.extract_subfield(recordBNF,"038","a",1))
+        isbnBNF = funcs.nettoyage(main.extract_subfield(recordBNF,"038","a",1))
         sourceID = "EAN"
     if (isbnBNF == ""):
-        isbnBNF = nettoyage(main.extract_subfield(recordBNF,"011","a",1))
+        isbnBNF = funcs.nettoyage(main.extract_subfield(recordBNF,"011","a",1))
         sourceID = "ISSN"
     if (isbn != "" and isbnBNF != ""):
         if (isbn in isbnBNF):
@@ -333,14 +332,14 @@ def verificationTomaison(ark,numeroTome,recordBNF):
     volumesBNF = ""
     for subf in liste_subfields_volume:
         volumesBNF += "~" + main.extract_subfield(recordBNF,subf.split("$")[0],subf.split("$")[1])
-    volumesBNF = convert_volumes_to_int(volumesBNF)
+    volumesBNF = funcs.convert_volumes_to_int(volumesBNF)
     if (volumesBNF == ""):
         volumesBNF = main.extract_subfield(recordBNF,"200","a")
-        volumesBNF = convert_volumes_to_int(volumesBNF)
+        volumesBNF = funcs.convert_volumes_to_int(volumesBNF)
         for lettre in lettres:
             volumesBNF = volumesBNF.replace(lettre, "~")
         volumesBNF = volumesBNF.split("~")
-        volumesBNF = set(str(ltrim(nb)) for nb in volumesBNF if nb != "")
+        volumesBNF = set(str(funcs.ltrim(nb)) for nb in volumesBNF if nb != "")
     if (volumesBNF != "" and numeroTome in volumesBNF):
         return ark
     else:
@@ -350,11 +349,13 @@ def verificationTomaison_sous_zone(ark,numeroTome,numeroTomeBnF):
     """Vérifie si le numéro du tome en entrée est présent dans l'extraction des nombres de la sous-zone"""
     return ark,False
 
-def ltrim(nombre_texte):
-    "Supprime les 0 initiaux d'un nombre géré sous forme de chaîne de caractères"
-    while(len(nombre_texte) > 1 and nombre_texte[0] == "0"):
-        nombre_texte = nombre_texte[1:]
-    return nombre_texte
+# =============================================================================
+# def ltrim(nombre_texte):
+#     "Supprime les 0 initiaux d'un nombre géré sous forme de chaîne de caractères"
+#     while(len(nombre_texte) > 1 and nombre_texte[0] == "0"):
+#         nombre_texte = nombre_texte[1:]
+#     return nombre_texte
+# =============================================================================
 
 def checkDate(ark,date_init,recordBNF):
     ark_checked = ""
@@ -396,7 +397,7 @@ def comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,da
     ark = ""
     field = sous_zone.split("$")[0]
     subfield = sous_zone.split("$")[1]
-    titreBNF = nettoyageTitrePourControle(main.extract_subfield(recordBNF,field,subfield,1))
+    titreBNF = funcs.nettoyageTitrePourControle(main.extract_subfield(recordBNF,field,subfield,1))
     if (titre != "" and titreBNF != ""):
         if (titre == titreBNF):
             ark = ark_current
@@ -453,7 +454,7 @@ def systemid2ark(NumNot,systemid,tronque,isbn,titre,auteur,date):
     
     return listeARK
 
-def rechercheNNB(NumNot,nnb,isbn,titre,auteur,date):
+def rechercheNNB(input_record,nnb):
     ark = ""
     if (nnb.isdigit() is False):
         #pb_frbnf_source.write("\t".join[NumNot,nnb] + "\n")
@@ -464,42 +465,48 @@ def rechercheNNB(NumNot,nnb,isbn,titre,auteur,date):
         if (test == True):
             for record in page.xpath("//srw:records/srw:record", namespaces=main.ns):
                 ark_current = record.find("srw:recordIdentifier",namespaces=main.ns).text
-                ark = comparerBibBnf(NumNot,ark_current,nnb,isbn,titre,auteur,date,"Numéro de notice")
+                identifiant = ""
+                if (input_record.type == "TEX"):
+                    input_record.isbn.propre
+                if (input_record.type == "VID" or input_record.type == "AUD"):
+                    identifiant = input_record.ean.propre
+                ark = comparerBibBnf(input_record.NumNot,ark_current,nnb,identifiant,input_record.titre_nett,input_record.auteur_nett,input_record.date_nett,"Numéro de notice")
     return ark
 
 #Si le FRBNF n'a pas été trouvé, on le recherche comme numéro système -> pour ça on extrait le n° système
-def oldfrbnf2ark(NumNot,frbnf,isbn,titre,auteur,date):
+def oldfrbnf2ark(input_record):
     """Extrait du FRBNF le numéro système, d'abord sur 9 chiffres, puis sur 8 si besoin, avec un contrôle des résultats sur le contenu du titre ou sur l'auteur"""
     systemid = ""
-    if (frbnf[0:5].upper() == "FRBNF"):
-        systemid = frbnf[5:14]
+    if (input_record.frbnf[0:5].upper() == "FRBNF"):
+        systemid = input_record.frbnf[5:14]
     else:
-        systemid = frbnf[4:13]
-    ark = rechercheNNB(NumNot,systemid[0:8],isbn,titre,auteur,date)
+        systemid = input_record.frbnf[4:13]
+    
+    ark = rechercheNNB(input_record,systemid[0:8])
     if (ark==""):
-        ark = systemid2ark(NumNot,systemid,False,isbn,titre,auteur,date)
+        ark = systemid2ark(input_record.NumNot,systemid,False,input_record.isbn.nett,input_record.titre_nett,input_record.auteur_nett,input_record.date_nett)
     return ark
 
  
-def frbnf2ark(NumNot,frbnf,isbn,titre,auteur,date):
+def frbnf2ark(input_record):
     """Rechercher le FRBNF avec le préfixe "FRBN" ou "FRBNF". A défaut, lance d'autres fonctions pour lancer la recherche en utilisant uniquement le numéro, soit comme NNB/NNA, soit comme ancien numéro système (en zone 9XX)"""
     ark = ""
-    if (frbnf[0:4].lower() == "frbn"):
-        url = url_requete_sru('bib.otherid all "' + frbnf + '"')
+    if (input_record.frbnf[0:4].lower() == "frbn"):
+        url = url_requete_sru('bib.otherid all "' + input_record.frbnf + '"')
         (test,page) = testURLetreeParse(url)
         if (test == True):
             nb_resultats = int(page.find("//srw:numberOfRecords", namespaces=main.ns).text)
             
             if (nb_resultats == 0):
-                ark = oldfrbnf2ark(NumNot,frbnf,isbn,titre,auteur,date)
+                ark = oldfrbnf2ark(input_record)
             elif (nb_resultats == 1):
                 ark = page.find("//srw:recordIdentifier", namespaces=main.ns).text
                 if (ark !=""):
-                    NumNotices2methode[NumNot].append("FRBNF > ARK")
+                    NumNotices2methode[input_record.NumNot].append("FRBNF > ARK")
             else:
                 ark = ",".join([ark.text for ark in page.xpath("//srw:recordIdentifier", namespaces=main.ns)])
                 if (ark != ""):
-                    NumNotices2methode[NumNot].append("FRBNF > ARK")
+                    NumNotices2methode[input_record.NumNot].append("FRBNF > ARK")
     return ark
 
         
@@ -521,112 +528,114 @@ def row2files(liste_metadonnees,liste_reports):
     else:
         liste_reports[3].write("\t".join(liste_metadonnees_to_report) + "\n")
         
-def nettoyage_isbn(isbn):
-    isbn_nett = isbn.split(";")[0].split(",")[0].split("(")[0].split("[")[0]
-    isbn_nett = isbn_nett.replace("-","").replace(" ","")
-    isbn_nett = unidecode(isbn_nett)
-    for signe in ponctuation:
-        isbn_nett = isbn_nett.replace(signe,"")
-    isbn_nett = isbn_nett.lower()
-    for lettre in lettres_sauf_x:
-        isbn_nett = isbn_nett.replace(lettre,"")
-    return isbn_nett
-    
-def conversionIsbn(isbn):
-    longueur = len(isbn)
-    isbnConverti = ""
-    if (longueur == 10):
-        isbnConverti = conversionIsbn1013(isbn)
-    elif (longueur == 13):
-        isbnConverti = conversionIsbn1310(isbn)
-    return isbnConverti
-
-#conversion isbn13 en isbn10
-def conversionIsbn1310(isbn):
-    if (isbn[0:3] == "978"):
-        prefix = isbn[3:-1]
-        check = check_digit_10(prefix)
-        return prefix + check
-    else:
-        return ""
-
-#conversion isbn10 en isbn13
-def conversionIsbn1013(isbn):
-    prefix = '978' + isbn[:-1]
-    check = check_digit_13(prefix)
-    return prefix + check
-    
-def check_digit_10(isbn):
-    assert len(isbn) == 9
-    sum = 0
-    for i in range(len(isbn)):
-        c = int(isbn[i])
-        w = i + 1
-        sum += w * c
-    r = sum % 11
-    if (r == 10):
-        return 'X'
-    else: 
-        return str(r)
-
-def check_digit_13(isbn):
-    assert len(isbn) == 12
-    sum = 0
-    for i in range(len(isbn)):
-        c = int(isbn[i])
-        if (i % 2):
-            w = 3
-        else: 
-            w = 1
-        sum += w * c
-    r = 10 - (sum % 10)
-    if (r == 10):
-        return '0'
-    else:
-        return str(r)
-#==============================================================================
-# Fonctions pour convertir les chiffres romains en chiffres arabes (et l'inverse)
-# Utilisé pour comparer les volumaisons
-#==============================================================================
-numeral_map = tuple(zip(
-    (1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1),
-    ('M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I')
-))
-
-def int_to_roman(i):
-    result = []
-    for integer, numeral in numeral_map:
-        count = i // integer
-        result.append(numeral * count)
-        i -= integer * count
-    return ''.join(result)
-
-def roman_to_int(n):
-    i = result = 0
-    for integer, numeral in numeral_map:
-        while n[i:i + len(numeral)] == numeral:
-            result += integer
-            i += len(numeral)
-    return result
-
-def convert_volumes_to_int(n):
-    for char in ponctuation:
-        n = n.replace(char,"-")
-    n = n.replace(" ","-")
-    liste_n = [e for e in n.split("-") if e != ""]
-    liste_n_convert = []
-    for n in liste_n:
-        try:
-            int(n)
-            liste_n_convert.append(n)
-        except ValueError:
-            c = roman_to_int(n)
-            if (c != 0):
-                liste_n_convert.append(c)
-    liste_n_convert = set(ltrim(str(nb)) for nb in liste_n_convert if nb != "")
-    n_convert = " ".join([str(el) for el in list(liste_n_convert)])
-    return n_convert
-
+# =============================================================================
+# def nettoyage_isbn(isbn):
+#     isbn_nett = isbn.split(";")[0].split(",")[0].split("(")[0].split("[")[0]
+#     isbn_nett = isbn_nett.replace("-","").replace(" ","")
+#     isbn_nett = unidecode(isbn_nett)
+#     for signe in ponctuation:
+#         isbn_nett = isbn_nett.replace(signe,"")
+#     isbn_nett = isbn_nett.lower()
+#     for lettre in lettres_sauf_x:
+#         isbn_nett = isbn_nett.replace(lettre,"")
+#     return isbn_nett
+#     
+# def conversionIsbn(isbn):
+#     longueur = len(isbn)
+#     isbnConverti = ""
+#     if (longueur == 10):
+#         isbnConverti = conversionIsbn1013(isbn)
+#     elif (longueur == 13):
+#         isbnConverti = conversionIsbn1310(isbn)
+#     return isbnConverti
+# 
+# #conversion isbn13 en isbn10
+# def conversionIsbn1310(isbn):
+#     if (isbn[0:3] == "978"):
+#         prefix = isbn[3:-1]
+#         check = check_digit_10(prefix)
+#         return prefix + check
+#     else:
+#         return ""
+# 
+# #conversion isbn10 en isbn13
+# def conversionIsbn1013(isbn):
+#     prefix = '978' + isbn[:-1]
+#     check = check_digit_13(prefix)
+#     return prefix + check
+#     
+# def check_digit_10(isbn):
+#     assert len(isbn) == 9
+#     sum = 0
+#     for i in range(len(isbn)):
+#         c = int(isbn[i])
+#         w = i + 1
+#         sum += w * c
+#     r = sum % 11
+#     if (r == 10):
+#         return 'X'
+#     else: 
+#         return str(r)
+# 
+# def check_digit_13(isbn):
+#     assert len(isbn) == 12
+#     sum = 0
+#     for i in range(len(isbn)):
+#         c = int(isbn[i])
+#         if (i % 2):
+#             w = 3
+#         else: 
+#             w = 1
+#         sum += w * c
+#     r = 10 - (sum % 10)
+#     if (r == 10):
+#         return '0'
+#     else:
+#         return str(r)
+# #==============================================================================
+# # Fonctions pour convertir les chiffres romains en chiffres arabes (et l'inverse)
+# # Utilisé pour comparer les volumaisons
+# #==============================================================================
+# numeral_map = tuple(zip(
+#     (1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1),
+#     ('M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I')
+# ))
+# 
+# def int_to_roman(i):
+#     result = []
+#     for integer, numeral in numeral_map:
+#         count = i // integer
+#         result.append(numeral * count)
+#         i -= integer * count
+#     return ''.join(result)
+# 
+# def roman_to_int(n):
+#     i = result = 0
+#     for integer, numeral in numeral_map:
+#         while n[i:i + len(numeral)] == numeral:
+#             result += integer
+#             i += len(numeral)
+#     return result
+# 
+# def convert_volumes_to_int(n):
+#     for char in ponctuation:
+#         n = n.replace(char,"-")
+#     n = n.replace(" ","-")
+#     liste_n = [e for e in n.split("-") if e != ""]
+#     liste_n_convert = []
+#     for n in liste_n:
+#         try:
+#             int(n)
+#             liste_n_convert.append(n)
+#         except ValueError:
+#             c = roman_to_int(n)
+#             if (c != 0):
+#                 liste_n_convert.append(c)
+#     liste_n_convert = set(ltrim(str(nb)) for nb in liste_n_convert if nb != "")
+#     n_convert = " ".join([str(el) for el in list(liste_n_convert)])
+#     return n_convert
+# 
+# =============================================================================
 
 def isbn2sru(NumNot,isbn,titre,auteur,date):
     urlSRU = url_requete_sru('bib.isbn all "' + isbn + '"')
@@ -648,7 +657,7 @@ def isbn2sru(NumNot,isbn,titre,auteur,date):
 
 def isbnauteur2sru(NumNot,isbn,titre,auteur,date):
     """Si la recherche ISBN avec contrôle titre n'a rien donné, on recherche ISBN + le mot le plus long dans la zone "auteur", et pas de contrôle sur Titre ensuite"""
-    motlongauteur = nettoyageAuteur(auteur, True)
+    motlongauteur = funcs.nettoyageAuteur(auteur, True)
     urlSRU = url_requete_sru('bib.isbn all "' + isbn + '" and bib.author all "' + motlongauteur + '"')
     listeARK = []
     (test,resultats) = testURLetreeParse(urlSRU)
@@ -664,7 +673,7 @@ def isbnauteur2sru(NumNot,isbn,titre,auteur,date):
 
 def eanauteur2sru(NumNot,ean,titre,auteur,date):
     """Si la recherche EAN avec contrôle titre n'a rien donné, on recherche EAN + le mot le plus long dans la zone "auteur", et pas de contrôle sur Titre ensuite"""
-    motlongauteur = nettoyageAuteur(auteur, True)
+    motlongauteur = funcs.nettoyageAuteur(auteur, True)
     urlSRU = url_requete_sru('bib.ean all "' + ean + '" + bib.author all "' + motlongauteur + '"')
     listeARK = []
     (test,resultats) = testURLetreeParse(urlSRU)
@@ -807,10 +816,10 @@ def testURLretrieve(url):
     return test
 
 
-def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date):
+def isbn2sudoc(input_record):
     """A partir d'un ISBN, recherche dans le Sudoc. Pour chaque notice trouvée, on regarde sur la notice
     Sudoc a un ARK BnF ou un FRBNF, auquel cas on convertit le PPN en ARK. Sinon, on garde le(s) PPN"""
-    url = "https://www.sudoc.fr/services/isbn2ppn/" + isbn
+    url = "https://www.sudoc.fr/services/isbn2ppn/" + input_record.isbn.propre
     Listeppn = []
     isbnTrouve = testURLretrieve(url)
     ark = []
@@ -818,13 +827,13 @@ def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date):
         (test,resultats) = testURLetreeParse(url)
         if (test == True):
             if (resultats.find("//ppn") is not None):
-                NumNotices2methode[NumNot].append("ISBN > PPN")                
+                NumNotices2methode[input_record.NumNot].append("ISBN > PPN")                
             for ppn in resultats.xpath("//ppn"):
                 ppn_val = ppn.text
                 Listeppn.append("PPN" + ppn_val)
-                ark.append(ppn2ark(NumNot,ppn_val,isbn,titre,auteur,date))
+                ark.append(ppn2ark(input_record.NumNot,ppn_val,input_record.isbn.propre,input_record.titre_nett,input_record.auteur_nett,input_record.date_nett))
             if (ark == []):
-                url = "https://www.sudoc.fr/services/isbn2ppn/" + isbnConverti
+                url = "https://www.sudoc.fr/services/isbn2ppn/" + input_record.isbn.converti
                 isbnTrouve = testURLretrieve(url)
                 if (isbnTrouve == True):
                     (test,resultats) = testURLetreeParse(url)
@@ -832,9 +841,9 @@ def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date):
                         for ppn in resultats.xpath("//ppn"):
                             ppn_val = ppn.text
                             Listeppn.append("PPN" + ppn_val)
-                            ark = ppn2ark(NumNot,ppn_val,isbnConverti,titre,auteur,date)
+                            ark = ppn2ark(input_record.NumNot,ppn_val,input_record.isbn.converti,input_record.titre_nett,input_record.auteur_nett,input_record.date_nett)
                             if (Listeppn != []):
-                                add_to_conversionIsbn(NumNot,isbn,isbnConverti,True)
+                                add_to_conversionIsbn(input_record.NumNot,input_record.isbn.propre,input_record.isbn.converti,True)
     #Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK déclaré comme équivalent --> dans ce cas on récupère l'ARK
     Listeppn = ",".join([ppn for ppn in Listeppn if ppn != ""])
     ark = ",".join([ark1 for ark1 in ark if ark1 != ""])
@@ -843,10 +852,10 @@ def isbn2sudoc(NumNot,isbn,isbnConverti,titre,auteur,date):
     else:
         return Listeppn
 
-def ean2sudoc(NumNot,ean,titre,auteur,date):
+def ean2sudoc(NumNot,ean_propre,titre_nett,auteur_nett,date_nett):
     """A partir d'un EAN, recherche dans le Sudoc. Pour chaque notice trouvée, on regarde sur la notice
     Sudoc a un ARK BnF ou un FRBNF, auquel cas on convertit le PPN en ARK. Sinon, on garde le(s) PPN"""
-    url = "https://www.sudoc.fr/services/ean2ppn/" + ean
+    url = "https://www.sudoc.fr/services/ean2ppn/" + ean_propre
     Listeppn = []
     eanTrouve = testURLretrieve(url)
     ark = []
@@ -857,7 +866,7 @@ def ean2sudoc(NumNot,ean,titre,auteur,date):
                 ppn_val = ppn.text
                 Listeppn.append("PPN" + ppn_val)
                 NumNotices2methode[NumNot].append("EAN > PPN")
-                ark.append(ppn2ark(NumNot,ppn_val,ean,titre,auteur,date))
+                ark.append(ppn2ark(NumNot,ppn_val,ean_propre,titre_nett,auteur_nett,date_nett))
     #Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK déclaré comme équivalent --> dans ce cas on récupère l'ARK
     Listeppn = ",".join([ppn for ppn in Listeppn if ppn != ""])
     ark = ",".join([ark1 for ark1 in ark if ark1 != ""])
@@ -881,7 +890,8 @@ def ppn2ark(NumNot,ppn,isbn,titre,auteur,date):
             for frbnf in record.xpath("//bnf-onto:FRBNF",namespaces=main.nsSudoc):
                 frbnf_val = frbnf.text
                 NumNotices2methode[NumNot].append("PPN > FRBNF")
-                ark = frbnf2ark(NumNot,frbnf_val,isbn,titre,auteur,date)
+                temp_record = Bib_record([NumNot,frbnf_val,"",isbn,"",titre,auteur,date,"",""],1)
+                ark = frbnf2ark(temp_record)
     return ark
 
 def add_to_conversionIsbn(NumNot,isbn_init,isbn_trouve,via_Sudoc=False):
@@ -889,35 +899,36 @@ def add_to_conversionIsbn(NumNot,isbn_init,isbn_trouve,via_Sudoc=False):
     NumNotices_conversionISBN[NumNot]["isbn trouvé"] = isbn_trouve
     NumNotices_conversionISBN[NumNot]["via Sudoc"] = str(via_Sudoc)
 
-def isbn2ark(NumNot,isbn_init,isbn,titre,auteur,date):
+
+def isbn2ark(NumNot,isbn_init,isbn_propre,isbn_converti,titre_nett,auteur_nett,date_nett):
     #Recherche sur l'ISBN tel que saisi dans la source
-    resultatsIsbn2ARK = isbn2sru(NumNot,isbn_init,titre,auteur,date)
+    resultatsIsbn2ARK = isbn2sru(NumNot,isbn_init,titre_nett,auteur_nett,date_nett)
     
     #Requête sur l'ISBN dans le SRU, avec contrôle sur Titre ou auteur
-    if (resultatsIsbn2ARK == "" and isbn_init != isbn):
-        resultatsIsbn2ARK = isbn2sru(NumNot,isbn,titre,auteur,date)
+    if (resultatsIsbn2ARK == "" and isbn_init != isbn_propre):
+        resultatsIsbn2ARK = isbn2sru(NumNot,isbn_propre,titre_nett,auteur_nett,date_nett)
 
-    isbnConverti = conversionIsbn(isbn)
+    #isbnConverti = conversionIsbn(input_record.isbn.propre)
 #Si pas de résultats : on convertit l'ISBN en 10 ou 13 et on relance une recherche dans le catalogue BnF
     if (resultatsIsbn2ARK == ""):
-        resultatsIsbn2ARK = isbn2sru(NumNot,isbnConverti,titre,auteur,date)
+        resultatsIsbn2ARK = isbn2sru(NumNot,isbn_converti,titre_nett,auteur_nett,date_nett)
         if (resultatsIsbn2ARK != ""):
-            add_to_conversionIsbn(NumNot,isbn_init,isbnConverti,False)
+            add_to_conversionIsbn(NumNot,isbn_init,isbn_converti,False)
 #Si pas de résultats et ISBN 13 : on recherche sur EAN
-    if (resultatsIsbn2ARK == "" and len(isbn)==13):
-        resultatsIsbn2ARK = ean2ark(NumNot,isbn,titre,auteur,date)
-    if (resultatsIsbn2ARK == "" and len(isbnConverti) == 13):
-        resultatsIsbn2ARK = ean2ark(NumNot,isbnConverti,titre,auteur,date)
+    if (resultatsIsbn2ARK == "" and len(isbn_propre)==13):
+        resultatsIsbn2ARK = ean2ark(NumNot,isbn_propre,titre_nett,auteur_nett,date_nett)
+    if (resultatsIsbn2ARK == "" and len(isbn_converti) == 13):
+        resultatsIsbn2ARK = ean2ark(NumNot,isbn_converti,titre_nett,auteur_nett,date_nett)
         if (resultatsIsbn2ARK != ""):
-            add_to_conversionIsbn(NumNot,isbn_init,isbnConverti,False)
+            add_to_conversionIsbn(NumNot,isbn_init,isbn_converti,False)
 
 #Si pas de résultats et ISBN 13 : on recherche l'ISBN dans tous les champs (dont les données d'exemplaire)
     if (resultatsIsbn2ARK == ""):
-        resultatsIsbn2ARK = isbn_anywhere2sru(NumNot,isbn,titre,auteur,date)
-    if (resultatsIsbn2ARK == "" and len(isbnConverti) == 13):
-        resultatsIsbn2ARK = isbn_anywhere2sru(NumNot,isbnConverti,titre,auteur,date)
+        resultatsIsbn2ARK = isbn_anywhere2sru(NumNot,isbn_propre,titre_nett,auteur_nett,date_nett)
+    if (resultatsIsbn2ARK == "" and len(isbn_converti) == 13):
+        resultatsIsbn2ARK = isbn_anywhere2sru(NumNot,isbn_converti,titre_nett,auteur_nett,date_nett)
         if (resultatsIsbn2ARK != ""):
-            add_to_conversionIsbn(NumNot,isbn_init,isbnConverti,False)
+            add_to_conversionIsbn(NumNot,isbn_init,isbn_converti,False)
 
     return resultatsIsbn2ARK
 
@@ -1028,7 +1039,7 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,type
 #date_nett
     #print(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,typeDoc,anywhere,pubPlace_nett, annee_plus_trois)
     listeArk = []
-    titre_propre = nettoyageTitrePourRecherche(titre)
+    titre_propre = funcs.nettoyageTitrePourRecherche(titre)
     #Cas des périodiques = on récupère uniquement la première date
     #Si elle est sur moins de 4 caractères (19.. devenu 19, 196u devenu 196)
     #   -> on tronque
@@ -1076,7 +1087,7 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,type
                     if (recordBNF.find("//mxc:record/mxc:leader",namespaces=main.ns) is not None and recordBNF.find("//mxc:record/mxc:leader",namespaces=main.ns).text is not None):
                         typeRecord_current = recordBNF.find("//mxc:record/mxc:leader",namespaces=main.ns).text[7]
                         if (typeRecord_current == typeRecord):
-                            ark = comparaisonTitres(NumNot,ark_current,"","",nettoyageTitrePourControle(titre),auteur,date_nett,numeroTome,recordBNF,"Titre-Auteur-Date" + index)
+                            ark = comparaisonTitres(NumNot,ark_current,"","",funcs.nettoyageTitrePourControle(titre),auteur,date_nett,numeroTome,recordBNF,"Titre-Auteur-Date" + index)
                             if (date_nett != ""):
                                 ark = checkDate(ark,date_nett,recordBNF)
                             if (ark != ""):
@@ -1109,7 +1120,7 @@ def tad2ppn(NumNot,titre,auteur,auteur_nett,date,typeRecord):
     #Recherche dans DoMyBiblio : Titre & Auteur dans tous champs, Date dans un champ spécifique
     Listeppn = []
     ark = []
-    titre = nettoyageTitrePourRecherche(titre).replace(" ","+")
+    titre = funcs.nettoyageTitrePourRecherche(titre).replace(" ","+")
     auteur_nett = auteur_nett.replace(" ","+")
     typeRecord4DoMyBiblio = "all"
     """all (pour tous les types de document), 
@@ -1317,76 +1328,50 @@ def monimpr_item(row,n,form_bib2ark,parametres,liste_reports):
     if (n%100 == 0):
         main.check_access2apis(n,dict_check_apis)
     #print(row)
-#==============================================================================
-#     (NumNot,frbnf,current_ark,isbn,ean,titre,auteur,date,tome,publisher) = extract_cols_from_row(row,
-#         header_columns_init_monimpr)
-#     
-#     isbn_nett = nettoyageIsbnPourControle(isbn)
-#     isbn_propre = nettoyage_isbn(isbn)
-#     ean_nett = nettoyageIsbnPourControle(ean)
-#     ean_propre = nettoyage_isbn(ean)
-#     titre_nett= nettoyageTitrePourControle(titre)
-#     auteur_nett = nettoyageAuteur(auteur, False)
-#     date_nett = nettoyageDate(date)
-#     tome_nett = convert_volumes_to_int(tome)
-#     publisher_nett = nettoyageAuteur(publisher, False)
-#     if (publisher_nett == ""):
-#         publisher_nett = publisher
-#     #Actualisation de l'ARK à partir de l'ARK
-#==============================================================================
+
     input_record = Bib_record(row,1)
-    
     ark = ""
+
     if (input_record.ark_init != ""):
-        ark = ark2ark(input_record.ark_init,input_record.ark_init)
+        ark = ark2ark(input_record)
     
     #A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
-    elif (input_record.frbnf != ""):
-        ark = frbnf2ark(input_record.NumNot,input_record.frbnf,
-                        input_record.isbn_nett,
-                        input_record.titre_nett,
-                        input_record.auteur_nett,
-                        input_record.date_nett)
+    if (ark == "" and input_record.frbnf != ""):
+        ark = frbnf2ark(input_record)
         ark = ",".join([ark1 for ark1 in ark.split(",") if ark1 != ''])
     #A défaut, recherche sur ISBN
     #Si plusieurs résultats, contrôle sur l'auteur
-    if (ark == "" and input_record.isbn_nett != ""):
-        ark = isbn2ark(input_record.NumNot,input_record.isbn_init,
-                       input_record.isbn_propre,
-                       input_record.titre_nett,
-                       input_record.auteur_nett,
-                       input_record.date_nett)
+    if (ark == "" and input_record.isbn.nett != ""):
+        ark = isbn2ark(input_record.NumNot,input_record.isbn.init, input_record.isbn.propre,input_record.isbn.converti,
+                       input_record.titre_nett, input_record.auteur_nett, input_record.date_nett)
 
     #Si la recherche ISBN + contrôle Titre/Date n'a rien donné -> on cherche ISBN seul
-    if (ark == "" and input_record.isbn_nett != ""):
-        ark = isbn2ark(input_record.NumNot,input_record.isbn_init,input_record.isbn_propre,"","","")
+    if (ark == "" and input_record.isbn.nett != ""):
+        ark = isbn2ark(input_record.NumNot,input_record.isbn.init,input_record.isbn_propre,"","","")
 
     #Si pas de résultats : on relance une recherche dans le Sudoc    
-    if (ark == "" and input_record.isbn_nett != ""):
-        ark = isbn2sudoc(input_record.NumNot,input_record.isbn_propre,
-                         input_record.isbn_converti,
-                         input_record.titre,input_record.auteur,
-                         input_record.date)
+    if (ark == "" and input_record.isbn.nett != ""):
+        ark = isbn2sudoc(input_record)
 
     #A défaut, recherche sur EAN
-    if (ark == "" and input_record.ean != ""):
-        ark = ean2ark(input_record.NumNot,input_record.ean_propre,
+    if (ark == "" and input_record.ean.nett != ""):
+        ark = ean2ark(input_record.NumNot,input_record.ean.propre,
                       input_record.titre_nett,
                       input_record.auteur_nett,
                       input_record.date_nett)
 
     #Si la recherche EAN + contrôles Titre/Date n'a rien donné -> on cherche EAN seul
-    if (ark == "" and input_record.ean != ""):
-        ark = ean2ark(input_record.NumNot,input_record.ean_propre,"","","")
+    if (ark == "" and input_record.ean.nett != ""):
+        ark = ean2ark(input_record.NumNot,input_record.ean.propre,"","","")
 
     #Si pas de résultats : on relance une recherche dans le Sudoc    
     if (ark == ""):
-        ark = ean2sudoc(input_record.NumNot,input_record.ean_propre,
-                        input_record.titre,input_record.auteur,input_record.date)
+        ark = ean2sudoc(input_record.NumNot,input_record.ean.propre,
+                        input_record.titre_nett,input_record.auteur_nett,input_record.date_nett)
 
     #Si pas de résultats : on relance une recherche dans le Sudoc avec l'EAN seul 
     if (ark == ""):
-        ark = ean2sudoc(input_record.NumNot,input_record.ean_propre,"","","")
+        ark = ean2sudoc(input_record.NumNot,input_record.ean.propre,"","","")
 
 
     #A défaut, recherche sur Titre-Auteur-Date
@@ -1418,11 +1403,7 @@ def monimpr_item(row,n,form_bib2ark,parametres,liste_reports):
         typeConversionNumNot = ",".join(NumNotices2methode[input_record.NumNot])
         if (len(set(NumNotices2methode[input_record.NumNot])) == 1):
             typeConversionNumNot = list(set(NumNotices2methode[input_record.NumNot]))[0]
-    liste_metadonnees = [input_record.NumNot,nbARK,ark,typeConversionNumNot,
-                         input_record.ark_init,input_record.frbnf,
-                         input_record.isbn_init,input_record.ean,input_record.titre,
-                         input_record.auteur,input_record.date,input_record.tome, 
-                         input_record.publisher]
+    liste_metadonnees = [input_record.NumNot,nbARK,ark,typeConversionNumNot] + input_record.metas_init
     if (parametres["meta_bib"] == 1):
         liste_metadonnees.extend(ark2metadc(ark))
     if (parametres["file_nb"] ==  1):
@@ -1454,44 +1435,36 @@ def dvd_item(row,n,form_bib2ark,parametres,liste_reports):
         assert main.control_columns_number(form_bib2ark,row,header_columns_init_cddvd)
     if (n%100 == 0):
         main.check_access2apis(n,dict_check_apis)
-    (NumNot,frbnf,current_ark,ean,no_commercial,titre,auteur,date, publisher) = extract_cols_from_row(row,
-        header_columns_init_cddvd)
-    ean_nett = nettoyageIsbnPourControle(ean)
-    ean_propre = nettoyage_isbn(ean)
-    no_commercial_propre = nettoyage_no_commercial(no_commercial)
-    titre_nett= nettoyageTitrePourControle(titre)
-    auteur_nett = nettoyageAuteur(auteur,False)
-    date_nett = nettoyageDate(date)
-    publisher_nett = nettoyageAuteur(publisher, False)
-    if (publisher_nett == ""):
-        publisher_nett = publisher
+
+    input_record = Bib_record(row,2)
+    
     #Actualisation de l'ARK à partir de l'ARK
     ark = ""
-    if (current_ark != ""):
-        ark = ark2ark(NumNot,current_ark)
+    if (input_record.ark_init != ""):
+        ark = ark2ark(input_record)
     
     #A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
-    elif (frbnf != ""):
-        ark = frbnf2ark(NumNot,frbnf,ean_nett,titre_nett,auteur_nett,date_nett)
+    elif (input_record.frbnf != ""):
+        ark = frbnf2ark(input_record)
         ark = ",".join([ark1 for ark1 in ark.split(",") if ark1 != ''])
     #A défaut, recherche sur EAN
     #Si plusieurs résultats, contrôle sur l'auteur
-    if (ark == "" and ean_nett != ""):
-        ark = ean2ark(NumNot,ean_propre,titre_nett,auteur_nett,date_nett)
+    if (ark == "" and input_record.ean.nett != ""):
+        ark = ean2ark(input_record.NumNot,input_record.ean.propre,input_record.titre_nett,input_record.auteur_nett,input_record.date_nett)
     #Si la recherche EAN + contrôle n'a rien donné -> on cherche EAN seul
-    if (ark == "" and ean_nett != ""):
-        ark = ean2ark(NumNot,ean_propre,"","","")
+    if (ark == "" and input_record.ean.nett != ""):
+        ark = ean2ark(input_record.NumNot,input_record.ean.propre,"","","")
 
     #A défaut, recherche sur no_commercial
-    if (ark == "" and no_commercial != ""):
-        ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,False, publisher_nett)
+    if (ark == "" and input_record.no_commercial != ""):
+        ark = no_commercial2ark(input_record.NumNot,input_record.no_commercial_propre,input_record.titre_nett,input_record.auteur_nett,input_record.date_nett,False, input_record.publisher_nett)
 
     #Si pas de résultats : on relance une recherche dans le Sudoc    
-    if (ark == ""):
-        ark = ean2sudoc(NumNot,ean_propre,titre,auteur,date)
+    if (ark == "" and input_record.ean.nett != ""):
+        ark = ean2sudoc(input_record.NumNot,input_record.ean.propre,input_record.titre_nett,input_record.auteur_nett,input_record.date_nett)
     #Si pas de résultats : on relance une recherche dans le Sudoc    
-    if (ark == ""):
-        ark = ean2sudoc(NumNot,ean_propre,"","","")
+    if (ark == "" and input_record.ean.nett != ""):
+        ark = ean2sudoc(input_record.NumNot,input_record.ean.propre,"","","")
 
     
     #Si la recherche N° commercial + contrôle n'a rien donné -> on cherche N° commercial seul
@@ -1503,16 +1476,16 @@ def dvd_item(row,n,form_bib2ark,parametres,liste_reports):
     #    ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,True, publisher_nett)
         
     #A défaut, recherche sur Titre-Auteur-Date
-    if (ark == "" and titre != ""):
-        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m","r h",False)
+    if (ark == "" and input_record.titre_nett != ""):
+        ark = tad2ark(input_record.NumNot,input_record.titre_nett,input_record.auteur,input_record.auteur_nett,input_record.date_nett,"","m","r h",False)
     #A défaut, on recherche Titre-Auteur dans tous champs (+Date comme date)
-    if (ark == "" and titre != ""):
-        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m","r h",True)
+    if (ark == "" and input_record.titre_nett != ""):
+        ark = tad2ark(input_record.NumNot,input_record.titre_nett,input_record.auteur,input_record.auteur_nett,input_record.date_nett,"","m","r h",True)
     """
     if (ark == "" and titre != ""):
         ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"cddvd")
     """
-    print(str(n) + "." + NumNot + " : " + ark)
+    print(str(n) + "." + input_record.NumNot + " : " + ark)
     nbARK = len(ark.split(","))
     if (ark == ""):
         nbARK = 0   
@@ -1522,12 +1495,11 @@ def dvd_item(row,n,form_bib2ark,parametres,liste_reports):
         nb_notices_nb_ARK[nbARK] += 1
 
     typeConversionNumNot = ""
-    if (NumNot in NumNotices2methode):
-        typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
-        if (len(set(NumNotices2methode[NumNot])) == 1):
-            typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
-    liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,frbnf,current_ark,ean,
-                 no_commercial_propre,titre,auteur,date, publisher]
+    if (input_record.NumNot in NumNotices2methode):
+        typeConversionNumNot = ",".join(NumNotices2methode[input_record.NumNot])
+        if (len(set(NumNotices2methode[input_record.NumNot])) == 1):
+            typeConversionNumNot = list(set(NumNotices2methode[input_record.NumNot]))[0]
+    liste_metadonnees = [input_record.NumNot,nbARK,ark,typeConversionNumNot] + input_record.metas_init
     if (parametres["meta_bib"] == 1):
         liste_metadonnees.extend(ark2metadc(ark))
     if (parametres["file_nb"] ==  1):
@@ -1560,37 +1532,28 @@ def cd_item(row,n,form_bib2ark,parametres,liste_reports):
         assert main.control_columns_number(form_bib2ark,row,header_columns_init_cddvd)
     if (n%100 == 0):
         main.check_access2apis(n,dict_check_apis)
-    (NumNot,frbnf,current_ark,ean,no_commercial,titre,auteur,date, publisher) = extract_cols_from_row(row,
-        header_columns_init_cddvd)
-    ean_nett = nettoyageIsbnPourControle(ean)
-    ean_propre = nettoyage_isbn(ean)
-    no_commercial_propre = nettoyage_no_commercial(no_commercial)
-    titre_nett= nettoyageTitrePourControle(titre)
-    auteur_nett = nettoyageAuteur(auteur,False)
-    date_nett = nettoyageDate(date)
-    publisher_nett = nettoyageAuteur(publisher, False)
-    if (publisher_nett == ""):
-        publisher_nett = publisher
+
+    input_record = Bib_record(row,3)
     #Actualisation de l'ARK à partir de l'ARK
     ark = ""
-    if (current_ark != ""):
-        ark = ark2ark(NumNot,current_ark)
+    if (input_record.ark_init != ""):
+        ark = ark2ark(input_record)
     
     #A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
-    elif (frbnf != ""):
-        ark = frbnf2ark(NumNot,frbnf,ean_nett,titre_nett,auteur_nett,date_nett)
+    elif (input_record.frbnf != ""):
+        ark = frbnf2ark(input_record)
         ark = ",".join([ark1 for ark1 in ark.split(",") if ark1 != ''])
     #A défaut, recherche sur EAN
     #Si plusieurs résultats, contrôle sur l'auteur
-    if (ark == "" and ean_nett != ""):
-        ark = ean2ark(NumNot,ean_propre,titre_nett,auteur_nett,date_nett)
+    if (ark == "" and input_record.ean.nett != ""):
+        ark = ean2ark(input_record.NumNot,input_record.ean.propre,input_record.titre_nett,input_record.auteur_nett,input_record.date_nett)
     #Si la recherche EAN + contrôle n'a rien donné -> on cherche EAN seul
-    if (ark == "" and ean_nett != ""):
-        ark = ean2ark(NumNot,ean_propre,"","","")
+    if (ark == "" and input_record.ean.nett != ""):
+        ark = ean2ark(input_record.NumNot,input_record.ean.propre,"","","")
 
     #A défaut, recherche sur no_commercial
-    if (ark == "" and no_commercial != ""):
-        ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,False, publisher_nett)
+    if (ark == "" and input_record.no_commercial != ""):
+        ark = no_commercial2ark(input_record.NumNot,input_record.no_commercial_propre,input_record.titre_nett,input_record.auteur_nett,input_record.date_nett,False, input_record.publisher_nett)
     
     #Si la recherche N° commercial + contrôle n'a rien donné -> on cherche N° commercial seul
     #if (ark == "" and no_commercial != ""):
@@ -1601,16 +1564,16 @@ def cd_item(row,n,form_bib2ark,parametres,liste_reports):
     #    ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,True, publisher_nett)
         
     #A défaut, recherche sur Titre-Auteur-Date
-    if (ark == "" and titre != ""):
-        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m","g r",False)
+    if (ark == "" and input_record.titre != ""):
+        ark = tad2ark(input_record.NumNot,input_record.titre,input_record.auteur,input_record.auteur_nett,input_record.date_nett,"","m","g r",False)
     #A défaut, on recherche Titre-Auteur dans tous champs (+Date comme date)
-    if (ark == "" and titre != ""):
-        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","m","g r",True)
+    if (ark == "" and input_record.titre != ""):
+        ark = tad2ark(input_record.NumNot,input_record.titre,input_record.auteur,input_record.auteur_nett,input_record.date_nett,"","m","g r",True)
     """
     if (ark == "" and titre != ""):
         ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"cddvd")
     """
-    print(str(n) + "." + NumNot + " : " + ark)
+    print(str(n) + "." + input_record.NumNot + " : " + ark)
     nbARK = len(ark.split(","))
     if (ark == ""):
         nbARK = 0   
@@ -1620,12 +1583,11 @@ def cd_item(row,n,form_bib2ark,parametres,liste_reports):
         nb_notices_nb_ARK[nbARK] += 1
 
     typeConversionNumNot = ""
-    if (NumNot in NumNotices2methode):
-        typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
-        if (len(set(NumNotices2methode[NumNot])) == 1):
-            typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
-    liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,frbnf,current_ark,ean,
-                 no_commercial_propre,titre,auteur,date, publisher]
+    if (input_record.NumNot in NumNotices2methode):
+        typeConversionNumNot = ",".join(NumNotices2methode[input_record.NumNot])
+        if (len(set(NumNotices2methode[input_record.NumNot])) == 1):
+            typeConversionNumNot = list(set(NumNotices2methode[input_record.NumNot]))[0]
+    liste_metadonnees = [input_record.NumNot,nbARK,ark,typeConversionNumNot] + input_record.metas_init
     if (parametres["meta_bib"] == 1):
         liste_metadonnees.extend(ark2metadc(ark))
     if (parametres["file_nb"] ==  1):
@@ -1661,34 +1623,26 @@ def perimpr_item(row,n,form_bib2ark,parametres,liste_reports):
     if (n%100 == 0):
         main.check_access2apis(n,dict_check_apis)
     #print(row)
-    (NumNot,frbnf,current_ark,issn,titre,auteur,date,pubPlace) = extract_cols_from_row(row,
-        header_columns_init_perimpr)
-
-    issn_nett = nettoyageIssnPourControle(issn)
-    issn_propre = nettoyage_isbn(issn)
-    titre_nett= nettoyageTitrePourControle(titre)
-    auteur_nett = nettoyageAuteur(auteur,False)
-    date_nett = nettoyageDate(date)
-    pubPlace_nett = nettoyagePubPlace(pubPlace)
+    input_record = Bib_record(row,4)
     #Actualisation de l'ARK à partir de l'ARK
     ark = ""
-    if (current_ark != ""):
-        ark = ark2ark(NumNot,current_ark)
+    if (input_record.ark_init != ""):
+        ark = ark2ark(input_record)
     
     #A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
-    elif (frbnf != ""):
-        ark = frbnf2ark(NumNot,frbnf,issn_nett,titre_nett,auteur_nett,date_nett)
+    if (ark == "" and input_record.frbnf != ""):
+        ark = frbnf2ark(input_record)
         ark = ",".join(ark1 for ark1 in ark.split(",") if ark1 != '')
     #A défaut, recherche sur ISSN
-    if (ark == "" and issn_nett != ""):
-        ark = issn2ark(NumNot,issn,issn_propre,titre_nett,auteur_nett,date_nett)
+    if (ark == "" and input_record.issn.nett != ""):
+        ark = issn2ark(input_record.NumNot,input_record.issn.init,input_record.issn.propre,input_record.titre_nett,input_record.auteur_nett,input_record.date_nett)
     #A défaut, recherche sur Titre-Auteur-Date
-    if (ark == "" and titre != ""):
-        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","s","a",False,pubPlace_nett)
+    if (ark == "" and input_record.titre != ""):
+        ark = tad2ark(input_record.NumNot,input_record.titre_nett,input_record.auteur,input_record.auteur_nett,input_record.date_nett,"","s","a",False,input_record.pubPlace_nett)
     #A défaut, recherche sur T-A-D tous mots
-    if (ark == "" and titre != ""):
-        ark = tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,"","s","a",True,pubPlace_nett)
-    print(str(n) + ". " + NumNot + " : " + ark)
+    if (ark == "" and input_record.titre != ""):
+        ark = tad2ark(input_record.NumNot,input_record.titre_nett,input_record.auteur,input_record.auteur_nett,input_record.date_nett,"","s","a",True,input_record.pubPlace_nett)
+    print(str(n) + ". " + input_record.NumNot + " : " + ark)
     nbARK = len(ark.split(","))
     if (ark == ""):
         nbARK = 0   
@@ -1698,11 +1652,11 @@ def perimpr_item(row,n,form_bib2ark,parametres,liste_reports):
         nb_notices_nb_ARK[nbARK] += 1
                          
     typeConversionNumNot = ""
-    if (NumNot in NumNotices2methode):
-        typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
-        if (len(set(NumNotices2methode[NumNot])) == 1):
-            typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
-    liste_metadonnees = [NumNot,nbARK,ark,typeConversionNumNot,frbnf,current_ark,issn,titre,auteur,date,pubPlace]
+    if (input_record.NumNot in NumNotices2methode):
+        typeConversionNumNot = ",".join(NumNotices2methode[input_record.NumNot])
+        if (len(set(NumNotices2methode[input_record.NumNot])) == 1):
+            typeConversionNumNot = list(set(NumNotices2methode[input_record.NumNot]))[0]
+    liste_metadonnees = [input_record.NumNot,nbARK,ark,typeConversionNumNot] + input_record.metas_init
     if (parametres["meta_bib"] == 1):
         liste_metadonnees.extend(ark2metadc(ark))
     if (parametres["file_nb"] ==  1):
