@@ -18,7 +18,7 @@ import main as main
 import noticesbib2arkBnF as bib2ark
 import os
 import re
-import codecs
+import funcs as funcs
 
 version = 0.02
 programID = "ark2records"
@@ -128,7 +128,7 @@ def bib2aut(XMLrecord, ark, parametres):
         if (source == "sudoc"):
             source = "idref"
         url = nn2url(nna, "aut", parametres, source)
-        (test,record) = bib2ark.testURLetreeParse(url)
+        (test,record) = funcs.testURLetreeParse(url)
         if (test and source=="bnf" and record.find("//srw:recordData/mxc:record",namespaces=main.ns) is not None):
             XMLrec = record.xpath(".//srw:recordData/mxc:record",namespaces=main.ns)[0]
             record2file(parametres["aut_file"], XMLrec, parametres["format_file"])
@@ -202,7 +202,7 @@ def extract1record(row,j,form,headers,parametres):
     if (len(ark)>1 and ark not in listeARK_BIB):
         print(str(j) + ". " + ark)
         listeARK_BIB.append(ark)
-        (test,page) = bib2ark.testURLetreeParse(ark2url(ark, parametres))
+        (test,page) = funcs.testURLetreeParse(ark2url(ark, parametres))
         if(test):
             nbResults  = page2nbresults(page,ark)
             if (nbResults == "1" and "ark" in ark):

@@ -25,7 +25,9 @@ import noticesbib2arkBnF as bib2ark
 import noticesaut2arkBnF as aut2ark
 import marc2tables as marc2tables
 import ark2records as ark2records
+import funcs as funcs
 import preferences
+
 
 #import matplotlib.pyplot as plt
 
@@ -102,8 +104,8 @@ def check_access2apis(i,dict_report):
     (en supposant que si une requête d'exemple fonctionne, tout fonctionne"""
     testBnF = True
     testAbes = True
-    testBnF = bib2ark.testURLretrieve("http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.recordid%20all%20%2230000001%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")
-    testAbes = bib2ark.testURLretrieve("https://www.sudoc.fr/services/isbn2ppn/0195141156")
+    testBnF = funcs.testURLretrieve("http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.recordid%20all%20%2230000001%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")
+    testAbes = funcs.testURLretrieve("https://www.sudoc.fr/services/isbn2ppn/0195141156")
     dict_report["testAbes"][i] = testAbes
     dict_report["testBnF"][i] = testBnF
 

@@ -22,6 +22,7 @@ import noticesaut2arkBnF as aut2ark
 import pymarc as mc
 import xml
 import main as main
+import funcs as funcs
 import chardet
 from chardet.universaldetector import UniversalDetector
 

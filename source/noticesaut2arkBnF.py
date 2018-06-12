@@ -25,6 +25,7 @@ import noticesbib2arkBnF as bib2ark
 import marc2tables as marc2tables
 import ark2records as ark2records
 import main as main
+import funcs as funcs
 
 #import matplotlib.pyplot as plt
 
@@ -123,8 +124,8 @@ def ark2metadc(ark):
     return metas
 
 def ark2metas(ark, unidec=True):
-    recordBNF_url = bib2ark.url_requete_sru('bib.persistentid any "' + ark + '"')
-    (test,record) = bib2ark.testURLetreeParse(recordBNF_url)
+    recordBNF_url = funcs.url_requete_sru('bib.persistentid any "' + ark + '"')
+    (test,record) = funcs.testURLetreeParse(recordBNF_url)
     accesspoint = ""
     accesspoint_compl = ""
     dates = ""
@@ -150,8 +151,8 @@ def ark2metas(ark, unidec=True):
 
 
 def isni2ark(NumNot, isni, origine="isni"):
-    url = bib2ark.url_requete_sru('aut.isni all "' + isni + '" and aut.status any "sparse validated"')
-    (test,page) = bib2ark.testURLetreeParse(url)
+    url = funcs.url_requete_sru('aut.isni all "' + isni + '" and aut.status any "sparse validated"')
+    (test,page) = funcs.testURLetreeParse(url)
     nv_ark = ""
     if (test == True):
         if (page.find("//srw:recordIdentifier", namespaces=main.ns) is not None):
@@ -164,7 +165,7 @@ def isni2ark(NumNot, isni, origine="isni"):
 def accesspoint2isniorg(NumNot, nom_nett, prenom_nett, date_debut_nett, date_fin_nett):
     url = "http://isni.oclc.nl/sru/?query=pica.nw%3D%22" + urllib.parse.quote(" ".join([nom_nett, prenom_nett, date_debut_nett])) + "%22&operation=searchRetrieve&recordSchema=isni-b"
     isnis = []
-    (test,records) = bib2ark.testURLetreeParse(url)
+    (test,records) = funcs.testURLetreeParse(url)
     if (test == True):
         for rec in records.xpath("//srw:records/srw:record", namespaces=main.nsisni):
             isni = rec.find("srw:recordData//isniURI", namespaces=main.nsisni).text
@@ -287,7 +288,7 @@ def align_from_bib_item(row,n,form_aut2ark,parametres,liste_reports):
 #             titre = row[4]
 #==============================================================================
     titre_nett = main.clean_string(titre, False, True)
-    pubDate_nett = bib2ark.nettoyageDate(pubDate)
+    pubDate_nett = funcs.nettoyageDate(pubDate)
 #==============================================================================
 #             isni = row[5]
 #             nom = row[6]
@@ -371,8 +372,8 @@ def nettoyageArk(ark):
 def arkAut2arkAut(NumNot,ark):
     """Actualisation d'un ARK de notice d'autorité"""
     
-    url = bib2ark.url_requete_sru('aut.persistentid all "' + ark + '"')
-    (test,page) = bib2ark.testURLetreeParse(url)
+    url = funcs.url_requete_sru('aut.persistentid all "' + ark + '"')
+    (test,page) = funcs.testURLetreeParse(url)
     nv_ark = ""
     if (test == True):
         if (page.find("//srw:recordIdentifier", namespaces=main.ns) is not None):
@@ -383,8 +384,8 @@ def arkAut2arkAut(NumNot,ark):
 
 def arkBib2arkAut(NumNot,arkBib, nom, prenom, date_debut):
     """Identifier un ARK de notice d'autorité à partir d'un ARK de notice BIB + contrôle sur le nom"""
-    url = bib2ark.url_requete_sru('bib.persistentid all "' + arkBib + '"')
-    (test,page) = bib2ark.testURLetreeParse(url)
+    url = funcs.url_requete_sru('bib.persistentid all "' + arkBib + '"')
+    (test,page) = funcs.testURLetreeParse(url)
     listeArk = ""
     if (test == True):
         for record in page.xpath("//srw:recordData/mxc:record",namespaces=main.ns):
@@ -396,8 +397,8 @@ def nettoyage_isni(isni):
     if (isni[0:20] == "http://www.isni.org"):
         isni = isni[20:36]
     else:
-        isni = bib2ark.nettoyage(isni)
-    for lettre in bib2ark.lettres:
+        isni = funcs.nettoyage(isni)
+    for lettre in funcs.lettres:
         isni = isni.replace(lettre,"")
     return isni
 
@@ -408,15 +409,15 @@ def nettoyageFRBNF(frbnf):
     frbnf_nett = ""
     if (frbnf[0:4].lower() == "frbn"):
         frbnf_nett = unidecode(frbnf.lower())
-    for signe in bib2ark.ponctuation:
+    for signe in funcs.ponctuation:
         frbnf_nett = frbnf_nett.split(signe)[0]
     return frbnf_nett
 
 def frbnfAut2arkAut(NumNot,frbnf,nom, prenom, date_debut):
     ark = ""
     frbnf = nettoyageFRBNF(frbnf)
-    url = bib2ark.url_requete_sru('aut.otherid all "' + frbnf + '"')
-    (test,page) = bib2ark.testURLetreeParse(url)
+    url = funcs.url_requete_sru('aut.otherid all "' + frbnf + '"')
+    (test,page) = funcs.testURLetreeParse(url)
     if (test == True):
         nb_resultats = int(page.find("//srw:numberOfRecords", namespaces=main.ns).text)
         if (nb_resultats == 0):
@@ -434,22 +435,22 @@ def frbnfBib2arkAut(NumNot,frbnf,nom,prenom,date_debut):
     listeArk = []
     systemid_full = frbnf.lower().replace("f","").replace("r","").replace("b","").replace("n","")
     nnb_possible = systemid_full[0:8]
-    url = bib2ark.url_requete_sru('bib.recordid all "' + nnb_possible + '"')
-    (test,page) = bib2ark.testURLetreeParse(url)
+    url = funcs.url_requete_sru('bib.recordid all "' + nnb_possible + '"')
+    (test,page) = funcs.testURLetreeParse(url)
     if (test == True):
         for record in page.xpath("//srw:recordData",namespaces=main.ns):
             listeArk.extend(extractARKautfromBIB(record,nom,prenom,date_debut))
     if (listeArk == []):
-        url = bib2ark.url_requete_sru('bib.otherid all "' + frbnf + '" and bib.author all "' + nom + '"')
-        (test,page) = bib2ark.testURLetreeParse(url)
+        url = funcs.url_requete_sru('bib.otherid all "' + frbnf + '" and bib.author all "' + nom + '"')
+        (test,page) = funcs.testURLetreeParse(url)
         if (test == True):
             for record in page.xpath("//srw:recordData",namespaces=main.ns):
                 listeArk.extend(extractARKautfromBIB(record,nom,prenom,date_debut))
     if (listeArk == []):        
         systemid1 = systemid_full[0:9]
         systemid2 = systemid_full[0:8]
-        url = bib2ark.url_requete_sru('bib.otherid any "' + systemid1 + " " + systemid2 + '" and bib.author all "' + nom + '"')
-        (test,page) = bib2ark.testURLetreeParse(url)
+        url = funcs.url_requete_sru('bib.otherid any "' + systemid1 + " " + systemid2 + '" and bib.author all "' + nom + '"')
+        (test,page) = funcs.testURLetreeParse(url)
         if (test == True):
             for record in page.xpath("//srw:recordData",namespaces=main.ns):
                 listeArk.extend(extractARKautfromBIB(record,nom,prenom,date_debut))
@@ -474,8 +475,8 @@ def rechercheNNA(NumNot,nna,nom):
         #pb_frbnf_source.write("\t".join[NumNot,nnb] + "\n")
         ark = "Pb FRBNF"
     elif (10000000 < int(nna) < 25000000):
-        url = bib2ark.url_requete_sru('aut.recordid any "' + nna + '"')
-        (test,page) = bib2ark.testURLetreeParse(url)
+        url = funcs.url_requete_sru('aut.recordid any "' + nna + '"')
+        (test,page) = funcs.testURLetreeParse(url)
         if (test == True):
             for record in page.xpath("//srw:records/srw:record", namespaces=main.ns):
                 ark_current = record.find("srw:recordIdentifier",namespaces=main.ns).text
@@ -483,10 +484,10 @@ def rechercheNNA(NumNot,nna,nom):
     return ark
 
 def systemid2ark(NumNot,systemid,tronque,nom):
-    url = bib2ark.url_requete_sru('aut.otherid all "' + systemid + '"')
+    url = funcs.url_requete_sru('aut.otherid all "' + systemid + '"')
     #url = "http://catalogueservice.bnf.fr/SRU?version=1.2&operation=searchRetrieve&query=NumNotice%20any%20%22" + systemid + "%22&recordSchema=InterXMarc_Complet&maximumRecords=1000&startRecord=1"
     listeARK = []
-    (test,page) = bib2ark.testURLetreeParse(url)
+    (test,page) = funcs.testURLetreeParse(url)
     if (test):
         for record in page.xpath("//srw:records/srw:record", namespaces=main.ns):
             ark_current = record.find("srw:recordIdentifier",namespaces=main.ns).text
@@ -516,8 +517,8 @@ def systemid2ark(NumNot,systemid,tronque,nom):
 def relancerNNA_nomAuteur(NumNot,systemid,nom):
     listeArk = []
     if (nom != "" and nom is not None):
-        urlSRU = bib2ark.url_requete_sru('aut.accesspoint all "' + nom + '" and aut.otherid all "' + systemid + '"')
-        (test,pageSRU) = bib2ark.testURLetreeParse(urlSRU)
+        urlSRU = funcs.url_requete_sru('aut.accesspoint all "' + nom + '" and aut.otherid all "' + systemid + '"')
+        (test,pageSRU) = funcs.testURLetreeParse(urlSRU)
         if (test == True):
             for record in pageSRU.xpath("//srw:records/srw:record", namespaces=main.ns):
                 ark = record.find("srw:recordIdentifier", namespaces=main.ns).text
@@ -528,13 +529,13 @@ def relancerNNA_nomAuteur(NumNot,systemid,nom):
 
 def accesspoint2arkAut(NumNot, nom_nett, prenom_nett, date_debut, date_fin):
     listeArk = []
-    url = bib2ark.url_requete_sru('aut.accesspoint adj "' + " ".join([nom_nett, prenom_nett, date_debut]) + '"')
+    url = funcs.url_requete_sru('aut.accesspoint adj "' + " ".join([nom_nett, prenom_nett, date_debut]) + '"')
     testdatefin = False
     if (date_debut == "" and date_fin != ""):
-        url = bib2ark.url_requete_sru('aut.accesspoint adj "' + " ".join([nom_nett, prenom_nett]) + '" and aut.accesspoint all "' + date_fin + '"')
+        url = funcs.url_requete_sru('aut.accesspoint adj "' + " ".join([nom_nett, prenom_nett]) + '" and aut.accesspoint all "' + date_fin + '"')
         testdatefin = True
     #print(url)
-    (test,results) = bib2ark.testURLetreeParse(url)
+    (test,results) = funcs.testURLetreeParse(url)
     if (test):
         for record in results.xpath("//srw:records/srw:record", namespaces=main.ns):
             ark = record.find("srw:recordIdentifier",namespaces=main.ns).text
@@ -557,11 +558,11 @@ def bib2arkAUT(NumNot, titre, pubDate, nom, prenom, date_debut):
     listeArk = []
     if (pubDate == ""):
         pubDate = "-"
-    url = bib2ark.url_requete_sru("".join(['bib.title all "',titre,
+    url = funcs.url_requete_sru("".join(['bib.title all "',titre,
                                           '" and bib.author all "',nom, " ",prenom,
                                           '" and bib.publicationdate all "',pubDate,'"'
                                           ]))
-    (test,results) = bib2ark.testURLetreeParse(url)
+    (test,results) = funcs.testURLetreeParse(url)
     if (test):
         for record in results.xpath("//srw:recordData/mxc:record",namespaces=main.ns):
             listeArk.extend(extractARKautfromBIB(record,nom,prenom,date_debut))
@@ -569,9 +570,9 @@ def bib2arkAUT(NumNot, titre, pubDate, nom, prenom, date_debut):
     return listeArk
 
 def nna2ark(nna):
-    url = bib2ark.url_requete_sru('aut.recordid any ' + nna + 'and aut.status any "sparse validated"')
+    url = funcs.url_requete_sru('aut.recordid any ' + nna + 'and aut.status any "sparse validated"')
     ark = ""
-    (test,record)=bib2ark.testURLetreeParse(url)
+    (test,record)=funcs.testURLetreeParse(url)
     if (test):
         if (record.find("//srw:recordIdentifier",namespaces=main.ns) is not None):
             ark = record.find("//srw:recordIdentifier",namespaces=main.ns).text
@@ -583,8 +584,8 @@ def nna2ark(nna):
 
 def comparerAutBnf(NumNot,ark_current,nna,nom,origineComparaison):
     ark = ""
-    url = bib2ark.url_requete_sru('aut.persistentid all "' + ark_current + '"')
-    (test,recordBNF) = bib2ark.testURLetreeParse(url)
+    url = funcs.url_requete_sru('aut.persistentid all "' + ark_current + '"')
+    (test,recordBNF) = funcs.testURLetreeParse(url)
     if (test == True):
         ark =  compareAccessPoint(NumNot,ark_current,nna,nom,recordBNF)
     return ark

@@ -6,13 +6,24 @@ Created on Mon Jun 11 21:21:17 2018
 Fonctions et classes génériques pour Bibliostratus
 """
 
+from lxml import etree
+from urllib import request
+import urllib.parse
 from unidecode import unidecode
+import urllib.error as error
+import tkinter as tk
+from collections import defaultdict
+import http.client
+import main as main
+
 
 #Quelques listes de signes à nettoyer
 listeChiffres = ["0","1","2","3","4","5","6","7","8","9"]
 lettres = ["a","b","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
 lettres_sauf_x = ["a","b","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","y","z"]
 ponctuation = [".",",",";",":","?","!","%","$","£","€","#","\\","\"","&","~","{","(","[","`","\\","_","@",")","]","}","=","+","*","\/","<",">",")","}"]
+
+url_access_pbs = []
 
 def nettoyage(string,remplacerEspaces=True,remplacerTirets=True):
     """nettoyage des chaines de caractères (titres, auteurs, isbn) : suppression ponctuation, espaces (pour les titres et ISBN) et diacritiques"""
@@ -132,6 +143,14 @@ def nettoyagePubPlace(pubPlace) :
         pubPlace = " ".join(mot for mot in pubPlace if mot != "")
     return pubPlace
 
+
+def RepresentsInt(s):
+    try: 
+        int(s)
+        return True
+    except ValueError:
+        return False
+
 def ltrim(nombre_texte):
     "Supprime les 0 initiaux d'un nombre géré sous forme de chaîne de caractères"
     while(len(nombre_texte) > 1 and nombre_texte[0] == "0"):
@@ -246,8 +265,7 @@ def convert_volumes_to_int(n):
 
 def datePerios(date):
     """Requête sur la date en élargissant sa valeur aux dates approximatives"""
-    date = date.split(" ")
-    date = date[0]
+    date = date.split(" ")[0].split("-")[0]
     return date
 
 def elargirDatesPerios(n):
@@ -259,6 +277,120 @@ def elargirDatesPerios(n):
         liste.append(j+i)
         i += 1
     return " ".join([str(el) for el in liste])
+
+def testURLetreeParse(url):
+    test = True
+    resultat = ""
+    try:
+        resultat = etree.parse(request.urlopen(url))
+    except etree.XMLSyntaxError as err:
+        print(url)
+        print(err)
+        url_access_pbs.append([url,"etree.XMLSyntaxError"])
+        test = False
+    except etree.ParseError as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"etree.ParseError"])
+    except error.URLError as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"urllib.error.URLError"])
+    except ConnectionResetError as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"ConnectionResetError"])
+    except TimeoutError as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"TimeoutError"])
+    except http.client.RemoteDisconnected as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"http.client.RemoteDisconnected"])
+    except http.client.BadStatusLine as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"http.client.BadStatusLine"])
+    except ConnectionAbortedError as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"ConnectionAbortedError"])
+    return (test,resultat)
+
+def testURLretrieve(url):
+    test = True
+    try:
+        request.urlretrieve(url)
+    except error.HTTPError as err:
+        test = False
+    except error.URLError as err:
+        test = False
+    except http.client.RemoteDisconnected as err:
+        test = False
+    except ConnectionAbortedError as err:
+        test = False
+    return test
+
+
+def testURLurlopen(url):
+    test = True
+    resultat = ""
+    try:
+        resultat = request.urlopen(url)
+    except etree.XMLSyntaxError as err:
+        print(url)
+        print(err)
+        url_access_pbs.append([url,"etree.XMLSyntaxError"])
+        test = False
+    except etree.ParseError as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"etree.ParseError"])
+    except error.URLError as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"urllib.error.URLError"])
+    except ConnectionResetError as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"ConnectionResetError"])
+    except TimeoutError as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"TimeoutError"])
+    except http.client.RemoteDisconnected as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"http.client.RemoteDisconnected"])
+    except http.client.BadStatusLine as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"http.client.BadStatusLine"])
+    except ConnectionAbortedError as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url,"ConnectionAbortedError"])
+    return (test,resultat)
+
+
+def url_requete_sru(query,recordSchema="unimarcxchange",maximumRecords="1000",startRecord="1"):
+    url = main.urlSRUroot + urllib.parse.quote(query) +"&recordSchema=" + recordSchema + "&maximumRecords=" + maximumRecords + "&startRecord=" + startRecord + "&origin=bibliostratus"
+    return url
 
 
 class international_id: 
@@ -296,15 +428,15 @@ class Bib_record:
         self.NumNot = input_row[0]
         self.frbnf = input_row[1]
         self.ark_init = input_row[2]
-        self.isbn = ""
-        self.ean = ""
+        self.isbn = international_id("")
+        self.ean = international_id("")
         self.titre = ""
         self.auteur = ""
         self.date = ""
         self.tome = ""
         self.publisher = ""
-        self.no_commercial = ""
-        self.issn = ""
+        self.no_commercial = international_id("")
+        self.issn = international_id("")
         self.pubPlace = ""
         self.metas_init = input_row[1:]
         self.date_debut = ""
@@ -329,7 +461,7 @@ class Bib_record:
         if (option_record == 2 or option_record == 3):
             self.intermarc_type_record = "m"
             self.ean = international_id(input_row[3])
-            self.no_commercial = input_row[4]
+            self.no_commercial = international_id(input_row[4])
             self.titre = titre(input_row[5])
             self.auteur = input_row[6]
             self.date = input_row[7]
@@ -345,16 +477,15 @@ class Bib_record:
             self.pubPlace = input_row[7]
         self.titre_nett= nettoyageTitrePourControle(self.titre.init)
         self.auteur_nett = nettoyageAuteur(self.auteur, False)
-        self.no_commercial_propre = nettoyage_no_commercial(self.no_commercial)
+        self.no_commercial_propre = nettoyage_no_commercial(self.no_commercial.init)
         self.date_nett = nettoyageDate(self.date)
         self.tome_nett = convert_volumes_to_int(self.tome)
         self.publisher_nett = nettoyageAuteur(self.publisher, False)
         if (self.publisher_nett == ""):
             self.publisher_nett = self.publisher
         self.pubPlace_nett = nettoyagePubPlace(self.pubPlace)
-        if (len(str(self.date_nett)) == 4
-            and self.date_nett.isdigit() is True):
-            self.date_debut = datePerios(self.date_nett)
+        self.date_debut = datePerios(self.date_nett)
+        if (RepresentsInt(self.date_debut)==True):
             self.dates_elargies_perios = elargirDatesPerios(int(self.date_debut))
         
         
