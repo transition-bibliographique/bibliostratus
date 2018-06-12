@@ -1032,19 +1032,20 @@ def ppn2metas(ppn):
                 premierauteurPrenom = premierauteurPrenom.split("(")[0]
     return [titre,premierauteurPrenom,premierauteurNom,tousauteurs]
   
-def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,typeDoc="a",anywhere=False,pubPlace_nett="", annee_plus_trois = False):
+#def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,typeDoc="a",anywhere=False,pubPlace_nett="", annee_plus_trois = False):
+def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
     "Fonction d'alignement par Titre-Auteur-Date (et contrôles sur type Notice, sur n° de volume si nécessaire)"
 #En entrée : le numéro de notice, le titre (qu'il faut nettoyer pour la recherche)
 #L'auteur = zone auteur initiale, ou à défaut auteur_nett
 #date_nett
     #print(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,typeDoc,anywhere,pubPlace_nett, annee_plus_trois)
     listeArk = []
-    titre_propre = funcs.nettoyageTitrePourRecherche(titre)
     #Cas des périodiques = on récupère uniquement la première date
     #Si elle est sur moins de 4 caractères (19.. devenu 19, 196u devenu 196)
     #   -> on tronque
-    if (typeRecord == "s" and annee_plus_trois == False):
-        date_nett = datePerios(date_nett)
+    date_nett = input_record.date_nett
+    if (input_record.intermarc_type_record == "s" and annee_plus_trois == False):
+        date_nett = input_record.date_debut
     if (len(str(date_nett)) < 4 and date_nett != ""):
         date_nett += "*"
     param_date = "all"
@@ -1052,8 +1053,12 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,type
     #3 ans avant et 3 ans après
     if (annee_plus_trois == True):
         param_date = "any"
-    if (titre_propre != ""):
-        if (auteur == ""):
+        date_nett = input_record.dates_elargies_perios
+    if (input_record.titre.recherche != ""):
+        auteur = input_record.auteur
+        auteur_nett = input_record.auteur_nett
+        pubPlace_nett = input_record.pubPlace_nett
+        if (input_record.auteur == ""):
             auteur = "-"
         if (date_nett == ""):
             date_nett = "-"
@@ -1061,24 +1066,24 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,type
             auteur_nett = "-"
         if (pubPlace_nett == ""):
             pubPlace_nett = "-"
-        url = url_requete_sru('bib.title all "' + titre_propre + '" and bib.author all "' + auteur + '" and bib.date ' + param_date + ' "' + date_nett + '" and bib.publisher all "' + pubPlace_nett + '" and bib.doctype any "' + typeDoc + '"')
+        url = url_requete_sru('bib.title all "' + input_record.titre.recherche + '" and bib.author all "' + auteur + '" and bib.date ' + param_date + ' "' + date_nett + '" and bib.publisher all "' + pubPlace_nett + '" and bib.doctype any "' + input_record.intermarc_type_doc + '"')
         if (anywhere == True):
-            url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur + ' ' + pubPlace_nett + '" and bib.anywhere ' + param_date + ' "' + date_nett + '" and bib.doctype any "' + typeDoc + '"')
+            url = url_requete_sru('bib.anywhere all "' + input_record.titre.recherche + ' ' + auteur + ' ' + pubPlace_nett + '" and bib.anywhere ' + param_date + ' "' + date_nett + '" and bib.doctype any "' + input_record.intermarc_type_doc + '"')
         (test,results) = testURLetreeParse(url)
         index = ""
         if (results != "" and results.find("//srw:numberOfRecords", namespaces=main.ns).text == "0"):
-            url = url_requete_sru('bib.title all "' + titre_propre + '" and bib.author all "' + auteur_nett + '" and bib.date ' + param_date + ' "' + date_nett + '" and bib.publisher all "' + pubPlace_nett + '" and bib.doctype any "' + typeDoc + '"')
+            url = url_requete_sru('bib.title all "' + input_record.titre.recherche + '" and bib.author all "' + auteur_nett + '" and bib.date ' + param_date + ' "' + date_nett + '" and bib.publisher all "' + pubPlace_nett + '" and bib.doctype any "' + input_record.intermarc_type_doc + '"')
             if (anywhere == True):
-                url = url_requete_sru('bib.anywhere all "' + titre_propre + ' ' + auteur_nett + ' ' + pubPlace_nett + '" and bib.anywhere ' + param_date + ' "' + date_nett + '" and bib.doctype any "' + typeDoc + '"')
+                url = url_requete_sru('bib.anywhere all "' + input_record.titre.recherche + ' ' + auteur_nett + ' ' + pubPlace_nett + '" and bib.anywhere ' + param_date + ' "' + date_nett + '" and bib.doctype any "' + input_record.intermarc_type_doc + '"')
                 index = " dans toute la notice"
             (test,results) = testURLetreeParse(url)
-        if (test == True):
+        if (test):
             i = 1
             total_rec = int(results.find("//srw:numberOfRecords", namespaces=main.ns).text)
             for record in results.xpath("//srw:recordIdentifier",namespaces=main.ns):
                 ark_current = record.text
                 if (int(results.find("//srw:numberOfRecords", namespaces=main.ns).text) > 100):
-                    print("    ", NumNot, "-", ark_current, "".join([str(i), "/", str(total_rec), " (limite max 1000)"]))
+                    print("    ", input_record.NumNot, "-", ark_current, "".join([str(i), "/", str(total_rec), " (limite max 1000)"]))
                     i += 1
                 #print(NumNot + " : " + ark_current)
                 recordBNF_url = url_requete_sru('bib.persistentid all "' + ark_current + '"')
@@ -1086,8 +1091,8 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,type
                 if (test == True):
                     if (recordBNF.find("//mxc:record/mxc:leader",namespaces=main.ns) is not None and recordBNF.find("//mxc:record/mxc:leader",namespaces=main.ns).text is not None):
                         typeRecord_current = recordBNF.find("//mxc:record/mxc:leader",namespaces=main.ns).text[7]
-                        if (typeRecord_current == typeRecord):
-                            ark = comparaisonTitres(NumNot,ark_current,"","",funcs.nettoyageTitrePourControle(titre),auteur,date_nett,numeroTome,recordBNF,"Titre-Auteur-Date" + index)
+                        if (typeRecord_current == input_record.intermarc_type_record):
+                            ark = comparaisonTitres(input_record.NumNot,ark_current,"","",input_record.titre.recherche,auteur,date_nett,input_record.tome_nett,recordBNF,"Titre-Auteur-Date" + index)
                             if (date_nett != ""):
                                 ark = checkDate(ark,date_nett,recordBNF)
                             if (ark != ""):
@@ -1099,21 +1104,16 @@ def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,type
                                     methode = "Titre-Date"
                                 elif (date_nett == "-"):
                                     methode = "Titre-Auteur"
-                                NumNotices2methode[NumNot].append(methode)
+                                NumNotices2methode[input_record.NumNot].append(methode)
                                 if ("*" in date_nett):
-                                    NumNotices2methode[NumNot].append("Date début tronquée")
+                                    NumNotices2methode[input_record.NumNot].append("Date début tronquée")
                                 if (annee_plus_trois == True):
-                                    NumNotices2methode[NumNot].append("Date début +/- 3 ans")
+                                    NumNotices2methode[input_record.NumNot].append("Date début +/- 3 ans")
     listeArk = ",".join(ark for ark in listeArk if ark != "")
     #Si la liste retournée est vide, et qu'on est sur des périodiques
     # et que la date 
-    if (len(str(date_nett)) == 4 
-            and "*" not in date_nett
-            and listeArk == "" 
-            and typeRecord == "s" 
-            and annee_plus_trois == False):
-        date = elargirDatesPerios(int(date_nett))
-        listeArk = tad2ark(NumNot,titre,auteur,auteur_nett,date,numeroTome,typeRecord,typeDoc,anywhere,pubPlace_nett,True)
+    if (listeArk == "" and input_record.intermarc_type_record == "s" and annee_plus_trois == False):
+        listeArk = tad2ark(input_record, anywhere=False, annee_plus_trois=True)
     return listeArk
 
 def tad2ppn(NumNot,titre,auteur,auteur_nett,date,typeRecord):
@@ -1179,20 +1179,22 @@ def checkTypeRecord(ark,typeRecord_attendu):
             ark_checked = ark
     return ark_checked
 
-def datePerios(date):
-    """Requête sur la date en élargissant sa valeur aux dates approximatives"""
-    date = date.split(" ")
-    date = date[0]
-    return date
-
-def elargirDatesPerios(n):
-    j = n-4
-    liste = []
-    i = 1
-    while (i < 8):
-        liste.append(j+i)
-        i += 1
-    return " ".join([str(el) for el in liste])
+# =============================================================================
+# def datePerios(date):
+#     """Requête sur la date en élargissant sa valeur aux dates approximatives"""
+#     date = date.split(" ")
+#     date = date[0]
+#     return date
+# 
+# def elargirDatesPerios(n):
+#     j = n-4
+#     liste = []
+#     i = 1
+#     while (i < 8):
+#         liste.append(j+i)
+#         i += 1
+#     return " ".join([str(el) for el in liste])
+# =============================================================================
 
 def extract_meta(recordBNF,field_subfield,occ="all",anl=False):
     assert field_subfield.find("$") == 3
@@ -1376,16 +1378,10 @@ def monimpr_item(row,n,form_bib2ark,parametres,liste_reports):
 
     #A défaut, recherche sur Titre-Auteur-Date
     if (ark == "" and input_record.titre != ""):
-        ark = tad2ark(input_record.NumNot,input_record.titre,input_record.auteur,
-                      input_record.auteur_nett,
-                      input_record.date_nett,
-                      input_record.tome_nett,"m","a", False, 
-                      input_record.publisher_nett)
+        ark = tad2ark(input_record, False, False)
         #print("1." + NumNot + " : " + ark)
     if (ark == "" and input_record.titre != ""):
-        ark = tad2ark(input_record.NumNot,input_record.titre,input_record.auteur,
-                      input_record.auteur_nett,input_record.date_nett,
-                      input_record.tome_nett,"m","a",True, input_record.publisher_nett)
+        ark = tad2ark(input_record, True, False)
     
     """if (ark == "" and titre != ""):
         ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"monimpr")"""
@@ -1477,10 +1473,10 @@ def dvd_item(row,n,form_bib2ark,parametres,liste_reports):
         
     #A défaut, recherche sur Titre-Auteur-Date
     if (ark == "" and input_record.titre_nett != ""):
-        ark = tad2ark(input_record.NumNot,input_record.titre_nett,input_record.auteur,input_record.auteur_nett,input_record.date_nett,"","m","r h",False)
+        ark = tad2ark(input_record, False, False)
     #A défaut, on recherche Titre-Auteur dans tous champs (+Date comme date)
     if (ark == "" and input_record.titre_nett != ""):
-        ark = tad2ark(input_record.NumNot,input_record.titre_nett,input_record.auteur,input_record.auteur_nett,input_record.date_nett,"","m","r h",True)
+        ark = tad2ark(input_record, True, False)
     """
     if (ark == "" and titre != ""):
         ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"cddvd")
@@ -1565,10 +1561,10 @@ def cd_item(row,n,form_bib2ark,parametres,liste_reports):
         
     #A défaut, recherche sur Titre-Auteur-Date
     if (ark == "" and input_record.titre != ""):
-        ark = tad2ark(input_record.NumNot,input_record.titre,input_record.auteur,input_record.auteur_nett,input_record.date_nett,"","m","g r",False)
+        ark = tad2ark(input_record, False, False)
     #A défaut, on recherche Titre-Auteur dans tous champs (+Date comme date)
     if (ark == "" and input_record.titre != ""):
-        ark = tad2ark(input_record.NumNot,input_record.titre,input_record.auteur,input_record.auteur_nett,input_record.date_nett,"","m","g r",True)
+        ark = tad2ark(input_record, True, False)
     """
     if (ark == "" and titre != ""):
         ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"cddvd")
@@ -1638,10 +1634,10 @@ def perimpr_item(row,n,form_bib2ark,parametres,liste_reports):
         ark = issn2ark(input_record.NumNot,input_record.issn.init,input_record.issn.propre,input_record.titre_nett,input_record.auteur_nett,input_record.date_nett)
     #A défaut, recherche sur Titre-Auteur-Date
     if (ark == "" and input_record.titre != ""):
-        ark = tad2ark(input_record.NumNot,input_record.titre_nett,input_record.auteur,input_record.auteur_nett,input_record.date_nett,"","s","a",False,input_record.pubPlace_nett)
+        ark = tad2ark(input_record, False, False)
     #A défaut, recherche sur T-A-D tous mots
     if (ark == "" and input_record.titre != ""):
-        ark = tad2ark(input_record.NumNot,input_record.titre_nett,input_record.auteur,input_record.auteur_nett,input_record.date_nett,"","s","a",True,input_record.pubPlace_nett)
+        ark = tad2ark(input_record, True, False)
     print(str(n) + ". " + input_record.NumNot + " : " + ark)
     nbARK = len(ark.split(","))
     if (ark == ""):

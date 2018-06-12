@@ -87,16 +87,16 @@ def nettoyageAuteur(auteur,justeunmot=True):
         auteur = ""
     return auteur
 
-def nettoyageTitrePourControle(titre):
-    titre = nettoyage(titre,True)
-    return titre
+def nettoyageTitrePourControle(string):
+    string = nettoyage(string,True)
+    return string
 
-def nettoyageTitrePourRecherche(titre):
-    titre = nettoyage(titre,False)
-    titre = titre.split(" ")
-    titre = [mot for mot in titre if len(mot) > 1]
-    titre = " ".join(titre)
-    return titre    
+def nettoyageTitrePourRecherche(string):
+    string = nettoyage(string,False)
+    string = string.split(" ")
+    string = [mot for mot in string if len(mot) > 1]
+    string = " ".join(string)
+    return string    
 
 def nettoyageDate(date):
     date = unidecode(date.lower())
@@ -244,7 +244,21 @@ def convert_volumes_to_int(n):
     n_convert = " ".join([str(el) for el in list(liste_n_convert)])
     return n_convert
 
+def datePerios(date):
+    """Requête sur la date en élargissant sa valeur aux dates approximatives"""
+    date = date.split(" ")
+    date = date[0]
+    return date
 
+def elargirDatesPerios(n):
+    """Prendre les 3 années précédentes et les 3 années suivantes d'une date"""
+    j = n-4
+    liste = []
+    i = 1
+    while (i < 8):
+        liste.append(j+i)
+        i += 1
+    return " ".join([str(el) for el in liste])
 
 
 class international_id: 
@@ -256,7 +270,6 @@ class international_id:
     - son lieu de résidence"""
 
     def __init__(self, string): # Notre méthode constructeur
-        """Pour l'instant, on ne va définir qu'un seul attribut"""
         self.init = string
         self.nett = nettoyageIsbnPourControle(self.init)
         self.propre = nettoyage_isbn(self.init)
@@ -265,16 +278,21 @@ class international_id:
         """Méthode permettant d'afficher plus joliment notre objet"""
         return "{}".format(self.init)
 
+class titre:
+    """Zone de titre"""
+    def __init__(self, string): # Notre méthode constructeur
+        self.init = string
+        self.controles = nettoyageTitrePourControle(self.init)
+        self.recherche = nettoyageTitrePourRecherche(self.init)
+    def __str__(self):
+        """Méthode permettant d'afficher plus joliment notre objet"""
+        return "{}".format(self.init)
+
 class Bib_record: 
     """Classe définissant les propriétés d'une notice mise en entrée 
-    du module d'alignemen
-    - son nom
-    - son prénom
-    - son âge
-    - son lieu de résidence"""
+    du module d'alignement"""
 
     def __init__(self, input_row, option_record): # Notre méthode constructeur
-        """Pour l'instant, on ne va définir qu'un seul attribut"""
         self.NumNot = input_row[0]
         self.frbnf = input_row[1]
         self.ark_init = input_row[2]
@@ -289,13 +307,15 @@ class Bib_record:
         self.issn = ""
         self.pubPlace = ""
         self.metas_init = input_row[1:]
+        self.date_debut = ""
+        self.dates_elargies_perios = ""
         if (option_record == 1):
             self.type = "TEX"
             self.intermarc_type_doc = "a"
             self.intermarc_type_record = "m"
             self.isbn = international_id(input_row[3])
             self.ean = international_id(input_row[4])
-            self.titre = input_row[5]
+            self.titre = titre(input_row[5])
             self.auteur = input_row[6]
             self.date = input_row[7]
             self.tome = input_row[8]
@@ -310,7 +330,7 @@ class Bib_record:
             self.intermarc_type_record = "m"
             self.ean = international_id(input_row[3])
             self.no_commercial = input_row[4]
-            self.titre = input_row[5]
+            self.titre = titre(input_row[5])
             self.auteur = input_row[6]
             self.date = input_row[7]
             self.publisher = input_row[8]
@@ -319,11 +339,11 @@ class Bib_record:
             self.intermarc_type_record = "s"
             self.intermarc_type_doc = "a"
             self.issn = international_id(input_row[3])
-            self.titre = input_row[4]
+            self.titre = titre(input_row[4])
             self.auteur = input_row[5]
             self.date = input_row[6]
             self.pubPlace = input_row[7]
-        self.titre_nett= nettoyageTitrePourControle(self.titre)
+        self.titre_nett= nettoyageTitrePourControle(self.titre.init)
         self.auteur_nett = nettoyageAuteur(self.auteur, False)
         self.no_commercial_propre = nettoyage_no_commercial(self.no_commercial)
         self.date_nett = nettoyageDate(self.date)
@@ -332,3 +352,9 @@ class Bib_record:
         if (self.publisher_nett == ""):
             self.publisher_nett = self.publisher
         self.pubPlace_nett = nettoyagePubPlace(self.pubPlace)
+        if (len(str(self.date_nett)) == 4
+            and self.date_nett.isdigit() is True):
+            self.date_debut = datePerios(self.date_nett)
+            self.dates_elargies_perios = elargirDatesPerios(int(self.date_debut))
+        
+        
