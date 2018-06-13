@@ -2,6 +2,8 @@
 juin 2018
 - Module blanc (alignement BIB):
 	- Option BnF > Sudoc ou Sudoc > BnF
+	- Création d'une classe Bib_record pour gérer les métadonnées en entrée
+	Effets de bords possibles sur certaines parties du code (même si tous les impacts sont censés avoir été repris)
 	
 
 
