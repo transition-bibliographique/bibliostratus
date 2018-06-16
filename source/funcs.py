@@ -18,24 +18,28 @@ from unidecode import unidecode
 import main
 
 
-#Quelques listes de signes à nettoyer
-listeChiffres = ["0","1","2","3","4","5","6","7","8","9"]
-lettres = ["a","b","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
-lettres_sauf_x = ["a","b","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","y","z"]
-ponctuation = [".",",",";",":","?","!","%","$","£","€","#","\\","\"","&","~","{","(","[","`","\\","_","@",")","]","}","=","+","*","\/","<",">",")","}"]
+# Quelques listes de signes à nettoyer
+listeChiffres = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+lettres = ["a", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
+           "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+lettres_sauf_x = ["a", "b", "d", "e", "f", "g", "h", "i", "j", "k",
+                  "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "y", "z"]
+ponctuation = [".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
+               "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<", ">", ")", "}"]
 
 url_access_pbs = []
 
-def nettoyage(string,remplacerEspaces=True,remplacerTirets=True):
+
+def nettoyage(string, remplacerEspaces=True, remplacerTirets=True):
     """nettoyage des chaines de caractères (titres, auteurs, isbn) : suppression ponctuation, espaces (pour les titres et ISBN) et diacritiques"""
     string = unidecode(string.lower())
     for signe in ponctuation:
-        string = string.replace(signe,"")
-    string = string.replace("'"," ")
+        string = string.replace(signe, "")
+    string = string.replace("'", " ")
     if (remplacerTirets == True):
-        string = string.replace("-"," ")
+        string = string.replace("-", " ")
     if (remplacerEspaces == True):
-        string = string.replace(" ","")
+        string = string.replace(" ", "")
     return string
 
 
@@ -43,7 +47,7 @@ def nettoyage_lettresISBN(isbn):
     isbn = unidecode(isbn.lower())
     char_cle = "0123456789xX"
     for signe in ponctuation:
-        isbn = isbn.replace(signe,"")
+        isbn = isbn.replace(signe, "")
     prefix = isbn[0:-1]
     cle = isbn[-1]
     for lettre in lettres:
@@ -53,6 +57,7 @@ def nettoyage_lettresISBN(isbn):
     else:
         cle = ""
     return prefix+cle
+
 
 def nettoyageIsbnPourControle(isbn):
     isbn = nettoyage(isbn)
@@ -66,8 +71,9 @@ def nettoyageIsbnPourControle(isbn):
         isbn = isbn[0:10]
     return isbn
 
+
 def nettoyageIssnPourControle(issn):
-    issn = nettoyage(issn).replace(" ","")
+    issn = nettoyage(issn).replace(" ", "")
     if (issn != ""):
         issn = nettoyage_lettresISBN(issn)
     if (len(issn) < 8):
@@ -76,22 +82,24 @@ def nettoyageIssnPourControle(issn):
         issn = issn[0:8]
     return issn
 
+
 def nettoyage_no_commercial(no_commercial_propre):
     no_commercial_propre = unidecode(no_commercial_propre.lower())
     return no_commercial_propre
 
-def nettoyageAuteur(auteur,justeunmot=True):
-    listeMots = [" par "," avec "," by "," Mr. "," M. "," Mme "," Mrs "]
+
+def nettoyageAuteur(auteur, justeunmot=True):
+    listeMots = [" par ", " avec ", " by ", " Mr. ", " M. ", " Mme ", " Mrs "]
     for mot in listeMots:
-        auteur = auteur.replace(mot,"")
+        auteur = auteur.replace(mot, "")
     for chiffre in listeChiffres:
-        auteur = auteur.replace(chiffre,"")
-    auteur = nettoyage(auteur.lower(),False)
+        auteur = auteur.replace(chiffre, "")
+    auteur = nettoyage(auteur.lower(), False)
     auteur = auteur.split(" ")
-    auteur = sorted(auteur,key=len,reverse=True)
+    auteur = sorted(auteur, key=len, reverse=True)
     auteur = [auteur1 for auteur1 in auteur if len(auteur1) > 1]
     if (auteur is not None and auteur != []):
-        if (justeunmot==True):
+        if (justeunmot == True):
             auteur = auteur[0]
         else:
             auteur = " ".join(auteur)
@@ -99,31 +107,35 @@ def nettoyageAuteur(auteur,justeunmot=True):
         auteur = ""
     return auteur
 
+
 def nettoyageTitrePourControle(string):
-    string = nettoyage(string,True)
+    string = nettoyage(string, True)
     return string
 
+
 def nettoyageTitrePourRecherche(string):
-    string = nettoyage(string,False)
+    string = nettoyage(string, False)
     string = string.split(" ")
     string = [mot for mot in string if len(mot) > 1]
     string = " ".join(string)
     return string
 
+
 def nettoyageDate(date):
     date = unidecode(date.lower())
     for lettre in lettres:
-        date = date.replace(lettre,"")
+        date = date.replace(lettre, "")
     for signe in ponctuation:
         date = date.split(signe)
         date = " ".join(annee for annee in date if annee != "")
     return date
 
+
 def nettoyageTome(numeroTome):
     if (numeroTome):
         numeroTome = unidecode(numeroTome.lower())
         for lettre in lettres:
-            numeroTome = numeroTome.replace(lettre,"")
+            numeroTome = numeroTome.replace(lettre, "")
         for signe in ponctuation:
             numeroTome = numeroTome.split(signe)
             numeroTome = "~".join(numero for numero in numeroTome)
@@ -134,11 +146,12 @@ def nettoyageTome(numeroTome):
         numeroTome = ltrim(numeroTome)
     return numeroTome
 
-def nettoyagePubPlace(pubPlace) :
+
+def nettoyagePubPlace(pubPlace):
     """Nettoyage du lieu de publication"""
     pubPlace = unidecode(pubPlace.lower())
     for chiffre in listeChiffres:
-        pubPlace = pubPlace.replace(chiffre,"")
+        pubPlace = pubPlace.replace(chiffre, "")
     for signe in ponctuation:
         pubPlace = pubPlace.split(signe)
         pubPlace = " ".join(mot for mot in pubPlace if mot != "")
@@ -152,22 +165,25 @@ def RepresentsInt(s):
     except ValueError:
         return False
 
+
 def ltrim(nombre_texte):
     "Supprime les 0 initiaux d'un nombre géré sous forme de chaîne de caractères"
     while(len(nombre_texte) > 1 and nombre_texte[0] == "0"):
         nombre_texte = nombre_texte[1:]
     return nombre_texte
 
+
 def nettoyage_isbn(isbn):
     isbn_nett = isbn.split(";")[0].split(",")[0].split("(")[0].split("[")[0]
-    isbn_nett = isbn_nett.replace("-","").replace(" ","")
+    isbn_nett = isbn_nett.replace("-", "").replace(" ", "")
     isbn_nett = unidecode(isbn_nett)
     for signe in ponctuation:
-        isbn_nett = isbn_nett.replace(signe,"")
+        isbn_nett = isbn_nett.replace(signe, "")
     isbn_nett = isbn_nett.lower()
     for lettre in lettres_sauf_x:
-        isbn_nett = isbn_nett.replace(lettre,"")
+        isbn_nett = isbn_nett.replace(lettre, "")
     return isbn_nett
+
 
 def conversionIsbn(isbn):
     longueur = len(isbn)
@@ -178,7 +194,9 @@ def conversionIsbn(isbn):
         isbnConverti = conversionIsbn1310(isbn)
     return isbnConverti
 
-#conversion isbn13 en isbn10
+# conversion isbn13 en isbn10
+
+
 def conversionIsbn1310(isbn):
     if (isbn[0:3] == "978"):
         prefix = isbn[3:-1]
@@ -187,11 +205,14 @@ def conversionIsbn1310(isbn):
     else:
         return ""
 
-#conversion isbn10 en isbn13
+# conversion isbn10 en isbn13
+
+
 def conversionIsbn1013(isbn):
     prefix = '978' + isbn[:-1]
     check = check_digit_13(prefix)
     return prefix + check
+
 
 def check_digit_10(isbn):
     assert len(isbn) == 9
@@ -205,6 +226,7 @@ def check_digit_10(isbn):
         return 'X'
     else:
         return str(r)
+
 
 def check_digit_13(isbn):
     assert len(isbn) == 12
@@ -228,6 +250,7 @@ numeral_map = tuple(zip(
     ('M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I')
 ))
 
+
 def int_to_roman(i):
     """Conversion de chiffres arabers en chiffres romains"""
     result = []
@@ -236,6 +259,7 @@ def int_to_roman(i):
         result.append(numeral * count)
         i -= integer * count
     return ''.join(result)
+
 
 def roman_to_int(n):
     """Consersion de chiffres romains en chiffres arabes"""
@@ -246,10 +270,11 @@ def roman_to_int(n):
             i += len(numeral)
     return result
 
+
 def convert_volumes_to_int(n):
     for char in ponctuation:
-        n = n.replace(char,"-")
-    n = n.replace(" ","-")
+        n = n.replace(char, "-")
+    n = n.replace(" ", "-")
     liste_n = [e for e in n.split("-") if e != ""]
     liste_n_convert = []
     for n in liste_n:
@@ -264,10 +289,12 @@ def convert_volumes_to_int(n):
     n_convert = " ".join([str(el) for el in list(liste_n_convert)])
     return n_convert
 
+
 def datePerios(date):
     """Requête sur la date en élargissant sa valeur aux dates approximatives"""
     date = date.split(" ")[0].split("-")[0]
     return date
+
 
 def elargirDatesPerios(n):
     """Prendre les 3 années précédentes et les 3 années suivantes d'une date"""
@@ -279,6 +306,7 @@ def elargirDatesPerios(n):
         i += 1
     return " ".join([str(el) for el in liste])
 
+
 def testURLetreeParse(url):
     test = True
     resultat = ""
@@ -287,44 +315,45 @@ def testURLetreeParse(url):
     except etree.XMLSyntaxError as err:
         print(url)
         print(err)
-        url_access_pbs.append([url,"etree.XMLSyntaxError"])
+        url_access_pbs.append([url, "etree.XMLSyntaxError"])
         test = False
     except etree.ParseError as err:
         print(url)
         print(err)
         test = False
-        url_access_pbs.append([url,"etree.ParseError"])
+        url_access_pbs.append([url, "etree.ParseError"])
     except error.URLError as err:
         print(url)
         print(err)
         test = False
-        url_access_pbs.append([url,"urllib.error.URLError"])
+        url_access_pbs.append([url, "urllib.error.URLError"])
     except ConnectionResetError as err:
         print(url)
         print(err)
         test = False
-        url_access_pbs.append([url,"ConnectionResetError"])
+        url_access_pbs.append([url, "ConnectionResetError"])
     except TimeoutError as err:
         print(url)
         print(err)
         test = False
-        url_access_pbs.append([url,"TimeoutError"])
+        url_access_pbs.append([url, "TimeoutError"])
     except http.client.RemoteDisconnected as err:
         print(url)
         print(err)
         test = False
-        url_access_pbs.append([url,"http.client.RemoteDisconnected"])
+        url_access_pbs.append([url, "http.client.RemoteDisconnected"])
     except http.client.BadStatusLine as err:
         print(url)
         print(err)
         test = False
-        url_access_pbs.append([url,"http.client.BadStatusLine"])
+        url_access_pbs.append([url, "http.client.BadStatusLine"])
     except ConnectionAbortedError as err:
         print(url)
         print(err)
         test = False
-        url_access_pbs.append([url,"ConnectionAbortedError"])
-    return (test,resultat)
+        url_access_pbs.append([url, "ConnectionAbortedError"])
+    return (test, resultat)
+
 
 def testURLretrieve(url):
     test = True
@@ -349,48 +378,50 @@ def testURLurlopen(url):
     except etree.XMLSyntaxError as err:
         print(url)
         print(err)
-        url_access_pbs.append([url,"etree.XMLSyntaxError"])
+        url_access_pbs.append([url, "etree.XMLSyntaxError"])
         test = False
     except etree.ParseError as err:
         print(url)
         print(err)
         test = False
-        url_access_pbs.append([url,"etree.ParseError"])
+        url_access_pbs.append([url, "etree.ParseError"])
     except error.URLError as err:
         print(url)
         print(err)
         test = False
-        url_access_pbs.append([url,"urllib.error.URLError"])
+        url_access_pbs.append([url, "urllib.error.URLError"])
     except ConnectionResetError as err:
         print(url)
         print(err)
         test = False
-        url_access_pbs.append([url,"ConnectionResetError"])
+        url_access_pbs.append([url, "ConnectionResetError"])
     except TimeoutError as err:
         print(url)
         print(err)
         test = False
-        url_access_pbs.append([url,"TimeoutError"])
+        url_access_pbs.append([url, "TimeoutError"])
     except http.client.RemoteDisconnected as err:
         print(url)
         print(err)
         test = False
-        url_access_pbs.append([url,"http.client.RemoteDisconnected"])
+        url_access_pbs.append([url, "http.client.RemoteDisconnected"])
     except http.client.BadStatusLine as err:
         print(url)
         print(err)
         test = False
-        url_access_pbs.append([url,"http.client.BadStatusLine"])
+        url_access_pbs.append([url, "http.client.BadStatusLine"])
     except ConnectionAbortedError as err:
         print(url)
         print(err)
         test = False
-        url_access_pbs.append([url,"ConnectionAbortedError"])
-    return (test,resultat)
+        url_access_pbs.append([url, "ConnectionAbortedError"])
+    return (test, resultat)
 
 
-def url_requete_sru(query,recordSchema="unimarcxchange",maximumRecords="1000",startRecord="1"):
-    url = main.urlSRUroot + urllib.parse.quote(query) +"&recordSchema=" + recordSchema + "&maximumRecords=" + maximumRecords + "&startRecord=" + startRecord + "&origin=bibliostratus"
+def url_requete_sru(query, recordSchema="unimarcxchange", maximumRecords="1000", startRecord="1"):
+    url = main.urlSRUroot + urllib.parse.quote(query) + "&recordSchema=" + recordSchema + \
+        "&maximumRecords=" + maximumRecords + "&startRecord=" + \
+        startRecord + "&origin=bibliostratus"
     return url
 
 
@@ -402,30 +433,35 @@ class international_id:
     - son âge
     - son lieu de résidence"""
 
-    def __init__(self, string): # Notre méthode constructeur
+    def __init__(self, string):  # Notre méthode constructeur
         self.init = string
         self.nett = nettoyageIsbnPourControle(self.init)
         self.propre = nettoyage_isbn(self.init)
         self.converti = conversionIsbn(self.propre)
+
     def __str__(self):
         """Méthode permettant d'afficher plus joliment notre objet"""
         return "{}".format(self.init)
 
+
 class titre:
     """Zone de titre"""
-    def __init__(self, string): # Notre méthode constructeur
+
+    def __init__(self, string):  # Notre méthode constructeur
         self.init = string
         self.controles = nettoyageTitrePourControle(self.init)
         self.recherche = nettoyageTitrePourRecherche(self.init)
+
     def __str__(self):
         """Méthode permettant d'afficher plus joliment notre objet"""
         return "{}".format(self.init)
+
 
 class Bib_record:
     """Classe définissant les propriétés d'une notice mise en entrée
     du module d'alignement"""
 
-    def __init__(self, input_row, option_record): # Notre méthode constructeur
+    def __init__(self, input_row, option_record):  # Notre méthode constructeur
         self.NumNot = input_row[0]
         self.frbnf = input_row[1]
         self.ark_init = input_row[2]
@@ -476,9 +512,10 @@ class Bib_record:
             self.auteur = input_row[5]
             self.date = input_row[6]
             self.pubPlace = input_row[7]
-        self.titre_nett= nettoyageTitrePourControle(self.titre.init)
+        self.titre_nett = nettoyageTitrePourControle(self.titre.init)
         self.auteur_nett = nettoyageAuteur(self.auteur, False)
-        self.no_commercial_propre = nettoyage_no_commercial(self.no_commercial.init)
+        self.no_commercial_propre = nettoyage_no_commercial(
+            self.no_commercial.init)
         self.date_nett = nettoyageDate(self.date)
         self.tome_nett = convert_volumes_to_int(self.tome)
         self.publisher_nett = nettoyageAuteur(self.publisher, False)
@@ -486,7 +523,6 @@ class Bib_record:
             self.publisher_nett = self.publisher
         self.pubPlace_nett = nettoyagePubPlace(self.pubPlace)
         self.date_debut = datePerios(self.date_nett)
-        if (RepresentsInt(self.date_debut)==True):
-            self.dates_elargies_perios = elargirDatesPerios(int(self.date_debut))
-
-
+        if (RepresentsInt(self.date_debut) == True):
+            self.dates_elargies_perios = elargirDatesPerios(
+                int(self.date_debut))
