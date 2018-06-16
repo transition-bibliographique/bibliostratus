@@ -8,24 +8,25 @@ Programme de manipulations de données liées à la Transition bibliographique p
 
 """
 
-from lxml import etree
-from urllib import request
-import urllib.parse
-from unidecode import unidecode
-import urllib.error as error
-import csv
-import tkinter as tk
-from tkinter import filedialog
-from collections import defaultdict
-import re
-import webbrowser
 import codecs
+import csv
 import json
-import noticesbib2arkBnF as bib2ark
+import re
+import tkinter as tk
+import urllib.parse
+import webbrowser
+from collections import defaultdict
+from tkinter import filedialog
+from urllib import error, request
+
+from lxml import etree
+from unidecode import unidecode
+
+import ark2records
+import funcs
+import marc2tables
 import noticesaut2arkBnF as aut2ark
-import marc2tables as marc2tables
-import ark2records as ark2records
-import funcs as funcs
+import noticesbib2arkBnF as bib2ark
 import preferences
 
 

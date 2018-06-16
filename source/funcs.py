@@ -6,15 +6,16 @@ Created on Mon Jun 11 21:21:17 2018
 Fonctions et classes génériques pour Bibliostratus
 """
 
-from lxml import etree
-from urllib import request
-import urllib.parse
-from unidecode import unidecode
-import urllib.error as error
-import tkinter as tk
-from collections import defaultdict
 import http.client
-import main as main
+import urllib.parse
+from collections import defaultdict
+from urllib import error, request
+import tkinter as tk
+
+from lxml import etree
+from unidecode import unidecode
+
+import main
 
 
 #Quelques listes de signes à nettoyer

@@ -12,14 +12,17 @@ Puis modifier le formulaire pour proposer l'option "Périodiques"
 
 """
 
-import urllib.parse
-from unidecode import unidecode
 import csv
 import tkinter as tk
+import urllib.parse
 from collections import defaultdict
-import main as main
+
+from unidecode import unidecode
+
+import funcs
+import main
 from funcs import Bib_record
-import funcs as funcs
+
 
 #import matplotlib.pyplot as plt
 

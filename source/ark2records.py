@@ -1,24 +1,27 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Oct 30 17:55:32 2017
- 
+
 @author: Etienne Cavalié
 
 A partir d'un fichier contenant une liste d'ARK de notices biblio, récupérer les notices complètes (en XML)
 + option pour récupérer les notices d'autorité
 """
 
-import tkinter as tk
-from lxml import etree
-import urllib.parse
-from urllib import request, error
 import csv
-import pymarc as mc
-import main as main
-import noticesbib2arkBnF as bib2ark
 import os
 import re
-import funcs as funcs
+import tkinter as tk
+import urllib.parse
+from urllib import error, request
+
+import pymarc as mc
+from lxml import etree
+
+import funcs
+import main
+import noticesbib2arkBnF as bib2ark
+
 
 version = 0.02
 programID = "ark2records"

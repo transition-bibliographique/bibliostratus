@@ -9,21 +9,24 @@ Conversion de fichiers XML ou iso2709 en tableaux pour alignements
 """
 
 
-from unidecode import unidecode
-import urllib.error as error
-import tkinter as tk
-from tkinter import filedialog
-from collections import defaultdict
-import re
 import os
+import re
+import tkinter as tk
 import webbrowser
-import noticesbib2arkBnF as bib2ark
-import noticesaut2arkBnF as aut2ark
-import pymarc as mc
 import xml
-import main as main
+from collections import defaultdict
+from tkinter import filedialog
+from urllib import error
+
+import pymarc as mc
 import chardet
 from chardet.universaldetector import UniversalDetector
+from unidecode import unidecode
+
+import main
+import noticesaut2arkBnF as aut2ark
+import noticesbib2arkBnF as bib2ark
+
 
 version = 0.01
 programID = "marc2tables"

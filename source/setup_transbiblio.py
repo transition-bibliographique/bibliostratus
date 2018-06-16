@@ -2,8 +2,9 @@
 """Fichier d'installation du script ExtractionCatalogueBnF_code.py."""
 #Commande Windows à utiliser : D:\BNF0017855\Programmes\Anaconda2\python setup_transbiblio.py build
 
-from cx_Freeze import setup, Executable
 import os
+
+from cx_Freeze import setup, Executable
 
 
 path_anaconda = r"C:\ProgramData\Anaconda3"
