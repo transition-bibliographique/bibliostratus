@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# flake8: noqa
 """
 Created on Fri Oct 13 18:30:30 2017
 
@@ -81,7 +82,8 @@ def check_last_compilation(programID):
     return [programID_last_compilation, display_update_button]
 
 
-def download_last_update(url="https://github.com/Transition-bibliographique/alignements-donnees-bnf/bin"):
+def download_last_update(
+        url="https://github.com/Transition-bibliographique/alignements-donnees-bnf/bin"):
     url = "https://github.com/Transition-bibliographique/alignements-donnees-bnf/tree/master/bin"
     webbrowser.open(url)
 
@@ -151,7 +153,8 @@ def form_saut_de_ligne(frame, couleur_fond):
     tk.Label(frame, text="\n", bg=couleur_fond).pack()
 
 
-def form_generic_frames(master, title, couleur_fond, couleur_bordure, access_to_network):
+def form_generic_frames(master, title, couleur_fond,
+                        couleur_bordure, access_to_network):
     # ----------------------------------------------------
     # |                    Frame                         |
     # |            zone_alert_explications               |
@@ -188,7 +191,7 @@ def form_generic_frames(master, title, couleur_fond, couleur_bordure, access_to_
 
     if (access_to_network == False):
         tk.Label(zone_alert_explications, text=errors["no_internet"],
-                 bg=couleur_fond,  fg="red").pack()
+                 bg=couleur_fond, fg="red").pack()
 
     return [form,
             zone_alert_explications,
@@ -234,7 +237,7 @@ def main_form_frames(title, couleur_fond, couleur_bordure, access_to_network):
 
     if (access_to_network == False):
         tk.Label(zone_alert_explications, text=errors["no_internet"],
-                 bg=couleur_fond,  fg="red").pack()
+                 bg=couleur_fond, fg="red").pack()
 
     return [master,
             zone_alert_explications,
@@ -296,7 +299,8 @@ def openfile(frame, liste, background_color="white"):
     tk.Label(frame, text=filename_print, bg=background_color).pack()
 
 
-def download_button(frame, text, frame_selected, text_path, couleur_fond, file_entry_list, zone_message_en_cours=""):
+def download_button(frame, text, frame_selected, text_path,
+                    couleur_fond, file_entry_list, zone_message_en_cours=""):
     if (file_entry_list != []):
         text_path.delete(0.0, 1000.3)
     filename = filedialog.askopenfilename(
@@ -315,7 +319,8 @@ et sa fermeture signifiera que le programme est arrivée à la fin du traitement
         zone_message_en_cours.insert(0.0, texte)
 
 
-def download_zone(frame, text_bouton, file_entry_list, couleur_fond, cadre_output_message_en_cours=""):
+def download_zone(frame, text_bouton, file_entry_list,
+                  couleur_fond, cadre_output_message_en_cours=""):
     frame_button = tk.Frame(frame)
     frame_button.pack()
     frame_selected = tk.Frame(frame)
@@ -339,7 +344,8 @@ def download_zone(frame, text_bouton, file_entry_list, couleur_fond, cadre_outpu
     select_filename_button.pack()
 
 
-def select_directory_button(frame, text, frame_selected, text_path, couleur_fond, directory_list):
+def select_directory_button(
+        frame, text, frame_selected, text_path, couleur_fond, directory_list):
     if (directory_list != []):
         text_path.delete(0.0, 1000.3)
     filename = filedialog.askdirectory(
@@ -370,7 +376,8 @@ def select_directory(frame, text_bouton, directory_list, couleur_fond):
     select_filename_button.pack()
 
 
-def message_programme_en_cours(master, access_to_network=True, couleur_fond="#ffffff"):
+def message_programme_en_cours(
+        master, access_to_network=True, couleur_fond="#ffffff"):
     texte = """Le programme est en cours d'exécution.
 Vous pouvez suivre sa progression sur le terminal (écran noir).
 

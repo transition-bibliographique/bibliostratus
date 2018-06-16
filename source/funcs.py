@@ -18,25 +18,34 @@ import main
 
 # Quelques listes de signes à nettoyer
 listeChiffres = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-lettres = ["a", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
-           "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
-lettres_sauf_x = ["a", "b", "d", "e", "f", "g", "h", "i", "j", "k",
-                  "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "y", "z"]
-ponctuation = [".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
-               "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<", ">", ")", "}"]
+lettres = [
+    "a", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p",
+    "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
+]
+lettres_sauf_x = [
+    "a", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p",
+    "q", "r", "s", "t", "u", "v", "w", "y", "z"
+]
+ponctuation = [
+    ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
+    "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<",
+    ">", ")", "}"
+]
 
 url_access_pbs = []
 
 
 def nettoyage(string, remplacerEspaces=True, remplacerTirets=True):
-    """nettoyage des chaines de caractères (titres, auteurs, isbn) : suppression ponctuation, espaces (pour les titres et ISBN) et diacritiques"""
+    """nettoyage des chaines de caractères (titres, auteurs, isbn)
+
+    suppression ponctuation, espaces (pour les titres et ISBN) et diacritiques"""
     string = unidecode(string.lower())
     for signe in ponctuation:
         string = string.replace(signe, "")
     string = string.replace("'", " ")
-    if (remplacerTirets == True):
+    if remplacerTirets:
         string = string.replace("-", " ")
-    if (remplacerEspaces == True):
+    if remplacerEspaces:
         string = string.replace(" ", "")
     return string
 
@@ -54,7 +63,7 @@ def nettoyage_lettresISBN(isbn):
         cle = cle.upper()
     else:
         cle = ""
-    return prefix+cle
+    return prefix + cle
 
 
 def nettoyageIsbnPourControle(isbn):
@@ -97,7 +106,7 @@ def nettoyageAuteur(auteur, justeunmot=True):
     auteur = sorted(auteur, key=len, reverse=True)
     auteur = [auteur1 for auteur1 in auteur if len(auteur1) > 1]
     if (auteur is not None and auteur != []):
-        if (justeunmot == True):
+        if justeunmot:
             auteur = auteur[0]
         else:
             auteur = " ".join(auteur)
@@ -296,11 +305,11 @@ def datePerios(date):
 
 def elargirDatesPerios(n):
     """Prendre les 3 années précédentes et les 3 années suivantes d'une date"""
-    j = n-4
+    j = n - 4
     liste = []
     i = 1
     while (i < 8):
-        liste.append(j+i)
+        liste.append(j + i)
         i += 1
     return " ".join([str(el) for el in liste])
 
@@ -416,7 +425,8 @@ def testURLurlopen(url):
     return (test, resultat)
 
 
-def url_requete_sru(query, recordSchema="unimarcxchange", maximumRecords="1000", startRecord="1"):
+def url_requete_sru(query, recordSchema="unimarcxchange",
+                    maximumRecords="1000", startRecord="1"):
     url = main.urlSRUroot + urllib.parse.quote(query) + "&recordSchema=" + recordSchema + \
         "&maximumRecords=" + maximumRecords + "&startRecord=" + \
         startRecord + "&origin=bibliostratus"
@@ -521,6 +531,6 @@ class Bib_record:
             self.publisher_nett = self.publisher
         self.pubPlace_nett = nettoyagePubPlace(self.pubPlace)
         self.date_debut = datePerios(self.date_nett)
-        if (RepresentsInt(self.date_debut) == True):
+        if RepresentsInt(self.date_debut):
             self.dates_elargies_perios = elargirDatesPerios(
                 int(self.date_debut))

@@ -4,7 +4,8 @@ Created on Fri Oct 13 18:30:30 2017
 
 @author: Etienne Cavalié
 
-Programme de manipulations de données liées à la Transition bibliographique pour les bibliothèques françaises
+Programme de manipulations de données liées à la Transition bibliographique pour
+les bibliothèques françaises
 
 """
 
@@ -24,42 +25,80 @@ import noticesaut2arkBnF as aut2ark
 import noticesbib2arkBnF as bib2ark
 
 
-#import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 version = 1.19
 lastupdate = "07/06/2018"
 programID = "bibliostratus"
 
-ns = {"srw": "http://www.loc.gov/zing/srw/", "mxc": "info:lc/xmlns/marcxchange-v2",
-      "m": "http://catalogue.bnf.fr/namespaces/InterXMarc", "mn": "http://catalogue.bnf.fr/namespaces/motsnotices"}
-nsSudoc = {"rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#", "bibo": "http://purl.org/ontology/bibo/", "dc": "http://purl.org/dc/elements/1.1/", "dcterms": "http://purl.org/dc/terms/", "rdafrbr1": "http://rdvocab.info/RDARelationshipsWEMI/", "marcrel": "http://id.loc.gov/vocabulary/relators/", "foaf": "http://xmlns.com/foaf/0.1/", "gr": "http://purl.org/goodrelations/v1#", "owl": "http://www.w3.org/2002/07/owl#", "isbd": "http://iflastandards.info/ns/isbd/elements/", "skos": "http://www.w3.org/2004/02/skos/core#",
-           "rdafrbr2": "http://RDVocab.info/uri/schema/FRBRentitiesRDA/", "rdaelements": "http://rdvocab.info/Elements/", "rdac": "http://rdaregistry.info/Elements/c/", "rdau": "http://rdaregistry.info/Elements/u/", "rdaw": "http://rdaregistry.info/Elements/w/", "rdae": "http://rdaregistry.info/Elements/e/", "rdam": "http://rdaregistry.info/Elements/m/", "rdai": "http://rdaregistry.info/Elements/i/", "sudoc": "http://www.sudoc.fr/ns/", "bnf-onto": "http://data.bnf.fr/ontology/bnf-onto/"}
-nsisni = {'srw': 'http://www.loc.gov/zing/srw/', 'dc': 'http://purl.org/dc/elements/1.1/',
-          'diag': 'http://www.loc.gov/zing/srw/diagnostic/', 'xcql': 'http://www.loc.gov/zing/cql/xcql/'}
+ns = {
+    "srw": "http://www.loc.gov/zing/srw/",
+    "mxc": "info:lc/xmlns/marcxchange-v2",
+    "m": "http://catalogue.bnf.fr/namespaces/InterXMarc",
+    "mn": "http://catalogue.bnf.fr/namespaces/motsnotices"
+}
+nsSudoc = {
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "bibo": "http://purl.org/ontology/bibo/",
+    "dc": "http://purl.org/dc/elements/1.1/",
+    "dcterms": "http://purl.org/dc/terms/",
+    "rdafrbr1": "http://rdvocab.info/RDARelationshipsWEMI/",
+    "marcrel": "http://id.loc.gov/vocabulary/relators/",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "gr": "http://purl.org/goodrelations/v1#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "isbd": "http://iflastandards.info/ns/isbd/elements/",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "rdafrbr2": "http://RDVocab.info/uri/schema/FRBRentitiesRDA/",
+    "rdaelements": "http://rdvocab.info/Elements/",
+    "rdac": "http://rdaregistry.info/Elements/c/",
+    "rdau": "http://rdaregistry.info/Elements/u/",
+    "rdaw": "http://rdaregistry.info/Elements/w/",
+    "rdae": "http://rdaregistry.info/Elements/e/",
+    "rdam": "http://rdaregistry.info/Elements/m/",
+    "rdai": "http://rdaregistry.info/Elements/i/",
+    "sudoc": "http://www.sudoc.fr/ns/",
+    "bnf-onto": "http://data.bnf.fr/ontology/bnf-onto/"
+}
+nsisni = {
+    'srw': 'http://www.loc.gov/zing/srw/',
+    'dc': 'http://purl.org/dc/elements/1.1/',
+    'diag': 'http://www.loc.gov/zing/srw/diagnostic/',
+    'xcql': 'http://www.loc.gov/zing/cql/xcql/'
+}
 urlSRUroot = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query="
 
 url_online_help = "https://github.com/Transition-bibliographique/bibliostratus/wiki"
 texte_bouton_help = "Documentation\nen ligne"
 
-url_forum_aide = "http://www.agorabib.fr/topic/3317-bibliostratus-mettre-en-correspondance-ses-notices-avec-celles-de-la-bnf/"
+url_forum_aide = "http://www.agorabib.fr/topic/3317-bibliostratus-mettre-en-correspondance-ses-notices-avec-celles-de-la-bnf/"  # noqa
 texte_bouton_forum = "Forum\nutilisateurs"
 
 chiffers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-letters = ["a", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
-           "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
-punctuation = [".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
-               "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<", ">", ")", "}"]
-
+letters = [
+    "a", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p",
+    "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
+]
+punctuation = [
+    ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
+    "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<",
+    ">", ")", "}"
+]
 
 errors = {
-    "no_internet": "Attention : Le programme n'a pas d'accès à Internet.\nSi votre navigateur y a accès, vérifiez les paramètres de votre proxy",
-    "nb_colonnes_incorrect": "Le fichier contient un nombre insuffisant de colonnes.\n\nVérifiez les options indiquées dans le formulaire ou le format du fichier en entrée",
-    "pb_input_utf8": "Erreur d'encodage constatée\n\nLe fichier en entrée doit être en UTF-8 sans BOM.",
-    "pb_input_utf8_marcEdit": """Erreur d'encodage constatée :
+    "no_internet":
+        "Attention : Le programme n'a pas d'accès à Internet.\nSi votre navigateur y a accès, vérifiez les paramètres de votre proxy",  # noqa
+    "nb_colonnes_incorrect":
+        "Le fichier contient un nombre insuffisant de colonnes.\n\nVérifiez les options indiquées dans le formulaire ou le format du fichier en entrée",  # noqa
+    "pb_input_utf8":
+        "Erreur d'encodage constatée\n\nLe fichier en entrée doit être en UTF-8 sans BOM.",
+    "pb_input_utf8_marcEdit":
+        """Erreur d'encodage constatée :
         Le fichier en entrée doit être en UTF-8 sans BOM.
 
         Si vous utilisez un fichier iso2709, convertissez-le d'abord en XML avec MarcEdit""",
-    "format_fichier_en_entree": """Erreur dans le traitement
+    "format_fichier_en_entree":
+        """Erreur dans le traitement
 
 Vérifier les options choisies\npour le format de fichier en entrée
 
@@ -78,7 +117,7 @@ def annuler(master):
 def check_last_compilation(programID):
     programID_last_compilation = 0
     display_update_button = False
-    url = "https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/source/last_compilations.json"
+    url = "https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/source/last_compilations.json"  # noqa
     try:
         last_compilations = request.urlopen(url)
         reader = codecs.getreader("utf-8")
@@ -93,7 +132,8 @@ def check_last_compilation(programID):
     return [programID_last_compilation, display_update_button]
 
 
-def download_last_update(url="https://github.com/Transition-bibliographique/bibliostratus/tree/master/bin"):
+def download_last_update(
+        url="https://github.com/Transition-bibliographique/bibliostratus/tree/master/bin"):
     webbrowser.open(url)
 
 
@@ -113,7 +153,7 @@ def check_access2apis(i, dict_report):
     testBnF = True
     testAbes = True
     testBnF = funcs.testURLretrieve(
-        "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.recordid%20all%20%2230000001%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")
+        "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.recordid%20all%20%2230000001%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")  # noqa
     testAbes = funcs.testURLretrieve(
         "https://www.sudoc.fr/services/isbn2ppn/0195141156")
     dict_report["testAbes"][i] = testAbes
@@ -125,9 +165,9 @@ def clean_string(string, replaceSpaces=False, replaceTirets=False):
     for sign in punctuation:
         string = string.replace(sign, " ")
     string = string.replace("'", " ")
-    if (replaceTirets == True):
+    if replaceTirets:
         string = string.replace("-", " ")
-    if (replaceSpaces == True):
+    if replaceSpaces:
         string = string.replace(" ", "")
     string = ' '.join(s for s in string.split() if s != "")
     string = string.strip()
@@ -147,7 +187,8 @@ def extract_subfield(record, field, subfield, nb_occ="all", sep="~"):
         "']/mxc:subfield[@code='" + subfield + "']"
     listeValues = []
     if (nb_occ == "first" or nb_occ == 1):
-        if (record.find(path, namespaces=ns) is not None and record.find(path, namespaces=ns).text is not None):
+        if (record.find(path, namespaces=ns) is not None and
+                record.find(path, namespaces=ns).text is not None):
             val = record.find(path, namespaces=ns).text
             listeValues.append(val)
     else:
@@ -162,7 +203,8 @@ def form_saut_de_ligne(frame, couleur_fond):
     tk.Label(frame, text="\n", bg=couleur_fond).pack()
 
 
-def form_generic_frames(master, title, couleur_fond, couleur_bordure, access_to_network):
+def form_generic_frames(master, title, couleur_fond,
+                        couleur_bordure, access_to_network):
     # ----------------------------------------------------
     # |                    Frame                         |
     # |            zone_alert_explications               |
@@ -176,14 +218,14 @@ def form_generic_frames(master, title, couleur_fond, couleur_bordure, access_to_
     # |                    Frame                         |
     # |                  zone_notes                      |
     # ----------------------------------------------------
-    #master = tk.Tk()
+    # master = tk.Tk()
     form = tk.Toplevel(master)
     form.config(padx=10, pady=10, bg=couleur_fond)
     form.title(title)
     try:
         form.iconbitmap(r'favicon.ico')
     except tk.TclError:
-        favicone = "rien"
+        favicone = "rien"  # noqa
 
     zone_alert_explications = tk.Frame(form, bg=couleur_fond, pady=10)
     zone_alert_explications.pack()
@@ -197,9 +239,9 @@ def form_generic_frames(master, title, couleur_fond, couleur_bordure, access_to_
     zone_notes = tk.Frame(form, bg=couleur_fond, pady=10)
     zone_notes.pack()
 
-    if (access_to_network == False):
+    if access_to_network:
         tk.Label(zone_alert_explications, text=errors["no_internet"],
-                 bg=couleur_fond,  fg="red").pack()
+                 bg=couleur_fond, fg="red").pack()
 
     return [form,
             zone_alert_explications,
@@ -229,7 +271,7 @@ def main_form_frames(title, couleur_fond, couleur_bordure, access_to_network):
     try:
         master.iconbitmap(r'favicon.ico')
     except tk.TclError:
-        favicone = "rien"
+        favicone = "rien"  # noqa
 
     zone_alert_explications = tk.Frame(master, bg=couleur_fond, pady=10)
     zone_alert_explications.pack()
@@ -243,9 +285,9 @@ def main_form_frames(title, couleur_fond, couleur_bordure, access_to_network):
     zone_notes = tk.Frame(master, bg=couleur_fond, pady=10)
     zone_notes.pack()
 
-    if (access_to_network == False):
+    if access_to_network:
         tk.Label(zone_alert_explications, text=errors["no_internet"],
-                 bg=couleur_fond,  fg="red").pack()
+                 bg=couleur_fond, fg="red").pack()
 
     return [master,
             zone_alert_explications,
@@ -277,10 +319,10 @@ def check_file_name(master, filename):
 
 def control_columns_number(master, row, headers_columns):
     """Vérifie le nombre de colonnes dans le fichier en entrée"""
-    last_col = len(headers_columns)-1
+    last_col = len(headers_columns) - 1
     test = True
     try:
-        last_val = row[last_col]
+        row[last_col]
     except IndexError as err:
         test = False
     try:
@@ -290,7 +332,7 @@ def control_columns_number(master, row, headers_columns):
         message = ""
         for col in headers_columns:
             val = ""
-            if (len(row) >= i+1):
+            if (len(row) >= i + 1):
                 val = row[i]
             message = message + col + " : " + val + "\n"
             i += 1
@@ -322,7 +364,7 @@ def popup_errors(master, text, online_help_text="", online_help_link=""):
                        command=lambda: annuler(master), padx=10, pady=1, width=15)
     cancel.pack()
 
-#popup_filename = ""
+# popup_filename = ""
 
 
 def openfile(frame, liste, background_color="white"):
@@ -332,7 +374,8 @@ def openfile(frame, liste, background_color="white"):
     tk.Label(frame, text=filename_print, bg=background_color).pack()
 
 
-def download_button(frame, text, frame_selected, text_path, couleur_fond, file_entry_list, zone_message_en_cours=""):
+def download_button(frame, text, frame_selected, text_path,
+                    couleur_fond, file_entry_list, zone_message_en_cours=""):
     if (file_entry_list != []):
         text_path.delete(0.0, 1000.3)
     filename = filedialog.askopenfilename(
@@ -350,7 +393,8 @@ Cette fenêtre se fermera automatiquement à la fin du programme"""
         zone_message_en_cours.insert(0.0, texte)
 
 
-def download_zone(frame, text_bouton, file_entry_list, couleur_fond, cadre_output_message_en_cours=""):
+def download_zone(frame, text_bouton, file_entry_list,
+                  couleur_fond, cadre_output_message_en_cours=""):
     frame_button = tk.Frame(frame)
     frame_button.pack()
     frame_selected = tk.Frame(frame)
@@ -360,22 +404,31 @@ def download_zone(frame, text_bouton, file_entry_list, couleur_fond, cadre_outpu
     display_selected.pack()
     zone_message_en_cours = ""
     if (cadre_output_message_en_cours != ""):
-        # if (cadre_output_message_en_cours != "" and preferences["display_message_in_progress"]["value"]==1):
         zone_message_en_cours = tk.Text(cadre_output_message_en_cours,
                                         height=5, width=70, fg="red",
                                         bg=couleur_fond, bd=0, font="Arial 9 bold")
         zone_message_en_cours.pack()
     # bouton_telecharger = download_button(frame,"Sélectionner un fichier","#ffffff")
-    select_filename_button = tk.Button(frame_button, command=lambda: download_button(frame,
-                                                                                     text_bouton,
-                                                                                     frame_selected, display_selected,
-                                                                                     "#ffffff", file_entry_list, zone_message_en_cours),
-                                       text=text_bouton,
-                                       padx=10, pady=10)
+    select_filename_button = tk.Button(
+        frame_button,
+        command=lambda: download_button(
+            frame,
+            text_bouton,
+            frame_selected,
+            display_selected,
+            "#ffffff",
+            file_entry_list,
+            zone_message_en_cours,
+        ),
+        text=text_bouton,
+        padx=10,
+        pady=10,
+    )
     select_filename_button.pack()
 
 
-def select_directory_button(frame, text, frame_selected, text_path, couleur_fond, directory_list):
+def select_directory_button(
+        frame, text, frame_selected, text_path, couleur_fond, directory_list):
     if (directory_list != []):
         text_path.delete(0.0, 1000.3)
     filename = filedialog.askdirectory(
@@ -397,16 +450,19 @@ def select_directory(frame, text_bouton, directory_list, couleur_fond):
         frame_selected, height=3, width=50, bg=couleur_fond, bd=0, font="Arial 9 bold")
     display_selected.pack()
     # bouton_telecharger = download_button(frame,"Sélectionner un fichier","#ffffff")
-    select_filename_button = tk.Button(frame_button, command=lambda: download_button(frame,
-                                                                                     text_bouton,
-                                                                                     frame_selected, display_selected,
-                                                                                     "#ffffff", directory_list),
-                                       text=text_bouton,
-                                       padx=10, pady=10)
+    select_filename_button = tk.Button(
+        frame_button,
+        command=lambda: download_button(frame,
+                                        text_bouton,
+                                        frame_selected, display_selected,
+                                        "#ffffff", directory_list),
+        text=text_bouton,
+        padx=10, pady=10)
     select_filename_button.pack()
 
 
-def message_programme_en_cours(master, access_to_network=True, couleur_fond="#ffffff"):
+def message_programme_en_cours(
+        master, access_to_network=True, couleur_fond="#ffffff"):
     texte = """Le programme est en cours d'exécution.
 Vous pouvez suivre sa progression sur le terminal (écran noir).
 
@@ -437,9 +493,10 @@ def formulaire_main(access_to_network, last_version):
      zone_access2programs,
      zone_actions,
      zone_ok_help_cancel,
-     zone_notes] = main_form_frames("Bibliostratus : Stratégie d'alignement d'URIs pour la Transition bibliographique",
-                                    couleur_fond,
-                                    couleur_bouton, access_to_network)
+     zone_notes] = main_form_frames(
+         "Bibliostratus : Stratégie d'alignement d'URIs pour la Transition bibliographique",
+         couleur_fond,
+         couleur_bouton, access_to_network)
 
     frame1 = tk.Frame(zone_actions, highlightthickness=2,
                       highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
@@ -457,31 +514,40 @@ def formulaire_main(access_to_network, last_version):
         zone_ok_help_cancel, bg=couleur_fond, pady=10, padx=10)
     frame_help_cancel.pack()
 
-# =============================================================================
-#   Module blanc : aligner ses données bibliographiques ou AUT
-# =============================================================================
+    # =============================================================================
+    #   Module blanc : aligner ses données bibliographiques ou AUT
+    # =============================================================================
     tk.Label(frame1, text="Aligner ses données avec la BnF",
              bg=couleur_fond, fg="#365B43", font="Arial 11 bold").pack(anchor="w")
     tk.Label(frame1, text="\n", bg=couleur_fond).pack()
 
-    bib2arkButton = tk.Button(frame1, text="Aligner ses données  BIB\n avec le catalogue BnF\nà partir de fichiers tableaux",
-                              command=lambda: bib2ark.formulaire_noticesbib2arkBnF(
-                                  master, access_to_network, [0, False]),
-                              padx=40, pady=47, bg="#fefefe", font="Arial 9 bold")
+    bib2arkButton = tk.Button(
+        frame1,
+        text="Aligner ses données  BIB\n avec le catalogue BnF\nà partir de fichiers tableaux",
+        command=lambda: bib2ark.formulaire_noticesbib2arkBnF(
+            master, access_to_network, [0, False]
+        ),
+        padx=40,
+        pady=47,
+        bg="#fefefe",
+        font="Arial 9 bold",
+    )
     bib2arkButton.pack()
 
     tk.Label(frame1, text="\n", bg=couleur_fond, font="Arial 3 normal").pack()
 
-    aut2arkButton = tk.Button(frame1, text="Aligner ses données AUT ", command=lambda: aut2ark.formulaire_noticesaut2arkBnF(master, access_to_network, [0, False]),
-                              padx=55, pady=25, bg="#fefefe", font="Arial 8 normal")
+    aut2arkButton = tk.Button(
+        frame1, text="Aligner ses données AUT ",
+        command=lambda: aut2ark.formulaire_noticesaut2arkBnF(master, access_to_network, [0, False]),
+        padx=55, pady=25, bg="#fefefe", font="Arial 8 normal")
     aut2arkButton.pack()
 
     tk.Label(frame1, text="\n\n", bg=couleur_fond).pack()
 
     tk.Label(frame2, text="\n\n", bg=couleur_fond).pack()
-# =============================================================================
-#     Module bleu : convertir un fichier MARC en tables
-# =============================================================================
+    # =============================================================================
+    #     Module bleu : convertir un fichier MARC en tables
+    # =============================================================================
     tk.Label(frame3, text="Outils d'accompagnement", bg=couleur_fond,
              fg="#365B43", font="Arial 11 bold").pack(anchor="w")
     tk.Label(frame3, text="\n", bg=couleur_fond, font="Arial 4 normal").pack()
@@ -502,10 +568,14 @@ def formulaire_main(access_to_network, last_version):
 
     # ☺tk.Label(frame3,text="\n",bg=couleur_fond).pack()
 
-    tk.Label(frame3, text="\n"+"-"*50, bg=couleur_fond, fg="#a1a1a1").pack()
-# =============================================================================
-#    Module rouge : exporter des notices à partir d'une liste d'ARK
-# =============================================================================
+    tk.Label(
+        frame3,
+        text="\n" + "-" * 50,
+        bg=couleur_fond,
+        fg="#a1a1a1").pack()
+    # =============================================================================
+    #    Module rouge : exporter des notices à partir d'une liste d'ARK
+    # =============================================================================
     tk.Label(frame3, text="Après alignement", bg=couleur_fond,
              fg="#99182D", font="Arial 10 bold").pack(anchor="w")
     tk.Label(frame3, text="Exporter les données BnF après alignement",
@@ -544,20 +614,25 @@ def formulaire_main(access_to_network, last_version):
     tk.Label(zone_notes, text="Bibliostratus - Version " +
              str(version) + " - " + lastupdate, bg=couleur_fond).pack()
 
-    if (last_version[1] == True):
+    if last_version[1]:
         download_update = tk.Button(
-            zone_notes, text="Télécharger la version " + str(last_version[0]), command=download_last_update)
+            zone_notes,
+            text="Télécharger la version " + str(last_version[0]),
+            command=download_last_update
+        )
         download_update.pack()
-        url_release_notes = "https://github.com/Transition-bibliographique/bibliostratus/blob/master/source/release_notes.md#" + \
-            "version-" + str(last_version[0]).replace(".", "")
-        release_notes = tk.Button(zone_notes,
-                                  bg=couleur_fond,
-                                  font="Arial 8 bold italic",
-                                  border=0,
-                                  text="Liste des nouveautés",
-                                  command=lambda: download_last_update(
-                                      url_release_notes)
-                                  )
+        url_release_notes = (
+            "https://github.com/Transition-bibliographique/bibliostratus/blob/master/source/release_notes.md#"  # noqa
+            + "version-" + str(last_version[0]).replace(".", "")
+        )
+        release_notes = tk.Button(
+            zone_notes,
+            bg=couleur_fond,
+            font="Arial 8 bold italic",
+            border=0,
+            text="Liste des nouveautés",
+            command=lambda: download_last_update(url_release_notes)
+        )
         release_notes.pack()
 
     tk.mainloop()

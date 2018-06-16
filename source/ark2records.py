@@ -4,7 +4,8 @@ Created on Mon Oct 30 17:55:32 2017
 
 @author: Etienne Cavalié
 
-A partir d'un fichier contenant une liste d'ARK de notices biblio, récupérer les notices complètes (en XML)
+A partir d'un fichier contenant une liste d'ARK de notices biblio, récupérer les
+notices complètes (en XML)
 + option pour récupérer les notices d'autorité
 """
 
@@ -28,7 +29,8 @@ programID = "ark2records"
 lastupdate = "12/11/2017"
 last_version = [version, False]
 
-# Permet d'écrire dans une liste accessible au niveau général depuis le formulaire, et d'y accéder ensuite
+# Permet d'écrire dans une liste accessible au niveau général depuis le
+# formulaire, et d'y accéder ensuite
 entry_file_list = []
 
 listeARK_BIB = []
@@ -90,10 +92,10 @@ def ark2record(ark, type_record, format_BIB, renvoyerNotice=False):
     except error.URLerror:
         test = False
         print("Pb d'accès à la notice " + ark)
-    if (test == True):
+    if test:
         record = page.xpath(".//srw:recordData/mxc:record",
                             namespaces=main.ns)[0]
-    if (renvoyerNotice == True):
+    if renvoyerNotice:
         return record
 
 
@@ -142,9 +144,11 @@ def bib2aut(XMLrecord, ark, parametres):
             source = "idref"
         url = nn2url(nna, "aut", parametres, source)
         (test, record) = funcs.testURLetreeParse(url)
-        if (test and source == "bnf" and record.find("//srw:recordData/mxc:record", namespaces=main.ns) is not None):
+        if (test and source == "bnf" and record.find(
+                "//srw:recordData/mxc:record", namespaces=main.ns) is not None):
             XMLrec = record.xpath(
-                ".//srw:recordData/mxc:record", namespaces=main.ns)[0]
+                ".//srw:recordData/mxc:record", namespaces=main.ns
+            )[0]
             record2file(parametres["aut_file"], XMLrec,
                         parametres["format_file"])
         elif (test and source == "idref" and record.find("//record") is not None):
@@ -227,9 +231,13 @@ def extract1record(row, j, form, headers, parametres):
         if(test):
             nbResults = page2nbresults(page, ark)
             if (nbResults == "1" and "ark" in ark):
-                for XMLrec in page.xpath("//srw:record/srw:recordData/mxc:record", namespaces=main.ns):
-                    record2file(parametres["bib_file"],
-                                XMLrec, parametres["format_file"])
+                for XMLrec in page.xpath(
+                        "//srw:record/srw:recordData/mxc:record",
+                        namespaces=main.ns):
+                    record2file(
+                        parametres["bib_file"], XMLrec,
+                        parametres["format_file"]
+                    )
                     if (parametres["AUTliees"] > 0):
                         bib2aut(XMLrec, ark, parametres)
             elif (nbResults == "1" and "ppn" in ark.lower()):
@@ -240,8 +248,9 @@ def extract1record(row, j, form, headers, parametres):
                         bib2aut(XMLrec, ark, parametres)
 
 
-def callback(master, form, filename, type_records_form, headers, AUTlieesAUT, AUTlieesSUB, AUTlieesWORK, outputID, format_records=1, format_file=1):
-    AUTliees = AUTlieesAUT+AUTlieesSUB + AUTlieesWORK
+def callback(master, form, filename, type_records_form, headers, AUTlieesAUT,
+             AUTlieesSUB, AUTlieesWORK, outputID, format_records=1, format_file=1):
+    AUTliees = AUTlieesAUT + AUTlieesSUB + AUTlieesWORK
     format_BIB = dict_format_records[format_records]
     type_records = "bib"
     if (type_records_form == 2):
@@ -267,12 +276,12 @@ def callback(master, form, filename, type_records_form, headers, AUTlieesAUT, AU
         parametres["aut_file"] = aut_file
     with open(filename, newline='\n', encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter='\t')
-        if (headers == True):
+        if headers:
             next(entry_file, None)
         j = 0
         for row in entry_file:
             extract1record(row, j, form, headers, parametres)
-            j = j+1
+            j = j + 1
 
         file_fin(bib_file, format_file)
         if (AUTliees == 1):
@@ -299,7 +308,8 @@ def fin_traitements(window, outputID):
 # Création de la boîte de dialogue
 # ==============================================================================
 
-def formulaire_ark2records(master, access_to_network=True, last_version=[version, False]):
+def formulaire_ark2records(
+        master, access_to_network=True, last_version=[version, False]):
     couleur_fond = "white"
     couleur_bouton = "#99182D"
 
@@ -308,9 +318,11 @@ def formulaire_ark2records(master, access_to_network=True, last_version=[version
      zone_access2programs,
      zone_actions,
      zone_ok_help_cancel,
-     zone_notes] = main.form_generic_frames(master, "Bibliostratus : Récupérer les notices complètes de la BnF à partir d'une liste d'ARK",
-                                            couleur_fond, couleur_bouton,
-                                            access_to_network)
+     zone_notes] = main.form_generic_frames(
+         master,
+         "Bibliostratus : Récupérer les notices complètes de la BnF à partir d'une liste d'ARK",
+         couleur_fond, couleur_bouton,
+         access_to_network)
 
     zone_ok_help_cancel.config(padx=10)
 
@@ -352,21 +364,26 @@ def formulaire_ark2records(master, access_to_network=True, last_version=[version
     """entry_filename = tk.Entry(frame_input_file, width=20, bd=2, bg=couleur_fond)
     entry_filename.pack(side="left")
     entry_filename.focus_set()"""
-    main.download_zone(frame_input_file, "Sélectionner un fichier contenant\nune liste d'ARK (un ARK par ligne)",
-                       entry_file_list, couleur_fond, zone_notes_message_en_cours)
+    main.download_zone(
+        frame_input_file,
+        "Sélectionner un fichier contenant\nune liste d'ARK (un ARK par ligne)",
+        entry_file_list, couleur_fond, zone_notes_message_en_cours
+    )
 
     tk.Label(frame_input_aut, text="\n", bg=couleur_fond).pack()
 
     # ARK de BIB ou d'AUT ?
     type_records = tk.IntVar()
-    bib2ark.radioButton_lienExample(frame_input_aut, type_records, 1, couleur_fond,
-                                    "ARK de notices BIB",
-                                    "",
-                                    "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/listeARKbib.tsv")
-    bib2ark.radioButton_lienExample(frame_input_aut, type_records, 2, couleur_fond,
-                                    "ARK de notices AUT",
-                                    "",
-                                    "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/listeARKaut.tsv")
+    bib2ark.radioButton_lienExample(
+        frame_input_aut, type_records, 1, couleur_fond, "ARK de notices BIB",
+        "",
+        "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/listeARKbib.tsv"  # noqa
+    )
+    bib2ark.radioButton_lienExample(
+        frame_input_aut, type_records, 2, couleur_fond, "ARK de notices AUT",
+        "",
+        "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/listeARKaut.tsv"  # noqa
+    )
     type_records.set(1)
 
     tk.Label(frame_input_aut, text="-------------------",
@@ -374,9 +391,9 @@ def formulaire_ark2records(master, access_to_network=True, last_version=[version
 
     # Fichier avec en-têtes ?
     headers = tk.IntVar()
-    headerButton = tk.Checkbutton(frame_input_aut, text="Mon fichier a des en-têtes de colonne",
-                                  variable=headers,
-                                  bg=couleur_fond, justify="left").pack(anchor="w")
+    tk.Checkbutton(frame_input_aut, text="Mon fichier a des en-têtes de colonne",
+                   variable=headers,
+                   bg=couleur_fond, justify="left").pack(anchor="w")
 
     headers.set(1)
 
@@ -387,7 +404,7 @@ def formulaire_ark2records(master, access_to_network=True, last_version=[version
     tk.Checkbutton(frame_input_aut, text="auteurs",
                    variable=AUTlieesAUT,
                    bg=couleur_fond, justify="left").pack(anchor="w", side="left")
-    #tk.Label(frame_input_aut, text="\n", bg=couleur_fond).pack()
+    # tk.Label(frame_input_aut, text="\n", bg=couleur_fond).pack()
     AUTlieesSUB = tk.IntVar()
     tk.Checkbutton(frame_input_aut, text="sujets",
                    variable=AUTlieesSUB,
@@ -405,16 +422,35 @@ def formulaire_ark2records(master, access_to_network=True, last_version=[version
                    variable=format_records_choice, value=1, bg=couleur_fond).pack(anchor="nw")
     tk.Radiobutton(frame_output_options_marc, text="Intermarc", justify="left",
                    variable=format_records_choice, value=3, bg=couleur_fond).pack(anchor="nw")
-    tk.Radiobutton(frame_output_options_marc, text="Unimarc avec notices analytiques",
-                   justify="left", variable=format_records_choice, value=2, bg=couleur_fond).pack(anchor="nw")
-    tk.Radiobutton(frame_output_options_marc, text="Intermarc avec notices analytiques",
-                   justify="left", variable=format_records_choice, value=4, bg=couleur_fond).pack(anchor="nw")
+    tk.Radiobutton(
+        frame_output_options_marc,
+        text="Unimarc avec notices analytiques",
+        justify="left",
+        variable=format_records_choice,
+        value=2,
+        bg=couleur_fond
+    ).pack(anchor="nw")
+    tk.Radiobutton(
+        frame_output_options_marc,
+        text="Intermarc avec notices analytiques",
+        justify="left",
+        variable=format_records_choice,
+        value=4,
+        bg=couleur_fond
+    ).pack(anchor="nw")
     format_records_choice.set(1)
 
     tk.Label(frame_output_options_inter, text="\n",
              bg=couleur_fond).pack(side="left")
 
-    #tk.Label(frame_output_options,text="\n\n", justify="left", variable=format_records_choice , value=4, bg=couleur_fond).pack()
+    # tk.Label(
+    #     frame_output_options,
+    #     text="\n\n",
+    #     justify="left",
+    #     variable=format_records_choice,
+    #     value=4,
+    #     bg=couleur_fond
+    # ).pack()
 
     tk.Label(frame_output_file, text="Préfixe fichier(s) en sortie",
              bg=couleur_fond).pack(side="left", anchor="w")
@@ -433,11 +469,28 @@ def formulaire_ark2records(master, access_to_network=True, last_version=[version
     format_file.set(1)
 
     # file_format.focus_set()
-    b = tk.Button(zone_ok_help_cancel, text="OK",
-                  command=lambda: callback(master, form, entry_file_list[0], type_records.get(), headers.get(), AUTlieesAUT.get(
-                  ), AUTlieesSUB.get(), AUTlieesWORK.get(), outputID.get(), format_records_choice.get(), format_file.get()),
-                  width=15, borderwidth=1, pady=20, fg="white",
-                  bg=couleur_bouton)
+    b = tk.Button(
+        zone_ok_help_cancel,
+        text="OK",
+        command=lambda: callback(
+            master,
+            form,
+            entry_file_list[0],
+            type_records.get(),
+            headers.get(),
+            AUTlieesAUT.get(),
+            AUTlieesSUB.get(),
+            AUTlieesWORK.get(),
+            outputID.get(),
+            format_records_choice.get(),
+            format_file.get(),
+        ),
+        width=15,
+        borderwidth=1,
+        pady=20,
+        fg="white",
+        bg=couleur_bouton,
+    )
     b.pack()
 
     main.form_saut_de_ligne(zone_ok_help_cancel, couleur_fond)
@@ -465,9 +518,13 @@ def formulaire_ark2records(master, access_to_network=True, last_version=[version
     tk.Label(zone_notes, text="Bibliostratus - Version " +
              str(main.version) + " - " + main.lastupdate, bg=couleur_fond).pack()
 
-    """if (main.last_version[1] == True):
-        download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(main.last_version[0]), command=download_last_update)
-        download_update.pack()"""
+    # if (main.last_version[1] == True):
+    #     download_update = tk.Button(
+    #         zone_notes,
+    #         text="Télécharger la version " + str(main.last_version[0]),
+    #         command=download_last_update
+    #     )
+    #     download_update.pack()
 
     tk.mainloop()
 
@@ -477,4 +534,4 @@ if __name__ == '__main__':
     # if(access_to_network is True):
     #    last_version = main.check_last_compilation(programID)
     main.formulaire_main(access_to_network, last_version)
-    #formulaire_ark2records(access_to_network,[version, False])
+    # formulaire_ark2records(access_to_network,[version, False])

@@ -42,10 +42,15 @@ def create_file_doc_record(doc_record, id_traitement):
 # Fonctions de nettoyage
 # =============================================================================
 chiffers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-letters = ["a", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
-           "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
-punctation = [".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
-              "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<", ">", ")", "}"]
+letters = [
+    "a", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p",
+    "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
+]
+punctation = [
+    ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
+    "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<",
+    ">", ")", "}"
+]
 
 liste_fichiers = []
 liste_resultats = defaultdict(list)
@@ -134,16 +139,20 @@ def record2meta(record, liste_elements, alternate_list=[]):
     zone = []
     for el in liste_elements:
         value = path2value(record, el)
-        #print("record2meta : " + el + " / "  + str(value))
+        # print("record2meta : " + el + " / "  + str(value))
         if (value is not None):
             zone.append(value)
-    #zone = [path2value(record, el) for el in liste_elements if path2value(record, el) is not None]
+    # zone = [path2value(record, el) for el in liste_elements if path2value(record, el) is not None]
     if (zone == [] and alternate_list != []):
         for el in alternate_list:
             value = path2value(record, el)
             if (value is not None):
                 zone.append(value)
-        #zone = [path2value(record, el) for el in alternate_list if path2value(record, el) is not None]
+        # zone = [
+        #     path2value(record, el)
+        #     for el in alternate_list
+        #     if path2value(record, el) is not None
+        # ]
     zone = " ".join(zone)
     # print(zone)
     return zone
@@ -157,7 +166,7 @@ def record2title(f200a_e):
 
 def record2date(f100, f210d):
     date = ""
-    if (isinstance(f100[7:11], int) == True):
+    if isinstance(f100[7:11], int):
         date = f100[7:11]
     else:
         date = f210d
@@ -349,7 +358,8 @@ def launch(form, entry_filename, file_format, output_ID, master):
     end_of_treatments(form, output_ID)
 
 
-def formulaire_marc2tables(master, access_to_network=True, last_version=[version, False]):
+def formulaire_marc2tables(
+        master, access_to_network=True, last_version=[version, False]):
     # =============================================================================
     # Structure du formulaire - Cadres
     # =============================================================================
@@ -362,12 +372,21 @@ def formulaire_marc2tables(master, access_to_network=True, last_version=[version
      zone_access2programs,
      zone_actions,
      zone_ok_help_cancel,
-     zone_notes] = main.form_generic_frames(master, "Conversion de fichiers de notices MARC en tableaux",
-                                            couleur_fond, couleur_bouton,
-                                            access_to_network)
+     zone_notes] = main.form_generic_frames(
+         master,
+         "Conversion de fichiers de notices MARC en tableaux",
+         couleur_fond, couleur_bouton,
+         access_to_network)
 
-    cadre_input = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton,
-                           relief="groove", height=150, padx=10, bg=couleur_fond)
+    cadre_input = tk.Frame(
+        zone_actions,
+        highlightthickness=2,
+        highlightbackground=couleur_bouton,
+        relief="groove",
+        height=150,
+        padx=10,
+        bg=couleur_fond
+    )
     cadre_input.pack(side="left", anchor="w")
     cadre_input_header = tk.Frame(cadre_input, bg=couleur_fond)
     cadre_input_header.pack(anchor="w")
@@ -387,10 +406,9 @@ def formulaire_marc2tables(master, access_to_network=True, last_version=[version
     cadre_inter.pack(side="left")
     tk.Label(cadre_inter, text=" ", bg=couleur_fond).pack()
 
-
-# =============================================================================
-#     Formulaire - Fichier en entrée
-# =============================================================================
+    # =============================================================================
+    #     Formulaire - Fichier en entrée
+    # =============================================================================
 
     cadre_output = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton,
                             relief="groove", height=150, padx=10, bg=couleur_fond)
@@ -417,23 +435,42 @@ def formulaire_marc2tables(master, access_to_network=True, last_version=[version
     entry_filename.pack(side="left")
     entry_filename.focus_set()
 
-    #tk.Button(cadre_input_file_browse, text="Sélectionner le fichier\ncontenant les notices", command=lambda:main.openfile(cadre_input_file_name, popup_filename), width=20).pack()
+    # tk.Button(
+    #     cadre_input_file_browse,
+    #     text="Sélectionner le fichier\ncontenant les notices",
+    #     command=lambda: main.openfile(cadre_input_file_name, popup_filename),
+    #     width=20
+    # ).pack()
 
     tk.Label(cadre_input_type_docs, bg=couleur_fond, text="\nFormat",
              anchor="w", justify="left").pack(anchor="w")
     file_format = tk.IntVar()
-    tk.Radiobutton(cadre_input_type_docs, bg=couleur_fond, text="iso2709", variable=file_format, value=1,
-                   anchor="w", justify="left").pack(anchor="w")
-    tk.Radiobutton(cadre_input_type_docs, bg=couleur_fond, text="Marc XML", variable=file_format, value=2,
-                   anchor="w", justify="left").pack(anchor="w")
+    tk.Radiobutton(
+        cadre_input_type_docs,
+        bg=couleur_fond,
+        text="iso2709",
+        variable=file_format,
+        value=1,
+        anchor="w",
+        justify="left"
+    ).pack(anchor="w")
+    tk.Radiobutton(
+        cadre_input_type_docs,
+        bg=couleur_fond,
+        text="Marc XML",
+        variable=file_format,
+        value=2,
+        anchor="w",
+        justify="left"
+    ).pack(anchor="w")
     file_format.set(1)
 
     tk.Label(cadre_input_type_docs, text="\n\n\n", bg=couleur_fond).pack()
 
-# =============================================================================
-#     Formulaire - Fichiers en sortie
-# =============================================================================
-#
+    # =============================================================================
+    #     Formulaire - Fichiers en sortie
+    # =============================================================================
+    #
 
     # Choix du format
     tk.Label(cadre_output_header, bg=couleur_fond, fg=couleur_bouton, font="bold",
@@ -471,8 +508,16 @@ def formulaire_marc2tables(master, access_to_network=True, last_version=[version
 
     tk.Label(cadre_valider, font="bold", text="", bg=couleur_fond).pack()
 
-    call4help = tk.Button(cadre_valider, text="Besoin d'aide ?", command=lambda: main.click2openurl(
-        "https://github.com/Transition-bibliographique/alignements-donnees-bnf/"), padx=10, pady=1, width=15)
+    call4help = tk.Button(
+        cadre_valider,
+        text="Besoin d'aide ?",
+        command=lambda: main.click2openurl(
+            "https://github.com/Transition-bibliographique/alignements-donnees-bnf/"
+        ),
+        padx=10,
+        pady=1,
+        width=15,
+    )
     call4help.pack()
 
     cancel = tk.Button(cadre_valider, bg=couleur_fond, text="Annuler",
@@ -482,9 +527,13 @@ def formulaire_marc2tables(master, access_to_network=True, last_version=[version
     tk.Label(zone_notes, text="Version " + str(main.version) +
              " - " + lastupdate, bg=couleur_fond).pack()
 
-    """if (main.last_version[1] == True):
-        download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(main.last_version[0]), command=download_last_update)
-        download_update.pack()"""
+    # if (main.last_version[1] == True):
+    #     download_update = tk.Button(
+    #         zone_notes,
+    #         text="Télécharger la version " + str(main.last_version[0]),
+    #         command=download_last_update
+    #     )
+    #     download_update.pack()
 
     tk.mainloop()
 
