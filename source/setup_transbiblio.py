@@ -20,7 +20,7 @@ include_files = [path_anaconda + r"DLLs\tcl86t.dll",
                  path_anaconda + r"DLLs\tk86t.dll"]
 base = None
 
-build_exe_options = {"packages": ["files", "tools"], "include_files": ["tcl86t.dll", "tk86t.dll"]}  
+build_exe_options = {"packages": ["files", "tools"], "include_files": ["tcl86t.dll", "tk86t.dll"]}
 setup(
 
     name = "TransBiblio",

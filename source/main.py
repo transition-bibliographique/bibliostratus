@@ -58,7 +58,7 @@ errors = {
         "pb_input_utf8" : "Erreur d'encodage constatée\n\nLe fichier en entrée doit être en UTF-8 sans BOM.",
         "pb_input_utf8_marcEdit" : """Erreur d'encodage constatée :
         Le fichier en entrée doit être en UTF-8 sans BOM.
-        
+
         Si vous utilisez un fichier iso2709, convertissez-le d'abord en XML avec MarcEdit""",
         "format_fichier_en_entree" : """Erreur dans le traitement
 
@@ -110,7 +110,7 @@ def check_access2apis(i,dict_report):
     dict_report["testAbes"][i] = testAbes
     dict_report["testBnF"][i] = testBnF
 
-        
+
 
 def clean_string(string,replaceSpaces=False,replaceTirets=False):
     string = unidecode(string.lower())
@@ -126,7 +126,7 @@ def clean_string(string,replaceSpaces=False,replaceTirets=False):
     return string
 
 def RepresentsInt(s):
-    try: 
+    try:
         int(s)
         return True
     except ValueError:
@@ -174,7 +174,7 @@ def form_generic_frames(master,title, couleur_fond, couleur_bordure,access_to_ne
 
     zone_alert_explications = tk.Frame(form, bg=couleur_fond, pady=10)
     zone_alert_explications.pack()
-    
+
     zone_access2programs = tk.Frame(form, bg=couleur_fond)
     zone_access2programs.pack()
     zone_actions = tk.Frame(zone_access2programs, bg=couleur_fond)
@@ -185,10 +185,10 @@ def form_generic_frames(master,title, couleur_fond, couleur_bordure,access_to_ne
     zone_notes.pack()
 
     if (access_to_network == False):
-        tk.Label(zone_alert_explications, text=errors["no_internet"], 
+        tk.Label(zone_alert_explications, text=errors["no_internet"],
                  bg=couleur_fond,  fg="red").pack()
 
-    
+
     return [form,
             zone_alert_explications,
             zone_access2programs,
@@ -220,7 +220,7 @@ def main_form_frames(title, couleur_fond, couleur_bordure,access_to_network):
 
     zone_alert_explications = tk.Frame(master, bg=couleur_fond, pady=10)
     zone_alert_explications.pack()
-    
+
     zone_access2programs = tk.Frame(master, bg=couleur_fond)
     zone_access2programs.pack()
     zone_actions = tk.Frame(zone_access2programs, bg=couleur_fond)
@@ -231,10 +231,10 @@ def main_form_frames(title, couleur_fond, couleur_bordure,access_to_network):
     zone_notes.pack()
 
     if (access_to_network == False):
-        tk.Label(zone_alert_explications, text=errors["no_internet"], 
+        tk.Label(zone_alert_explications, text=errors["no_internet"],
                  bg=couleur_fond,  fg="red").pack()
 
-    
+
     return [master,
             zone_alert_explications,
             zone_access2programs,
@@ -253,8 +253,8 @@ def check_file_utf8(master, filename):
         popup_errors(master,"Le fichier " + filename + " n'existe pas")
     except UnicodeDecodeError:
         popup_errors(master,errors["pb_input_utf8"])
-        
-       
+
+
 def check_file_name(master,filename):
     try:
         open(filename,"r")
@@ -283,7 +283,7 @@ def control_columns_number(master,row,headers_columns):
         message = errors["nb_colonnes_incorrect"] + "\n\n\nFormat attendu - Ligne 1 :\n\n" + message
         popup_errors(master,message)
     return test
-        
+
 
 def popup_errors(master,text,online_help_text="",online_help_link=""):
     couleur_fond = "white"
@@ -294,7 +294,7 @@ def popup_errors(master,text,online_help_text="",online_help_link=""):
             zone_actions,
             zone_ok_help_cancel,
             zone_notes] = form_generic_frames(master,"Alerte", couleur_fond, couleur_bordure,True)
-    tk.Label(zone_access2programs, text=text, fg=couleur_bordure, 
+    tk.Label(zone_access2programs, text=text, fg=couleur_bordure,
              font="bold", bg=couleur_fond, padx=20, pady=20).pack()
     if (online_help_text != ""):
         help_button = tk.Button(zone_access2programs, bd=2, justify="left", font="Arial 10 italic",
@@ -307,7 +307,7 @@ def popup_errors(master,text,online_help_text="",online_help_link=""):
     cancel.pack()
 
 #popup_filename = ""
-    
+
 def openfile(frame,liste,background_color="white"):
     liste = []
     liste.append(filedialog.askopenfilename(title='Sélectionner un fichier'))
@@ -325,11 +325,11 @@ def download_button(frame,text,frame_selected,text_path,couleur_fond,file_entry_
     text_path.insert(0.0,filename)
     texte = """Après avoir lancé le traitement,
 vous pourrez suivre sa progression sur le terminal (fenêtre écran noir).
-    
+
 Cette fenêtre se fermera automatiquement à la fin du programme"""
     if (zone_message_en_cours != ""):
         zone_message_en_cours.insert(0.0,texte)
-    
+
 def download_zone(frame, text_bouton,file_entry_list,couleur_fond,cadre_output_message_en_cours=""):
     frame_button = tk.Frame(frame)
     frame_button.pack()
@@ -340,12 +340,12 @@ def download_zone(frame, text_bouton,file_entry_list,couleur_fond,cadre_output_m
     zone_message_en_cours = ""
     if (cadre_output_message_en_cours != ""):
     #if (cadre_output_message_en_cours != "" and preferences["display_message_in_progress"]["value"]==1):
-        zone_message_en_cours = tk.Text(cadre_output_message_en_cours, 
+        zone_message_en_cours = tk.Text(cadre_output_message_en_cours,
                                         height=5, width=70, fg="red",
                                         bg=couleur_fond, bd=0, font="Arial 9 bold")
         zone_message_en_cours.pack()
     #bouton_telecharger = download_button(frame,"Sélectionner un fichier","#ffffff")
-    select_filename_button = tk.Button(frame_button,command=lambda:download_button(frame, 
+    select_filename_button = tk.Button(frame_button,command=lambda:download_button(frame,
                                                     text_bouton,
                                                     frame_selected,display_selected,
                                                     "#ffffff", file_entry_list,zone_message_en_cours),
@@ -363,7 +363,7 @@ def select_directory_button(frame,text,frame_selected,text_path,couleur_fond,dir
     else:
         directory_list[0] = filename
     text_path.insert(0.0,filename)
-    
+
 
 def select_directory(frame, text_bouton,directory_list,couleur_fond):
     frame_button = tk.Frame(frame)
@@ -373,7 +373,7 @@ def select_directory(frame, text_bouton,directory_list,couleur_fond):
     display_selected = tk.Text(frame_selected, height=3, width=50, bg=couleur_fond, bd=0, font="Arial 9 bold")
     display_selected.pack()
     #bouton_telecharger = download_button(frame,"Sélectionner un fichier","#ffffff")
-    select_filename_button = tk.Button(frame_button,command=lambda:download_button(frame, 
+    select_filename_button = tk.Button(frame_button,command=lambda:download_button(frame,
                                                     text_bouton,
                                                     frame_selected,display_selected,
                                                     "#ffffff", directory_list),
@@ -385,7 +385,7 @@ def select_directory(frame, text_bouton,directory_list,couleur_fond):
 def message_programme_en_cours(master, access_to_network=True, couleur_fond="#ffffff"):
     texte = """Le programme est en cours d'exécution.
 Vous pouvez suivre sa progression sur le terminal (écran noir).
-    
+
 Cette fenêtre se fermera toute seule à la fin du programme
 et sa fermeture signifiera que le programme est arrivée à la fin du traitement"""
     #zone_message.insert(0.0,texte)
@@ -402,13 +402,13 @@ et sa fermeture signifiera que le programme est arrivée à la fin du traitement
     a.pack()
     #form.mainloop()
     return form
-    
+
 
 
 def formulaire_main(access_to_network, last_version):
     couleur_fond = "white"
     couleur_bouton = "#e1e1e1"
-    
+
     [master,
      zone_alert_explications,
      zone_access2programs,
@@ -417,33 +417,33 @@ def formulaire_main(access_to_network, last_version):
      zone_notes] = main_form_frames("Bibliostratus : Stratégie d'alignement d'URIs pour la Transition bibliographique",
                                       couleur_fond,
                                       couleur_bouton,access_to_network)
-    
+
     frame1 = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
     frame1.pack(side="left",anchor="w")
-    
+
     frame2 = tk.Frame(zone_actions, highlightthickness=0, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=5)
     frame2.pack(side="left",anchor="w")
-    
+
     frame3 = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
     frame3.pack(side="left")
-    
+
     frame_help_cancel = tk.Frame(zone_ok_help_cancel, bg=couleur_fond, pady=10, padx=10)
     frame_help_cancel.pack()
-    
+
 # =============================================================================
-#   Module blanc : aligner ses données bibliographiques ou AUT  
+#   Module blanc : aligner ses données bibliographiques ou AUT
 # =============================================================================
     tk.Label(frame1,text="Aligner ses données avec la BnF",bg=couleur_fond,fg="#365B43",font="Arial 11 bold").pack(anchor="w")
     tk.Label(frame1,text="\n",bg=couleur_fond).pack()
 
-    bib2arkButton = tk.Button(frame1, text = "Aligner ses données  BIB\n avec le catalogue BnF\nà partir de fichiers tableaux", 
-                              command=lambda: bib2ark.formulaire_noticesbib2arkBnF(master,access_to_network,[0,False]), 
+    bib2arkButton = tk.Button(frame1, text = "Aligner ses données  BIB\n avec le catalogue BnF\nà partir de fichiers tableaux",
+                              command=lambda: bib2ark.formulaire_noticesbib2arkBnF(master,access_to_network,[0,False]),
                               padx=40,pady=47, bg="#fefefe", font="Arial 9 bold")
     bib2arkButton.pack()
-    
+
     tk.Label(frame1,text="\n",bg=couleur_fond, font="Arial 3 normal").pack()
-        
-    aut2arkButton = tk.Button(frame1, text = "Aligner ses données AUT ", command=lambda: aut2ark.formulaire_noticesaut2arkBnF(master,access_to_network,[0,False]), 
+
+    aut2arkButton = tk.Button(frame1, text = "Aligner ses données AUT ", command=lambda: aut2ark.formulaire_noticesaut2arkBnF(master,access_to_network,[0,False]),
                               padx=55,pady=25, bg="#fefefe", font="Arial 8 normal")
     aut2arkButton.pack()
 
@@ -459,20 +459,20 @@ def formulaire_main(access_to_network, last_version):
 
     tk.Label(frame3,text="Avant alignement",bg=couleur_fond,
              fg="#2D4991",font="Arial 10 bold").pack(anchor="w")
-    
+
     tk.Label(frame3,text="Préparer ses données",
              bg=couleur_fond,fg="#365B43",font="Arial 9 bold").pack(anchor="w")
     tk.Label(frame3,text="(constitution de tableaux\nà partir d'un export catalogue)",
              bg=couleur_fond,fg="#365B43",font="Arial 9 normal", justify="left").pack(anchor="w")
-    
-    
-    marc2tableButton = tk.Button(frame3, text = "Convertir un fichier Unimarc\n en tableaux", 
-                                 command=lambda: marc2tables.formulaire_marc2tables(master,access_to_network), 
+
+
+    marc2tableButton = tk.Button(frame3, text = "Convertir un fichier Unimarc\n en tableaux",
+                                 command=lambda: marc2tables.formulaire_marc2tables(master,access_to_network),
                                  padx=10,pady=10, bg="#2D4991",fg="white")
     marc2tableButton.pack()
-    
+
     #☺tk.Label(frame3,text="\n",bg=couleur_fond).pack()
-    
+
     tk.Label(frame3, text="\n"+"-"*50, bg=couleur_fond,fg="#a1a1a1").pack()
 # =============================================================================
 #    Module rouge : exporter des notices à partir d'une liste d'ARK
@@ -481,30 +481,30 @@ def formulaire_main(access_to_network, last_version):
              fg="#99182D",font="Arial 10 bold").pack(anchor="w")
     tk.Label(frame3,text="Exporter les données BnF après alignement",bg=couleur_fond,fg="#365B43",font="Arial 9 bold").pack(anchor="w")
 
-    ark2recordsButton = tk.Button(frame3, text = "Exporter une liste d'ARK BnF\n en notices", 
-                                  command=lambda: ark2records.formulaire_ark2records(master,access_to_network,[0,False]), 
+    ark2recordsButton = tk.Button(frame3, text = "Exporter une liste d'ARK BnF\n en notices",
+                                  command=lambda: ark2records.formulaire_ark2records(master,access_to_network,[0,False]),
                                   padx=10,pady=10, bg="#99182D", fg="white")
     ark2recordsButton.pack()
 
     tk.Label(frame3,text="\n",bg=couleur_fond, font="Arial 7 normal").pack()
 
-    
+
     tk.Label(zone_ok_help_cancel,text=" ", pady=5, bg=couleur_fond).pack()
-    
+
 
     call4help = tk.Button(frame_help_cancel,
-                          text=texte_bouton_help, 
-                          command=lambda: click2url(url_online_help), 
+                          text=texte_bouton_help,
+                          command=lambda: click2url(url_online_help),
                           pady=25, padx=5, width=12)
     call4help.pack()
     tk.Label(frame_help_cancel, text="\n",bg=couleur_fond, font="Arial 1 normal").pack()
-    
-    forum_button = tk.Button(frame_help_cancel, 
-                          text=texte_bouton_forum, 
-                          command=lambda: click2url(url_forum_aide), 
+
+    forum_button = tk.Button(frame_help_cancel,
+                          text=texte_bouton_forum,
+                          command=lambda: click2url(url_forum_aide),
                           pady=15, padx=5, width=12)
     forum_button.pack()
-    
+
     tk.Label(frame_help_cancel, text="\n",bg=couleur_fond, font="Arial 8 normal").pack()
     cancel = tk.Button(frame_help_cancel, text="Annuler",bg=couleur_fond, command=lambda: annuler(master), pady=45, padx=5, width=12)
     cancel.pack()
@@ -512,22 +512,22 @@ def formulaire_main(access_to_network, last_version):
 
 
     tk.Label(zone_notes, text = "Bibliostratus - Version " + str(version) + " - " + lastupdate, bg=couleur_fond).pack()
-    
+
     if (last_version[1] == True):
         download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(last_version[0]), command=download_last_update)
         download_update.pack()
         url_release_notes = "https://github.com/Transition-bibliographique/bibliostratus/blob/master/source/release_notes.md#" + "version-" + str(last_version[0]).replace(".","")
-        release_notes = tk.Button(zone_notes, 
+        release_notes = tk.Button(zone_notes,
                                   bg=couleur_fond,
                                   font="Arial 8 bold italic",
                                   border=0,
-                                  text = "Liste des nouveautés", 
+                                  text = "Liste des nouveautés",
                                   command=lambda: download_last_update(url_release_notes)
                                   )
         release_notes.pack()
-    
+
     tk.mainloop()
-    
+
 
 if __name__ == '__main__':
     access_to_network = check_access_to_network()

@@ -53,7 +53,7 @@ def create_reports(id_traitement_code, nb_fichiers_a_produire):
     stats_report_file_name=id_traitement_code + "-" + "rapport_stats_noticesbib2ark.txt"
     stats_report_file = open(stats_report_file_name,"w")
     stats_report_file.write("Nb ARK trouvés\tNb notices concernées\n")
-    
+
     #report_type_convert_file_name = id_traitement_code + "-" + "NumNotices-TypeConversion.txt"
     #report_type_convert_file = open(report_type_convert_file_name,"w")
     #report_type_convert_file.write("NumNotice\tMéthode pour trouver l'ARK\n")
@@ -69,18 +69,18 @@ def create_reports_1file(id_traitement_code):
     unique_file_results_frbnf_isbn2ark_name = id_traitement_code + "-" + "resultats_noticesbib2arkBnF.txt"
     unique_file_results_frbnf_isbn2ark = open(unique_file_results_frbnf_isbn2ark_name, "w", encoding="utf-8")
     return [unique_file_results_frbnf_isbn2ark]
-    
-def create_reports_files(id_traitement_code):    
+
+def create_reports_files(id_traitement_code):
     multiple_files_pbFRBNF_ISBN_name = id_traitement_code + "-resultats_Probleme_FRBNF_ISBN.txt"
     multiple_files_0_ark_name =  id_traitement_code + "-resultats_0_ark_trouve.txt"
     multiple_files_1_ark_name =  id_traitement_code + "-resultats_1_ark_trouve.txt"
     multiple_files_plusieurs_ark_name =  id_traitement_code + "-resultats_plusieurs_ark_trouves.txt"
-    
+
     multiple_files_pbFRBNF_ISBN = open(multiple_files_pbFRBNF_ISBN_name, "w", encoding="utf-8")
     multiple_files_0_ark = open(multiple_files_0_ark_name, "w", encoding="utf-8")
     multiple_files_1_ark = open(multiple_files_1_ark_name, "w", encoding="utf-8")
     multiple_files_plusieurs_ark_name = open(multiple_files_plusieurs_ark_name, "w", encoding="utf-8")
-    
+
     return [multiple_files_pbFRBNF_ISBN,multiple_files_0_ark,multiple_files_1_ark,multiple_files_plusieurs_ark_name]
 
 
@@ -233,7 +233,7 @@ def align_from_aut_item(row,n,form_aut2ark,parametres,liste_reports):
     print(str(n) + ". " + NumNot + " : " + ark_trouve)
     nbARK = len(ark_trouve.split(","))
     if (ark_trouve == ""):
-        nbARK = 0   
+        nbARK = 0
     if (ark_trouve == "Pb FRBNF"):
         nb_notices_nb_ARK["Pb FRBNF"] += 1
     else:
@@ -319,7 +319,7 @@ def align_from_bib_item(row,n,form_aut2ark,parametres,liste_reports):
     print(str(n) + ". " + NumNot + " : " + ark_trouve)
     nbARK = len(ark_trouve.split(","))
     if (ark_trouve == ""):
-        nbARK = 0   
+        nbARK = 0
     if (ark_trouve == "Pb FRBNF"):
         nb_notices_nb_ARK["Pb FRBNF"] += 1
     else:
@@ -336,8 +336,8 @@ def align_from_bib_item(row,n,form_aut2ark,parametres,liste_reports):
         row2file(liste_metadonnees,liste_reports)
     elif(parametres['file_nb'] ==  2):
         row2files(liste_metadonnees,liste_reports)
-    
-    
+
+
 
 def align_from_bib(form, entry_filename, liste_reports, parametres):
     """Alignement de ses données d'autorité avec les autorités BnF à partir d'une extraction de sa base bibliographique (métadonnées BIB + Nom, prénom et dates de l'auteur)"""
@@ -366,14 +366,14 @@ def nettoyageArk(ark):
         pos = ark.find("ark:/12148/cb")
         ark_nett = ark[pos:pos+22]
     return ark_nett
-        
+
 
 #==============================================================================
 # Fonctions d'alignement : recherche sur identifiants, points d'accès ou titre-auteur
 #==============================================================================
 def arkAut2arkAut(NumNot,ark):
     """Actualisation d'un ARK de notice d'autorité"""
-    
+
     url = funcs.url_requete_sru('aut.persistentid all "' + ark + '"')
     (test,page) = funcs.testURLetreeParse(url)
     nv_ark = ""
@@ -448,7 +448,7 @@ def frbnfBib2arkAut(NumNot,frbnf,nom,prenom,date_debut):
         if (test == True):
             for record in page.xpath("//srw:recordData",namespaces=main.ns):
                 listeArk.extend(extractARKautfromBIB(record,nom,prenom,date_debut))
-    if (listeArk == []):        
+    if (listeArk == []):
         systemid1 = systemid_full[0:9]
         systemid2 = systemid_full[0:8]
         url = funcs.url_requete_sru('bib.otherid any "' + systemid1 + " " + systemid2 + '" and bib.author all "' + nom + '"')
@@ -502,18 +502,18 @@ def systemid2ark(NumNot,systemid,tronque,nom):
                             if (zone9XX.find("mxc:subfield[@code='a']", namespaces=main.ns).text == systemid):
                                 #print(zone9XX.get("tag"))
                                 listeARK.append(comparerAutBnf(NumNot,ark_current,systemid,nom, "Ancien n° notice"))
-    listeARK = ",".join([ark1 for ark1 in listeARK if ark1 != ''])    
+    listeARK = ",".join([ark1 for ark1 in listeARK if ark1 != ''])
 
 #Si pas de réponse, on fait la recherche SystemID + Nom auteur
     if (listeARK == ""):
         listeARK = relancerNNA_nomAuteur(NumNot,systemid,nom)
     listeARK = ",".join([ark1 for ark1 in listeARK.split(",") if ark1 != ''])
-    
+
 #Si à l'issue d'une première requête sur le numéro système dont on a conservé la clé ne donne rien -> on recherche sur le numéro tronqué comme numéro système
     if (listeARK == "" and tronque == False):
         systemid_tronque = systemid[0:len(systemid)-1]
-        systemid2ark(NumNot, systemid_tronque, True, nom)   
-    listeARK = ",".join([ark1 for ark1 in listeARK.split(",") if ark1 != ''])   
+        systemid2ark(NumNot, systemid_tronque, True, nom)
+    listeARK = ",".join([ark1 for ark1 in listeARK.split(",") if ark1 != ''])
     return listeARK
 
 def relancerNNA_nomAuteur(NumNot,systemid,nom):
@@ -549,10 +549,10 @@ def accesspoint2arkAut(NumNot, nom_nett, prenom_nett, date_debut, date_fin):
                         NumNotices2methode[NumNot].append("Point d'accès avec date de fin")
             elif (date_debut != ""):
                 listeArk.append(ark)
-                NumNotices2methode[NumNot].append("Point d'accès avec date de début")     
+                NumNotices2methode[NumNot].append("Point d'accès avec date de début")
             else:
                 listeArk.append(ark)
-                NumNotices2methode[NumNot].append("Point d'accès")     
+                NumNotices2methode[NumNot].append("Point d'accès")
     listeArk = ",".join(listeArk)
     return listeArk
 
@@ -593,12 +593,12 @@ def comparerAutBnf(NumNot,ark_current,nna,nom,origineComparaison):
     return ark
 
 def compareAccessPoint(NumNot,ark_current,nna,nom,recordBNF):
-    """Vérifier si deux noms de famille sont identiques. 
+    """Vérifier si deux noms de famille sont identiques.
     Contrôle pertinent si on part d'un identifiant (ancien FRBNF par exemple.
     Sinon, il vaut mieux utiliser compareFullAccessPoint"""
     ark = ""
     accessPointBNF = ""
-    #Si le FRBNF de la notice source est présent comme ancien numéro de notice 
+    #Si le FRBNF de la notice source est présent comme ancien numéro de notice
     #dans la notice BnF, on compare les noms (100$a ou 110$a)
     accessPointBNF = main.clean_string(main.extract_subfield(recordBNF,"200","a","all"," "))
     if (accessPointBNF == ""):
@@ -613,7 +613,7 @@ def compareAccessPoint(NumNot,ark_current,nna,nom,recordBNF):
     return ark
 
 def compareFullAccessPoint(NumNot,ark_current, recordBNF, nom, prenom, date_debut):
-    """Comparaison des noms, puis des prénoms, puis des dates. 
+    """Comparaison des noms, puis des prénoms, puis des dates.
     Si les dates sont vides, on ne compare que noms et prénoms
     Si les prénoms sont vides, on ne compare que les noms"""
     nomBNF = main.clean_string(main.extract_subfield(recordBNF,"200","a","all"," "))
@@ -635,10 +635,10 @@ def compareFullAccessPoint(NumNot,ark_current, recordBNF, nom, prenom, date_debu
         else:
             ark = ark_current
     return ark
-            
-            
-        
-                        
+
+
+
+
 
 
 def extractARKautfromBIB(record,nom,prenom,date_debut):
@@ -651,7 +651,7 @@ def extractARKautfromBIB(record,nom,prenom,date_debut):
     for field in record.xpath(".//mxc:datafield",namespaces=main.ns):
         i += 1
         if (field.get("tag")[0] == "7"):
-            listeFieldsAuteur[i]["tag"] = field.get("tag") 
+            listeFieldsAuteur[i]["tag"] = field.get("tag")
             for subfield in field.xpath("mxc:subfield",namespaces=main.ns):
                 if (subfield.get("code")=="3"):
                     listeFieldsAuteur[i]["nna"] = subfield.text
@@ -694,8 +694,8 @@ def launch(form, entry_filename, headers, input_data_type, isni_option, file_nb,
                   "file_nb":file_nb,
                   "meta_bnf":meta_bnf,
                   "id_traitement":id_traitement}
-    liste_reports = create_reports(id_traitement, file_nb)    
-    
+    liste_reports = create_reports(id_traitement, file_nb)
+
     if (input_data_type == 1):
         align_from_aut(form, entry_filename, liste_reports, parametres)
     elif (input_data_type == 2):
@@ -710,7 +710,7 @@ def launch(form, entry_filename, headers, input_data_type, isni_option, file_nb,
 def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,False]):
     couleur_fond = "white"
     couleur_bouton = "#515151"
-    
+
     [form,
      zone_alert_explications,
      zone_access2programs,
@@ -719,10 +719,10 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
      zone_notes] = main.form_generic_frames(master,"Aligner ses données d'autorité avec les notices BnF",
                                       couleur_fond,couleur_bouton,
                                       access_to_network)
-    
+
     zone_ok_help_cancel.config(padx=10)
-    
-    frame_input = tk.Frame(zone_actions, 
+
+    frame_input = tk.Frame(zone_actions,
                            bg=couleur_fond, padx=10, pady=10,
                            highlightthickness=2, highlightbackground=couleur_bouton)
     frame_input.pack(side="left", anchor="w", padx=10,pady=10)
@@ -732,8 +732,8 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
     frame_input_file.pack()
     frame_input_aut = tk.Frame(frame_input, bg=couleur_fond,)
     frame_input_aut.pack(anchor="w")
-    
-    frame_output = tk.Frame(zone_actions, 
+
+    frame_output = tk.Frame(zone_actions,
                            bg=couleur_fond, padx=10, pady=10,
                            highlightthickness=2, highlightbackground=couleur_bouton)
     frame_output.pack(side="left", anchor="w")
@@ -749,15 +749,15 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
     frame_output_options_inter.pack(side="left")
     frame_output_options_format = tk.Frame(frame_output_options, bg=couleur_fond)
     frame_output_options_format.pack(side="left", anchor="nw")
-    
-    
+
+
     zone_notes_message_en_cours = tk.Frame(zone_notes, padx=20,bg=couleur_fond)
     zone_notes_message_en_cours.pack()
 
-    
+
     tk.Label(frame_input_header, text="En entrée", font="bold", fg=couleur_bouton, bg=couleur_fond).pack()
 
-    tk.Label(frame_input_file, text="Fichier contenant \nles notices d'autorité à aligner\n\n", 
+    tk.Label(frame_input_file, text="Fichier contenant \nles notices d'autorité à aligner\n\n",
              bg=couleur_fond, justify="left").pack(side="left", anchor="w")
     """entry_filename = tk.Entry(frame_input_file, width=20, bd=2, bg=couleur_fond)
     entry_filename.pack(side="left")
@@ -766,7 +766,7 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
 
     #Fichier avec en-têtes ?
     headers = tk.IntVar()
-    tk.Checkbutton(frame_input_aut, text="Mon fichier a des en-têtes de colonne", 
+    tk.Checkbutton(frame_input_aut, text="Mon fichier a des en-têtes de colonne",
                        variable=headers,
                        bg=couleur_fond, justify="left").pack(anchor="w")
     headers.set(1)
@@ -781,12 +781,12 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
                             "Liste de notices bibliographiques",
                             "(" + " | ".join(header_columns_init_bib2aut) + ")",
                             "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/aut_align_bib.tsv")
-    
+
     input_data_type.set(1)
 
     #Option Relance sur isni ?
     isni_option = tk.IntVar()
-    tk.Checkbutton(frame_input_aut, text="Relancer sur isni.org en cas d'absence de réponse", 
+    tk.Checkbutton(frame_input_aut, text="Relancer sur isni.org en cas d'absence de réponse",
                        variable=isni_option,
                        bg=couleur_fond, justify="left").pack(anchor="w")
     isni_option.set(1)
@@ -794,13 +794,13 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
 
     #tk.Label(frame_input_aut,bg=couleur_fond, text="\n").pack()
 
-    tk.Label(frame_output_header, text="En sortie", font="bold", fg=couleur_bouton, bg=couleur_fond).pack()    
-    
+    tk.Label(frame_output_header, text="En sortie", font="bold", fg=couleur_bouton, bg=couleur_fond).pack()
+
 
     file_nb = tk.IntVar()
-    tk.Radiobutton(frame_output_file,bg=couleur_fond, text="1 fichier", 
+    tk.Radiobutton(frame_output_file,bg=couleur_fond, text="1 fichier",
                    variable=file_nb , value=1, justify="left").pack(anchor="w")
-    tk.Radiobutton(frame_output_file,bg=couleur_fond, text="Plusieurs fichiers \n(Pb / 0 / 1 / plusieurs ARK trouvés)", 
+    tk.Radiobutton(frame_output_file,bg=couleur_fond, text="Plusieurs fichiers \n(Pb / 0 / 1 / plusieurs ARK trouvés)",
                    variable=file_nb, value=2, justify="left").pack(anchor="w")
     file_nb.set(1)
 
@@ -810,7 +810,7 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
 
     #Récupérer les métadonnées BnF au passage ?
     meta_bnf = tk.IntVar()
-    tk.Checkbutton(frame_output_file, text="Récupérer les métadonnées BnF", 
+    tk.Checkbutton(frame_output_file, text="Récupérer les métadonnées BnF",
                        variable=meta_bnf,
                        bg=couleur_fond, justify="left").pack(anchor="w")
     tk.Label(frame_output_file, text="\n", bg=couleur_fond, justify="left").pack(anchor="w")
@@ -820,46 +820,46 @@ def formulaire_noticesaut2arkBnF(master,access_to_network=True, last_version=[0,
     outputID.pack(anchor="w")
 
 
-    
+
 
     tk.Label(frame_output_file, text="\n",
              bg=couleur_fond).pack(anchor="w")
 
-    
-    
+
+
     #file_format.focus_set()
-    b = tk.Button(zone_ok_help_cancel, text = "Aligner\nles autorités", 
-                  command = lambda: launch(form, entry_file_list[0], headers.get(), input_data_type.get(), isni_option.get(), file_nb.get(), outputID.get(), meta_bnf.get()), 
+    b = tk.Button(zone_ok_help_cancel, text = "Aligner\nles autorités",
+                  command = lambda: launch(form, entry_file_list[0], headers.get(), input_data_type.get(), isni_option.get(), file_nb.get(), outputID.get(), meta_bnf.get()),
                   width = 15, borderwidth=1, pady=40, fg="white",
                   bg=couleur_bouton, font="Arial 10 bold"
                   )
     b.pack()
-    
+
     main.form_saut_de_ligne(zone_ok_help_cancel, couleur_fond)
     call4help = tk.Button(zone_ok_help_cancel,
-                          text=main.texte_bouton_help, 
-                          command=lambda: main.click2url(main.url_online_help), 
+                          text=main.texte_bouton_help,
+                          command=lambda: main.click2url(main.url_online_help),
                           pady=5, padx=5, width=12)
     call4help.pack()
     tk.Label(zone_ok_help_cancel, text="\n",bg=couleur_fond, font="Arial 1 normal").pack()
-    
-    forum_button = tk.Button(zone_ok_help_cancel, 
-                          text=main.texte_bouton_forum, 
-                          command=lambda: main.click2url(main.url_forum_aide), 
+
+    forum_button = tk.Button(zone_ok_help_cancel,
+                          text=main.texte_bouton_forum,
+                          command=lambda: main.click2url(main.url_forum_aide),
                           pady=5, padx=5, width=12)
     forum_button.pack()
-    
+
     tk.Label(zone_ok_help_cancel, text="\n",bg=couleur_fond, font="Arial 4 normal").pack()
     cancel = tk.Button(zone_ok_help_cancel, text="Annuler",bg=couleur_fond, command=lambda: main.annuler(form), pady=10, padx=5, width=12)
     cancel.pack()
 
     tk.Label(zone_notes, text = "Bibliostratus - Version " + str(main.version) + " - " + main.lastupdate, bg=couleur_fond).pack()
-    
+
     """if (main.last_version[1] == True):
         download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(main.last_version[0]), command=download_last_update)
         download_update.pack()"""
 
-    
+
     tk.mainloop()
 
 if __name__ == '__main__':
@@ -869,4 +869,4 @@ if __name__ == '__main__':
     #   last_version = main.check_last_compilation(programID)
     #formulaire_noticesaut2arkBnF(access_to_network,last_version)
     main.formulaire_main(access_to_network, last_version)
-    
+

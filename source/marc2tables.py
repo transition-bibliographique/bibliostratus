@@ -62,10 +62,10 @@ def create_file_doc_record(filename, id_traitement):
 chiffers = ["0","1","2","3","4","5","6","7","8","9"]
 letters = ["a","b","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
 punctation = [".",",",";",":","?","!","%","$","£","€","#","\\","\"","&","~","{","(","[","`","\\","_","@",")","]","}","=","+","*","\/","<",">",")","}"]
-           
+
 liste_fichiers = []
 liste_resultats = defaultdict(list)
-              
+
 doctype = {"a":"texte",
                "b":"manuscrit",
                "c":"partition",
@@ -89,7 +89,7 @@ recordtype = {"a":"analytique",
 
 doctypeAUT = {
                "c":"autorité",
-               
+
                }
 recordtypeAUT = {"a":"personne",
                 "b":"collectivite",
@@ -151,7 +151,7 @@ def path2value(record, field_subfield):
     if (field_subfield.find("$")>-1):
         field = field_subfield.split("$")[0]
         subfield = field_subfield.split("$")[1]
-        for f in record.get_fields(field): 
+        for f in record.get_fields(field):
             for subf in f.get_subfields(subfield):
                 val_list.append(subf)
         if (val_list != []):
@@ -199,7 +199,7 @@ def record2authors(value_fields):
     authors = clean_spaces(value_fields).strip()
     authors = clean_punctation(authors)
     return authors
-    
+
 def aut2keywords(authors):
     authors = clean_punctation(authors)
     liste_authors = authors.split(" ")
@@ -264,7 +264,7 @@ def testchardet(filename):
     detector = UniversalDetector()
     for line in open(filename, 'rb'):
         detector.feed(line)
-        if (detector.done): 
+        if (detector.done):
             break
     detector.close()
     print("detector\n\n")
@@ -273,10 +273,10 @@ def testchardet(filename):
 def alerte_bom(err):
     if ("\xef\xbb\xbf" in err.lower()):
         print("""Le fichier est en UTF-8 BOM
-Ouvrez-le dans un éditeur de texte (par exemple avec Notepad++) 
+Ouvrez-le dans un éditeur de texte (par exemple avec Notepad++)
 pour le convertir en UTF-8 (sans BOM).
 """)
-        
+
 def detect_errors_encoding_iso(collection):
     test = True
     record = ""
@@ -362,7 +362,7 @@ en UTF-8 avant de le mettre en entrée du logiciel"""
         error_file = open(id_traitement + "-errors.txt","w",encoding="utf-8")
         error_file.write(message)
         error_file.close()
-    
+
 
 def bibrecord2metas(numNot,doc_record,record):
     title = record2title(
@@ -452,14 +452,14 @@ def autrecord2metas(numNot,doc_record,record):
     if (doc_record not in liste_fichiers):
         liste_fichiers.append(doc_record)
     meta = [numNot,frbnf,ark,isni,lastname,firstname,firstdate,lastdate]
-    return meta   
-    
+    return meta
+
 def bibfield2autmetas(numNot,doc_record,record,field):
     metas = []
     no_aut = subfields2firstocc(field.get_subfields("3"))
     no_bib = numNot
     ark = record2ark(record2meta(record,["033$a"]))
-    frbnf = record2frbnf(record2meta(record,["035$a"]))    
+    frbnf = record2frbnf(record2meta(record,["035$a"]))
     title = record2title(
                 record2meta(record, ["200$a","200$e"])
                 )
@@ -488,13 +488,13 @@ def bibrecord2autmetas(numNot,doc_record,record):
     for f711 in record.get_fields("711"):
         fields2metas.append(bibfield2autmetas(numNot,"cb",record,f711))
     return fields2metas
-    
+
 
 def record2listemetas(id_traitement, record,rec_format=1):
     numNot = record2meta(record,["001"])
     doctype = record2doctype(record.leader,rec_format)
     recordtype = record2recordtype(record.leader,rec_format)
-    
+
     doc_record = doctype + recordtype
     doc_record = doc_record.strip()
     meta = []
@@ -529,10 +529,10 @@ def record2listemetas(id_traitement, record,rec_format=1):
         stats[doc_record_type[doc_record]] = 1
         output_files_dict[doc_record] = write_reports(id_traitement,doc_record,rec_format)
         output_files_dict[doc_record].write("\t".join(meta) + "\n")
-        print(doc_record, ' - ', meta[0])    
+        print(doc_record, ' - ', meta[0])
 
     #liste_resultats[doc_record].append(meta)
-            
+
 def write_reports(id_traitement,doc_record,rec_format):
     filename = doc_record_type[doc_record]
     header_columns = ["NumNotice","FRBNF","ARK","Autres métadonnées..."]
@@ -576,7 +576,7 @@ en XML avec encodage UTF-8, en utilisant pour cela MarcEdit\n
 https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#un-probl%C3%A8me-dencodage--passez-en-xml-avec-marcedit\n""")
         print("Consultez le fichier " + id_traitement + "-ALERT-notices_pb_encodage.txt")
         encoding_errors_file.close()
-    
+
 def end_of_treatments(form,id_traitement):
     for file in output_files_dict:
         output_files_dict[file].close()
@@ -592,10 +592,10 @@ def end_of_treatments(form,id_traitement):
 
 
 def launch(form,entry_filename,file_format, rec_format, output_ID,master):
-    
+
     main.check_file_name(form,entry_filename)
     #popup_en_cours = main.message_programme_en_cours(form)
-    
+
     if (rec_format == 1):
         for doct in doctype:
             for recordt in recordtype:
@@ -636,7 +636,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     couleur_fond = "white"
     couleur_bouton = "#2D4991"
     #couleur_bouton = "#99182D"
-    
+
     [form,
      zone_alert_explications,
      zone_access2programs,
@@ -645,8 +645,8 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
      zone_notes] = main.form_generic_frames(master,"Conversion de fichiers de notices Unimarc en tableaux",
                                       couleur_fond,couleur_bouton,
                                       access_to_network)
-    
-    
+
+
     cadre_input = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_input.pack(side="left", anchor="w")
     cadre_input_header = tk.Frame(cadre_input,bg=couleur_fond)
@@ -659,17 +659,17 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     cadre_input_file_browse.pack(side="left")
     cadre_input_infos_format = tk.Frame(cadre_input,bg=couleur_fond)
     cadre_input_infos_format.pack(side="left")
-    
+
     cadre_input_type_docs_interstice1 = tk.Frame(cadre_input,bg=couleur_fond)
     cadre_input_type_docs_interstice1.pack(side="left")
-    
+
     cadre_input_type_docs = tk.Frame(cadre_input,bg=couleur_fond)
     cadre_input_type_docs.pack(side="left")
     cadre_input_type_docs_interstice2 = tk.Frame(cadre_input,bg=couleur_fond)
     cadre_input_type_docs_interstice2.pack(side="left")
     cadre_input_type_rec = tk.Frame(cadre_input,bg=couleur_fond)
     cadre_input_type_rec.pack(side="left")
-    
+
     cadre_inter = tk.Frame(zone_actions, borderwidth=0, padx=10,bg=couleur_fond)
     cadre_inter.pack(side="left")
     tk.Label(cadre_inter, text=" ",bg=couleur_fond).pack()
@@ -678,7 +678,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
 #=============================================================================
 #     Formulaire - Fichier en entrée
 # =============================================================================
- 
+
     cadre_output = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_output.pack(side="left")
     cadre_output_header = tk.Frame(cadre_output,bg=couleur_fond)
@@ -693,23 +693,23 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     cadre_output_message_en_cours = tk.Frame(cadre_output, padx=20,bg=couleur_fond)
     cadre_output_message_en_cours.pack(anchor="w")
 
-    
+
     cadre_valider = tk.Frame(zone_ok_help_cancel, borderwidth=0, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_valider.pack(side="left")
-    
+
     #définition input URL (u)
     tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée\n", justify="left", font="bold").pack(anchor="w")
-    
+
     #tk.Label(cadre_input_file_name,bg=couleur_fond, text="Fichier contenant les notices : ").pack(side="left")
     """entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
     entry_filename.pack(side="left")
     entry_filename.focus_set()"""
     main.download_zone(cadre_input_file, "Sélectionner un fichier de notices Unimarc",entry_file_list,couleur_fond,cadre_output_message_en_cours)
-    
+
     #tk.Button(cadre_input_file_browse, text="Sélectionner le fichier\ncontenant les notices", command=lambda:main.openfile(cadre_input_file_name, popup_filename), width=20).pack()
-    
-    
-    """tk.Label(cadre_input_infos_format,bg=couleur_fond, text="Format MARC", 
+
+
+    """tk.Label(cadre_input_infos_format,bg=couleur_fond, text="Format MARC",
              anchor="w", justify="left").pack(anchor="w")
     marc_format = tk.IntVar()
 
@@ -721,11 +721,11 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     tk.Radiobutton(cadre_input_infos_format,bg=couleur_fond, text="Marc21", variable=marc_format, value=2,
                    anchor="w", justify="left").pack(anchor="w")
     marc_format.set(1)"""
-    
+
     tk.Label(cadre_input_type_docs_interstice1, bg=couleur_fond, text="\t\t", justify="left").pack()
-    
-    
-    tk.Label(cadre_input_type_docs,bg=couleur_fond, text="Format de fichier", 
+
+
+    tk.Label(cadre_input_type_docs,bg=couleur_fond, text="Format de fichier",
              anchor="w", justify="left", font="Arial 9 bold").pack(anchor="w")
     file_format = tk.IntVar()
 
@@ -733,7 +733,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
                             "iso2709 encodé UTF-8",
                             "",
                             "https://github.com/Transition-bibliographique/bibliostratus/blob/master/examples/noticesbib.iso")
-    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="iso2709 encodé ISO-8859-1", 
+    tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="iso2709 encodé ISO-8859-1",
                    variable=file_format, value=3,
                    anchor="w", justify="left").pack(anchor="w")
 
@@ -741,31 +741,31 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     tk.Radiobutton(cadre_input_type_docs,bg=couleur_fond, text="Marc XML encodé UTF-8", variable=file_format, value=2,
                    anchor="w", justify="left").pack(anchor="w")
     file_format.set(1)
-    
-    tk.Label(cadre_input_type_docs, bg=couleur_fond, text="\n", 
+
+    tk.Label(cadre_input_type_docs, bg=couleur_fond, text="\n",
              font="Arial 4", justify="left").pack()
-    
-    lien_help_encodage = tk.Button(cadre_input_type_docs, 
+
+    lien_help_encodage = tk.Button(cadre_input_type_docs,
                                    font="Arial 8 italic",
                                    border=0,
-                                   text = "Je ne sais pas / Je ne comprends pas", 
-              command=lambda: main.click2url("https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#lencodage-des-fichiers-en-entr%C3%A9e"), 
+                                   text = "Je ne sais pas / Je ne comprends pas",
+              command=lambda: main.click2url("https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#lencodage-des-fichiers-en-entr%C3%A9e"),
               )
     lien_help_encodage.pack()
     tk.Label(cadre_input_type_docs, bg=couleur_fond,text="\n\n\n").pack()
 
 #    info_utf8 = tk.Label(cadre_input_type_docs,
 #                         bg=couleur_fond,justify="left", font="Arial 7 italic",
-#                         text="""Le fichier iso2709 doit être 
-#en UTF-8 sans BOM.             
-#En cas de problème, 
+#                         text="""Le fichier iso2709 doit être
+#en UTF-8 sans BOM.
+#En cas de problème,
 #convertissez-le en XML
 #avant de le passer dans ce module""")
 #    info_utf8.pack()
-    
+
     tk.Label(cadre_input_type_docs_interstice2, bg=couleur_fond, text="\t", justify="left").pack()
-    
-    tk.Label(cadre_input_type_rec,bg=couleur_fond, text="\nType de notices", 
+
+    tk.Label(cadre_input_type_rec,bg=couleur_fond, text="\nType de notices",
              anchor="w", justify="left", font="Arial 9 bold").pack(anchor="w")
     rec_format = tk.IntVar()
 
@@ -780,20 +780,20 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     tk.Radiobutton(cadre_input_type_rec,bg=couleur_fond, text="biblio - pour alignement Autorités", variable=rec_format, value=3,
                    anchor="w", justify="left").pack(anchor="w")
     rec_format.set(1)
-    
+
     tk.Label(cadre_input_type_rec, text="\n\n\n\n\n\n", bg=couleur_fond).pack()
-    
+
 # =============================================================================
 #     Formulaire - Fichiers en sortie
 # =============================================================================
-# 
-    
+#
+
     #Choix du format
-    tk.Label(cadre_output_header,bg=couleur_fond, fg=couleur_bouton, font="bold", 
-             text="En sortie", 
+    tk.Label(cadre_output_header,bg=couleur_fond, fg=couleur_bouton, font="bold",
+             text="En sortie",
              justify="left").pack()
-    tk.Label(cadre_output_nom_fichiers,bg=couleur_fond, 
-             text="Préfixe des fichiers en sortie : ", 
+    tk.Label(cadre_output_nom_fichiers,bg=couleur_fond,
+             text="Préfixe des fichiers en sortie : ",
              justify="left").pack(side="left")
     output_ID = tk.Entry(cadre_output_nom_fichiers, width=40, bd=2)
     output_ID.pack(side="left")
@@ -801,9 +801,9 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     #Sélection du répertoire en sortie
     #tk.Label(cadre_output_repertoire,text="\n",bg=couleur_fond).pack()
     #main.select_directory(cadre_output_repertoire, "Dossier où déposer les fichiers",output_directory_list,couleur_fond)
-    
 
-    
+
+
     #Ajout (optionnel) d'un identifiant de traitement
     message_fichiers_en_sortie = """
   Le programme va générer plusieurs fichiers, par type de document,
@@ -816,47 +816,47 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
   Les codes indiquent l'option d'alignement à choisir dans le module blanc
   S'il n'y a pas de code, le fichier ne peut être chargé tel quel dans le module
   blanc : il faut au moins reprendre les colonnes.
-        
-  Pour répartir les notices en fichiers, le programme utilise les informations 
+
+  Pour répartir les notices en fichiers, le programme utilise les informations
   présentes dans les zones codées de chaque notice Unimarc
 """
-    tk.Label(cadre_output_explications,bg=couleur_fond, 
+    tk.Label(cadre_output_explications,bg=couleur_fond,
              text=message_fichiers_en_sortie,
              justify="left").pack()
     #explications.pack()
-    
-    
-    
+
+
+
     #Bouton de validation
-    
-    b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", text = "OK", 
-                  command=lambda:launch(form, entry_file_list[0], file_format.get(), rec_format.get(), output_ID.get(),master), 
+
+    b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", text = "OK",
+                  command=lambda:launch(form, entry_file_list[0], file_format.get(), rec_format.get(), output_ID.get(),master),
                   borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
-    
+
     tk.Label(cadre_valider, font="bold", text="", bg=couleur_fond).pack()
-    
-    
-    
+
+
+
     call4help = tk.Button(cadre_valider,
-                          text=main.texte_bouton_help, 
-                          command=lambda: main.click2url(main.url_online_help), 
+                          text=main.texte_bouton_help,
+                          command=lambda: main.click2url(main.url_online_help),
                           pady=5, padx=5, width=12)
     call4help.pack()
     tk.Label(cadre_valider, text="\n",bg=couleur_fond, font="Arial 1 normal").pack()
-    
-    forum_button = tk.Button(cadre_valider, 
-                          text=main.texte_bouton_forum, 
-                          command=lambda: main.click2url(main.url_forum_aide), 
+
+    forum_button = tk.Button(cadre_valider,
+                          text=main.texte_bouton_forum,
+                          command=lambda: main.click2url(main.url_forum_aide),
                           pady=5, padx=5, width=12)
     forum_button.pack()
-    
+
     tk.Label(cadre_valider, text="\n",bg=couleur_fond, font="Arial 4 normal").pack()
     cancel = tk.Button(cadre_valider, text="Annuler",bg=couleur_fond, command=lambda: main.annuler(form), pady=10, padx=5, width=12)
     cancel.pack()
-    
+
     tk.Label(zone_notes, text = "Bibliostratus - Version " + str(main.version) + " - " + main.lastupdate, bg=couleur_fond).pack()
-    
+
     """if (main.last_version[1] == True):
         download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(main.last_version[0]), command=download_last_update)
         download_update.pack()"""

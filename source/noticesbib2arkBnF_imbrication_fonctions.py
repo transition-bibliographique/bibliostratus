@@ -46,7 +46,7 @@ liste_fonctions = {'create_reports' : ['create_reports_1file','create_reports_fi
 'fin_traitements' : ['stats_extraction','url_access_pbs_report','typesConversionARK'],
 'formulaire_noticesbib2arkBnF' : ['launch','annuler']
 }
-		
+
 def key2list(key,i):
     sep = i*" " + "|" + 2*"-"
     print(sep + key)
@@ -56,5 +56,5 @@ def key2list(key,i):
             key2list(el, indentation)
     else:
         return ""
-    
+
 key2list("formulaire_noticesbib2arkBnF",0)

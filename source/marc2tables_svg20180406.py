@@ -56,10 +56,10 @@ def create_file_doc_record(filename, id_traitement):
 chiffers = ["0","1","2","3","4","5","6","7","8","9"]
 letters = ["a","b","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
 punctation = [".",",",";",":","?","!","%","$","£","€","#","\\","\"","&","~","{","(","[","`","\\","_","@",")","]","}","=","+","*","\/","<",">",")","}"]
-           
+
 liste_fichiers = []
 liste_resultats = defaultdict(list)
-              
+
 doctype = {"a":"texte",
                "b":"manuscrit",
                "c":"partition",
@@ -84,7 +84,7 @@ recordtype = {"a":"analytique",
 doctypeAUT = {
                "c":"autorité",
                "n":"autorité",
-               
+
                }
 recordtypeAUT = {"a":"personne physique",
                  "b":"collectivité",
@@ -139,7 +139,7 @@ def path2value(record, field_subfield):
     if (field_subfield.find("$")>-1):
         field = field_subfield.split("$")[0]
         subfield = field_subfield.split("$")[1]
-        for f in record.get_fields(field): 
+        for f in record.get_fields(field):
             for subf in f.get_subfields(subfield):
                 val_list.append(subf)
         if (val_list != []):
@@ -150,7 +150,7 @@ def path2value(record, field_subfield):
     return value
 
 def RepresentsInt(s):
-    try: 
+    try:
         int(s)
         return True
     except ValueError:
@@ -195,7 +195,7 @@ def record2authors(value_fields):
     authors = clean_spaces(value_fields).strip()
     authors = clean_punctation(authors)
     return authors
-    
+
 def aut2keywords(authors):
     authors = clean_punctation(authors)
     liste_authors = authors.split(" ")
@@ -268,18 +268,18 @@ def iso2tables_old(master,entry_filename, rec_format, id_traitement):
             print(main.errors["pb_input_utf8"])
             print(err)
             print("\n\n*------------------------------------------------*/")
-            main.popup_errors(master,main.errors["pb_input_utf8_marcEdit"], 
+            main.popup_errors(master,main.errors["pb_input_utf8_marcEdit"],
             "Aide en ligne : conversion iso2709 > XML",
-            "https://github.com/Transition-bibliographique/alignements-donnees-bnf/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#un-probl%C3%A8me-dencodage--passez-en-xml-avec-marcedit" 
+            "https://github.com/Transition-bibliographique/alignements-donnees-bnf/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#un-probl%C3%A8me-dencodage--passez-en-xml-avec-marcedit"
             )
         except UnicodeDecodeError as err:
             print("\n\n/*---------------------------------------------*\n\n")
             print(main.errors["pb_input_utf8"])
             print(err)
             print("\n\n*------------------------------------------------*/")
-            main.popup_errors(master,main.errors["pb_input_utf8_marcEdit"], 
+            main.popup_errors(master,main.errors["pb_input_utf8_marcEdit"],
             "Aide en ligne : conversion iso2709 > XML",
-            "https://github.com/Transition-bibliographique/alignements-donnees-bnf/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#un-probl%C3%A8me-dencodage--passez-en-xml-avec-marcedit" 
+            "https://github.com/Transition-bibliographique/alignements-donnees-bnf/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#un-probl%C3%A8me-dencodage--passez-en-xml-avec-marcedit"
             )
 
 def iso2tables(master,entry_filename, rec_format, id_traitement):
@@ -309,8 +309,8 @@ def iso2tables(master,entry_filename, rec_format, id_traitement):
         os.remove("temp_record.txt")
     except FileNotFoundError as err:
         main.popup_errors(master,main.errors["format_fichier_en_entree"])
-    
-        
+
+
 
 
 def xml2tables(master,entry_filename, rec_format, id_traitement):
@@ -396,13 +396,13 @@ def autrecord2metas(numNot,doc_record,record):
     if (doc_record not in liste_fichiers):
         liste_fichiers.append(doc_record)
     meta = [numNot,frbnf,ark,isni,lastname,firstname,firstdate,lastdate]
-    return meta   
-    
+    return meta
+
 def record2listemetas(record,rec_format=1):
     numNot = record2meta(record,["001"])
     doctype = record2doctype(record.leader,rec_format)
     recordtype = record2recordtype(record.leader,rec_format)
-    
+
     doc_record = doctype + recordtype
     doc_record = doc_record.strip()
     meta = []
@@ -412,7 +412,7 @@ def record2listemetas(record,rec_format=1):
         meta = bibrecord2metas(numNot,doc_record,record)
 
     liste_resultats[doc_record].append(meta)
-            
+
 def write_reports(id_traitement):
     for doc_record in liste_resultats:
         filename = doc_record_type[doc_record]
@@ -434,7 +434,7 @@ def write_reports(id_traitement):
         for record in liste_resultats[doc_record]:
             if (record[0] not in liste_notices_pb_encodage):
                 print(doc_record, ' - ', record[0])
-                file.write("\t".join(record) + "\n")            
+                file.write("\t".join(record) + "\n")
 
 def encoding_errors(id_traitement):
     """Génération d'un fichier listant les numéros de notices avec problème d'encodage"""
@@ -449,7 +449,7 @@ Elles n'ont pas été exportées dans les tableaux\n\n""")
             print(NumNot)
         print("Consultez le fichier " + id_traitement + "-ALERT-notices_pb_encodage.txt")
         encoding_errors_file.close()
-    
+
 def end_of_treatments(form,id_traitement):
     write_reports(id_traitement)
     encoding_errors(id_traitement)
@@ -459,10 +459,10 @@ def end_of_treatments(form,id_traitement):
 
 
 def launch(form,entry_filename,file_format, rec_format, output_ID,master):
-    
+
     main.check_file_name(form,entry_filename)
     #popup_en_cours = main.message_programme_en_cours(form)
-    
+
     if (rec_format == 1):
         for doct in doctype:
             for recordt in recordtype:
@@ -487,7 +487,7 @@ def launch(form,entry_filename,file_format, rec_format, output_ID,master):
                     recordt_libelle = recordtypeAUT[recordt]
                 dcrec_libelles = "-".join([doct_libelle,recordt_libelle])
                 doc_record_type[dcrec] = dcrec_libelles
-                
+
     print("Fichier en entrée : ", entry_filename)
     if (file_format == 1):
         iso2tables(master,entry_filename, rec_format, output_ID)
@@ -504,7 +504,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     couleur_fond = "white"
     couleur_bouton = "#2D4991"
     #couleur_bouton = "#99182D"
-    
+
     [form,
      zone_alert_explications,
      zone_access2programs,
@@ -513,8 +513,8 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
      zone_notes] = main.form_generic_frames(master,"Conversion de fichiers de notices MARC en tableaux",
                                       couleur_fond,couleur_bouton,
                                       access_to_network)
-    
-    
+
+
     cadre_input = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_input.pack(side="left", anchor="w")
     cadre_input_header = tk.Frame(cadre_input,bg=couleur_fond)
@@ -527,17 +527,17 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     cadre_input_file_browse.pack(side="left")
     cadre_input_infos_format = tk.Frame(cadre_input,bg=couleur_fond)
     cadre_input_infos_format.pack(side="left")
-    
+
     cadre_input_type_docs_interstice1 = tk.Frame(cadre_input,bg=couleur_fond)
     cadre_input_type_docs_interstice1.pack(side="left")
-    
+
     cadre_input_type_docs = tk.Frame(cadre_input,bg=couleur_fond)
     cadre_input_type_docs.pack(side="left")
     cadre_input_type_docs_interstice2 = tk.Frame(cadre_input,bg=couleur_fond)
     cadre_input_type_docs_interstice2.pack(side="left")
     cadre_input_type_rec = tk.Frame(cadre_input,bg=couleur_fond)
     cadre_input_type_rec.pack(side="left")
-    
+
     cadre_inter = tk.Frame(zone_actions, borderwidth=0, padx=10,bg=couleur_fond)
     cadre_inter.pack(side="left")
     tk.Label(cadre_inter, text=" ",bg=couleur_fond).pack()
@@ -546,7 +546,7 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
 #=============================================================================
 #     Formulaire - Fichier en entrée
 # =============================================================================
- 
+
     cadre_output = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_output.pack(side="left")
     cadre_output_header = tk.Frame(cadre_output,bg=couleur_fond)
@@ -561,23 +561,23 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     cadre_output_message_en_cours = tk.Frame(cadre_output, padx=20,bg=couleur_fond)
     cadre_output_message_en_cours.pack(anchor="w")
 
-    
+
     cadre_valider = tk.Frame(zone_ok_help_cancel, borderwidth=0, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_valider.pack(side="left")
-    
+
     #définition input URL (u)
     tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée :", justify="left", font="bold").pack(anchor="w")
-    
+
     tk.Label(cadre_input_file_name,bg=couleur_fond, text="Fichier contenant les notices : ").pack(side="left")
     """entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
     entry_filename.pack(side="left")
     entry_filename.focus_set()"""
     main.download_zone(cadre_input_file, "Sélectionner un fichier\nde notices Marc",entry_file_list,couleur_fond,cadre_output_message_en_cours)
-    
+
     #tk.Button(cadre_input_file_browse, text="Sélectionner le fichier\ncontenant les notices", command=lambda:main.openfile(cadre_input_file_name, popup_filename), width=20).pack()
-    
-    
-    """tk.Label(cadre_input_infos_format,bg=couleur_fond, text="Format MARC", 
+
+
+    """tk.Label(cadre_input_infos_format,bg=couleur_fond, text="Format MARC",
              anchor="w", justify="left").pack(anchor="w")
     marc_format = tk.IntVar()
 
@@ -589,11 +589,11 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     tk.Radiobutton(cadre_input_infos_format,bg=couleur_fond, text="Marc21", variable=marc_format, value=2,
                    anchor="w", justify="left").pack(anchor="w")
     marc_format.set(1)"""
-    
+
     tk.Label(cadre_input_type_docs_interstice1, bg=couleur_fond, text="\t\t", justify="left").pack()
-    
-    
-    tk.Label(cadre_input_type_docs,bg=couleur_fond, text="Format de fichier", 
+
+
+    tk.Label(cadre_input_type_docs,bg=couleur_fond, text="Format de fichier",
              anchor="w", justify="left", font="Arial 9 bold").pack(anchor="w")
     file_format = tk.IntVar()
 
@@ -607,9 +607,9 @@ def formulaire_marc2tables(master,access_to_network=True, last_version=[version,
     file_format.set(1)
     info_utf8 = tk.Label(cadre_input_type_docs,
                          bg=couleur_fond,justify="left", font="Arial 7 italic",
-                         text="""Le fichier iso2709 doit être 
-en UTF-8 sans BOM.             
-En cas de problème, 
+                         text="""Le fichier iso2709 doit être
+en UTF-8 sans BOM.
+En cas de problème,
 convertissez-le en XML
 avant de le passer dans ce module
 
@@ -618,10 +618,10 @@ avant de le passer dans ce module
 
 """)
     info_utf8.pack()
-    
+
     tk.Label(cadre_input_type_docs_interstice2, bg=couleur_fond, text="\t", justify="left").pack()
-    
-    tk.Label(cadre_input_type_rec,bg=couleur_fond, text="\nType de notices", 
+
+    tk.Label(cadre_input_type_rec,bg=couleur_fond, text="\nType de notices",
              anchor="w", justify="left", font="Arial 9 bold").pack(anchor="w")
     rec_format = tk.IntVar()
 
@@ -633,20 +633,20 @@ avant de le passer dans ce module
     tk.Radiobutton(cadre_input_type_rec,bg=couleur_fond, text="autorités (personnes)", variable=rec_format, value=2,
                    anchor="w", justify="left").pack(anchor="w")
     rec_format.set(1)
-    
+
     tk.Label(cadre_input_type_rec, text="\n\n\n\n", bg=couleur_fond).pack()
-    
+
 # =============================================================================
 #     Formulaire - Fichiers en sortie
 # =============================================================================
-# 
-    
+#
+
     #Choix du format
-    tk.Label(cadre_output_header,bg=couleur_fond, fg=couleur_bouton, font="bold", 
-             text="En sortie :", 
+    tk.Label(cadre_output_header,bg=couleur_fond, fg=couleur_bouton, font="bold",
+             text="En sortie :",
              justify="left").pack()
-    tk.Label(cadre_output_nom_fichiers,bg=couleur_fond, 
-             text="Identifiant des fichiers en sortie : ", 
+    tk.Label(cadre_output_nom_fichiers,bg=couleur_fond,
+             text="Identifiant des fichiers en sortie : ",
              justify="left").pack(side="left")
     output_ID = tk.Entry(cadre_output_nom_fichiers, width=40, bd=2)
     output_ID.pack(side="left")
@@ -654,9 +654,9 @@ avant de le passer dans ce module
     #Sélection du répertoire en sortie
     #tk.Label(cadre_output_repertoire,text="\n",bg=couleur_fond).pack()
     #main.select_directory(cadre_output_repertoire, "Dossier où déposer les fichiers",output_directory_list,couleur_fond)
-    
 
-    
+
+
     #Ajout (optionnel) d'un identifiant de traitement
     message_fichiers_en_sortie = """
   Le programme va générer plusieurs fichiers, par type de document,
@@ -667,34 +667,34 @@ avant de le passer dans ce module
         - audiovisuel (CD/DVD)
         - autres non identifiés
 
-        
-  Pour faire cela, il utilise les informations 
+
+  Pour faire cela, il utilise les informations
   en zones codées dans chaque notice Unimarc
 """
-    tk.Label(cadre_output_explications,bg=couleur_fond, 
+    tk.Label(cadre_output_explications,bg=couleur_fond,
              text=message_fichiers_en_sortie,
              justify="left").pack()
     #explications.pack()
-    
-    
-    
+
+
+
     #Bouton de validation
-    
-    b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", text = "OK", 
-                  command=lambda:launch(form, entry_file_list[0], file_format.get(), rec_format.get(), output_ID.get(),master), 
+
+    b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", text = "OK",
+                  command=lambda:launch(form, entry_file_list[0], file_format.get(), rec_format.get(), output_ID.get(),master),
                   borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
-    
+
     tk.Label(cadre_valider, font="bold", text="", bg=couleur_fond).pack()
-    
+
     call4help = tk.Button(cadre_valider, text="Besoin d'aide ?", command=lambda: main.click2openurl("https://github.com/Transition-bibliographique/alignements-donnees-bnf/"), padx=10, pady=1, width=15)
     call4help.pack()
-    
+
     cancel = tk.Button(cadre_valider, bg=couleur_fond, text="Annuler", command=lambda: main.annuler(form), padx=10, pady=1, width=15)
     cancel.pack()
-    
+
     tk.Label(zone_notes, text = "Version " + str(main.version) + " - " + lastupdate, bg=couleur_fond).pack()
-    
+
     """if (main.last_version[1] == True):
         download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(main.last_version[0]), command=download_last_update)
         download_update.pack()"""

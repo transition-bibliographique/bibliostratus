@@ -108,7 +108,7 @@ def nettoyageTitrePourRecherche(string):
     string = string.split(" ")
     string = [mot for mot in string if len(mot) > 1]
     string = " ".join(string)
-    return string    
+    return string
 
 def nettoyageDate(date):
     date = unidecode(date.lower())
@@ -133,7 +133,7 @@ def nettoyageTome(numeroTome):
             numeroTome = numeroTome[-1]
         numeroTome = ltrim(numeroTome)
     return numeroTome
-    
+
 def nettoyagePubPlace(pubPlace) :
     """Nettoyage du lieu de publication"""
     pubPlace = unidecode(pubPlace.lower())
@@ -146,7 +146,7 @@ def nettoyagePubPlace(pubPlace) :
 
 
 def RepresentsInt(s):
-    try: 
+    try:
         int(s)
         return True
     except ValueError:
@@ -192,7 +192,7 @@ def conversionIsbn1013(isbn):
     prefix = '978' + isbn[:-1]
     check = check_digit_13(prefix)
     return prefix + check
-    
+
 def check_digit_10(isbn):
     assert len(isbn) == 9
     sum = 0
@@ -203,7 +203,7 @@ def check_digit_10(isbn):
     r = sum % 11
     if (r == 10):
         return 'X'
-    else: 
+    else:
         return str(r)
 
 def check_digit_13(isbn):
@@ -213,7 +213,7 @@ def check_digit_13(isbn):
         c = int(isbn[i])
         if (i % 2):
             w = 3
-        else: 
+        else:
             w = 1
         sum += w * c
     r = 10 - (sum % 10)
@@ -394,8 +394,8 @@ def url_requete_sru(query,recordSchema="unimarcxchange",maximumRecords="1000",st
     return url
 
 
-class international_id: 
-    """Classe définissant les propriétés d'une notice mise en entrée 
+class international_id:
+    """Classe définissant les propriétés d'une notice mise en entrée
     du module d'alignemen
     - son nom
     - son prénom
@@ -421,8 +421,8 @@ class titre:
         """Méthode permettant d'afficher plus joliment notre objet"""
         return "{}".format(self.init)
 
-class Bib_record: 
-    """Classe définissant les propriétés d'une notice mise en entrée 
+class Bib_record:
+    """Classe définissant les propriétés d'une notice mise en entrée
     du module d'alignement"""
 
     def __init__(self, input_row, option_record): # Notre méthode constructeur
@@ -488,5 +488,5 @@ class Bib_record:
         self.date_debut = datePerios(self.date_nett)
         if (RepresentsInt(self.date_debut)==True):
             self.dates_elargies_perios = elargirDatesPerios(int(self.date_debut))
-        
-        
+
+

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Oct 13 18:30:30 2017
- 
+
 @author: Etienne Cavalié
 
 Programme d'identification des ARK BnF à partir de numéros FRBNF
@@ -34,7 +34,7 @@ entry_file_list = []
 
 #Pour chaque notice, on recense la méthode qui a permis de récupérer le ou les ARK
 NumNotices2methode = defaultdict(list)
-#Si on trouve la notice grâce à un autre ISBN : on l'indique dans un dictionnaire qui 
+#Si on trouve la notice grâce à un autre ISBN : on l'indique dans un dictionnaire qui
 #est ajouté dans le rapport stat
 NumNotices_conversionISBN = defaultdict(dict)
 
@@ -60,7 +60,7 @@ def create_reports(id_traitement_code, nb_fichiers_a_produire):
     stats_report_file_name=id_traitement_code + "-" + "rapport_stats_noticesbib2ark.txt"
     stats_report_file = open(stats_report_file_name,"w")
     stats_report_file.write("Nb ARK trouvés\tNb notices concernées\n")
-    
+
     #report_type_convert_file_name = id_traitement_code + "-" + "NumNotices-TypeConversion.txt"
     #report_type_convert_file = open(report_type_convert_file_name,"w")
     #report_type_convert_file.write("NumNotice\tMéthode pour trouver l'ARK\n")
@@ -76,18 +76,18 @@ def create_reports_1file(id_traitement_code):
     unique_file_results_frbnf_isbn2ark_name = id_traitement_code + "-" + "resultats_noticesbib2arkBnF.txt"
     unique_file_results_frbnf_isbn2ark = open(unique_file_results_frbnf_isbn2ark_name, "w", encoding="utf-8")
     return [unique_file_results_frbnf_isbn2ark]
-    
-def create_reports_files(id_traitement_code):    
+
+def create_reports_files(id_traitement_code):
     multiple_files_pbFRBNF_ISBN_name = id_traitement_code + "-resultats_Probleme_FRBNF_ISBN.txt"
     multiple_files_0_ark_name =  id_traitement_code + "-resultats_0_ark_trouve.txt"
     multiple_files_1_ark_name =  id_traitement_code + "-resultats_1_ark_trouve.txt"
     multiple_files_plusieurs_ark_name =  id_traitement_code + "-resultats_plusieurs_ark_trouves.txt"
-    
+
     multiple_files_pbFRBNF_ISBN = open(multiple_files_pbFRBNF_ISBN_name, "w", encoding="utf-8")
     multiple_files_0_ark = open(multiple_files_0_ark_name, "w", encoding="utf-8")
     multiple_files_1_ark = open(multiple_files_1_ark_name, "w", encoding="utf-8")
     multiple_files_plusieurs_ark_name = open(multiple_files_plusieurs_ark_name, "w", encoding="utf-8")
-    
+
     return [multiple_files_pbFRBNF_ISBN,multiple_files_0_ark,multiple_files_1_ark,multiple_files_plusieurs_ark_name]
 
 
@@ -123,18 +123,18 @@ def ark2ark(input_record):
 #     if (remplacerEspaces == True):
 #         string = string.replace(" ","")
 #     return string
-# 
+#
 # def nettoyageTitrePourControle(titre):
 #     titre = nettoyage(titre,True)
 #     return titre
-#     
+#
 # def nettoyageTitrePourRecherche(titre):
 #     titre = nettoyage(titre,False)
 #     titre = titre.split(" ")
 #     titre = [mot for mot in titre if len(mot) > 1]
 #     titre = " ".join(titre)
 #     return titre
-#     
+#
 # def nettoyage_lettresISBN(isbn):
 #     isbn = unidecode(isbn.lower())
 #     char_cle = "0123456789xX"
@@ -149,7 +149,7 @@ def ark2ark(input_record):
 #     else:
 #         cle = ""
 #     return prefix+cle
-# 
+#
 # def nettoyageIsbnPourControle(isbn):
 #     isbn = nettoyage(isbn)
 #     if (isbn != ""):
@@ -161,7 +161,7 @@ def ark2ark(input_record):
 #     else:
 #         isbn = isbn[0:10]
 #     return isbn
-# 
+#
 # def nettoyageIssnPourControle(issn):
 #     issn = nettoyage(issn).replace(" ","")
 #     if (issn != ""):
@@ -171,7 +171,7 @@ def ark2ark(input_record):
 #     else:
 #         issn = issn[0:8]
 #     return issn
-# 
+#
 # def nettoyageAuteur(auteur,justeunmot=True):
 #     listeMots = [" par "," avec "," by "," Mr. "," M. "," Mme "," Mrs "]
 #     for mot in listeMots:
@@ -190,7 +190,7 @@ def ark2ark(input_record):
 #     else:
 #         auteur = ""
 #     return auteur
-# 
+#
 # def nettoyageDate(date):
 #     date = unidecode(date.lower())
 #     for lettre in lettres:
@@ -199,7 +199,7 @@ def ark2ark(input_record):
 #         date = date.split(signe)
 #         date = " ".join(annee for annee in date if annee != "")
 #     return date
-# 
+#
 # def nettoyageTome(numeroTome):
 #     if (numeroTome):
 #         numeroTome = unidecode(numeroTome.lower())
@@ -214,8 +214,8 @@ def ark2ark(input_record):
 #             numeroTome = numeroTome[-1]
 #         numeroTome = ltrim(numeroTome)
 #     return numeroTome
-# 
-#     
+#
+#
 # def nettoyagePubPlace(pubPlace) :
 #     """Nettoyage du lieu de publication"""
 #     pubPlace = unidecode(pubPlace.lower())
@@ -240,10 +240,10 @@ def relancerNNBAuteur(NumNot,systemid,isbn,titre,auteur,date):
                 listeArk.append(ark)
     listeArk = ",".join([ark for ark in listeArk if ark != ""])
     return listeArk
-        
-    
 
-#Quand on a trouvé l'ancien numéro système dans une notice BnF : 
+
+
+#Quand on a trouvé l'ancien numéro système dans une notice BnF :
 #on compare l'ISBN de la notice de la Bibliothèque avec celui de la BnF pour voir si ça colle
 #à défaut, on compare les titres (puis demi-titres)
 def comparerBibBnf(NumNot,ark_current,systemid,isbn,titre,auteur,date,origineComparaison):
@@ -260,7 +260,7 @@ def comparaisonIsbn(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF
     ark = ""
     isbnBNF = ""
     sourceID = "ISBN"
-    #Si le FRBNF de la notice source est présent comme ancien numéro de notice 
+    #Si le FRBNF de la notice source est présent comme ancien numéro de notice
     #dans la notice BnF, on compare les ISBN en 010, ou à défaut les EAN
     #ou à défaut les ISSN (il peut s'agir d'un périodique)
     isbnBNF = funcs.nettoyage(main.extract_subfield(recordBNF,"010","a",1))
@@ -385,7 +385,7 @@ def checkDate(ark,date_init,recordBNF):
     if (len(str(date_init))>3 and str(date_init)[0:4] in dateBNF):
         ark_checked = ark
     return ark_checked
-    
+
 
 def comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,date,recordBNF,origineComparaison,sous_zone):
     ark = ""
@@ -414,7 +414,7 @@ def comparaisonTitres_sous_zone(NumNot,ark_current,systemid,isbn,titre,auteur,da
         NumNotices2methode[NumNot].append(origineComparaison + " + pas de titre initial pour comparer")
     return ark
 
-#Recherche par n° système. Si le 3e paramètre est "False", c'est qu'on a pris uniquement le FRBNF initial, sans le tronquer. 
+#Recherche par n° système. Si le 3e paramètre est "False", c'est qu'on a pris uniquement le FRBNF initial, sans le tronquer.
 #Dans ce cas, et si 0 résultat pertinent, on relance la recherche avec info tronqué
 def systemid2ark(NumNot,systemid,tronque,isbn,titre,auteur,date):
     url = funcs.url_requete_sru('bib.otherid all "' + systemid + '"')
@@ -434,18 +434,18 @@ def systemid2ark(NumNot,systemid,tronque,isbn,titre,auteur,date):
                                 #print(zone9XX.get("tag"))
                                 listeARK.append(comparerBibBnf(NumNot,ark_current,systemid,isbn,titre,auteur,date, "Ancien n° notice"))
     listeARK = ",".join([ark1 for ark1 in listeARK if ark1 != ''])
-    
+
 #Si pas de réponse, on fait la recherche SystemID + Auteur
     if (listeARK == ""):
         listeARK = relancerNNBAuteur(NumNot,systemid,isbn,titre,auteur,date)
     listeARK = ",".join([ark1 for ark1 in listeARK.split(",") if ark1 != ''])
-    
+
 #Si à l'issue d'une première requête sur le numéro système dont on a conservé la clé ne donne rien -> on recherche sur le numéro tronqué comme numéro système
     if (listeARK == "" and tronque == False):
         systemid_tronque = systemid[0:len(systemid)-1]
-        systemid2ark(NumNot,systemid_tronque, True,isbn,titre,auteur,date)   
+        systemid2ark(NumNot,systemid_tronque, True,isbn,titre,auteur,date)
     listeARK = ",".join([ark1 for ark1 in listeARK.split(",") if ark1 != ''])
-    
+
     return listeARK
 
 def rechercheNNB(input_record,nnb):
@@ -475,13 +475,13 @@ def oldfrbnf2ark(input_record):
         systemid = input_record.frbnf[5:14]
     else:
         systemid = input_record.frbnf[4:13]
-    
+
     ark = rechercheNNB(input_record,systemid[0:8])
     if (ark==""):
         ark = systemid2ark(input_record.NumNot,systemid,False,input_record.isbn.nett,input_record.titre_nett,input_record.auteur_nett,input_record.date_nett)
     return ark
 
- 
+
 def frbnf2ark(input_record):
     """Rechercher le FRBNF avec le préfixe "FRBN" ou "FRBNF". A défaut, lance d'autres fonctions pour lancer la recherche en utilisant uniquement le numéro, soit comme NNB/NNA, soit comme ancien numéro système (en zone 9XX)"""
     ark = ""
@@ -490,7 +490,7 @@ def frbnf2ark(input_record):
         (test,page) = funcs.testURLetreeParse(url)
         if (test == True):
             nb_resultats = int(page.find("//srw:numberOfRecords", namespaces=main.ns).text)
-            
+
             if (nb_resultats == 0):
                 ark = oldfrbnf2ark(input_record)
             elif (nb_resultats == 1):
@@ -503,7 +503,7 @@ def frbnf2ark(input_record):
                     NumNotices2methode[input_record.NumNot].append("FRBNF > ARK")
     return ark
 
-        
+
 def row2file(liste_metadonnees,liste_reports):
     liste_metadonnees_to_report = [str(el) for el in liste_metadonnees]
     liste_reports[0].write("\t".join(liste_metadonnees_to_report ) + "\n")
@@ -521,7 +521,7 @@ def row2files(liste_metadonnees,liste_reports):
         liste_reports[2].write("\t".join(liste_metadonnees_to_report) + "\n")
     else:
         liste_reports[3].write("\t".join(liste_metadonnees_to_report) + "\n")
-        
+
 # =============================================================================
 # def nettoyage_isbn(isbn):
 #     isbn_nett = isbn.split(";")[0].split(",")[0].split("(")[0].split("[")[0]
@@ -533,7 +533,7 @@ def row2files(liste_metadonnees,liste_reports):
 #     for lettre in lettres_sauf_x:
 #         isbn_nett = isbn_nett.replace(lettre,"")
 #     return isbn_nett
-#     
+#
 # def conversionIsbn(isbn):
 #     longueur = len(isbn)
 #     isbnConverti = ""
@@ -542,7 +542,7 @@ def row2files(liste_metadonnees,liste_reports):
 #     elif (longueur == 13):
 #         isbnConverti = conversionIsbn1310(isbn)
 #     return isbnConverti
-# 
+#
 # #conversion isbn13 en isbn10
 # def conversionIsbn1310(isbn):
 #     if (isbn[0:3] == "978"):
@@ -551,13 +551,13 @@ def row2files(liste_metadonnees,liste_reports):
 #         return prefix + check
 #     else:
 #         return ""
-# 
+#
 # #conversion isbn10 en isbn13
 # def conversionIsbn1013(isbn):
 #     prefix = '978' + isbn[:-1]
 #     check = check_digit_13(prefix)
 #     return prefix + check
-#     
+#
 # def check_digit_10(isbn):
 #     assert len(isbn) == 9
 #     sum = 0
@@ -568,9 +568,9 @@ def row2files(liste_metadonnees,liste_reports):
 #     r = sum % 11
 #     if (r == 10):
 #         return 'X'
-#     else: 
+#     else:
 #         return str(r)
-# 
+#
 # def check_digit_13(isbn):
 #     assert len(isbn) == 12
 #     sum = 0
@@ -578,7 +578,7 @@ def row2files(liste_metadonnees,liste_reports):
 #         c = int(isbn[i])
 #         if (i % 2):
 #             w = 3
-#         else: 
+#         else:
 #             w = 1
 #         sum += w * c
 #     r = 10 - (sum % 10)
@@ -594,7 +594,7 @@ def row2files(liste_metadonnees,liste_reports):
 #     (1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1),
 #     ('M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I')
 # ))
-# 
+#
 # def int_to_roman(i):
 #     result = []
 #     for integer, numeral in numeral_map:
@@ -602,7 +602,7 @@ def row2files(liste_metadonnees,liste_reports):
 #         result.append(numeral * count)
 #         i -= integer * count
 #     return ''.join(result)
-# 
+#
 # def roman_to_int(n):
 #     i = result = 0
 #     for integer, numeral in numeral_map:
@@ -610,7 +610,7 @@ def row2files(liste_metadonnees,liste_reports):
 #             result += integer
 #             i += len(numeral)
 #     return result
-# 
+#
 # def convert_volumes_to_int(n):
 #     for char in ponctuation:
 #         n = n.replace(char,"-")
@@ -628,7 +628,7 @@ def row2files(liste_metadonnees,liste_reports):
 #     liste_n_convert = set(ltrim(str(nb)) for nb in liste_n_convert if nb != "")
 #     n_convert = " ".join([str(el) for el in list(liste_n_convert)])
 #     return n_convert
-# 
+#
 # =============================================================================
 
 def isbn2sru(NumNot,isbn,titre,auteur,date):
@@ -777,7 +777,7 @@ def eanauteur2sru(NumNot,ean,titre,auteur,date):
 
 
 #Si l'ISBN n'a été trouvé ni dans l'index ISBN, ni dans l'index EAN
-#on le recherche dans tous les champs (not. les données d'exemplaires, pour des 
+#on le recherche dans tous les champs (not. les données d'exemplaires, pour des
 #réimpressions achetées par un département de la Direction des collections de la BnF)
 def isbn_anywhere2sru(NumNot,isbn,titre,auteur,date):
     urlSRU = funcs.url_requete_sru('bib.anywhere all "' + isbn + '"')
@@ -822,7 +822,7 @@ def isbn2sudoc(input_record):
         (test,resultats) = funcs.testURLetreeParse(url)
         if (test == True):
             if (resultats.find("//ppn") is not None):
-                NumNotices2methode[input_record.NumNot].append("ISBN > PPN")                
+                NumNotices2methode[input_record.NumNot].append("ISBN > PPN")
             for ppn in resultats.xpath("//ppn"):
                 ppn_val = ppn.text
                 Listeppn.append("PPN" + ppn_val)
@@ -898,7 +898,7 @@ def add_to_conversionIsbn(NumNot,isbn_init,isbn_trouve,via_Sudoc=False):
 def isbn2ark(NumNot,isbn_init,isbn_propre,isbn_converti,titre_nett,auteur_nett,date_nett):
     #Recherche sur l'ISBN tel que saisi dans la source
     resultatsIsbn2ARK = isbn2sru(NumNot,isbn_init,titre_nett,auteur_nett,date_nett)
-    
+
     #Requête sur l'ISBN dans le SRU, avec contrôle sur Titre ou auteur
     if (resultatsIsbn2ARK == "" and isbn_init != isbn_propre):
         resultatsIsbn2ARK = isbn2sru(NumNot,isbn_propre,titre_nett,auteur_nett,date_nett)
@@ -931,7 +931,7 @@ def issn2ark(NumNot,issn_init,issn,titre,auteur,date):
     listeArk  = issn2sru(NumNot,issn_init)
     if (listeArk == ""):
         listeArk = issn2sru(NumNot,issn)
-    return listeArk 
+    return listeArk
 
 def issn2sru(NumNot,issn):
     url = funcs.url_requete_sru('bib.issn adj "' + issn + '"')
@@ -958,7 +958,7 @@ def issn2sudoc(NumNot,issn_init,issn_nett, titre, auteur, date):
         (test,resultats) = funcs.testURLetreeParse(url)
         if (test == True):
             if (resultats.find("//ppn") is not None):
-                NumNotices2methode[NumNot].append("ISSN > PPN")                
+                NumNotices2methode[NumNot].append("ISSN > PPN")
             for ppn in resultats.xpath("//ppn"):
                 ppn_val = ppn.text
                 Listeppn.append("PPN" + ppn_val)
@@ -1003,7 +1003,7 @@ def ark2metas(ark, unidec=True):
     return metas
 
 
-    
+
 def ppn2metas(ppn):
     url = "https://www.sudoc.fr/" + ppn + ".rdf"
     (test,record) = funcs.testURLetreeParse(url)
@@ -1024,7 +1024,7 @@ def ppn2metas(ppn):
             if (premierauteurPrenom.find("(") > 0):
                 premierauteurPrenom = premierauteurPrenom.split("(")[0]
     return [titre,premierauteurPrenom,premierauteurNom,tousauteurs]
-  
+
 #def tad2ark(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,typeDoc="a",anywhere=False,pubPlace_nett="", annee_plus_trois = False):
 def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
     "Fonction d'alignement par Titre-Auteur-Date (et contrôles sur type Notice, sur n° de volume si nécessaire)"
@@ -1104,7 +1104,7 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
                                     NumNotices2methode[input_record.NumNot].append("Date début +/- 3 ans")
     listeArk = ",".join(ark for ark in listeArk if ark != "")
     #Si la liste retournée est vide, et qu'on est sur des périodiques
-    # et que la date 
+    # et que la date
     if (listeArk == "" and input_record.intermarc_type_record == "s" and annee_plus_trois == False):
         listeArk = tad2ark(input_record, anywhere=False, annee_plus_trois=True)
     return listeArk
@@ -1116,9 +1116,9 @@ def tad2ppn(NumNot,titre,auteur,auteur_nett,date,typeRecord):
     titre = funcs.nettoyageTitrePourRecherche(titre).replace(" ","+")
     auteur_nett = auteur_nett.replace(" ","+")
     typeRecord4DoMyBiblio = "all"
-    """all (pour tous les types de document), 
-           B (pour les livres), 
-           T (pour les périodiques), 
+    """all (pour tous les types de document),
+           B (pour les livres),
+           T (pour les périodiques),
            Y (pour les thèses version de soutenance),
            V (pour le matériel audio-visuel)"""
     typeRecordDic = {"monimpr":"B","cddvd":"V","perimpr":"T"}
@@ -1178,7 +1178,7 @@ def checkTypeRecord(ark,typeRecord_attendu):
 #     date = date.split(" ")
 #     date = date[0]
 #     return date
-# 
+#
 # def elargirDatesPerios(n):
 #     j = n-4
 #     liste = []
@@ -1238,7 +1238,7 @@ def ean2ark(NumNot,ean,titre,auteur,date):
 def nettoyage_no_commercial(no_commercial_propre):
     no_commercial_propre = unidecode(no_commercial_propre.lower())
     return no_commercial_propre
-            
+
 def no_commercial2ark(NumNot,no_commercial,titre,auteur,date,anywhere=False, publisher=""):
     no_commercial = no_commercial.strip(" ")
     url = funcs.url_requete_sru('bib.comref  all "' + no_commercial + '"')
@@ -1308,7 +1308,7 @@ def extract_cols_from_row(row,liste):
             else:
                 liste_values.append("")
             i += 1
-        return tuple(liste_values)    
+        return tuple(liste_values)
 
 def record2dic(row,option):
     """A partir d'une, et de l'indication de l'option "type de notice" (TEX, VID, AUD, PER)
@@ -1323,7 +1323,7 @@ def item2ark_by_id(input_record):
 
     if (input_record.ark_init != ""):
         ark = ark2ark(input_record)
-    
+
     #A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
     if (ark == "" and input_record.frbnf != ""):
         ark = frbnf2ark(input_record)
@@ -1367,25 +1367,25 @@ def item2ppn_by_id(input_record):
     Quand l'option "BnF" d'abord a été choisie"""
     ark = ""
 
-    #Si pas de résultats : on relance une recherche dans le Sudoc    
+    #Si pas de résultats : on relance une recherche dans le Sudoc
     if (ark == ""):
         ark = ean2sudoc(input_record.NumNot,input_record.ean.propre,
                         input_record.titre_nett,input_record.auteur_nett,input_record.date_nett)
 
-    #Si pas de résultats : on relance une recherche dans le Sudoc avec l'EAN seul 
+    #Si pas de résultats : on relance une recherche dans le Sudoc avec l'EAN seul
     if (ark == ""):
         ark = ean2sudoc(input_record.NumNot,input_record.ean.propre,"","","")
     if (ark == ""):
         ark = isbn2sudoc(input_record)
     if (ark == ""):
-        ark = issn2sudoc(input_record.NumNot, input_record.issn.init, 
-                         input_record.issn.propre, 
-                         input_record.titre.controles, 
+        ark = issn2sudoc(input_record.NumNot, input_record.issn.init,
+                         input_record.issn.propre,
+                         input_record.titre.controles,
                          input_record.auteur_nett, input_record.date_nett)
 
 
     return ark
-    
+
 def item2ark_by_keywords(input_record):
     """Alignement par mots clés"""
     ark = ""
@@ -1395,11 +1395,11 @@ def item2ark_by_keywords(input_record):
         #print("1." + NumNot + " : " + ark)
     if (ark == "" and input_record.titre != ""):
         ark = tad2ark(input_record, True, False)
-        
+
     return ark
 
 def item2id(row,n,form_bib2ark,parametres,liste_reports):
-    """Pour chaque ligne : constitution d'une notice et règles d'alignement 
+    """Pour chaque ligne : constitution d'une notice et règles d'alignement
     propres à ce type de notice"""
     if (n == 0):
         assert main.control_columns_number(form_bib2ark,row,parametres["header_columns_init"])
@@ -1426,7 +1426,7 @@ def item2id(row,n,form_bib2ark,parametres,liste_reports):
     print(str(n) + ". " + input_record.NumNot + " : " + ark)
     nbARK = len(ark.split(","))
     if (ark == ""):
-        nbARK = 0   
+        nbARK = 0
     if (ark == "Pb FRBNF"):
         nb_notices_nb_ARK["Pb FRBNF"] += 1
     else:
@@ -1442,7 +1442,7 @@ def item2id(row,n,form_bib2ark,parametres,liste_reports):
     if (parametres["file_nb"] ==  1):
         row2file(liste_metadonnees,liste_reports)
     elif(parametres["file_nb"] ==  2):
-        row2files(liste_metadonnees,liste_reports)    
+        row2files(liste_metadonnees,liste_reports)
 
 def file2row(form_bib2ark,zone_controles, entry_filename, liste_reports, parametres):
     """Récupération du contenu du fichier et application des règles d'alignement
@@ -1470,9 +1470,9 @@ def file2row(form_bib2ark,zone_controles, entry_filename, liste_reports, paramet
         for row in entry_file:
             item2id(row,n,form_bib2ark,parametres,liste_reports)
             n += 1
-    
+
 #==============================================================================
-# 
+#
 # def monimpr_item(row,n,form_bib2ark,parametres,liste_reports):
 #     """Alignement pour 1 item (1 ligne) monographie imprimée"""
 #     if (n == 0):
@@ -1480,12 +1480,12 @@ def file2row(form_bib2ark,zone_controles, entry_filename, liste_reports, paramet
 #     if (n%100 == 0):
 #         main.check_access2apis(n,dict_check_apis)
 #     #print(row)
-# 
+#
 #     input_record = Bib_record(row,1)
 #     ark = ""
 #     if (input_record.ark_init != ""):
 #         ark = ark2ark(input_record)
-#     
+#
 #     #A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
 #     if (ark == "" and input_record.frbnf != ""):
 #         ark = frbnf2ark(input_record)
@@ -1495,50 +1495,50 @@ def file2row(form_bib2ark,zone_controles, entry_filename, liste_reports, paramet
 #     if (ark == "" and input_record.isbn.nett != ""):
 #         ark = isbn2ark(input_record.NumNot,input_record.isbn.init, input_record.isbn.propre,input_record.isbn.converti,
 #                        input_record.titre_nett, input_record.auteur_nett, input_record.date_nett)
-# 
+#
 #     #Si la recherche ISBN + contrôle Titre/Date n'a rien donné -> on cherche ISBN seul
 #     if (ark == "" and input_record.isbn.nett != ""):
 #         ark = isbn2ark(input_record.NumNot,input_record.isbn.init,input_record.isbn_propre,"","","")
-# 
-#     #Si pas de résultats : on relance une recherche dans le Sudoc    
+#
+#     #Si pas de résultats : on relance une recherche dans le Sudoc
 #     if (ark == "" and input_record.isbn.nett != ""):
 #         ark = isbn2sudoc(input_record)
-# 
+#
 #     #A défaut, recherche sur EAN
 #     if (ark == "" and input_record.ean.nett != ""):
 #         ark = ean2ark(input_record.NumNot,input_record.ean.propre,
 #                       input_record.titre_nett,
 #                       input_record.auteur_nett,
 #                       input_record.date_nett)
-# 
+#
 #     #Si la recherche EAN + contrôles Titre/Date n'a rien donné -> on cherche EAN seul
 #     if (ark == "" and input_record.ean.nett != ""):
 #         ark = ean2ark(input_record.NumNot,input_record.ean.propre,"","","")
-# 
-#     #Si pas de résultats : on relance une recherche dans le Sudoc    
+#
+#     #Si pas de résultats : on relance une recherche dans le Sudoc
 #     if (ark == ""):
 #         ark = ean2sudoc(input_record.NumNot,input_record.ean.propre,
 #                         input_record.titre_nett,input_record.auteur_nett,input_record.date_nett)
-# 
-#     #Si pas de résultats : on relance une recherche dans le Sudoc avec l'EAN seul 
+#
+#     #Si pas de résultats : on relance une recherche dans le Sudoc avec l'EAN seul
 #     if (ark == ""):
 #         ark = ean2sudoc(input_record.NumNot,input_record.ean.propre,"","","")
-# 
-# 
+#
+#
 #     #A défaut, recherche sur Titre-Auteur-Date
 #     if (ark == "" and input_record.titre != ""):
 #         ark = tad2ark(input_record, False, False)
 #         #print("1." + NumNot + " : " + ark)
 #     if (ark == "" and input_record.titre != ""):
 #         ark = tad2ark(input_record, True, False)
-#     
+#
 #     """if (ark == "" and titre != ""):
 #         ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"monimpr")"""
-#     
+#
 #     print(str(n) + ". " + input_record.NumNot + " : " + ark)
 #     nbARK = len(ark.split(","))
 #     if (ark == ""):
-#         nbARK = 0   
+#         nbARK = 0
 #     if (ark == "Pb FRBNF"):
 #         nb_notices_nb_ARK["Pb FRBNF"] += 1
 #     else:
@@ -1554,8 +1554,8 @@ def file2row(form_bib2ark,zone_controles, entry_filename, liste_reports, paramet
 #     if (parametres["file_nb"] ==  1):
 #         row2file(liste_metadonnees,liste_reports)
 #     elif(parametres["file_nb"] ==  2):
-#         row2files(liste_metadonnees,liste_reports)    
-# 
+#         row2files(liste_metadonnees,liste_reports)
+#
 # def monimpr(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres):
 #     header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","FRBNF","ISBN","EAN","Titre","auteur","date","Tome/Volume", "editeur"]
 #     if (parametres["meta_bib"] == 1):
@@ -1574,20 +1574,20 @@ def file2row(form_bib2ark,zone_controles, entry_filename, liste_reports, paramet
 #         for row in entry_file:
 #             monimpr_item(row,n,form_bib2ark,parametres,liste_reports)
 #             n += 1
-#             
+#
 # def dvd_item(row,n,form_bib2ark,parametres,liste_reports):
 #     if (n == 0):
 #         assert main.control_columns_number(form_bib2ark,row,header_columns_init_cddvd)
 #     if (n%100 == 0):
 #         main.check_access2apis(n,dict_check_apis)
-# 
+#
 #     input_record = Bib_record(row,2)
-#     
+#
 #     #Actualisation de l'ARK à partir de l'ARK
 #     ark = ""
 #     if (input_record.ark_init != ""):
 #         ark = ark2ark(input_record)
-#     
+#
 #     #A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
 #     elif (input_record.frbnf != ""):
 #         ark = frbnf2ark(input_record)
@@ -1599,27 +1599,27 @@ def file2row(form_bib2ark,zone_controles, entry_filename, liste_reports, paramet
 #     #Si la recherche EAN + contrôle n'a rien donné -> on cherche EAN seul
 #     if (ark == "" and input_record.ean.nett != ""):
 #         ark = ean2ark(input_record.NumNot,input_record.ean.propre,"","","")
-# 
+#
 #     #A défaut, recherche sur no_commercial
 #     if (ark == "" and input_record.no_commercial != ""):
 #         ark = no_commercial2ark(input_record.NumNot,input_record.no_commercial_propre,input_record.titre_nett,input_record.auteur_nett,input_record.date_nett,False, input_record.publisher_nett)
-# 
-#     #Si pas de résultats : on relance une recherche dans le Sudoc    
+#
+#     #Si pas de résultats : on relance une recherche dans le Sudoc
 #     if (ark == "" and input_record.ean.nett != ""):
 #         ark = ean2sudoc(input_record.NumNot,input_record.ean.propre,input_record.titre_nett,input_record.auteur_nett,input_record.date_nett)
-#     #Si pas de résultats : on relance une recherche dans le Sudoc    
+#     #Si pas de résultats : on relance une recherche dans le Sudoc
 #     if (ark == "" and input_record.ean.nett != ""):
 #         ark = ean2sudoc(input_record.NumNot,input_record.ean.propre,"","","")
-# 
-#     
+#
+#
 #     #Si la recherche N° commercial + contrôle n'a rien donné -> on cherche N° commercial seul
 #     #if (ark == "" and no_commercial != ""):
 #     #    ark = no_commercial2ark(NumNot,no_commercial_propre,"","","",False, "")
-#         
+#
 #     #Si la recherche sur bib.comref n'a rien donné -> recherche du numéro partout dans la notice
 #     #if (ark == "" and no_commercial != ""):
 #     #    ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,True, publisher_nett)
-#         
+#
 #     #A défaut, recherche sur Titre-Auteur-Date
 #     if (ark == "" and input_record.titre_nett != ""):
 #         ark = tad2ark(input_record, False, False)
@@ -1633,12 +1633,12 @@ def file2row(form_bib2ark,zone_controles, entry_filename, liste_reports, paramet
 #     print(str(n) + "." + input_record.NumNot + " : " + ark)
 #     nbARK = len(ark.split(","))
 #     if (ark == ""):
-#         nbARK = 0   
+#         nbARK = 0
 #     if (ark == "Pb FRBNF"):
 #         nb_notices_nb_ARK["Pb FRBNF"] += 1
 #     else:
 #         nb_notices_nb_ARK[nbARK] += 1
-# 
+#
 #     typeConversionNumNot = ""
 #     if (input_record.NumNot in NumNotices2methode):
 #         typeConversionNumNot = ",".join(NumNotices2methode[input_record.NumNot])
@@ -1651,7 +1651,7 @@ def file2row(form_bib2ark,zone_controles, entry_filename, liste_reports, paramet
 #         row2file(liste_metadonnees,liste_reports)
 #     elif(parametres["file_nb"] ==  2):
 #         row2files(liste_metadonnees,liste_reports)
-# 
+#
 # def dvd(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres):
 #     header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","FRBNF","EAN","no_commercial_propre","titre","auteur","date", "editeur"]
 #     if (parametres["meta_bib"] == 1):
@@ -1671,19 +1671,19 @@ def file2row(form_bib2ark,zone_controles, entry_filename, liste_reports, paramet
 #         for row in entry_file:
 #             dvd_item(row,n,form_bib2ark,parametres,liste_reports)
 #             n += 1
-# 
+#
 # def cd_item(row,n,form_bib2ark,parametres,liste_reports):
 #     if (n == 0):
 #         assert main.control_columns_number(form_bib2ark,row,header_columns_init_cddvd)
 #     if (n%100 == 0):
 #         main.check_access2apis(n,dict_check_apis)
-# 
+#
 #     input_record = Bib_record(row,3)
 #     #Actualisation de l'ARK à partir de l'ARK
 #     ark = ""
 #     if (input_record.ark_init != ""):
 #         ark = ark2ark(input_record)
-#     
+#
 #     #A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
 #     elif (input_record.frbnf != ""):
 #         ark = frbnf2ark(input_record)
@@ -1695,19 +1695,19 @@ def file2row(form_bib2ark,zone_controles, entry_filename, liste_reports, paramet
 #     #Si la recherche EAN + contrôle n'a rien donné -> on cherche EAN seul
 #     if (ark == "" and input_record.ean.nett != ""):
 #         ark = ean2ark(input_record.NumNot,input_record.ean.propre,"","","")
-# 
+#
 #     #A défaut, recherche sur no_commercial
 #     if (ark == "" and input_record.no_commercial != ""):
 #         ark = no_commercial2ark(input_record.NumNot,input_record.no_commercial_propre,input_record.titre_nett,input_record.auteur_nett,input_record.date_nett,False, input_record.publisher_nett)
-#     
+#
 #     #Si la recherche N° commercial + contrôle n'a rien donné -> on cherche N° commercial seul
 #     #if (ark == "" and no_commercial != ""):
 #     #    ark = no_commercial2ark(NumNot,no_commercial_propre,"","","",False, "")
-#         
+#
 #     #Si la recherche sur bib.comref n'a rien donné -> recherche du numéro partout dans la notice
 #     #if (ark == "" and no_commercial != ""):
 #     #    ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,date_nett,True, publisher_nett)
-#         
+#
 #     #A défaut, recherche sur Titre-Auteur-Date
 #     if (ark == "" and input_record.titre != ""):
 #         ark = tad2ark(input_record, False, False)
@@ -1721,12 +1721,12 @@ def file2row(form_bib2ark,zone_controles, entry_filename, liste_reports, paramet
 #     print(str(n) + "." + input_record.NumNot + " : " + ark)
 #     nbARK = len(ark.split(","))
 #     if (ark == ""):
-#         nbARK = 0   
+#         nbARK = 0
 #     if (ark == "Pb FRBNF"):
 #         nb_notices_nb_ARK["Pb FRBNF"] += 1
 #     else:
 #         nb_notices_nb_ARK[nbARK] += 1
-# 
+#
 #     typeConversionNumNot = ""
 #     if (input_record.NumNot in NumNotices2methode):
 #         typeConversionNumNot = ",".join(NumNotices2methode[input_record.NumNot])
@@ -1739,7 +1739,7 @@ def file2row(form_bib2ark,zone_controles, entry_filename, liste_reports, paramet
 #         row2file(liste_metadonnees,liste_reports)
 #     elif(parametres["file_nb"] ==  2):
 #         row2files(liste_metadonnees,liste_reports)
-# 
+#
 # def cd(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres):
 #     header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","FRBNF","EAN","no_commercial_propre","titre","auteur","date", "editeur"]
 #     if (parametres["meta_bib"] == 1):
@@ -1759,9 +1759,9 @@ def file2row(form_bib2ark,zone_controles, entry_filename, liste_reports, paramet
 #         for row in entry_file:
 #             cd_item(row,n,form_bib2ark,parametres,liste_reports)
 #             n += 1
-# 
-# 
-# 
+#
+#
+#
 # def perimpr_item(row,n,form_bib2ark,parametres,liste_reports):
 #     if (n == 0):
 #         assert main.control_columns_number(form_bib2ark,row,header_columns_init_perimpr)
@@ -1773,7 +1773,7 @@ def file2row(form_bib2ark,zone_controles, entry_filename, liste_reports, paramet
 #     ark = ""
 #     if (input_record.ark_init != ""):
 #         ark = ark2ark(input_record)
-#     
+#
 #     #A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
 #     if (ark == "" and input_record.frbnf != ""):
 #         ark = frbnf2ark(input_record)
@@ -1790,12 +1790,12 @@ def file2row(form_bib2ark,zone_controles, entry_filename, liste_reports, paramet
 #     print(str(n) + ". " + input_record.NumNot + " : " + ark)
 #     nbARK = len(ark.split(","))
 #     if (ark == ""):
-#         nbARK = 0   
+#         nbARK = 0
 #     if (ark == "Pb FRBNF"):
 #         nb_notices_nb_ARK["Pb FRBNF"] += 1
 #     else:
 #         nb_notices_nb_ARK[nbARK] += 1
-#                          
+#
 #     typeConversionNumNot = ""
 #     if (input_record.NumNot in NumNotices2methode):
 #         typeConversionNumNot = ",".join(NumNotices2methode[input_record.NumNot])
@@ -1808,8 +1808,8 @@ def file2row(form_bib2ark,zone_controles, entry_filename, liste_reports, paramet
 #         row2file(liste_metadonnees,liste_reports)
 #     elif(parametres["file_nb"]  ==  2):
 #         row2files(liste_metadonnees,liste_reports)
-#     
-#     
+#
+#
 # #Si option du formulaire = périodiques imprimés
 # def perimpr(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres):
 #     header_columns = ["NumNot","nbARK","ark trouvé","Méthode","ark initial","frbnf","ISSN","titre","auteur","date","lieu"]
@@ -1829,9 +1829,9 @@ def file2row(form_bib2ark,zone_controles, entry_filename, liste_reports, paramet
 #         for row in entry_file:
 #             perimpr_item(row,n,form_bib2ark,parametres,liste_reports)
 #             n += 1
- 
+
 def launch(form_bib2ark,zone_controles, entry_filename, type_doc_bib, preferences_alignement, file_nb, meta_bib, id_traitement):
-    
+
     #Préférences alignement : 1 = BnF d'abord, puis Sudoc. 2 : Sudoc d'abord, puis BnF
     header_columns_init_dic = { 1: header_columns_init_monimpr,
                                2 : header_columns_init_cddvd,
@@ -1844,12 +1844,12 @@ def launch(form_bib2ark,zone_controles, entry_filename, type_doc_bib, preference
                   "header_columns_init":header_columns_init_dic[type_doc_bib],
                   "preferences_alignement":preferences_alignement}
     main.check_file_name(form_bib2ark, entry_filename)
-    
+
     #results2file(nb_fichiers_a_produire)
     #print("type_doc_bib : ", type_doc_bib)
     #print("file_nb : ",file_nb)
     #print("id_traitement : ", id_traitement)
-    liste_reports = create_reports(id_traitement, file_nb)    
+    liste_reports = create_reports(id_traitement, file_nb)
     file2row(form_bib2ark,zone_controles, entry_filename, liste_reports, parametres)
 #==============================================================================
 #      if (type_doc_bib == 1):
@@ -1860,13 +1860,13 @@ def launch(form_bib2ark,zone_controles, entry_filename, type_doc_bib, preference
 #          cd(form_bib2ark,zone_controles, entry_filename, liste_reports, parametres)
 #      elif (type_doc_bib == 4):
 #          perimpr(form_bib2ark,zone_controles, entry_filename, liste_reports, parametres)
-#  
+#
 #      else:
 #          print("Erreur : type de document non reconnu")
-#      
+#
 #==============================================================================
     fin_traitements(form_bib2ark,liste_reports,nb_notices_nb_ARK)
-# 
+#
 #==============================================================================
 
 def fin_traitements(form_bib2ark,liste_reports,nb_notices_nb_ARK):
@@ -1911,9 +1911,9 @@ def url_access_pbs_report(liste_reports):
                                                 NumNotices_conversionISBN[record]["via Sudoc"],
                                                 ]) + "\n")
 def check_access_to_apis(liste_reports):
-    """Contrôles réguliers de l'accès aux API Abes et BnF -> enregistrés dans 
+    """Contrôles réguliers de l'accès aux API Abes et BnF -> enregistrés dans
     le dictionnaire dict_check_apis.
-    Si celui-ci contient au moins un "False", on génère une rubrique 
+    Si celui-ci contient au moins un "False", on génère une rubrique
     dans le rapport Stats"""
     if (False in dict_check_apis["testAbes"]):
         liste_reports[-1].write("\n\nProblème d'accès aux API Abes\n")
@@ -1952,7 +1952,7 @@ def annuler(form_bib2ark):
 #     if (programID_last_compilation > version):
 #         display_update_button = True
 #     return [programID_last_compilation,display_update_button]
-# 
+#
 #==============================================================================
 #La vérification de la dernière version n'est faite que si le programme est lancé en standalone
 #last_version = [0,False]
@@ -1972,9 +1972,9 @@ def radioButton_lienExample(frame,variable_button,val,couleur_fond,text1,text2,l
     packButton.pack(anchor="w")
     line1 = tk.Frame(packButton, bg=couleur_fond)
     line1.pack(anchor="w")
-    tk.Radiobutton(line1,bg=couleur_fond, 
-                   text=text1, 
-                   variable=variable_button, value=val, justify="left").pack(anchor="w", side="left")    
+    tk.Radiobutton(line1,bg=couleur_fond,
+                   text=text1,
+                   variable=variable_button, value=val, justify="left").pack(anchor="w", side="left")
     if (link != ""):
         tk.Label(line1,text="  ",bg=couleur_fond).pack(anchor="w", side="left")
         example_ico = tk.Button(line1, bd=0, justify="left", font="Arial 7 underline",
@@ -1999,7 +1999,7 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
      zone_notes] = main.form_generic_frames(master,"Programme d'alignement de données bibliographiques avec la BnF",
                                       couleur_fond,couleur_bouton,
                                       access_to_network)
-    
+
     cadre_input = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_input.pack(side="left")
     cadre_input_header = tk.Frame(cadre_input,bg=couleur_fond)
@@ -2015,12 +2015,12 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     cadre_input_type_docs_zone.pack(anchor="w")
     cadre_input_type_docs_explications = tk.Frame(cadre_input_type_docs,bg=couleur_fond)
     cadre_input_type_docs_explications.pack(anchor="w")
-    
+
 
     cadre_inter = tk.Frame(zone_actions, borderwidth=0, padx=10,bg=couleur_fond)
     cadre_inter.pack(side="left")
     tk.Label(cadre_inter, text=" ",bg=couleur_fond).pack()
-    
+
     cadre_output = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton, relief="groove", height=150, padx=10,bg=couleur_fond)
     cadre_output.pack(side="left", anchor="w")
     cadre_output_header = tk.Frame(cadre_output,bg=couleur_fond)
@@ -2031,33 +2031,33 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     cadre_output_nb_fichiers_zone = tk.Frame(cadre_output_nb_fichier,bg=couleur_fond)
     cadre_output_nb_fichiers_zone.pack(anchor="w")
     cadre_output_nb_fichiers_explications = tk.Frame(cadre_output_nb_fichier,bg=couleur_fond)
-    cadre_output_nb_fichiers_explications.pack(anchor="w")    
-    
+    cadre_output_nb_fichiers_explications.pack(anchor="w")
+
     cadre_output_id_traitement = tk.Frame(cadre_output, padx=20,bg=couleur_fond)
     cadre_output_id_traitement.pack(side="left", anchor="w")
-    
+
     zone_notes_message_en_cours = tk.Frame(zone_notes, padx=20,bg=couleur_fond)
     zone_notes_message_en_cours.pack()
 
-    
+
 #==============================================================================
 # Message d'alerte dans le formulaire si besoin
 #==============================================================================
-#    tk.Label(zone_alert_explications, text="Attention : format MON IMPR avec une colonne supplémentaire en entrée (EAN)", 
+#    tk.Label(zone_alert_explications, text="Attention : format MON IMPR avec une colonne supplémentaire en entrée (EAN)",
 #             bg=couleur_fond,  fg="red").pack()
-    
+
     #définition input URL (u)
     tk.Label(cadre_input_header,bg=couleur_fond, fg=couleur_bouton, text="En entrée :", justify="left", font="bold").pack()
-    
+
     tk.Label(cadre_input_file,bg=couleur_fond, text="Fichier contenant les notices :\n\n").pack(side="left")
     """entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
     entry_filename.pack(side="left")
     entry_filename.focus_set()"""
     main.download_zone(cadre_input_file, "Sélectionner un fichier\nSéparateur TAB, Encodage UTF-8",entry_file_list,couleur_fond,zone_notes)
-    
+
     #tk.Label(cadre_input_infos_format,bg=couleur_fond, text=4*"\t"+"Séparateur TAB, Encodage UTF-8", justify="right").pack(anchor="s")
-    
-    
+
+
     tk.Label(cadre_input_type_docs_zone,bg=couleur_fond, text="Type de documents  ", font="Arial 10 bold", justify="left").pack(anchor="w", side="left")
 
     type_doc_bib = tk.IntVar()
@@ -2078,8 +2078,8 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
                             "(" + " | ".join(header_columns_init_perimpr) + ")",
                             "https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/examples/per.tsv")
     type_doc_bib.set(1)
-    
-    tk.Label(cadre_input_type_docs,bg=couleur_fond, text="\nPréférences", font="Arial 10 bold", 
+
+    tk.Label(cadre_input_type_docs,bg=couleur_fond, text="\nPréférences", font="Arial 10 bold",
              justify="left").pack(anchor="w")
     preferences_alignement = tk.IntVar()
     radioButton_lienExample(cadre_input_type_docs,preferences_alignement,1,couleur_fond,
@@ -2091,8 +2091,8 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
                             "",
                             "")
     preferences_alignement.set(1)
-    
-    
+
+
     #Choix du format
     tk.Label(cadre_output_header,bg=couleur_fond, fg=couleur_bouton,text="En sortie :", font="bold").pack(anchor="w")
     tk.Label(cadre_output_nb_fichiers_zone, bg=couleur_fond, font="Arial 10 bold", text="Nombre de fichiers  ").pack(anchor="w", side="left")
@@ -2107,67 +2107,67 @@ def formulaire_noticesbib2arkBnF(master,access_to_network=True, last_version=[0,
     tk.Radiobutton(cadre_output_nb_fichier,bg=couleur_fond, text="Plusieurs fichiers\n(Pb / 0 / 1 / plusieurs ARK trouvés)", justify="left", variable=file_nb , value=2).pack(anchor="w")
     file_nb.set(1)
     #Récupérer les métadonnées BIB (dublin core)
-    tk.Label(cadre_output_nb_fichier,bg=couleur_fond, fg=couleur_bouton, text="\n").pack()    
+    tk.Label(cadre_output_nb_fichier,bg=couleur_fond, fg=couleur_bouton, text="\n").pack()
     meta_bib = tk.IntVar()
-    meta_bib_check = tk.Checkbutton(cadre_output_nb_fichier, bg=couleur_fond, 
-                       text="Récupérer les métadonnées\nbibliographiques BnF [Dublin Core]", 
+    meta_bib_check = tk.Checkbutton(cadre_output_nb_fichier, bg=couleur_fond,
+                       text="Récupérer les métadonnées\nbibliographiques BnF [Dublin Core]",
                        variable=meta_bib, justify="left")
     meta_bib_check.pack(anchor="w")
     tk.Label(cadre_output_nb_fichier,text="\n"*14, bg=couleur_fond).pack()
 
 
-    
+
     #Ajout (optionnel) d'un identifiant de traitement
     tk.Label(cadre_output_id_traitement,bg=couleur_fond, text="\n\n\n").pack()
     tk.Label(cadre_output_id_traitement,bg=couleur_fond, text="Préfixe fichiers en sortie").pack()
     id_traitement = tk.Entry(cadre_output_id_traitement, width=20, bd=2)
     id_traitement.pack()
     tk.Label(cadre_output_id_traitement,bg=couleur_fond, text="\n\n\n").pack()
-    
-    
-    
+
+
+
     #Bouton de validation
-    
-    b = tk.Button(zone_ok_help_cancel, bg=couleur_bouton, fg="white", font="Arial 10 bold", 
-                  text = "Aligner les\nnotices BIB", 
-                  command = lambda: launch(form_bib2ark,zone_controles, 
+
+    b = tk.Button(zone_ok_help_cancel, bg=couleur_bouton, fg="white", font="Arial 10 bold",
+                  text = "Aligner les\nnotices BIB",
+                  command = lambda: launch(form_bib2ark,zone_controles,
                                            entry_file_list[0], type_doc_bib.get(),
                                            preferences_alignement.get(),
-                                           file_nb.get(), meta_bib.get(), 
+                                           file_nb.get(), meta_bib.get(),
                                            id_traitement.get()), borderwidth=5 ,padx=10, pady=10, width=10, height=4)
     b.pack()
-    
+
     tk.Label(zone_ok_help_cancel, font="bold", text="", bg=couleur_fond).pack()
-    
+
     call4help = tk.Button(zone_ok_help_cancel,
-                          text=main.texte_bouton_help, 
-                          command=lambda: main.click2url(main.url_online_help), 
+                          text=main.texte_bouton_help,
+                          command=lambda: main.click2url(main.url_online_help),
                           pady=5, padx=5, width=12)
     call4help.pack()
     tk.Label(zone_ok_help_cancel, text="\n",bg=couleur_fond, font="Arial 1 normal").pack()
-    
-    forum_button = tk.Button(zone_ok_help_cancel, 
-                          text=main.texte_bouton_forum, 
-                          command=lambda: main.click2url(main.url_forum_aide), 
+
+    forum_button = tk.Button(zone_ok_help_cancel,
+                          text=main.texte_bouton_forum,
+                          command=lambda: main.click2url(main.url_forum_aide),
                           pady=5, padx=5, width=12)
     forum_button.pack()
-    
+
     tk.Label(zone_ok_help_cancel, text="\n",bg=couleur_fond, font="Arial 4 normal").pack()
     cancel = tk.Button(zone_ok_help_cancel, text="Annuler",bg=couleur_fond, command=lambda: main.annuler(form_bib2ark), pady=10, padx=5, width=12)
     cancel.pack()
-    
+
     zone_version = tk.Frame(zone_notes, bg=couleur_fond)
     zone_version.pack()
     tk.Label(zone_version, text = "BiblioStratus - Version " + str(main.version) + " - " + main.lastupdate, bg=couleur_fond).pack()
 
     zone_controles = tk.Frame(zone_notes, bg=couleur_fond)
     zone_controles.pack()
-    
+
     """if (main.last_version[1] == True):
         download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(main.last_version[0]), command=download_last_update)
         download_update.pack()"""
 
-    
+
     tk.mainloop()
 
 if __name__ == '__main__':
@@ -2177,4 +2177,4 @@ if __name__ == '__main__':
     #    last_version = check_last_compilation(programID)
     main.formulaire_main(access_to_network, last_version)
     #formulaire_noticesbib2arkBnF(access_to_network,last_version)
-    
+

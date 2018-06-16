@@ -62,7 +62,7 @@ def ark2url(ark, parametres):
         url = "https://www.idref.fr/" + ark[3:] + ".xml"
     return url
 
-    
+
 def nn2url(nn, type_record, parametres,source="bnf"):
     if (source == "bnf"):
         query = type_record + '.recordid any "' + nn + '"'
@@ -139,7 +139,7 @@ def bib2aut(XMLrecord, ark, parametres):
             XMLrec = record.xpath(".//record")[0]
             record2file(parametres["aut_file"], XMLrec, parametres["format_file"])
 
-   
+
 def file_create(record_type, parametres):
     file = object
     id_filename = "-".join([parametres["outputID"], record_type])
@@ -238,9 +238,9 @@ def callback(master, form, filename, type_records_form, headers, AUTlieesAUT,AUT
             "format_BIB":format_BIB
             }
     main.generic_input_controls(master, filename)
-    
-    
-    
+
+
+
     bib_file = file_create(type_records, parametres)
     parametres["bib_file"] = bib_file
     if (parametres["AUTliees"] > 0):
@@ -254,7 +254,7 @@ def callback(master, form, filename, type_records_form, headers, AUTlieesAUT,AUT
         for row in entry_file:
             extract1record(row,j,form,headers,parametres)
             j = j+1
-            
+
         file_fin(bib_file, format_file)
         if (AUTliees == 1):
             file_fin(aut_file, format_file)
@@ -264,7 +264,7 @@ def errors_file(outputID):
     errors_file = open(outputID + "-errors.txt", "w", encoding="utf-8")
     for el in errors_list:
         errors_file.write(el[1] + "\n" + el[0] + "\n\n")
-    
+
 def fin_traitements(window,outputID):
     if (errors_list != []):
         errors_file(outputID)
@@ -272,7 +272,7 @@ def fin_traitements(window,outputID):
         os.remove("temp.xml")
     print("Programme d'extraction de notices terminé")
     window.destroy()
-    
+
 
 #==============================================================================
 # Création de la boîte de dialogue
@@ -281,7 +281,7 @@ def fin_traitements(window,outputID):
 def formulaire_ark2records(master,access_to_network=True,last_version=[version,False]):
     couleur_fond = "white"
     couleur_bouton = "#99182D"
-    
+
     [form,
      zone_alert_explications,
      zone_access2programs,
@@ -290,10 +290,10 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
      zone_notes] = main.form_generic_frames(master,"Bibliostratus : Récupérer les notices complètes de la BnF à partir d'une liste d'ARK",
                                       couleur_fond,couleur_bouton,
                                       access_to_network)
-    
+
     zone_ok_help_cancel.config(padx=10)
-    
-    frame_input = tk.Frame(zone_actions, 
+
+    frame_input = tk.Frame(zone_actions,
                            bg=couleur_fond, padx=10, pady=10,
                            highlightthickness=2, highlightbackground=couleur_bouton)
     frame_input.pack(side="left", anchor="w", padx=10,pady=10)
@@ -301,8 +301,8 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
     frame_input_file.pack()
     frame_input_aut = tk.Frame(frame_input, bg=couleur_fond)
     frame_input_aut.pack()
-    
-    frame_output = tk.Frame(zone_actions, 
+
+    frame_output = tk.Frame(zone_actions,
                            bg=couleur_fond, padx=10, pady=10,
                            highlightthickness=2, highlightbackground=couleur_bouton)
     frame_output.pack(side="left", anchor="w")
@@ -317,20 +317,20 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
     frame_output_options_inter.pack(side="left")
     frame_output_options_format = tk.Frame(frame_output_options, bg=couleur_fond)
     frame_output_options_format.pack(side="left", anchor="nw")
-    
+
 
     zone_notes_message_en_cours = tk.Frame(zone_notes, padx=20,bg=couleur_fond)
     zone_notes_message_en_cours.pack()
 
-    
-    #tk.Label(frame_input_file, text="Fichier contenant les ARK\n (1 par ligne) \n\n", 
+
+    #tk.Label(frame_input_file, text="Fichier contenant les ARK\n (1 par ligne) \n\n",
     #         bg=couleur_fond, justify="left").pack(side="left", anchor="w")
     """entry_filename = tk.Entry(frame_input_file, width=20, bd=2, bg=couleur_fond)
     entry_filename.pack(side="left")
     entry_filename.focus_set()"""
     main.download_zone(frame_input_file, "Sélectionner un fichier contenant\nune liste d'ARK (un ARK par ligne)",entry_file_list,couleur_fond,zone_notes_message_en_cours)
-    
-    
+
+
     tk.Label(frame_input_aut, text="\n", bg=couleur_fond).pack()
 
     #ARK de BIB ou d'AUT ?
@@ -342,38 +342,38 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
     bib2ark.radioButton_lienExample(frame_input_aut,type_records,2,couleur_fond,
                             "ARK de notices AUT",
                             "",
-                            "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/listeARKaut.tsv")    
+                            "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/listeARKaut.tsv")
     type_records.set(1)
 
     tk.Label(frame_input_aut, text="-------------------", bg=couleur_fond).pack()
 
     #Fichier avec en-têtes ?
     headers = tk.IntVar()
-    headerButton = tk.Checkbutton(frame_input_aut, text="Mon fichier a des en-têtes de colonne", 
+    headerButton = tk.Checkbutton(frame_input_aut, text="Mon fichier a des en-têtes de colonne",
                        variable=headers,
                        bg=couleur_fond, justify="left").pack(anchor="w")
 
     headers.set(1)
-    
-   
+
+
     #notices d'autorité liées
-    tk.Label(frame_input_aut,text="Récupérer aussi les notices d'autorité liées", 
+    tk.Label(frame_input_aut,text="Récupérer aussi les notices d'autorité liées",
              bg=couleur_fond,justify="left", font="Arial 9 bold").pack(anchor="w")
     AUTlieesAUT = tk.IntVar()
-    tk.Checkbutton(frame_input_aut, text="auteurs", 
+    tk.Checkbutton(frame_input_aut, text="auteurs",
                        variable=AUTlieesAUT,
                        bg=couleur_fond, justify="left").pack(anchor="w", side="left")
     #tk.Label(frame_input_aut, text="\n", bg=couleur_fond).pack()
     AUTlieesSUB = tk.IntVar()
-    tk.Checkbutton(frame_input_aut, text="sujets", 
+    tk.Checkbutton(frame_input_aut, text="sujets",
                        variable=AUTlieesSUB,
                        bg=couleur_fond, justify="left").pack(anchor="w", side="left")
     AUTlieesWORK = tk.IntVar()
-    tk.Checkbutton(frame_input_aut, text="oeuvres", 
+    tk.Checkbutton(frame_input_aut, text="oeuvres",
                        variable=AUTlieesWORK,
                        bg=couleur_fond, justify="left").pack(anchor="w", side="left")
 
-    
+
     #Choix du format
     tk.Label(frame_output_options_marc, text="Notices à récupérer en :").pack(anchor="nw")
     format_records_choice = tk.IntVar()
@@ -385,7 +385,7 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
 
     tk.Label(frame_output_options_inter, text="\n", bg=couleur_fond).pack(side="left")
 
-    
+
     #tk.Label(frame_output_options,text="\n\n", justify="left", variable=format_records_choice , value=4, bg=couleur_fond).pack()
 
     tk.Label(frame_output_file, text="Préfixe fichier(s) en sortie",
@@ -393,52 +393,52 @@ def formulaire_ark2records(master,access_to_network=True,last_version=[version,F
     outputID = tk.Entry(frame_output_file, bg=couleur_fond)
     outputID.pack(side="left", anchor="w")
     tk.Label(frame_output_file, text="\n\n\n\n\n\n\n", bg=couleur_fond).pack(side="left")
-    
 
-             
 
-    tk.Label(frame_output_options_format, text="Format du fichier :").pack(anchor="nw")    
+
+
+    tk.Label(frame_output_options_format, text="Format du fichier :").pack(anchor="nw")
     format_file = tk.IntVar()
-    tk.Radiobutton(frame_output_options_format,bg=couleur_fond, 
+    tk.Radiobutton(frame_output_options_format,bg=couleur_fond,
                    text="iso2709", variable=format_file , value=1, justify="left").pack(anchor="nw")
-    tk.Radiobutton(frame_output_options_format,bg=couleur_fond, 
+    tk.Radiobutton(frame_output_options_format,bg=couleur_fond,
                    text="Marc XML", variable=format_file , value=2, justify="left").pack(anchor="nw")
     format_file.set(1)
-    
-    
+
+
     #file_format.focus_set()
-    b = tk.Button(zone_ok_help_cancel, text = "OK", 
-                  command = lambda: callback(master, form, entry_file_list[0], type_records.get(), headers.get(), AUTlieesAUT.get(),AUTlieesSUB.get(), AUTlieesWORK.get(), outputID.get(), format_records_choice.get(), format_file.get()), 
+    b = tk.Button(zone_ok_help_cancel, text = "OK",
+                  command = lambda: callback(master, form, entry_file_list[0], type_records.get(), headers.get(), AUTlieesAUT.get(),AUTlieesSUB.get(), AUTlieesWORK.get(), outputID.get(), format_records_choice.get(), format_file.get()),
                   width = 15, borderwidth=1, pady=20, fg="white",
                   bg=couleur_bouton)
     b.pack()
-    
+
     main.form_saut_de_ligne(zone_ok_help_cancel, couleur_fond)
     call4help = tk.Button(zone_ok_help_cancel,
-                          text=main.texte_bouton_help, 
-                          command=lambda: main.click2url(main.url_online_help), 
+                          text=main.texte_bouton_help,
+                          command=lambda: main.click2url(main.url_online_help),
                           pady=5, padx=5, width=12)
     call4help.pack()
     tk.Label(zone_ok_help_cancel, text="\n",bg=couleur_fond, font="Arial 1 normal").pack()
-    
-    forum_button = tk.Button(zone_ok_help_cancel, 
-                          text=main.texte_bouton_forum, 
-                          command=lambda: main.click2url(main.url_forum_aide), 
+
+    forum_button = tk.Button(zone_ok_help_cancel,
+                          text=main.texte_bouton_forum,
+                          command=lambda: main.click2url(main.url_forum_aide),
                           pady=5, padx=5, width=12)
     forum_button.pack()
-    
+
     tk.Label(zone_ok_help_cancel, text="\n",bg=couleur_fond, font="Arial 4 normal").pack()
     cancel = tk.Button(zone_ok_help_cancel, text="Annuler",bg=couleur_fond, command=lambda: main.annuler(form), pady=10, padx=5, width=12)
     cancel.pack()
 
     tk.Label(zone_notes, text = "Bibliostratus - Version " + str(main.version) + " - " + main.lastupdate, bg=couleur_fond).pack()
-    
+
     """if (main.last_version[1] == True):
         download_update = tk.Button(zone_notes, text = "Télécharger la version " + str(main.last_version[0]), command=download_last_update)
         download_update.pack()"""
-    
+
     tk.mainloop()
-    
+
 
 if __name__ == '__main__':
     access_to_network = main.check_access_to_network()
