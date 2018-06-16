@@ -13,14 +13,11 @@ import re
 import tkinter as tk
 import webbrowser
 from collections import defaultdict
-from tkinter import filedialog
-from urllib import error
 
 import pymarc as mc
 from unidecode import unidecode
 
 import main
-import noticesbib2arkBnF as bib2ark
 
 
 version = 0.01

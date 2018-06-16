@@ -14,8 +14,6 @@ import re
 import tkinter as tk
 import webbrowser
 from collections import defaultdict
-from tkinter import filedialog
-from urllib import error
 
 import pymarc as mc
 from unidecode import unidecode
@@ -327,11 +325,9 @@ def iso2tables(master, entry_filename, rec_format, id_traitement):
             except mc.exceptions.RecordLengthInvalid as err:
                 NumNot = record2meta(record, ["001"])
                 liste_notices_pb_encodage.append(NumNot)
-                pass
             except UnicodeDecodeError as err:
                 NumNot = record2meta(record, ["001"])
                 liste_notices_pb_encodage.append(NumNot)
-                pass
     try:
         os.remove("temp_record.txt")
     except FileNotFoundError as err:

@@ -8,9 +8,7 @@ Fonctions et classes génériques pour Bibliostratus
 
 import http.client
 import urllib.parse
-from collections import defaultdict
 from urllib import error, request
-import tkinter as tk
 
 from lxml import etree
 from unidecode import unidecode

@@ -9,23 +9,15 @@ Alignement des données d'autorité
 
 """
 
-import codecs
 import csv
-import json
 import tkinter as tk
 import urllib.parse
-import webbrowser
 from collections import defaultdict
-from tkinter import filedialog
-from urllib import error, request
 
-from lxml import etree
 from unidecode import unidecode
 
-import ark2records
 import funcs
 import main
-import marc2tables
 import noticesbib2arkBnF as bib2ark
 
 

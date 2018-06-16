@@ -15,15 +15,11 @@ import tkinter as tk
 import webbrowser
 import xml
 from collections import defaultdict
-from tkinter import filedialog
-from urllib import error
 
-import chardet
 from chardet.universaldetector import UniversalDetector
 import pymarc as mc
 from unidecode import unidecode
 
-import funcs
 import main
 import noticesaut2arkBnF as aut2ark
 import noticesbib2arkBnF as bib2ark
@@ -315,7 +311,6 @@ def detect_errors_encoding_iso(collection):
     except mc.exceptions.RecordLengthInvalid as err:
         NumNot = record2meta(record, ["001"])
         liste_notices_pb_encodage.append(NumNot)
-        pass
     return (test, record)
 
 

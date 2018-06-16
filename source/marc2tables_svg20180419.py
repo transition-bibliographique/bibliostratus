@@ -15,11 +15,8 @@ import tkinter as tk
 import webbrowser
 import xml
 from collections import defaultdict
-from tkinter import filedialog
-from urllib import error
 
 import pymarc as mc
-import chardet
 from chardet.universaldetector import UniversalDetector
 from unidecode import unidecode
 
@@ -351,7 +348,6 @@ def detect_errors_encoding_iso(collection):
         alerte_bom(str(err))
         NumNot = record2meta(record, ["001"])
         liste_notices_pb_encodage.append(NumNot)
-        pass
     return (test, record)
 
 
