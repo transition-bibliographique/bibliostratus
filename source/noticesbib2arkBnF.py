@@ -21,7 +21,7 @@ from unidecode import unidecode
 
 import funcs
 import main
-from funcs import Bib_record
+#from funcs import Bib_record
 
 # import matplotlib.pyplot as plt
 
@@ -1201,7 +1201,7 @@ def ppn2ark(NumNot, ppn, isbn, titre, auteur, date):
                                       namespaces=main.nsSudoc):
                 frbnf_val = frbnf.text
                 NumNotices2methode[NumNot].append("PPN > FRBNF")
-                temp_record = Bib_record(
+                temp_record = funcs.Bib_record(
                     [
                         NumNot, frbnf_val, "", isbn, "", titre, auteur, date,
                         "", ""
@@ -1845,7 +1845,7 @@ def extract_cols_from_row(row, liste):
 def record2dic(row, option):
     """A partir d'une, et de l'indication de l'option "type de notice" (TEX, VID, AUD, PER)
     renvoi d'un dictionnaire fournissant les valeurs des différents champs"""
-    input_record = Bib_record(row, option)
+    input_record = funcs.Bib_record(row, option)
     return input_record
 
 
@@ -1967,7 +1967,7 @@ def item2id(row, n, form_bib2ark, parametres, liste_reports):
         main.check_access2apis(n, dict_check_apis)
     # print(row)
 
-    input_record = Bib_record(row, parametres["type_doc_bib"])
+    input_record = funcs.Bib_record(row, parametres["type_doc_bib"])
     ark = ""
     # Si option 1 : on aligne sur les ID en commençant par la BnF, puis par le Sudoc
     # Si aucun résultat -> recherche Titre-Auteur-Date à la BnF
@@ -2079,7 +2079,7 @@ def file2row(
 #         main.check_access2apis(n, dict_check_apis)
 #     # print(row)
 
-#     input_record = Bib_record(row, 1)
+#     input_record = funcs.Bib_record(row, 1)
 #     ark = ""
 #     if (input_record.ark_init != ""):
 #         ark = ark2ark(input_record)
@@ -2212,7 +2212,7 @@ def file2row(
 #     if (n % 100 == 0):
 #         main.check_access2apis(n, dict_check_apis)
 
-#     input_record = Bib_record(row, 2)
+#     input_record = funcs.Bib_record(row, 2)
 
 #     # Actualisation de l'ARK à partir de l'ARK
 #     ark = ""
@@ -2347,7 +2347,7 @@ def file2row(
 #     if (n % 100 == 0):
 #         main.check_access2apis(n, dict_check_apis)
 
-#     input_record = Bib_record(row, 3)
+#     input_record = funcs.Bib_record(row, 3)
 #     # Actualisation de l'ARK à partir de l'ARK
 #     ark = ""
 #     if (input_record.ark_init != ""):
@@ -2464,7 +2464,7 @@ def file2row(
 #     if (n % 100 == 0):
 #         main.check_access2apis(n, dict_check_apis)
 #     # print(row)
-#     input_record = Bib_record(row, 4)
+#     input_record = funcs.Bib_record(row, 4)
 #     # Actualisation de l'ARK à partir de l'ARK
 #     ark = ""
 #     if (input_record.ark_init != ""):
