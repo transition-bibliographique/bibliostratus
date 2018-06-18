@@ -140,7 +140,9 @@ def download_last_update(
 def check_access_to_network():
     access_to_network = True
     try:
-        request.urlopen("http://catalogue.bnf.fr/api")
+        test = request.urlopen("http://catalogue.bnf.fr/api").status
+        if (test == 404):
+            access_to_network = False
     except error.URLError:
         print("Pas de réseau internet")
         access_to_network = False
@@ -152,12 +154,20 @@ def check_access2apis(i, dict_report):
     (en supposant que si une requête d'exemple fonctionne, tout fonctionne"""
     testBnF = True
     testAbes = True
+    dict_report["testAbes"]["name"] = "API Abes"
+    dict_report["testAbes"]["global"] = True
+    dict_report["testBnF"]["name"] = "API BnF"
+    dict_report["testBnF"]["global"] = True
     testBnF = funcs.testURLretrieve(
         "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.recordid%20all%20%2230000001%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")  # noqa
     testAbes = funcs.testURLretrieve(
         "https://www.sudoc.fr/services/isbn2ppn/0195141156")
     dict_report["testAbes"][i] = testAbes
     dict_report["testBnF"][i] = testBnF
+    if (testAbes == False):
+        dict_report["testAbes"]["global"] = False
+    if (testBnF == False):
+        dict_report["testBnF"]["global"] = False
 
 
 def clean_string(string, replaceSpaces=False, replaceTirets=False):
@@ -239,7 +249,7 @@ def form_generic_frames(master, title, couleur_fond,
     zone_notes = tk.Frame(form, bg=couleur_fond, pady=10)
     zone_notes.pack()
 
-    if access_to_network:
+    if (access_to_network ==  False):
         tk.Label(zone_alert_explications, text=errors["no_internet"],
                  bg=couleur_fond, fg="red").pack()
 
@@ -285,7 +295,7 @@ def main_form_frames(title, couleur_fond, couleur_bordure, access_to_network):
     zone_notes = tk.Frame(master, bg=couleur_fond, pady=10)
     zone_notes.pack()
 
-    if access_to_network:
+    if (access_to_network == False):
         tk.Label(zone_alert_explications, text=errors["no_internet"],
                  bg=couleur_fond, fg="red").pack()
 
@@ -641,6 +651,6 @@ def formulaire_main(access_to_network, last_version):
 if __name__ == '__main__':
     access_to_network = check_access_to_network()
     last_version = [0, False]
-    if(access_to_network is True):
+    if(access_to_network):
         last_version = check_last_compilation(programID)
     formulaire_main(access_to_network, last_version)

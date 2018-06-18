@@ -2666,21 +2666,14 @@ def check_access_to_apis(liste_reports):
     le dictionnaire dict_check_apis.
     Si celui-ci contient au moins un "False", on génère une rubrique
     dans le rapport Stats"""
-    if (False in dict_check_apis["testAbes"]):
-        liste_reports[-1].write("\n\nProblème d'accès aux API Abes\n")
-        for key in dict_check_apis["testAbes"]:
+    for api in dict_check_apis:
+        if (dict_check_apis[api]["global"] == False):
+            liste_reports[-1].write("\n\nProblème d'accès aux" + dict_check_apis[api]["name"] + " :\n")
+        for key in dict_check_apis[api]:
             if (dict_check_apis["testAbes"][key] is False):
                 liste_reports[-1].write(
-                    "".join([str(key), " : API Abes down\n"])
+                    "".join([str(key), " : " + dict_check_apis[api]["name"] + " down\n"])
                 )
-    if (False in dict_check_apis["testBnF"]):
-        liste_reports[-1].write("\n\nProblème d'accès aux API BnF\n")
-        for key in dict_check_apis["testBnF"]:
-            if (dict_check_apis["testBnF"][key] is False):
-                liste_reports[-1].write(
-                    "".join([str(key), " : API BnF down\n"])
-                )
-
 
 def typesConversionARK(liste_reports):
     """Dans un rapport spécifique, pour chaque notice en entrée,
