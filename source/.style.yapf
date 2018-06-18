@@ -1,0 +1,18 @@
+[style]
+based_on_style = chromium
+
+indent_width = 4
+spaces_before_comment = 2
+column_limit = 80
+
+join_multiple_lines = True
+indent_dictionary_value = True
+each_dict_entry_on_separate_line = True
+dedent_closing_brackets = True
+align_closing_bracket_with_visual_indent = True
+coalesce_brackets = False
+split_arguments_when_comma_terminated = True
+split_before_named_assigns = True
+space_between_ending_comma_and_closing_bracket = True
+continuation_indent_width = 4
+split_before_first_argument = True
