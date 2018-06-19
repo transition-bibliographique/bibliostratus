@@ -5,6 +5,7 @@ Created on Tue Jun 19 13:05:22 2018
 @author: Etienne Cavalié
 
 Ensemble des tests unitaires sur un ensemble de fonctions utilisées par Bibliostratus
+A lancer avec pytest
 """
 
 import funcs
