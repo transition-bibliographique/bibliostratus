@@ -134,7 +134,8 @@ def nettoyageDate(date):
         date = date.replace(lettre, "")
     for signe in ponctuation:
         date = date.split(signe)
-        date = " ".join(annee for annee in date if annee != "")
+        date = " ".join(annee for annee in date if annee.strip(" ") != "")
+    date = date.strip(" ")
     return date
 
 
@@ -150,6 +151,9 @@ def nettoyageTome(numeroTome):
         numeroTome = [numero for numero in numeroTome if numero != ""]
         if (numeroTome != []):
             numeroTome = numeroTome[-1]
+            numeroTome = numeroTome.strip(" ")
+        else:
+            numeroTome = ""
         numeroTome = ltrim(numeroTome)
     return numeroTome
 
@@ -161,7 +165,7 @@ def nettoyagePubPlace(pubPlace):
         pubPlace = pubPlace.replace(chiffre, "")
     for signe in ponctuation:
         pubPlace = pubPlace.split(signe)
-        pubPlace = " ".join(mot for mot in pubPlace if mot != "")
+        pubPlace = " ".join(mot.strip(" ") for mot in pubPlace if mot.strip(" ") != "")
     return pubPlace
 
 
@@ -279,6 +283,9 @@ def roman_to_int(n):
 
 
 def convert_volumes_to_int(n):
+    """nettoie la mention d'origine des numéros de tome/volume
+    en ne conservant que le n° lui-même, au besoin converti 
+    des chiffres romains en chiffres arabes"""
     for char in ponctuation:
         n = n.replace(char, "-")
     n = n.replace(" ", "-")
@@ -292,13 +299,19 @@ def convert_volumes_to_int(n):
             c = roman_to_int(n)
             if (c != 0):
                 liste_n_convert.append(c)
-    liste_n_convert = set(ltrim(str(nb)) for nb in liste_n_convert if nb != "")
-    n_convert = " ".join([str(el) for el in list(liste_n_convert)])
+    liste_n_convert2 = []
+    for nb in liste_n_convert:
+        val = ltrim(str(nb))
+        if (val != "" and val not in liste_n_convert2):
+            liste_n_convert2.append(val)
+    n_convert = " ".join([str(el) for el in list(liste_n_convert2)])
+    print(liste_n_convert, liste_n_convert2)
     return n_convert
 
 
 def datePerios(date):
-    """Requête sur la date en élargissant sa valeur aux dates approximatives"""
+    """Requête sur la date en élargissant sa valeur aux dates approximatives
+    Ne conserve que la date de début"""
     date = date.split(" ")[0].split("-")[0]
     return date
 
