@@ -27,8 +27,8 @@ import noticesbib2arkBnF as bib2ark
 
 # import matplotlib.pyplot as plt
 
-version = 1.19
-lastupdate = "07/06/2018"
+version = 1.20
+lastupdate = "21/06/2018"
 programID = "bibliostratus"
 
 ns = {

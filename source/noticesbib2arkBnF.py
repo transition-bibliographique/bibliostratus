@@ -1094,7 +1094,7 @@ def isbn_anywhere2sru(NumNot, isbn, titre, auteur, date):
 #
 
 
-def isbn2sudoc(input_record):
+def isbn2sudoc(input_record, parametres):
     """A partir d'un ISBN, recherche dans le Sudoc.
 
     Pour chaque notice trouvée, on regarde sur la notice Sudoc a un ARK BnF ou
@@ -1112,14 +1112,16 @@ def isbn2sudoc(input_record):
             for ppn in resultats.xpath("//ppn"):
                 ppn_val = ppn.text
                 Listeppn.append("PPN" + ppn_val)
-                ark.append(
-                    ppn2ark(
-                        input_record.NumNot, ppn_val, input_record.isbn.propre,
-                        input_record.titre_nett, input_record.auteur_nett,
-                        input_record.date_nett
+                #Si BnF > Sudoc : on cherche l'ARK dans la notice Sudoc trouvée
+                if (parametres["preferences_alignement"] == 1):
+                    ark.append(
+                        ppn2ark(
+                            input_record.NumNot, ppn_val, input_record.isbn.propre,
+                            input_record.titre_nett, input_record.auteur_nett,
+                            input_record.date_nett
+                        )
                     )
-                )
-            if (ark == []):
+            if (Listeppn == "" and ark == []):
                 url = "https://www.sudoc.fr/services/isbn2ppn/" + input_record.isbn.converti
                 isbnTrouve = funcs.testURLretrieve(url)
                 if isbnTrouve:
@@ -1128,12 +1130,15 @@ def isbn2sudoc(input_record):
                         for ppn in resultats.xpath("//ppn"):
                             ppn_val = ppn.text
                             Listeppn.append("PPN" + ppn_val)
-                            ark = ppn2ark(
-                                input_record.NumNot, ppn_val,
-                                input_record.isbn.converti,
-                                input_record.titre_nett,
-                                input_record.auteur_nett, input_record.date_nett
-                            )
+                            #Si BnF > Sudoc : on cherche l'ARK dans la notice Sudoc trouvée
+                            if (parametres["preferences_alignement"] == 1):
+                                ark = ppn2ark(
+                                    input_record.NumNot, ppn_val,
+                                    input_record.isbn.converti,
+                                    input_record.titre_nett,
+                                    input_record.auteur_nett, 
+                                    input_record.date_nett
+                                )
                             if (Listeppn != []):
                                 add_to_conversionIsbn(
                                     input_record.NumNot,
@@ -1150,7 +1155,7 @@ def isbn2sudoc(input_record):
         return Listeppn
 
 
-def ean2sudoc(NumNot, ean_propre, titre_nett, auteur_nett, date_nett):
+def ean2sudoc(NumNot, ean_propre, titre_nett, auteur_nett, date_nett, parametres):
     """A partir d'un EAN, recherche dans le Sudoc.
 
     Pour chaque notice trouvée, on regarde sur la notice Sudoc a un ARK BnF ou
@@ -1168,12 +1173,14 @@ def ean2sudoc(NumNot, ean_propre, titre_nett, auteur_nett, date_nett):
                 ppn_val = ppn.text
                 Listeppn.append("PPN" + ppn_val)
                 NumNotices2methode[NumNot].append("EAN > PPN")
-                ark.append(
-                    ppn2ark(
-                        NumNot, ppn_val, ean_propre, titre_nett, auteur_nett,
-                        date_nett
+                #Si BnF > Sudoc : on cherche l'ARK dans la notice Sudoc trouvée
+                if (parametres["preferences_alignement"] == 1):
+                    ark.append(
+                        ppn2ark(
+                            NumNot, ppn_val, ean_propre, titre_nett, auteur_nett,
+                            date_nett
+                        )
                     )
-                )
     # Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK
     # déclaré comme équivalent --> dans ce cas on récupère l'ARK
     Listeppn = ",".join([ppn for ppn in Listeppn if ppn != ""])
@@ -1295,7 +1302,7 @@ def issn2sru(NumNot, issn):
     return listeArk
 
 
-def issn2sudoc(NumNot, issn_init, issn_nett, titre, auteur, date):
+def issn2sudoc(NumNot, issn_init, issn_nett, titre, auteur, date, parametres):
     """A partir d'un ISSN, recherche dans le Sudoc.
 
     Pour chaque notice trouvée, on regarde sur la notice Sudoc a un ARK BnF ou
@@ -1849,7 +1856,7 @@ def record2dic(row, option):
     return input_record
 
 
-def item2ark_by_id(input_record):
+def item2ark_by_id(input_record, parametres):
     """Tronc commun de fonctions d'alignement, applicables pour tous les types de notices
     Par identifiant international : EAN, ISBN, N° commercial, ISSN"""
     ark = ""
@@ -1912,7 +1919,7 @@ def item2ark_by_id(input_record):
     return ark
 
 
-def item2ppn_by_id(input_record):
+def item2ppn_by_id(input_record, parametres):
     """Tronc commun de fonctions d'alignement, applicables pour tous les types de notices
     Quand l'option "BnF" d'abord a été choisie"""
     ark = ""
@@ -1922,28 +1929,30 @@ def item2ppn_by_id(input_record):
         ark = ean2sudoc(
             input_record.NumNot, input_record.ean.propre,
             input_record.titre_nett, input_record.auteur_nett,
-            input_record.date_nett
+            input_record.date_nett, parametres
         )
 
     # Si pas de résultats : on relance une recherche dans le Sudoc avec l'EAN
     # seul
     if (ark == ""):
         ark = ean2sudoc(
-            input_record.NumNot, input_record.ean.propre, "", "", ""
+            input_record.NumNot, input_record.ean.propre, "", "", "",
+            parametres
         )
     if (ark == ""):
-        ark = isbn2sudoc(input_record)
+        ark = isbn2sudoc(input_record, parametres)
     if (ark == ""):
         ark = issn2sudoc(
             input_record.NumNot, input_record.issn.init,
             input_record.issn.propre, input_record.titre.controles,
-            input_record.auteur_nett, input_record.date_nett
+            input_record.auteur_nett, input_record.date_nett,
+            parametres
         )
 
     return ark
 
 
-def item2ark_by_keywords(input_record):
+def item2ark_by_keywords(input_record, parametres):
     """Alignement par mots clés"""
     ark = ""
     # A défaut, recherche sur Titre-Auteur-Date
@@ -1973,15 +1982,15 @@ def item2id(row, n, form_bib2ark, parametres, liste_reports):
     # Si aucun résultat -> recherche Titre-Auteur-Date à la BnF
     # Si option 2 : on commence par le Sudoc, puis par la BnF
     if (parametres["preferences_alignement"] == 1):
-        ark = item2ark_by_id(input_record)
+        ark = item2ark_by_id(input_record, parametres)
         if (ark == ""):
-            ark = item2ppn_by_id(input_record)
+            ark = item2ppn_by_id(input_record, parametres)
     else:
-        ark = item2ppn_by_id(input_record)
+        ark = item2ppn_by_id(input_record, parametres)
         if (ark == ""):
-            ark = item2ark_by_id(input_record)
+            ark = item2ark_by_id(input_record, parametres)
     if (ark == ""):
-        ark = item2ark_by_keywords(input_record)
+        ark = item2ark_by_keywords(input_record, parametres)
 
     print(str(n) + ". " + input_record.NumNot + " : " + ark)
     nbARK = len(ark.split(","))
@@ -2927,18 +2936,18 @@ def formulaire_noticesbib2arkBnF(
     tk.Label(
         cadre_input_type_docs,
         bg=couleur_fond,
-        text="\nPréférences",
+        text="\nAligner de préférence :",
         font="Arial 10 bold",
         justify="left"
     ).pack(anchor="w")
     preferences_alignement = tk.IntVar()
     radioButton_lienExample(
         cadre_input_type_docs, preferences_alignement, 1, couleur_fond,
-        "Essayer d'abord l'alignement BnF", "", ""
+        "Avec la BnF (et à défaut avec le Sudoc)", "", ""
     )
     radioButton_lienExample(
         cadre_input_type_docs, preferences_alignement, 2, couleur_fond,
-        "Essayer d'abord l'alignement Sudoc", "", ""
+        "Avec le Sudoc (et à défaut avec la BnF)", "", ""
     )
     preferences_alignement.set(1)
 
@@ -3089,7 +3098,7 @@ def formulaire_noticesbib2arkBnF(
 if __name__ == '__main__':
     access_to_network = main.check_access_to_network()
     last_version = [0, False]
-    # if(access_to_network is True):
-    #    last_version = check_last_compilation(programID)
+    if(access_to_network is True):
+        last_version = main.check_last_compilation(main.programID)
     main.formulaire_main(access_to_network, last_version)
     # formulaire_noticesbib2arkBnF(access_to_network,last_version)

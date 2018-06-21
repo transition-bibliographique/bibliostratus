@@ -24,10 +24,6 @@ import main
 import noticesbib2arkBnF as bib2ark
 
 
-version = 0.02
-programID = "ark2records"
-lastupdate = "12/11/2017"
-last_version = [version, False]
 
 # Permet d'écrire dans une liste accessible au niveau général depuis le
 # formulaire, et d'y accéder ensuite
@@ -309,7 +305,7 @@ def fin_traitements(window, outputID):
 # ==============================================================================
 
 def formulaire_ark2records(
-        master, access_to_network=True, last_version=[version, False]):
+        master, access_to_network=True, last_version=[0.0, False]):
     couleur_fond = "white"
     couleur_bouton = "#99182D"
 
@@ -531,7 +527,7 @@ def formulaire_ark2records(
 
 if __name__ == '__main__':
     access_to_network = main.check_access_to_network()
-    # if(access_to_network is True):
-    #    last_version = main.check_last_compilation(programID)
+    if(access_to_network is True):
+        last_version = main.check_last_compilation(main.programID)
     main.formulaire_main(access_to_network, last_version)
     # formulaire_ark2records(access_to_network,[version, False])

@@ -25,10 +25,6 @@ import noticesaut2arkBnF as aut2ark
 import noticesbib2arkBnF as bib2ark
 
 
-version = 0.01
-programID = "marc2tables"
-lastupdate = "10/11/2017"
-last_version = [version, False]
 
 # Permet d'écrire dans une liste accessible au niveau général depuis le
 # formulaire, et d'y accéder ensuite
@@ -761,7 +757,7 @@ def launch(form, entry_filename, file_format, rec_format, output_ID, master):
 
 
 def formulaire_marc2tables(
-        master, access_to_network=True, last_version=[version, False]):
+        master, access_to_network=True, last_version=[0.0, False]):
     # =============================================================================
     # Structure du formulaire - Cadres
     # =============================================================================
@@ -1066,7 +1062,7 @@ def formulaire_marc2tables(
 
 if __name__ == '__main__':
     access_to_network = main.check_access_to_network()
-    # if(access_to_network is True):
-    #    last_version = main.check_last_compilation(programID)
+    if(access_to_network is True):
+        last_version = main.check_last_compilation(main.programID)
     main.formulaire_main(access_to_network, last_version)
     # formulaire_marc2tables(access_to_network,last_version)

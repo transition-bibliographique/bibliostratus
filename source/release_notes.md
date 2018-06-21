@@ -1,9 +1,15 @@
 ###version 1.20
 juin 2018
+- Tous modules : 
+	- mise en forme PEP8 et flake8
+	- initialisation d'un fichier de tests automatiques (à développer)
+	- correction lignes lancement
 - Module blanc (alignement BIB):
 	- Option BnF > Sudoc ou Sudoc > BnF
 	- Création d'une classe Bib_record pour gérer les métadonnées en entrée
 	Effets de bords possibles sur certaines parties du code (même si tous les impacts sont censés avoir été repris)
+- Module rouge (ark2marc) :
+	- extraction des notices à partir d'une liste de PPN (et pas seulement d'une liste d'ARK) ou d'une liste mélangée PPN + ARK
 	
 
 

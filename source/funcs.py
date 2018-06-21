@@ -306,7 +306,7 @@ def convert_volumes_to_int(n):
         if (val != "" and val not in liste_n_convert2):
             liste_n_convert2.append(val)
     n_convert = " ".join([str(el) for el in list(liste_n_convert2)])
-    print(liste_n_convert, liste_n_convert2)
+    #print(liste_n_convert, liste_n_convert2)
     return n_convert
 
 

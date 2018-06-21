@@ -74,3 +74,11 @@ def test_titres():
 def test_cleaning_string():
     #Lieu de publication
     assert funcs.nettoyagePubPlace("Paris : Gallimard, 1930") == "paris gallimard"
+    
+                                  
+#==============================================================================
+# Contrôles des mécanismes de fonctionnement global du logiciel
+#==============================================================================
+
+def test_last_version():
+    assert main.version >= main.check_last_compilation(main.programID)[0]
