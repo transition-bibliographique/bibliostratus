@@ -82,3 +82,32 @@ def test_cleaning_string():
 
 def test_last_version():
     assert main.version >= main.check_last_compilation(main.programID)[0]
+    
+    
+#==============================================================================
+# Contrôles sur les alignements
+#==============================================================================
+
+def test_row_bib():
+    #Vérifie que les métadonnées en entrée d'une notice BIB 
+    #sont bien récupérées
+    record = funcs.Bib_record(
+                                [
+                                "315756", "FRBNF435361100000003", "",
+                                "978-2-213-67203-8", "", 
+                                "Mon Paris, ma mémoire", "Morin Edgar", 
+                                "DL 2013","","Fayard"
+                                ],
+                                1
+                                )
+    assert record.NumNot == "315756"
+    assert record.FRBNF == "FRBNF435361100000003"
+    assert record.ark_init == ""
+    assert record.isbn.init == "978-2-213-67203-8"
+    assert record.ean.init == ""
+    assert record.titre.init == "Mon Paris, ma mémoire"
+    assert record.titre_nett == "mon parismamemoire"
+    assert record.auteur == "Morin Edgar"
+    assert record.auteur_nett == "morin edgar"
+    assert record.date_nett == "2013"
+    assert record.publisher_nett == "fayard"

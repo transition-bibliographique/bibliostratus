@@ -19,12 +19,12 @@ import main
 # Quelques listes de signes à nettoyer
 listeChiffres = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 lettres = [
-    "a", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p",
-    "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
+    "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", 
+    "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
 ]
 lettres_sauf_x = [
-    "a", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p",
-    "q", "r", "s", "t", "u", "v", "w", "y", "z"
+    "a", "c", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", 
+    "p", "q", "r", "s", "t", "u", "v", "w", "y", "z"
 ]
 ponctuation = [
     ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
@@ -48,6 +48,7 @@ def nettoyage(string, remplacerEspaces=True, remplacerTirets=True):
         string = string.replace("-", " ")
     if remplacerEspaces:
         string = string.replace(" ", "")
+    string = string.strip()
     return string
 
 
@@ -196,6 +197,23 @@ def nettoyage_isbn(isbn):
         isbn_nett = isbn_nett.replace(lettre, "")
     return isbn_nett
 
+
+def nettoyage_isni(isni):
+    if (isni[0:20] == "http://www.isni.org"):
+        isni = isni[20:36]
+    else:
+        isni = nettoyage(isni)
+    for lettre in lettres:
+        isni = isni.replace(lettre, "")
+    return isni
+
+def nettoyageFRBNF(frbnf):
+    frbnf_nett = ""
+    if (frbnf[0:4].lower() == "frbn"):
+        frbnf_nett = unidecode(frbnf.lower())
+    for signe in ponctuation:
+        frbnf_nett = frbnf_nett.split(signe)[0]
+    return frbnf_nett
 
 def conversionIsbn(isbn):
     longueur = len(isbn)
@@ -447,13 +465,9 @@ def url_requete_sru(query, recordSchema="unimarcxchange",
     return url
 
 
-class international_id:
-    """Classe définissant les propriétés d'une notice mise en entrée
-    du module d'alignemen
-    - son nom
-    - son prénom
-    - son âge
-    - son lieu de résidence"""
+class International_id:
+    """Classe définissant les propriétés d'un identifiant bibliographique :
+        ISBN, ISSN, EAN """
 
     def __init__(self, string):  # Notre méthode constructeur
         self.init = string
@@ -465,8 +479,54 @@ class international_id:
         """Méthode permettant d'afficher plus joliment notre objet"""
         return "{}".format(self.init)
 
+class Isni:
+    """Classe pour les ISNI"""
+    def __init__(self, string):  # Notre méthode constructeur
+        self.init = string
+        self.propre = nettoyage_isni(self.init)
 
-class titre:
+    def __str__(self):
+        """Méthode permettant d'afficher plus joliment notre objet"""
+        return "{}".format(self.init)
+
+class FRBNF:
+    """Classe pour les ISNI"""
+    def __init__(self, string):  # Notre méthode constructeur
+        self.init = string
+        self.propre = nettoyageFRBNF(self.init)
+
+    def __str__(self):
+        """Méthode permettant d'afficher plus joliment notre objet"""
+        return "{}".format(self.init)
+
+
+class Date:
+    """Classe pour les ISNI"""
+    def __init__(self, string):  # Notre méthode constructeur
+        self.init = string
+        self.propre = nettoyageDate(self.init)
+
+    def __str__(self):
+        """Méthode permettant d'afficher plus joliment notre objet"""
+        return "{}".format(self.init)
+
+
+
+class Name:
+    """Zone de titre"""
+
+    def __init__(self, string):  # Notre méthode constructeur
+        self.init = string
+        self.propre = nettoyage(self.init)
+
+
+    def __str__(self):
+        """Méthode permettant d'afficher plus joliment notre objet"""
+        return "{}".format(self.init)
+
+
+
+class Titre:
     """Zone de titre"""
 
     def __init__(self, string):  # Notre méthode constructeur
@@ -487,15 +547,15 @@ class Bib_record:
         self.NumNot = input_row[0]
         self.frbnf = input_row[1]
         self.ark_init = input_row[2]
-        self.isbn = international_id("")
-        self.ean = international_id("")
+        self.isbn = International_id("")
+        self.ean = International_id("")
         self.titre = ""
         self.auteur = ""
         self.date = ""
         self.tome = ""
         self.publisher = ""
-        self.no_commercial = international_id("")
-        self.issn = international_id("")
+        self.no_commercial = International_id("")
+        self.issn = International_id("")
         self.pubPlace = ""
         self.metas_init = input_row[1:]
         self.date_debut = ""
@@ -504,9 +564,9 @@ class Bib_record:
             self.type = "TEX"
             self.intermarc_type_doc = "a"
             self.intermarc_type_record = "m"
-            self.isbn = international_id(input_row[3])
-            self.ean = international_id(input_row[4])
-            self.titre = titre(input_row[5])
+            self.isbn = International_id(input_row[3])
+            self.ean = International_id(input_row[4])
+            self.titre = Titre(input_row[5])
             self.auteur = input_row[6]
             self.date = input_row[7]
             self.tome = input_row[8]
@@ -519,9 +579,9 @@ class Bib_record:
             self.intermarc_type_doc = "g r"
         if (option_record == 2 or option_record == 3):
             self.intermarc_type_record = "m"
-            self.ean = international_id(input_row[3])
-            self.no_commercial = international_id(input_row[4])
-            self.titre = titre(input_row[5])
+            self.ean = International_id(input_row[3])
+            self.no_commercial = International_id(input_row[4])
+            self.titre = Titre(input_row[5])
             self.auteur = input_row[6]
             self.date = input_row[7]
             self.publisher = input_row[8]
@@ -529,8 +589,8 @@ class Bib_record:
             self.type = "PER"
             self.intermarc_type_record = "s"
             self.intermarc_type_doc = "a"
-            self.issn = international_id(input_row[3])
-            self.titre = titre(input_row[4])
+            self.issn = International_id(input_row[3])
+            self.titre = Titre(input_row[4])
             self.auteur = input_row[5]
             self.date = input_row[6]
             self.pubPlace = input_row[7]
@@ -548,3 +608,29 @@ class Bib_record:
         if RepresentsInt(self.date_debut):
             self.dates_elargies_perios = elargirDatesPerios(
                 int(self.date_debut))
+
+
+class Aut_record:
+    """Classe définissant les propriétés d'une notice d'autorité mise en entrée
+    du module d'alignement aut2ark, à partir de notices AUT"""
+
+    def __init__(self, input_row, parametres):  # Notre méthode constructeur
+        self.metas_init = input_row[1:]
+        self.NumNot = input_row[0]
+        self.frbnf = FRBNF(input_row[1])
+        self.ark_init = input_row[2]
+        self.isni = Isni(input_row[3])
+        self.lastname = Name(input_row[4])
+        self.firstname = Name(input_row[5])
+        self.firstdate = Date(input_row[6])
+        self.lastdate = Date(input_row[7])
+        
+class Aut_bib_record:
+    """Classe définissant les propriétés d'une combinaison de métadonnées
+    AUT + BIB, à partir d'une notice bibliographique, pour permettre
+    un alignement sur la notice d'autorité"""
+
+    def __init__(self, input_row, parametres):  # Notre méthode constructeur
+        self.metas_init = input_row[1:]
+        self.NumNot = input_row[0]
+        self.frbnf = input_row[1]
