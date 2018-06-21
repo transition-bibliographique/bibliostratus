@@ -23,20 +23,20 @@ def test_nettoyage():
     
 def test_isbn():
     """Vérifie que les ISBN en entrée de la classe ISBN sont correctement convertis"""
-    isbn10 = funcs.international_id("2-84580-125-4")
+    isbn10 = funcs.International_id("2-84580-125-4")
     assert isbn10.propre == "2845801254"
     assert isbn10.converti == "9782845801257"
     assert isbn10.nett == "2845801254"
     
-    isbndouble = funcs.international_id("2-84580-125-4;2-87153-145-5")
+    isbndouble = funcs.International_id("2-84580-125-4;2-87153-145-5")
     assert isbndouble.propre == "2845801254"
 
-    isbnfaux = funcs.international_id("2-")
+    isbnfaux = funcs.International_id("2-")
     assert isbnfaux.nett == ""
     assert isbnfaux.propre == "2"
     assert isbnfaux.converti == ""
 
-    isbnlettres = funcs.international_id("Br.")
+    isbnlettres = funcs.International_id("Br.")
     assert isbnlettres.nett == ""
     assert isbnlettres.propre == ""
     assert isbnlettres.converti == ""
@@ -67,7 +67,7 @@ def test_dates():
     
 def test_titres():
     #Vérifications du traitement des titres
-    titre1 = funcs.titre("Au-delà de cette limite, votre ticket n'est plus valable")
+    titre1 = funcs.Titre("Au-delà de cette limite, votre ticket n'est plus valable")
     assert titre1.controles == "audeladecettelimitevotreticketnestplusvalable"
     assert titre1.recherche == "au dela de cette limite votre ticket est plus valable"
     
@@ -82,3 +82,32 @@ def test_cleaning_string():
 
 def test_last_version():
     assert main.version >= main.check_last_compilation(main.programID)[0]
+    
+    
+#==============================================================================
+# Contrôles sur les alignements
+#==============================================================================
+
+def test_row_bib():
+    #Vérifie que les métadonnées en entrée d'une notice BIB 
+    #sont bien récupérées
+    record = funcs.Bib_record(
+                                [
+                                "315756", "FRBNF435361100000003", "",
+                                "978-2-213-67203-8", "", 
+                                "Mon Paris, ma mémoire", "Morin Edgar", 
+                                "DL 2013","","Fayard"
+                                ],
+                                1
+                                )
+    assert record.NumNot == "315756"
+    assert record.frbnf == "FRBNF435361100000003"
+    assert record.ark_init == ""
+    assert record.isbn.init == "978-2-213-67203-8"
+    assert record.ean.init == ""
+    assert record.titre.init == "Mon Paris, ma mémoire"
+    assert record.titre_nett == "monparismamemoire"
+    assert record.auteur == "Morin Edgar"
+    assert record.auteur_nett == "morin edgar"
+    assert record.date_nett == "2013"
+    assert record.publisher_nett == "fayard"

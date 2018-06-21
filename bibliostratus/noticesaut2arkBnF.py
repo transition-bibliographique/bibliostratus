@@ -208,10 +208,17 @@ def isni2ark(NumNot, isni, origine="isni"):
     return nv_ark
 
 
-def accesspoint2isniorg(NumNot, nom_nett, prenom_nett,
-                        date_debut_nett, date_fin_nett):
+#==============================================================================
+#             input_record.NumNot, input_record.lastname.propre, 
+#             input_record.firstname.propre, input_record.firstdate.propre, 
+#             input_record.lastdate.propre
+#==============================================================================
+def accesspoint2isniorg(input_record):
     url = "http://isni.oclc.nl/sru/?query=pica.nw%3D%22" + urllib.parse.quote(
-        " ".join([nom_nett, prenom_nett, date_debut_nett])
+        " ".join([
+                input_record.lastname.propre, 
+                input_record.firstname.propre, 
+                input_record.firstdate.propre])
     ) + "%22&operation=searchRetrieve&recordSchema=isni-b"
     isnis = []
     (test, records) = funcs.testURLetreeParse(url)
@@ -235,24 +242,42 @@ def accesspoint2isniorg(NumNot, nom_nett, prenom_nett,
             forenames = " ".join(forenames)
             surnames = " ".join(surnames)
             dates = " ".join(dates)
-            if (nom_nett in surnames or surnames in nom_nett):
-                if (prenom_nett in forenames or forenames in prenom_nett):
-                    if (date_debut_nett in dates or dates in date_debut_nett):
+            if (input_record.lastname.propre in surnames 
+                or surnames in input_record.lastname.propre):
+                if (input_record.firstname.propre in forenames 
+                    or forenames in input_record.firstname.propre):
+                    if (input_record.firstdate.propre in dates 
+                        or dates in input_record.firstdate.propre):
                         isnis.append(isni)
     if (isnis != []):
-        NumNotices2methode[NumNot].append("Point d'accès > ISNI")
+        NumNotices2methode[input_record.NumNot].append("Point d'accès > ISNI")
     i = 0
     for isni in isnis:
-        NumNotices2methode[NumNot][-1]
+        NumNotices2methode[input_record.NumNot][-1]
         isni_id = isni.split("/")[-1]
-        ark = isni2ark(NumNot, isni_id, origine="accesspoint")
+        ark = isni2ark(input_record.NumNot, isni_id, origine="accesspoint")
         if (ark != ""):
             isnis[i] = ark
-            NumNotices2methode[NumNot].append("ISNI > ARK")
+            NumNotices2methode[input_record.NumNot].append("ISNI > ARK")
         i += 1
     isnis = ",".join(isnis)
     return isnis
 
+def aut2ppn_by_id(input_record, parametres):
+    """Fonction d'alignement sur un identifiant IdRef (PPN)"""
+    ppn = ""
+    return ppn
+
+def aut2ark_by_id(input_record,parametres):
+    """Fonction d'alignement sur un identifiant ARK"""
+    ark = ""
+    if (ark == "" and input_record.ark_init != ""):
+        ark = arkAut2arkAut(input_record.NumNot, nettoyageArk(input_record.ark_init))
+    if (ark == "" and input_record.isni.propre != ""):
+        ark = isni2ark(input_record.NumNot, input_record.isni.propre)
+    if (ark == "" and input_record.frbnf.propre != ""):
+        ark = frbnfAut2arkAut(input_record)
+    return ark
 
 def align_from_aut_item(row, n, form_aut2ark, parametres, liste_reports):
     if (n == 0):
@@ -261,46 +286,41 @@ def align_from_aut_item(row, n, form_aut2ark, parametres, liste_reports):
     n += 1
     if (n % 100 == 0):
         main.check_access2apis(n, dict_check_apis)
-    (NumNot, frbnf_aut_init, ark_aut_init, isni,
-     nom, prenom, date_debut, date_fin) = bib2ark.extract_cols_from_row(row,
-                                                                        header_columns_init_aut2aut)
-    ark_aut_init = nettoyageArk(ark_aut_init)
-    isni_nett = nettoyage_isni(isni)
-    nom_nett = main.clean_string(nom, False, True)
-    prenom_nett = main.clean_string(prenom, False, True)
-    date_debut_nett = date_debut
-    date_fin_nett = date_fin
-    ark_trouve = ""
-    if (ark_trouve == "" and ark_aut_init != ""):
-        ark_trouve = arkAut2arkAut(NumNot, ark_aut_init)
-    if (ark_trouve == "" and isni_nett != ""):
-        ark_trouve = isni2ark(NumNot, isni_nett)
-    if (ark_trouve == "" and frbnf_aut_init != ""):
-        ark_trouve = frbnfAut2arkAut(
-            NumNot, frbnf_aut_init, nom_nett, prenom_nett, date_debut_nett)
-    if (ark_trouve == "" and nom != ""):
-        ark_trouve = accesspoint2arkAut(
-            NumNot, nom_nett, prenom_nett, date_debut_nett, date_fin_nett)
-    if (ark_trouve == "" and parametres["isni_option"] == 1):
-        ark_trouve = accesspoint2isniorg(
-            NumNot, nom_nett, prenom_nett, date_debut_nett, date_fin_nett)
-    print(str(n) + ". " + NumNot + " : " + ark_trouve)
-    nbARK = len(ark_trouve.split(","))
-    if (ark_trouve == ""):
+#==============================================================================
+#     (NumNot, frbnf_aut_init, ark_aut_init, isni,
+#      nom, prenom, date_debut, date_fin) = bib2ark.extract_cols_from_row(row,
+#                                                                         header_columns_init_aut2aut)
+#     ark_aut_init = nettoyageArk(ark_aut_init)
+#     isni_nett = nettoyage_isni(isni)
+#     nom_nett = main.clean_string(nom, False, True)
+#     prenom_nett = main.clean_string(prenom, False, True)
+#     date_debut_nett = date_debut
+#     date_fin_nett = date_fin
+#==============================================================================
+    input_record = funcs.Aut_record(row,parametres)
+    ark = ""
+    if (parametres["preferences_alignement"] == 1):
+        ark = aut2ark_by_id(input_record,parametres)
+    
+    if (ark == "" and parametres["isni_option"] == 1):
+        ark = accesspoint2isniorg(input_record)
+    print(str(n) + ". " + input_record.NumNot + " : " + ark)
+    nbARK = len(ark.split(","))
+    if (ark == ""):
         nbARK = 0
-    if (ark_trouve == "Pb FRBNF"):
+    if (ark == "Pb FRBNF"):
         nb_notices_nb_ARK["Pb FRBNF"] += 1
     else:
         nb_notices_nb_ARK[nbARK] += 1
     typeConversionNumNot = ""
-    if (NumNot in NumNotices2methode):
-        typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
-        if (len(set(NumNotices2methode[NumNot])) == 1):
-            typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
-    liste_metadonnees = [NumNot, nbARK, ark_trouve, typeConversionNumNot,
-                         ark_aut_init, frbnf_aut_init, isni, nom, prenom, date_debut, date_fin]
+    if (input_record.NumNot in NumNotices2methode):
+        typeConversionNumNot = ",".join(NumNotices2methode[input_record.NumNot])
+        if (len(set(NumNotices2methode[input_record.NumNot])) == 1):
+            typeConversionNumNot = list(set(NumNotices2methode[input_record.NumNot]))[0]
+    liste_metadonnees = [input_record.NumNot, nbARK, ark, typeConversionNumNot,
+                         input_record.metas_init]
     if (parametres["meta_bnf"] == 1):
-        liste_metadonnees.extend(ark2metadc(ark_trouve))
+        liste_metadonnees.extend(ark2metadc(ark))
     if (parametres["file_nb"] == 1):
         row2file(liste_metadonnees, liste_reports)
     elif(parametres["file_nb"] == 2):
@@ -504,19 +524,18 @@ def nettoyageFRBNF(frbnf):
     return frbnf_nett
 
 
-def frbnfAut2arkAut(NumNot, frbnf, nom, prenom, date_debut):
+def frbnfAut2arkAut(input_record):
     ark = ""
-    frbnf = nettoyageFRBNF(frbnf)
-    url = funcs.url_requete_sru('aut.otherid all "' + frbnf + '"')
+    url = funcs.url_requete_sru('aut.otherid all "' + input_record.frbnf.propre + '"')
     (test, page) = funcs.testURLetreeParse(url)
     if test:
         nb_resultats = int(
             page.find("//srw:numberOfRecords", namespaces=main.ns).text)
         if (nb_resultats == 0):
-            ark = oldfrbnf2ark(NumNot, frbnf, nom)
+            ark = oldfrbnf2ark(input_record)
         elif (nb_resultats == 1):
             ark = page.find("//srw:recordIdentifier", namespaces=main.ns).text
-            NumNotices2methode[NumNot].append("FRBNF")
+            NumNotices2methode[input_record.NumNot].append("FRBNF")
         else:
             ark = ",".join([ark.text for ark in page.xpath(
                 "//srw:recordIdentifier", namespaces=main.ns)])
@@ -562,16 +581,18 @@ def frbnfBib2arkAut(NumNot, frbnf, nom, prenom, date_debut):
 # Si le FRBNF n'a pas été trouvé, on le recherche comme numéro système ->
 # pour ça on extrait le n° système
 
-
-def oldfrbnf2ark(NumNot, frbnf, nom):
+def oldfrbnf2ark(input_record):
     systemid = ""
-    if (frbnf[0:5].upper() == "FRBNF"):
-        systemid = frbnf[5:14]
+    if (input_record.frbnf.propre[0:5] == "frbnf"):
+        systemid = input_record.frbnf.propre[5:14]
     else:
-        systemid = frbnf[4:13]
-    ark = rechercheNNA(NumNot, systemid[0:8], nom)
+        systemid = input_record.frbnf.propre[4:13]
+    ark = rechercheNNA(
+                    input_record.NumNot, 
+                    systemid[0:8], 
+                    input_record.lastname.propre)
     if (ark == ""):
-        ark = systemid2ark(NumNot, systemid, False, nom)
+        ark = systemid2ark(input_record.NumNot, systemid, False, input_record.lastname.propre)
     return ark
 
 
@@ -607,24 +628,27 @@ def systemid2ark(NumNot, systemid, tronque, nom):
                 "//srw:records/srw:record", namespaces=main.ns):
             ark_current = record.find(
                 "srw:recordIdentifier", namespaces=main.ns).text
-            for zone9XX in record.xpath(
-                    "srw:recordData/mxc:record/mxc:datafield", namespaces=main.ns):
-                # print(ark_current)
-                tag = zone9XX.get("tag")
-                if (tag[0:1] == "9"):
-                    if (zone9XX.find("mxc:subfield[@code='a']",
-                                     namespaces=main.ns) is not None):
+            if (nom != ""):
+                for zone9XX in record.xpath(
+                        "srw:recordData/mxc:record/mxc:datafield", namespaces=main.ns):
+                    # print(ark_current)
+                    tag = zone9XX.get("tag")
+                    if (tag[0:1] == "9"):
                         if (zone9XX.find("mxc:subfield[@code='a']",
-                                         namespaces=main.ns).text is not None):
-                            if (zone9XX.find(
-                                    "mxc:subfield[@code='a']",
-                                    namespaces=main.ns).text == systemid):
-                                # print(zone9XX.get("tag"))
-                                listeARK.append(
-                                    comparerAutBnf(
-                                        NumNot, ark_current, systemid, nom,
-                                        "Ancien n° notice")
-                                )
+                                         namespaces=main.ns) is not None):
+                            if (zone9XX.find("mxc:subfield[@code='a']",
+                                             namespaces=main.ns).text is not None):
+                                if (zone9XX.find(
+                                        "mxc:subfield[@code='a']",
+                                        namespaces=main.ns).text == systemid):
+                                    # print(zone9XX.get("tag"))
+                                    listeARK.append(
+                                        comparerAutBnf(
+                                            NumNot, ark_current, systemid, nom,
+                                            "Ancien n° notice")
+                                    )
+            else:
+                listeARK.append(ark_current)
     listeARK = ",".join([ark1 for ark1 in listeARK if ark1 != ''])
 
     # Si pas de réponse, on fait la recherche SystemID + Nom auteur
@@ -842,7 +866,7 @@ def extractARKautfromBIB(record, nom, prenom, date_debut):
 # ==============================================================================
 
 def launch(form, entry_filename, headers, input_data_type,
-           isni_option, file_nb, id_traitement, meta_bnf):
+           isni_option, file_nb, id_traitement, meta_bnf, preferences_alignement=1):
     # main.check_file_name(entry_filename)
     # results2file(nb_fichiers_a_produire)
     parametres = {"headers": headers,
@@ -850,7 +874,8 @@ def launch(form, entry_filename, headers, input_data_type,
                   "isni_option": isni_option,
                   "file_nb": file_nb,
                   "meta_bnf": meta_bnf,
-                  "id_traitement": id_traitement}
+                  "id_traitement": id_traitement,
+                  "preferences_alignement": preferences_alignement}
     liste_reports = create_reports(id_traitement, file_nb)
 
     if (input_data_type == 1):
@@ -1045,5 +1070,4 @@ if __name__ == '__main__':
     last_version = [0, False]
     if(access_to_network is True):
         last_version = main.check_last_compilation(main.programID)
-    formulaire_noticesaut2arkBnF(access_to_network,last_version)
     main.formulaire_main(access_to_network, last_version)

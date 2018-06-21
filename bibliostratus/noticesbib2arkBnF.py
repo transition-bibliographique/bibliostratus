@@ -1849,12 +1849,14 @@ def extract_cols_from_row(row, liste):
     return tuple(liste_values)
 
 
-def record2dic(row, option):
-    """A partir d'une, et de l'indication de l'option "type de notice" (TEX, VID, AUD, PER)
-    renvoi d'un dictionnaire fournissant les valeurs des différents champs"""
-    input_record = funcs.Bib_record(row, option)
-    return input_record
-
+#==============================================================================
+# def record2dic(row, option):
+#     """A partir d'une, et de l'indication de l'option "type de notice" (TEX, VID, AUD, PER)
+#     renvoi d'un dictionnaire fournissant les valeurs des différents champs"""
+#     input_record = funcs.Bib_record(row, option)
+#     return input_record
+# 
+#==============================================================================
 
 def item2ark_by_id(input_record, parametres):
     """Tronc commun de fonctions d'alignement, applicables pour tous les types de notices
@@ -3101,4 +3103,3 @@ if __name__ == '__main__':
     if(access_to_network is True):
         last_version = main.check_last_compilation(main.programID)
     main.formulaire_main(access_to_network, last_version)
-    # formulaire_noticesbib2arkBnF(access_to_network,last_version)
