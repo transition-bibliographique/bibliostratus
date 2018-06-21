@@ -16,9 +16,9 @@ from collections import defaultdict
 
 from unidecode import unidecode
 
-import funcs
-import main
-import noticesbib2arkBnF as bib2ark
+from bibliostratus import funcs
+from bibliostratus import main
+from bibliostratus import noticesbib2arkBnF as bib2ark
 
 
 # import matplotlib.pyplot as plt

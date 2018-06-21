@@ -20,10 +20,9 @@ from chardet.universaldetector import UniversalDetector
 import pymarc as mc
 from unidecode import unidecode
 
-import main
-import noticesaut2arkBnF as aut2ark
-import noticesbib2arkBnF as bib2ark
-
+from bibliostratus import main
+from bibliostratus import noticesaut2arkBnF as aut2ark
+from bibliostratus import noticesbib2arkBnF as bib2ark
 
 
 # Permet d'écrire dans une liste accessible au niveau général depuis le

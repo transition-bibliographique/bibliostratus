@@ -18,11 +18,11 @@ from urllib import error, request
 
 from unidecode import unidecode
 
-import ark2records
-import funcs
-import marc2tables
-import noticesaut2arkBnF as aut2ark
-import noticesbib2arkBnF as bib2ark
+from bibliostratus import ark2records
+from bibliostratus import funcs
+from bibliostratus import marc2tables
+from bibliostratus import noticesaut2arkBnF as aut2ark
+from bibliostratus import noticesbib2arkBnF as bib2ark
 
 
 # import matplotlib.pyplot as plt

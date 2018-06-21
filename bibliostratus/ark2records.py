@@ -19,10 +19,9 @@ from urllib import error, request
 import pymarc as mc
 from lxml import etree
 
-import funcs
-import main
-import noticesbib2arkBnF as bib2ark
-
+from bibliostratus import funcs
+from bibliostratus import main
+from bibliostratus import noticesbib2arkBnF as bib2ark
 
 
 # Permet d'écrire dans une liste accessible au niveau général depuis le

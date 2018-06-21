@@ -19,9 +19,8 @@ from collections import defaultdict
 
 from unidecode import unidecode
 
-import funcs
-import main
-#from funcs import Bib_record
+from bibliostratus import funcs
+from bibliostratus import main
 
 # import matplotlib.pyplot as plt
 
