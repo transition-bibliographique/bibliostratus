@@ -164,9 +164,9 @@ def check_access2apis(i, dict_report):
         "https://www.sudoc.fr/services/isbn2ppn/0195141156")
     dict_report["testAbes"][i] = testAbes
     dict_report["testBnF"][i] = testBnF
-    if (testAbes == False):
+    if not testAbes:
         dict_report["testAbes"]["global"] = False
-    if (testBnF == False):
+    if not testBnF:
         dict_report["testBnF"]["global"] = False
 
 
@@ -249,7 +249,7 @@ def form_generic_frames(master, title, couleur_fond,
     zone_notes = tk.Frame(form, bg=couleur_fond, pady=10)
     zone_notes.pack()
 
-    if (access_to_network ==  False):
+    if not access_to_network:
         tk.Label(zone_alert_explications, text=errors["no_internet"],
                  bg=couleur_fond, fg="red").pack()
 
@@ -295,7 +295,7 @@ def main_form_frames(title, couleur_fond, couleur_bordure, access_to_network):
     zone_notes = tk.Frame(master, bg=couleur_fond, pady=10)
     zone_notes.pack()
 
-    if (access_to_network == False):
+    if not access_to_network:
         tk.Label(zone_alert_explications, text=errors["no_internet"],
                  bg=couleur_fond, fg="red").pack()
 
@@ -386,11 +386,11 @@ def openfile(frame, liste, background_color="white"):
 
 def download_button(frame, text, frame_selected, text_path,
                     couleur_fond, file_entry_list, zone_message_en_cours=""):
-    if (file_entry_list != []):
+    if file_entry_list:
         text_path.delete(0.0, 1000.3)
     filename = filedialog.askopenfilename(
         parent=frame, title="Sélectionner un fichier")
-    if (file_entry_list == []):
+    if not file_entry_list:
         file_entry_list.append(filename)
     else:
         file_entry_list[0] = filename
@@ -548,7 +548,8 @@ def formulaire_main(access_to_network, last_version):
 
     aut2arkButton = tk.Button(
         frame1, text="Aligner ses données AUT ",
-        command=lambda: aut2ark.formulaire_noticesaut2arkBnF(master, access_to_network, [0, False]),
+        command=lambda: aut2ark.formulaire_noticesaut2arkBnF(
+            master, access_to_network, [0, False]),
         padx=55, pady=25, bg="#fefefe", font="Arial 8 normal")
     aut2arkButton.pack()
 

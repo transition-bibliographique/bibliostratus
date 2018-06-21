@@ -13,17 +13,17 @@ from urllib import error, request
 from lxml import etree
 from unidecode import unidecode
 
-import main
+from bibliostratus import main
 
 
 # Quelques listes de signes à nettoyer
 listeChiffres = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 lettres = [
-    "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", 
+    "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o",
     "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
 ]
 lettres_sauf_x = [
-    "a", "c", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", 
+    "a", "c", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o",
     "p", "q", "r", "s", "t", "u", "v", "w", "y", "z"
 ]
 ponctuation = [
@@ -167,7 +167,8 @@ def nettoyagePubPlace(pubPlace):
         pubPlace = pubPlace.replace(chiffre, "")
     for signe in ponctuation:
         pubPlace = pubPlace.split(signe)
-        pubPlace = " ".join(mot.strip(" ") for mot in pubPlace if mot.strip(" ") != "")
+        pubPlace = " ".join(mot.strip(" ")
+                            for mot in pubPlace if mot.strip(" ") != "")
     return pubPlace
 
 
@@ -207,6 +208,7 @@ def nettoyage_isni(isni):
         isni = isni.replace(lettre, "")
     return isni
 
+
 def nettoyageFRBNF(frbnf):
     frbnf_nett = ""
     if (frbnf[0:4].lower() == "frbn"):
@@ -214,6 +216,7 @@ def nettoyageFRBNF(frbnf):
     for signe in ponctuation:
         frbnf_nett = frbnf_nett.split(signe)[0]
     return frbnf_nett
+
 
 def conversionIsbn(isbn):
     longueur = len(isbn)
@@ -303,7 +306,7 @@ def roman_to_int(n):
 
 def convert_volumes_to_int(n):
     """nettoie la mention d'origine des numéros de tome/volume
-    en ne conservant que le n° lui-même, au besoin converti 
+    en ne conservant que le n° lui-même, au besoin converti
     des chiffres romains en chiffres arabes"""
     for char in ponctuation:
         n = n.replace(char, "-")
@@ -324,7 +327,7 @@ def convert_volumes_to_int(n):
         if (val != "" and val not in liste_n_convert2):
             liste_n_convert2.append(val)
     n_convert = " ".join([str(el) for el in list(liste_n_convert2)])
-    #print(liste_n_convert, liste_n_convert2)
+    # print(liste_n_convert, liste_n_convert2)
     return n_convert
 
 
@@ -479,8 +482,10 @@ class International_id:
         """Méthode permettant d'afficher plus joliment notre objet"""
         return "{}".format(self.init)
 
+
 class Isni:
     """Classe pour les ISNI"""
+
     def __init__(self, string):  # Notre méthode constructeur
         self.init = string
         self.propre = nettoyage_isni(self.init)
@@ -489,8 +494,10 @@ class Isni:
         """Méthode permettant d'afficher plus joliment notre objet"""
         return "{}".format(self.init)
 
+
 class FRBNF:
     """Classe pour les ISNI"""
+
     def __init__(self, string):  # Notre méthode constructeur
         self.init = string
         self.propre = nettoyageFRBNF(self.init)
@@ -502,6 +509,7 @@ class FRBNF:
 
 class Date:
     """Classe pour les ISNI"""
+
     def __init__(self, string):  # Notre méthode constructeur
         self.init = string
         self.propre = nettoyageDate(self.init)
@@ -511,7 +519,6 @@ class Date:
         return "{}".format(self.init)
 
 
-
 class Name:
     """Zone de titre"""
 
@@ -519,11 +526,9 @@ class Name:
         self.init = string
         self.propre = nettoyage(self.init)
 
-
     def __str__(self):
         """Méthode permettant d'afficher plus joliment notre objet"""
         return "{}".format(self.init)
-
 
 
 class Titre:
@@ -624,7 +629,8 @@ class Aut_record:
         self.firstname = Name(input_row[5])
         self.firstdate = Date(input_row[6])
         self.lastdate = Date(input_row[7])
-        
+
+
 class Aut_bib_record:
     """Classe définissant les propriétés d'une combinaison de métadonnées
     AUT + BIB, à partir d'une notice bibliographique, pour permettre
