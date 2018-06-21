@@ -272,8 +272,7 @@ def xml2tables(master, entry_filename, id_traitement):
     for record in collection:
         record2listemetas(record)
 
-
-def record2listemetas(record):
+def metas_from_marc21(record):
     numNot = record2meta(record, ["001"])
     doctype = record2doctype(record.leader)
     recordtype = record2recordtype(record.leader)
@@ -309,6 +308,14 @@ def record2listemetas(record):
     ean = record2ean(record2meta(record, ["038$a"]))
     id_commercial_aud = record2id_commercial_aud(
         record2meta(record, ["073$a"]))
+    return (
+            numNot, doctype, recordtype, title, keyTitle, authors, 
+            authors2keywords, date, numeroTome, publisher, pubPlace, 
+            ark, frbnf, isbn, issn, ean, id_commercial_aud
+            )
+
+
+def record2listemetas(record):
 
     doc_record = doctype + recordtype
     doc_record = doc_record.strip()
