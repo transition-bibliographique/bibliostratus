@@ -15,6 +15,12 @@ import main
 # Tests des fonctions de nettoyage de chaînes de caractères 
 #==============================================================================
 
+def test_nettoyage(): 
+    text = "Ça, c'est : l'été-du-siècle$" 
+    assert funcs.nettoyage(text) == 'cacestletedusiecle' 
+    assert funcs.nettoyage(text, remplacerEspaces=False) == 'ca c est l ete du siecle' 
+    assert funcs.nettoyage(text, remplacerTirets=False) == 'cacestlete-du-siecle'
+    
 def test_isbn():
     """Vérifie que les ISBN en entrée de la classe ISBN sont correctement convertis"""
     isbn10 = funcs.international_id("2-84580-125-4")

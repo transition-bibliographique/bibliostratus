@@ -43,6 +43,7 @@ def nettoyage(string, remplacerEspaces=True, remplacerTirets=True):
     for signe in ponctuation:
         string = string.replace(signe, "")
     string = string.replace("'", " ")
+    string = " ".join([el for el in string.split(" ") if el != ""])
     if remplacerTirets:
         string = string.replace("-", " ")
     if remplacerEspaces:
