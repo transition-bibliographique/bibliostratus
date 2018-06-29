@@ -24,7 +24,6 @@ import main
 import noticesbib2arkBnF as bib2ark
 
 
-
 # Permet d'écrire dans une liste accessible au niveau général depuis le
 # formulaire, et d'y accéder ensuite
 entry_file_list = []

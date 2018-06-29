@@ -272,6 +272,7 @@ def xml2tables(master, entry_filename, id_traitement):
     for record in collection:
         record2listemetas(record)
 
+
 def metas_from_marc21(record):
     numNot = record2meta(record, ["001"])
     doctype = record2doctype(record.leader)
@@ -309,35 +310,35 @@ def metas_from_marc21(record):
     id_commercial_aud = record2id_commercial_aud(
         record2meta(record, ["073$a"]))
     return (
-            numNot, doctype, recordtype, title, keyTitle, authors, 
-            authors2keywords, date, numeroTome, publisher, pubPlace, 
-            ark, frbnf, isbn, issn, ean, id_commercial_aud
-            )
+        numNot, doctype, recordtype, title, keyTitle, authors,
+        authors2keywords, date, numeroTome, publisher, pubPlace,
+        ark, frbnf, isbn, issn, ean, id_commercial_aud
+    )
 
 
 def record2listemetas(record):
+    raise NotImplementedError()
+    # doc_record = doctype + recordtype
+    # doc_record = doc_record.strip()
+    # if (doc_record not in liste_fichiers):
+    #     liste_fichiers.append(doc_record)
 
-    doc_record = doctype + recordtype
-    doc_record = doc_record.strip()
-    if (doc_record not in liste_fichiers):
-        liste_fichiers.append(doc_record)
-
-    meta = []
-    if (doc_record == "am"):
-        meta = [numNot, frbnf, ark, isbn, ean, title,
-                authors, date, numeroTome, publisher]
-    elif (doc_record == "jm"):
-        meta = [numNot, frbnf, ark, ean, id_commercial_aud,
-                title, authors2keywords, date, publisher]
-    elif (doc_record == "as"):
-        if (keyTitle == ""):
-            meta = [numNot, frbnf, ark, issn, title, authors, date, pubPlace]
-        else:
-            meta = [numNot, frbnf, ark, issn,
-                    keyTitle, authors, date, pubPlace]
-    else:
-        meta = [numNot, frbnf, ark, ean, title, authors, date]
-    liste_resultats[doc_record].append(meta)
+    # meta = []
+    # if (doc_record == "am"):
+    #     meta = [numNot, frbnf, ark, isbn, ean, title,
+    #             authors, date, numeroTome, publisher]
+    # elif (doc_record == "jm"):
+    #     meta = [numNot, frbnf, ark, ean, id_commercial_aud,
+    #             title, authors2keywords, date, publisher]
+    # elif (doc_record == "as"):
+    #     if (keyTitle == ""):
+    #         meta = [numNot, frbnf, ark, issn, title, authors, date, pubPlace]
+    #     else:
+    #         meta = [numNot, frbnf, ark, issn,
+    #                 keyTitle, authors, date, pubPlace]
+    # else:
+    #     meta = [numNot, frbnf, ark, ean, title, authors, date]
+    # liste_resultats[doc_record].append(meta)
 
 
 def write_reports(id_traitement):

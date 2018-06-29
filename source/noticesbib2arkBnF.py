@@ -21,7 +21,6 @@ from unidecode import unidecode
 
 import funcs
 import main
-#from funcs import Bib_record
 
 # import matplotlib.pyplot as plt
 
@@ -1112,7 +1111,8 @@ def isbn2sudoc(input_record, parametres):
             for ppn in resultats.xpath("//ppn"):
                 ppn_val = ppn.text
                 Listeppn.append("PPN" + ppn_val)
-                #Si BnF > Sudoc : on cherche l'ARK dans la notice Sudoc trouvée
+                # Si BnF > Sudoc : on cherche l'ARK dans la notice Sudoc
+                # trouvée
                 if (parametres["preferences_alignement"] == 1):
                     ark.append(
                         ppn2ark(
@@ -1130,13 +1130,14 @@ def isbn2sudoc(input_record, parametres):
                         for ppn in resultats.xpath("//ppn"):
                             ppn_val = ppn.text
                             Listeppn.append("PPN" + ppn_val)
-                            #Si BnF > Sudoc : on cherche l'ARK dans la notice Sudoc trouvée
+                            # Si BnF > Sudoc : on cherche l'ARK dans la notice
+                            # Sudoc trouvée
                             if (parametres["preferences_alignement"] == 1):
                                 ark = ppn2ark(
                                     input_record.NumNot, ppn_val,
                                     input_record.isbn.converti,
                                     input_record.titre_nett,
-                                    input_record.auteur_nett, 
+                                    input_record.auteur_nett,
                                     input_record.date_nett
                                 )
                             if (Listeppn != []):
@@ -1155,7 +1156,8 @@ def isbn2sudoc(input_record, parametres):
         return Listeppn
 
 
-def ean2sudoc(NumNot, ean_propre, titre_nett, auteur_nett, date_nett, parametres):
+def ean2sudoc(NumNot, ean_propre, titre_nett,
+              auteur_nett, date_nett, parametres):
     """A partir d'un EAN, recherche dans le Sudoc.
 
     Pour chaque notice trouvée, on regarde sur la notice Sudoc a un ARK BnF ou
@@ -1173,7 +1175,8 @@ def ean2sudoc(NumNot, ean_propre, titre_nett, auteur_nett, date_nett, parametres
                 ppn_val = ppn.text
                 Listeppn.append("PPN" + ppn_val)
                 NumNotices2methode[NumNot].append("EAN > PPN")
-                #Si BnF > Sudoc : on cherche l'ARK dans la notice Sudoc trouvée
+                # Si BnF > Sudoc : on cherche l'ARK dans la notice Sudoc
+                # trouvée
                 if (parametres["preferences_alignement"] == 1):
                     ark.append(
                         ppn2ark(
@@ -1755,7 +1758,8 @@ def no_commercial2ark(
             '" and bib.comref  all "' + no_commercial_id + '"'
         )
     if anywhere:
-        url = funcs.url_requete_sru('bib.anywhere  all "' + no_commercial + '"')
+        url = funcs.url_requete_sru(
+            'bib.anywhere  all "' + no_commercial + '"')
     ark = ""
     (test, results) = funcs.testURLetreeParse(url)
     if test:
@@ -1849,14 +1853,14 @@ def extract_cols_from_row(row, liste):
     return tuple(liste_values)
 
 
-#==============================================================================
+# ==============================================================================
 # def record2dic(row, option):
 #     """A partir d'une, et de l'indication de l'option "type de notice" (TEX, VID, AUD, PER)
 #     renvoi d'un dictionnaire fournissant les valeurs des différents champs"""
 #     input_record = funcs.Bib_record(row, option)
 #     return input_record
-# 
-#==============================================================================
+#
+# ==============================================================================
 
 def item2ark_by_id(input_record, parametres):
     """Tronc commun de fonctions d'alignement, applicables pour tous les types de notices
@@ -2004,7 +2008,8 @@ def item2id(row, n, form_bib2ark, parametres, liste_reports):
         nb_notices_nb_ARK[nbARK] += 1
     typeConversionNumNot = ""
     if (input_record.NumNot in NumNotices2methode):
-        typeConversionNumNot = ",".join(NumNotices2methode[input_record.NumNot])
+        typeConversionNumNot = ",".join(
+            NumNotices2methode[input_record.NumNot])
         if (len(set(NumNotices2methode[input_record.NumNot])) == 1):
             typeConversionNumNot = list(
                 set(NumNotices2methode[input_record.NumNot])
@@ -2678,13 +2683,16 @@ def check_access_to_apis(liste_reports):
     Si celui-ci contient au moins un "False", on génère une rubrique
     dans le rapport Stats"""
     for api in dict_check_apis:
-        if (dict_check_apis[api]["global"] == False):
-            liste_reports[-1].write("\n\nProblème d'accès aux" + dict_check_apis[api]["name"] + " :\n")
+        if not dict_check_apis[api]["global"]:
+            liste_reports[-1].write("\n\nProblème d'accès aux" +
+                                    dict_check_apis[api]["name"] + " :\n")
         for key in dict_check_apis[api]:
             if (dict_check_apis["testAbes"][key] is False):
                 liste_reports[-1].write(
-                    "".join([str(key), " : " + dict_check_apis[api]["name"] + " down\n"])
+                    "".join(
+                        [str(key), " : " + dict_check_apis[api]["name"] + " down\n"])
                 )
+
 
 def typesConversionARK(liste_reports):
     """Dans un rapport spécifique, pour chaque notice en entrée,
@@ -2856,7 +2864,8 @@ def formulaire_noticesbib2arkBnF(
     )
     cadre_output_id_traitement.pack(side="left", anchor="w")
 
-    zone_notes_message_en_cours = tk.Frame(zone_notes, padx=20, bg=couleur_fond)
+    zone_notes_message_en_cours = tk.Frame(
+        zone_notes, padx=20, bg=couleur_fond)
     zone_notes_message_en_cours.pack()
 
     # ==============================================================================
@@ -3028,7 +3037,8 @@ def formulaire_noticesbib2arkBnF(
     b = tk.Button(zone_ok_help_cancel, bg=couleur_bouton, fg="white", font="Arial 10 bold",
                   text="Aligner les\nnotices BIB",
                   command=lambda: launch(form_bib2ark, zone_controles,
-                                         entry_file_list[0], type_doc_bib.get(),
+                                         entry_file_list[0], type_doc_bib.get(
+                                         ),
                                          preferences_alignement.get(),
                                          file_nb.get(), meta_bib.get(),
                                          id_traitement.get()),

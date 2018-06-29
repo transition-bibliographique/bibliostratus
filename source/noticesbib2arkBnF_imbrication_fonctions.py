@@ -26,13 +26,13 @@ liste_fonctions = {
         [
             'comparaisonTitres_sous_zone', 'comparaisonTitres_sous_zone',
             'comparaisonTitres_sous_zone', 'comparaisonTitres_sous_zone'
-        ],
+    ],
     'comparaisonTitres_sous_zone': ['nettoyage'],
     'systemid2ark':
         [
             'testURLetreeParse', 'comparerBibBnf', 'relancerNNBAuteur',
             'systemid2ark'
-        ],
+    ],
     'rechercheNNB': ['testURLetreeParse', 'comparerBibBnf'],
     'oldfrbnf2ark': ['rechercheNNB', 'systemid2ark'],
     'frbnf2ark': ['testURLetreeParse', 'frbnf2arkoldfrbnf2ark'],
@@ -46,13 +46,13 @@ liste_fonctions = {
         [
             'testURLretrieve', 'testURLetreeParse', 'ppn2ark',
             'testURLretrieve', 'testURLetreeParse', 'ppn2ark'
-        ],
+    ],
     'ppn2ark': ['testURLetreeParse', 'frbnf2ark'],
     'isbn2ark':
         [
             'isbn2sru', 'isbn2sru', 'conversionIsbn', 'isbn2sru', 'ean2ark',
             'ean2ark', 'isbn_anywhere2sru', 'isbn_anywhere2sru', 'isbn2sudoc'
-        ],
+    ],
     'ark2metas': ['testURLetreeParse'],
     'ppn2metas': ['testURLetreeParse'],
     'tad2ark':
@@ -60,18 +60,18 @@ liste_fonctions = {
             'nettoyageTitrePourRecherche', 'testURLetreeParse',
             'testURLetreeParse', 'testURLetreeParse',
             'comparaisonTitresnettoyageTitrePourControle'
-        ],
+    ],
     'ark2recordBNF': ['url_requete_sru', 'testURLetreeParse'],
     'ean2ark':
         [
             'url_requete_sru', 'testURLetreeParse', 'ark2recordBNF',
             'comparaisonTitres'
-        ],
+    ],
     'no_commercial2ark':
         [
             'url_requete_sru', 'testURLetreeParse', 'ark2recordBNF',
             'controleNoCommercial'
-        ],
+    ],
     'controleNoCommercial': ['extract_metanettoyage_no_commercial'],
     'ark2metadc': ['ark2metas'],
     'monimpr':
@@ -81,7 +81,7 @@ liste_fonctions = {
             'nettoyageTitrePourControle', 'nettoyageAuteur', 'nettoyageDate',
             'ark2ark', 'frbnf2ark', 'isbn2ark', 'ean2ark', 'tad2ark', 'tad2ark',
             'ark2metadc', 'row2file', 'row2files'
-        ],
+    ],
     'cddvd':
         [
             'row2file', 'row2files', 'nettoyageIsbnPourControle',
@@ -89,7 +89,7 @@ liste_fonctions = {
             'nettoyageTitrePourControle', 'nettoyageAuteur', 'nettoyageDate',
             'ark2ark', 'frbnf2ark', 'ean2ark', 'no_commercial2ark', 'tad2ark',
             'tad2ark', 'ark2metadc', 'row2file', 'row2files'
-        ],
+    ],
     'launch': ['create_reports', 'monimpr', 'cddvd', 'fin_traitements'],
     'fin_traitements':
         ['stats_extraction', 'url_access_pbs_report', 'typesConversionARK'],

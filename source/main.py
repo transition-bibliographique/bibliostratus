@@ -164,9 +164,9 @@ def check_access2apis(i, dict_report):
         "https://www.sudoc.fr/services/isbn2ppn/0195141156")
     dict_report["testAbes"][i] = testAbes
     dict_report["testBnF"][i] = testBnF
-    if (testAbes == False):
+    if not testAbes:
         dict_report["testAbes"]["global"] = False
-    if (testBnF == False):
+    if not testBnF:
         dict_report["testBnF"]["global"] = False
 
 
@@ -249,7 +249,7 @@ def form_generic_frames(master, title, couleur_fond,
     zone_notes = tk.Frame(form, bg=couleur_fond, pady=10)
     zone_notes.pack()
 
-    if (access_to_network ==  False):
+    if not access_to_network:
         tk.Label(zone_alert_explications, text=errors["no_internet"],
                  bg=couleur_fond, fg="red").pack()
 
@@ -295,7 +295,7 @@ def main_form_frames(title, couleur_fond, couleur_bordure, access_to_network):
     zone_notes = tk.Frame(master, bg=couleur_fond, pady=10)
     zone_notes.pack()
 
-    if (access_to_network == False):
+    if not access_to_network:
         tk.Label(zone_alert_explications, text=errors["no_internet"],
                  bg=couleur_fond, fg="red").pack()
 
@@ -418,7 +418,8 @@ def download_zone(frame, text_bouton, file_entry_list,
                                         height=5, width=70, fg="red",
                                         bg=couleur_fond, bd=0, font="Arial 9 bold")
         zone_message_en_cours.pack()
-    # bouton_telecharger = download_button(frame,"Sélectionner un fichier","#ffffff")
+    # bouton_telecharger = download_button(frame,"Sélectionner un
+    # fichier","#ffffff")
     select_filename_button = tk.Button(
         frame_button,
         command=lambda: download_button(
@@ -459,7 +460,8 @@ def select_directory(frame, text_bouton, directory_list, couleur_fond):
     display_selected = tk.Text(
         frame_selected, height=3, width=50, bg=couleur_fond, bd=0, font="Arial 9 bold")
     display_selected.pack()
-    # bouton_telecharger = download_button(frame,"Sélectionner un fichier","#ffffff")
+    # bouton_telecharger = download_button(frame,"Sélectionner un
+    # fichier","#ffffff")
     select_filename_button = tk.Button(
         frame_button,
         command=lambda: download_button(frame,
@@ -548,7 +550,8 @@ def formulaire_main(access_to_network, last_version):
 
     aut2arkButton = tk.Button(
         frame1, text="Aligner ses données AUT ",
-        command=lambda: aut2ark.formulaire_noticesaut2arkBnF(master, access_to_network, [0, False]),
+        command=lambda: aut2ark.formulaire_noticesaut2arkBnF(
+            master, access_to_network, [0, False]),
         padx=55, pady=25, bg="#fefefe", font="Arial 8 normal")
     aut2arkButton.pack()
 

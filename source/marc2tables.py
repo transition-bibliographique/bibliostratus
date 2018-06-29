@@ -25,7 +25,6 @@ import noticesaut2arkBnF as aut2ark
 import noticesbib2arkBnF as bib2ark
 
 
-
 # Permet d'écrire dans une liste accessible au niveau général depuis le
 # formulaire, et d'y accéder ensuite
 entry_file_list = []
@@ -208,6 +207,7 @@ def recordmarc21_to_date(f008, f260d):
     date = clean_letters(date)
     date = clean_spaces(date)
     return date
+
 
 def record2date(f100a, f210d):
     date = ""
@@ -407,6 +407,7 @@ en UTF-8 avant de le mettre en entrée du logiciel"""
         error_file.write(message)
         error_file.close()
 
+
 def metas_from_marc21(record):
     title = record2title(
         record2meta(record, ["245$a", "245$e"])
@@ -440,10 +441,11 @@ def metas_from_marc21(record):
     id_commercial_aud = record2id_commercial_aud(
         record2meta(record, ["073$a"]))
     return (
-            title, keyTitle, authors, 
-            authors2keywords, date, numeroTome, publisher, pubPlace, 
-            ark, frbnf, isbn, issn, ean, id_commercial_aud
-            )
+        title, keyTitle, authors,
+        authors2keywords, date, numeroTome, publisher, pubPlace,
+        ark, frbnf, isbn, issn, ean, id_commercial_aud
+    )
+
 
 def metas_from_unimarc(record):
     title = record2title(
@@ -482,20 +484,21 @@ def metas_from_unimarc(record):
     id_commercial_aud = record2id_commercial_aud(
         record2meta(record, ["071$b", "071$a"]))
     return (
-            title, keyTitle, authors, 
-            authors2keywords, date, numeroTome, publisher, pubPlace, 
-            ark, frbnf, isbn, issn, ean, id_commercial_aud
-            )
+        title, keyTitle, authors,
+        authors2keywords, date, numeroTome, publisher, pubPlace,
+        ark, frbnf, isbn, issn, ean, id_commercial_aud
+    )
+
 
 def bibrecord2metas(numNot, doc_record, record):
 
     (title, keyTitle, authors, authors2keywords,
-     date, numeroTome, publisher, pubPlace, ark, frbnf, isbn, issn, ean, 
-     id_commercial_aud)= metas_from_unimarc(record)
-    
+     date, numeroTome, publisher, pubPlace, ark, frbnf, isbn, issn, ean,
+     id_commercial_aud) = metas_from_unimarc(record)
+
 # =============================================================================
-#     (title, keyTitle, authors, authors2keywords, 
-#      date, numeroTome, publisher, pubPlace, ark, frbnf, isbn, issn, ean, 
+#     (title, keyTitle, authors, authors2keywords,
+#      date, numeroTome, publisher, pubPlace, ark, frbnf, isbn, issn, ean,
 #      id_commercial_aud) = metas_from_marc21(record)
 # =============================================================================
 
@@ -515,7 +518,7 @@ def bibrecord2metas(numNot, doc_record, record):
             meta = [numNot, frbnf, ark, issn, keyTitle,
                     authors2keywords, date, pubPlace]
     else:
-        meta = [numNot, frbnf, ark, isbn, ean, id_commercial_aud, issn, 
+        meta = [numNot, frbnf, ark, isbn, ean, id_commercial_aud, issn,
                 title, authors, date, numeroTome, publisher, pubPlace]
     return meta
 
@@ -656,9 +659,9 @@ def record2listemetas(id_traitement, record, rec_format=1):
 def write_reports(id_traitement, doc_record, rec_format):
     filename = doc_record_type[doc_record]
     header_columns = [
-            "NumNotice", "FRBNF", "ARK", "ISBN", "EAN", "N° commercial", 
-            "ISSN", "Titre", "Auteur", "Date", "Tome-Volume", "Editeur", 
-            "Lieu de publication"]
+        "NumNotice", "FRBNF", "ARK", "ISBN", "EAN", "N° commercial",
+        "ISSN", "Titre", "Auteur", "Date", "Tome-Volume", "Editeur",
+        "Lieu de publication"]
     if (rec_format == 1):
         if (doc_record == "am" or doc_record == "lm"):
             filename = "TEX-" + filename
