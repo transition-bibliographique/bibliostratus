@@ -369,6 +369,11 @@ def testURLetreeParse(url):
         print(err)
         test = False
         url_access_pbs.append([url, "urllib.error.URLError"])
+    except http.client.RemoteDisconnected as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url, "http.client.RemoteDisconnected"])
     except ConnectionResetError as err:
         print(url)
         print(err)
@@ -379,11 +384,6 @@ def testURLetreeParse(url):
         print(err)
         test = False
         url_access_pbs.append([url, "TimeoutError"])
-    except http.client.RemoteDisconnected as err:
-        print(url)
-        print(err)
-        test = False
-        url_access_pbs.append([url, "http.client.RemoteDisconnected"])
     except http.client.BadStatusLine as err:
         print(url)
         print(err)
@@ -432,6 +432,11 @@ def testURLurlopen(url):
         print(err)
         test = False
         url_access_pbs.append([url, "urllib.error.URLError"])
+    except http.client.RemoteDisconnected as err:
+        print(url)
+        print(err)
+        test = False
+        url_access_pbs.append([url, "http.client.RemoteDisconnected"])
     except ConnectionResetError as err:
         print(url)
         print(err)
@@ -442,11 +447,6 @@ def testURLurlopen(url):
         print(err)
         test = False
         url_access_pbs.append([url, "TimeoutError"])
-    except http.client.RemoteDisconnected as err:
-        print(url)
-        print(err)
-        test = False
-        url_access_pbs.append([url, "http.client.RemoteDisconnected"])
     except http.client.BadStatusLine as err:
         print(url)
         print(err)
