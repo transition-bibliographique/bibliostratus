@@ -7,6 +7,7 @@ Fonctions et classes génériques pour Bibliostratus
 """
 
 import http.client
+import string
 import urllib.parse
 from urllib import error, request
 
@@ -17,20 +18,8 @@ import main
 
 
 # Quelques listes de signes à nettoyer
-listeChiffres = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-lettres = [
-    "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o",
-    "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
-]
-lettres_sauf_x = [
-    "a", "c", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o",
-    "p", "q", "r", "s", "t", "u", "v", "w", "y", "z"
-]
-ponctuation = [
-    ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
-    "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<",
-    ">", ")", "}"
-]
+lettres_sauf_x = [c for c in string.ascii_lowercase if c != 'x']
+ponctuation = [c for c in string.punctuation if c not in "'-"] + ['£', '€']
 
 url_access_pbs = []
 
@@ -59,7 +48,7 @@ def nettoyage_lettresISBN(isbn):
         isbn = isbn.replace(signe, "")
     prefix = isbn[0:-1]
     cle = isbn[-1]
-    for lettre in lettres:
+    for lettre in string.ascii_lowercase:
         prefix = prefix.replace(lettre, "")
     if (cle in char_cle):
         cle = cle.upper()
@@ -101,7 +90,7 @@ def nettoyageAuteur(auteur, justeunmot=True):
     listeMots = [" par ", " avec ", " by ", " Mr. ", " M. ", " Mme ", " Mrs "]
     for mot in listeMots:
         auteur = auteur.replace(mot, "")
-    for chiffre in listeChiffres:
+    for chiffre in string.digits:
         auteur = auteur.replace(chiffre, "")
     auteur = nettoyage(auteur.lower(), False)
     auteur = auteur.split(" ")
@@ -132,7 +121,7 @@ def nettoyageTitrePourRecherche(string):
 
 def nettoyageDate(date):
     date = unidecode(date.lower())
-    for lettre in lettres:
+    for lettre in string.ascii_lowercase:
         date = date.replace(lettre, "")
     for signe in ponctuation:
         date = date.split(signe)
@@ -144,7 +133,7 @@ def nettoyageDate(date):
 def nettoyageTome(numeroTome):
     if (numeroTome):
         numeroTome = unidecode(numeroTome.lower())
-        for lettre in lettres:
+        for lettre in string.ascii_lowercase:
             numeroTome = numeroTome.replace(lettre, "")
         for signe in ponctuation:
             numeroTome = numeroTome.split(signe)
@@ -163,7 +152,7 @@ def nettoyageTome(numeroTome):
 def nettoyagePubPlace(pubPlace):
     """Nettoyage du lieu de publication"""
     pubPlace = unidecode(pubPlace.lower())
-    for chiffre in listeChiffres:
+    for chiffre in string.digits:
         pubPlace = pubPlace.replace(chiffre, "")
     for signe in ponctuation:
         pubPlace = pubPlace.split(signe)
@@ -204,7 +193,7 @@ def nettoyage_isni(isni):
         isni = isni[20:36]
     else:
         isni = nettoyage(isni)
-    for lettre in lettres:
+    for lettre in string.ascii_lowercase:
         isni = isni.replace(lettre, "")
     return isni
 
