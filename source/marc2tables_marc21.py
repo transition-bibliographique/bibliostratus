@@ -10,6 +10,7 @@ Conversion de fichiers XML ou iso2709 en tableaux pour alignements
 
 
 import re
+import string
 import tkinter as tk
 import webbrowser
 from collections import defaultdict
@@ -41,16 +42,7 @@ def create_file_doc_record(doc_record, id_traitement):
 # =============================================================================
 # Fonctions de nettoyage
 # =============================================================================
-chiffers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-letters = [
-    "a", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p",
-    "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
-]
-punctation = [
-    ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
-    "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<",
-    ">", ")", "}"
-]
+punctation = string.punctuation + '£€'
 
 liste_fichiers = []
 liste_resultats = defaultdict(list)
@@ -91,7 +83,7 @@ def clean_punctation(text):
 
 
 def clean_letters(text):
-    for char in letters:
+    for char in string.ascii_lowercase:
         text = text.replace(char, " ")
     return text
 

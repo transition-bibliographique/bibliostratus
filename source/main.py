@@ -11,6 +11,7 @@ les bibliothèques françaises
 
 import codecs
 import json
+import string
 import tkinter as tk
 import webbrowser
 from tkinter import filedialog
@@ -74,16 +75,7 @@ texte_bouton_help = "Documentation\nen ligne"
 url_forum_aide = "http://www.agorabib.fr/topic/3317-bibliostratus-mettre-en-correspondance-ses-notices-avec-celles-de-la-bnf/"  # noqa
 texte_bouton_forum = "Forum\nutilisateurs"
 
-chiffers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-letters = [
-    "a", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p",
-    "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
-]
-punctuation = [
-    ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
-    "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<",
-    ">", ")", "}"
-]
+punctuation = string.punctuation + '£€'
 
 errors = {
     "no_internet":
