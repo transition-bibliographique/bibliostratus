@@ -7,6 +7,7 @@ set /p version="version: "
 pyinstaller main.py
 rd /s /q build
 copy bibliostratus.bat dist
+xcopy /S main\files dist\main\files\
 rename dist bibliostratus
 "C:\Program Files\7-Zip\7z" a -tzip ..\bin\bibliostratus_%version%_win64_py3.6.zip bibliostratus/
 rd /s /q bibliostratus

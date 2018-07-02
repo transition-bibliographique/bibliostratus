@@ -4,6 +4,8 @@ juin 2018
 	- mise en forme PEP8 et flake8
 	- initialisation d'un fichier de tests automatiques (à développer)
 	- correction lignes lancement
+- Module bleu (marc2tables):
+	- option : modifier le fichier main\preferences.json pour avoir en entrée un fichier en marc21 plutôt qu'en unimarc
 - Module blanc (alignement BIB):
 	- Option BnF > Sudoc ou Sudoc > BnF
 	- Création d'une classe Bib_record pour gérer les métadonnées en entrée

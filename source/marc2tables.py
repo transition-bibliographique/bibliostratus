@@ -15,6 +15,7 @@ import tkinter as tk
 import webbrowser
 import xml
 from collections import defaultdict
+import json
 
 from chardet.universaldetector import UniversalDetector
 import pymarc as mc
@@ -23,6 +24,7 @@ from unidecode import unidecode
 import main
 import noticesaut2arkBnF as aut2ark
 import noticesbib2arkBnF as bib2ark
+
 
 
 
@@ -36,6 +38,9 @@ output_directory_list = []
 output_files_dict = defaultdict()
 stats = defaultdict(int)
 
+prefs = {}
+with open('main/files/preferences.json', encoding="utf-8") as prefs_file:
+    prefs = json.load(prefs_file)
 
 # =============================================================================
 # Creation des fichiers résultats
@@ -489,15 +494,15 @@ def metas_from_unimarc(record):
 
 def bibrecord2metas(numNot, doc_record, record):
 
-    (title, keyTitle, authors, authors2keywords,
-     date, numeroTome, publisher, pubPlace, ark, frbnf, isbn, issn, ean, 
-     id_commercial_aud)= metas_from_unimarc(record)
+    if (prefs["marc2tables_input_format"]["value"] == "marc21"):
+        (title, keyTitle, authors, authors2keywords, 
+         date, numeroTome, publisher, pubPlace, ark, frbnf, isbn, issn, ean, 
+         id_commercial_aud) = metas_from_marc21(record)
+    else:
+        (title, keyTitle, authors, authors2keywords,
+         date, numeroTome, publisher, pubPlace, ark, frbnf, isbn, issn, ean, 
+         id_commercial_aud)= metas_from_unimarc(record)
     
-# =============================================================================
-#     (title, keyTitle, authors, authors2keywords, 
-#      date, numeroTome, publisher, pubPlace, ark, frbnf, isbn, issn, ean, 
-#      id_commercial_aud) = metas_from_marc21(record)
-# =============================================================================
 
     if (doc_record not in liste_fichiers):
         liste_fichiers.append(doc_record)

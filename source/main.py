@@ -233,7 +233,7 @@ def form_generic_frames(master, title, couleur_fond,
     form.config(padx=10, pady=10, bg=couleur_fond)
     form.title(title)
     try:
-        form.iconbitmap(r'favicon.ico')
+        form.iconbitmap(r'main/files/favicon.ico')
     except tk.TclError:
         favicone = "rien"  # noqa
 
@@ -279,7 +279,7 @@ def main_form_frames(title, couleur_fond, couleur_bordure, access_to_network):
     master.config(padx=10, pady=10, bg=couleur_fond)
     master.title(title)
     try:
-        master.iconbitmap(r'favicon.ico')
+        master.iconbitmap(r'main/files/favicon.ico')
     except tk.TclError:
         favicone = "rien"  # noqa
 
