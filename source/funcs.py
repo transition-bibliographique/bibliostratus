@@ -19,11 +19,11 @@ import main
 # Quelques listes de signes à nettoyer
 listeChiffres = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 lettres = [
-    "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", 
+    "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o",
     "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
 ]
 lettres_sauf_x = [
-    "a", "c", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", 
+    "a", "c", "b", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o",
     "p", "q", "r", "s", "t", "u", "v", "w", "y", "z"
 ]
 ponctuation = [
@@ -207,6 +207,7 @@ def nettoyage_isni(isni):
         isni = isni.replace(lettre, "")
     return isni
 
+
 def nettoyageFRBNF(frbnf):
     frbnf_nett = ""
     if (frbnf[0:4].lower() == "frbn"):
@@ -214,6 +215,7 @@ def nettoyageFRBNF(frbnf):
     for signe in ponctuation:
         frbnf_nett = frbnf_nett.split(signe)[0]
     return frbnf_nett
+
 
 def conversionIsbn(isbn):
     longueur = len(isbn)
@@ -303,7 +305,7 @@ def roman_to_int(n):
 
 def convert_volumes_to_int(n):
     """nettoie la mention d'origine des numéros de tome/volume
-    en ne conservant que le n° lui-même, au besoin converti 
+    en ne conservant que le n° lui-même, au besoin converti
     des chiffres romains en chiffres arabes"""
     for char in ponctuation:
         n = n.replace(char, "-")
@@ -324,7 +326,6 @@ def convert_volumes_to_int(n):
         if (val != "" and val not in liste_n_convert2):
             liste_n_convert2.append(val)
     n_convert = " ".join([str(el) for el in list(liste_n_convert2)])
-    #print(liste_n_convert, liste_n_convert2)
     return n_convert
 
 
