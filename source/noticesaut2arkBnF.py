@@ -960,13 +960,13 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
         frame_input_aut, input_data_type, 1, couleur_fond,
         "Liste de notices d'autorité",
         "(" + " | ".join(header_columns_init_aut2aut) + ")",
-        "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/aut_align_aut.tsv"  # noqa
+        "main/examples/aut_align_aut.tsv"  # noqa
     )
     bib2ark.radioButton_lienExample(
         frame_input_aut, input_data_type, 2, couleur_fond,
         "Liste de notices bibliographiques",
         "(" + " | ".join(header_columns_init_bib2aut) + ")",
-        "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/aut_align_bib.tsv"  # noqa
+        "main/examples/aut_align_bib.tsv"  # noqa
     )
 
     input_data_type.set(1)

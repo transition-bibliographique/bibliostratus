@@ -8,6 +8,7 @@ Fonctions et classes génériques pour Bibliostratus
 
 import http.client
 import urllib.parse
+import os
 from urllib import error, request
 
 from lxml import etree
@@ -464,6 +465,18 @@ def url_requete_sru(query, recordSchema="unimarcxchange",
         "&maximumRecords=" + maximumRecords + "&startRecord=" + \
         startRecord + "&origin=bibliostratus"
     return url
+
+def open_local_file(path):
+    """Construit le chemin absolu vers un fichier en local
+    Permet d'être correct à la fois en mode "code source" 
+    et en version précompilée"""
+    try:
+        dirname = os.path.dirname(__file__)
+        filepath = os.path.join(dirname, path)
+        os.startfile(filepath)
+    except FileNotFoundError:
+        filepath = filepath.replace("main/examples","examples").replace("/","\\")
+        os.startfile(filepath)
 
 
 class International_id:

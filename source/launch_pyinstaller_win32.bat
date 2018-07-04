@@ -8,6 +8,7 @@ python "C:\Anaconda\Lib\site-packages\PyInstaller-3.3.1\pyinstaller.py" "C:\User
 rd /s /q build
 copy bibliostratus.bat dist
 xcopy /S main\files dist\main\files\
+xcopy /S main\examples dist\main\examples\
 rename dist bibliostratus
 "C:\Program Files\7-Zip\7z" a -tzip ..\bin\bibliostratus_%version%_win32_py3.6.zip bibliostratus\
 rd /s /q bibliostratus

@@ -13,6 +13,7 @@ Puis modifier le formulaire pour proposer l'option "Périodiques"
 """
 
 import csv
+import os
 import tkinter as tk
 import urllib.parse
 from collections import defaultdict
@@ -2766,16 +2767,29 @@ def radioButton_lienExample(
         ).pack(
             anchor="w", side="left"
         )
-        example_ico = tk.Button(
-            line1,
-            bd=0,
-            justify="left",
-            font="Arial 7 underline",
-            text="exemple",
-            fg="#0000ff",
-            bg=couleur_fond,
-            command=lambda: main.click2url(link)
-        )
+        if ("http" in link):
+            example_ico = tk.Button(
+                line1,
+                bd=0,
+                justify="left",
+                font="Arial 7 underline",
+                text="exemple",
+                fg="#0000ff",
+                bg=couleur_fond,
+                command=lambda: main.click2url(link)
+            )
+        else:
+            link = os.path.join(os.path.dirname(__file__), link)
+            example_ico = tk.Button(
+                line1,
+                bd=0,
+                justify="left",
+                font="Arial 7 underline",
+                text="exemple",
+                fg="#0000ff",
+                bg=couleur_fond,
+                command=lambda: funcs.open_local_file(link)
+            )
         example_ico.pack(anchor="w", side="left")
     if (text2 != ""):
         line2 = tk.Frame(packButton, bg=couleur_fond)
@@ -2922,7 +2936,7 @@ def formulaire_noticesbib2arkBnF(
         cadre_input_type_docs, type_doc_bib, 1, couleur_fond,
         "[TEX] Monographies texte",
         "(Colonnes : " + " | ".join(header_columns_init_monimpr) + ")",
-        "https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/examples/mon_impr.tsv"  # noqa
+        "main/examples/mon_impr.tsv"  # noqa
     )
     radioButton_lienExample(
         cadre_input_type_docs, type_doc_bib, 2, couleur_fond,
@@ -2933,13 +2947,13 @@ def formulaire_noticesbib2arkBnF(
         cadre_input_type_docs, type_doc_bib, 3, couleur_fond,
         "[AUD] Enregistrements sonores",
         "(" + " | ".join(header_columns_init_cddvd) + ")",
-        "https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/examples/audio.tsv"  # noqa
+        "main/examples/audio.tsv"  # noqa
     )
     radioButton_lienExample(
         cadre_input_type_docs, type_doc_bib, 4, couleur_fond,
         "[PER] Périodiques",
         "(" + " | ".join(header_columns_init_perimpr) + ")",
-        "https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/examples/per.tsv"  # noqa
+        "main/examples/per.tsv"  # noqa
     )
     type_doc_bib.set(1)
 

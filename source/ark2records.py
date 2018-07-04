@@ -373,12 +373,12 @@ def formulaire_ark2records(
     bib2ark.radioButton_lienExample(
         frame_input_aut, type_records, 1, couleur_fond, "ARK de notices BIB",
         "",
-        "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/listeARKbib.tsv"  # noqa
+        "main/examples/listeARKbib.tsv"  # noqa
     )
     bib2ark.radioButton_lienExample(
         frame_input_aut, type_records, 2, couleur_fond, "ARK de notices AUT",
         "",
-        "https://raw.githubusercontent.com/Transition-bibliographique/alignements-donnees-bnf/master/examples/listeARKaut.tsv"  # noqa
+        "main/examples/listeARKaut.tsv"  # noqa
     )
     type_records.set(1)
 

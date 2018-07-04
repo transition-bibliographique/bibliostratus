@@ -1,5 +1,10 @@
+### version 1.21
+juillet 2018
+- Enrichissement des classes Bib_record et Aut_record
+- Fichiers d'exemples consultables en local (et non en ligne)
+
 ###version 1.20
-juin 2018
+04/07/2018
 - Tous modules : 
 	- mise en forme PEP8 et flake8
 	- initialisation d'un fichier de tests automatiques (à développer)

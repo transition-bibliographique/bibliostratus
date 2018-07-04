@@ -893,7 +893,7 @@ def formulaire_marc2tables(
     bib2ark.radioButton_lienExample(
         cadre_input_type_docs, file_format, 1, couleur_fond,
         "iso2709 encodé UTF-8", "",
-        "https://github.com/Transition-bibliographique/bibliostratus/blob/master/examples/noticesbib.iso"  # noqa
+        "main/examples/noticesbib.iso"  # noqa
     )
     tk.Radiobutton(
         cadre_input_type_docs,
