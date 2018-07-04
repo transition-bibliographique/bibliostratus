@@ -53,8 +53,8 @@ lettres_sauf_x = [
     "q", "r", "s", "t", "u", "v", "w", "y", "z"
 ]
 ponctuation = [
-    ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
-    "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<",
+    ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\"", "&", "~",
+    "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "/", "<",
     ">", ")", "}"
 ]
 header_columns_init_monimpr = [
@@ -1624,21 +1624,22 @@ def tad2ppn(NumNot, titre, auteur, auteur_nett, date, typeRecord):
 
 
 def tad2ppn_pages_suivantes(
-        NumNot, titre, auteur, auteur_nett, date, typeRecord, url, nb_results,
-        pageID, Listeppn, ark
+        NumNot, titre, auteur, auteur_nett, date, typeRecord, url, 
+        nb_results, pageID, Listeppn, ark
 ):
     url = url + "pageID=" + pageID
     (test, results) = funcs.testURLetreeParse(url)
-    for record in results.xpath("//records/record"):
-        ppn = record.find("identifier").text
-        NumNotices2methode[NumNot].append("Titre-Auteur-Date DoMyBiblio")
-        Listeppn.append("PPN" + ppn)
-        ark.append(ppn2ark(NumNot, ppn, "", titre, auteur, date))
-    if (nb_results >= pageID * 10):
-        tad2ppn_pages_suivantes(
-            NumNot, titre, auteur, auteur_nett, date, typeRecord, url,
-            nb_results, pageID + 1
-        )
+    if (test):
+        for record in results.xpath("//records/record"):
+            ppn = record.find("identifier").text
+            NumNotices2methode[NumNot].append("Titre-Auteur-Date DoMyBiblio")
+            Listeppn.append("PPN" + ppn)
+            ark.append(ppn2ark(NumNot, ppn, "", titre, auteur, date))
+        if (nb_results >= pageID * 10):
+            tad2ppn_pages_suivantes(
+                NumNot, titre, auteur, auteur_nett, date, typeRecord, url,
+                nb_results, pageID + 1, Listeppn, ark
+            )
 
 
 def checkTypeRecord(ark, typeRecord_attendu):
@@ -1906,7 +1907,7 @@ def item2ark_by_id(input_record, parametres):
     if (ark == "" and input_record.isbn.nett != ""):
         ark = isbn2ark(
             input_record.NumNot, input_record.isbn.init,
-            input_record.isbn.propre, "", "", ""
+            input_record.isbn.propre, "", "", "", ""
         )
 
     # A défaut, recherche sur no_commercial
