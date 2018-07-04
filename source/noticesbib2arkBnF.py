@@ -752,6 +752,8 @@ def row2files(liste_metadonnees, liste_reports):
     #     "NumNot", "nbARK", "ark trouvé", "Méthode", "ark initial", "FRBNF",
     #     "ISBN", "EAN", "Titre", "auteur", "date", "Tome/Volume", "editeur"
     # ]
+    # Le paramètre header sert à préciser s'il s'agit d'ajouter dans le fichier
+    # les entêtes de colonnes (et non les résultats de l'alignement)
     liste_metadonnees_to_report = [str(el) for el in liste_metadonnees]
     nbARK = liste_metadonnees[1]
     ark = liste_metadonnees[2]
@@ -761,9 +763,13 @@ def row2files(liste_metadonnees, liste_reports):
         liste_reports[1].write("\t".join(liste_metadonnees_to_report) + "\n")
     elif (nbARK == 1):
         liste_reports[2].write("\t".join(liste_metadonnees_to_report) + "\n")
+    elif (nbARK == "nbARK"):
+        liste_reports[0].write("\t".join(liste_metadonnees_to_report) + "\n")
+        liste_reports[1].write("\t".join(liste_metadonnees_to_report) + "\n")
+        liste_reports[2].write("\t".join(liste_metadonnees_to_report) + "\n")
+        liste_reports[3].write("\t".join(liste_metadonnees_to_report) + "\n")
     else:
         liste_reports[3].write("\t".join(liste_metadonnees_to_report) + "\n")
-
 
 # =============================================================================
 # def nettoyage_isbn(isbn):
@@ -2058,6 +2064,7 @@ def file2row(
                 "[BnF] 1er auteur Nom", "[BnF] Tous auteurs", "[BnF] Date"
             ]
         )
+    # Ajout des en-têtes de colonne dans les fichiers
     if (parametres["file_nb"] == 1):
         row2file(header_columns, liste_reports)
     elif (parametres["file_nb"] == 2):
