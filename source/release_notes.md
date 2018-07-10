@@ -2,6 +2,8 @@
 juillet 2018
 - Enrichissement des classes Bib_record et Aut_record
 - Fichiers d'exemples consultables en local (et non en ligne)
+- Module bleu : possibilité d'importer un fichier Marc21 (en modifiant le fichier main/files/preferences.json)
+- favicône "Transition bibliographique" sur les fenêtres du module
 
 ###version 1.20
 04/07/2018

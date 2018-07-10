@@ -79,20 +79,20 @@ def nn2url(nn, type_record, parametres, source="bnf"):
         url = "http://www.idref.fr/" + nn + ".xml"
     return url
 
-
+"""
 def ark2record(ark, type_record, format_BIB, renvoyerNotice=False):
     url = ark2url(ark, type_record, format_BIB)
     test = True
     try:
         page = etree.parse(request.urlopen(url))
-    except error.URLerror:
+    except error.URLError:
         test = False
         print("Pb d'accès à la notice " + ark)
     if test:
         record = page.xpath(".//srw:recordData/mxc:record",
                             namespaces=main.ns)[0]
     if renvoyerNotice:
-        return record
+        return record"""
 
 
 def XMLrecord2string(record):
