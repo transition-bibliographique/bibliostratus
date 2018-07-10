@@ -24,7 +24,7 @@ $ pip3 install pymarc
 
 ```
 $ git clone <le depôt bibliostratus.git>
-$ cd bibliostratus/source
+$ cd bibliostratus/bibliostratus
 $ ./launch_bibliostratus.sh 
 ```
 

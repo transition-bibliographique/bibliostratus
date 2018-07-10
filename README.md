@@ -3,7 +3,7 @@ Bibliostratus : STRatégie d'Alignement d'URIs pour la Transition bibliographiqu
 
 [![alt Télécharger Bibliostratus](https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/img/bouton_telecharger_bibliostratus.png)](https://github.com/Transition-bibliographique/bibliostratus/tree/master/bin)
 
-* Le répertoire *source* contient le code développé en Python
+* Le répertoire *bibliostratus* contient le code développé en Python
 * Le répertoire *bin* contient la dernière version compilée de l'exécutable, à télécharger et lancer directement pour utiliser le programme (le code source n'est pas forcément compilé à chaque modification)
 
 Bibliostratus a pour objectif de proposer un ensemble de fonctions permettant de s'aligner avec les données bibliographiques de la [Bibliothèque nationale de France](http://www.bnf.fr), afin de pouvoir bénéficier de leurs travaux de FRBRisation de masse.
