@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "bibliostratus"
+version = "1.20.0"
+description = "Stratégie d'alignement d'URIs pour la Transition bibliographique"
+authors = ["Etienne Cavalié <lully1804@yahoo.fr>"]
+license = "GPL-3.0"
+
+[tool.poetry.dependencies]
+python = "^3.5"
+unidecode = "^1.0"
+lxml = "^4.2"
+chardet = "^3.0"
+pymarc = "^3.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^3.6"
+flake8 = "^3.5"
+yapf = "^0.22.0"
+
+[tool.poetry.scripts]
+bibliostratus = "bibliostratus.main:run"
