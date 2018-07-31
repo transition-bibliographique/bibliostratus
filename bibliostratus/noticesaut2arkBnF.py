@@ -369,7 +369,6 @@ def align_from_bib_item(row, n, form_aut2ark, parametres, liste_reports):
     (NumNot, NumNotBib, ark_bib_init, frbnf_bib_init, titre, pubDate,
      isni, nom, prenom, dates_auteur) = bib2ark.extract_cols_from_row(row,
                                                                       header_columns_init_bib2aut)
-
     # ==============================================================================
     #             NumNot = row[0]
     #             NumNotBib = row[1]
@@ -419,8 +418,9 @@ def align_from_bib_item(row, n, form_aut2ark, parametres, liste_reports):
         typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
         if (len(set(NumNotices2methode[NumNot])) == 1):
             typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
-    liste_metadonnees = [nbARK, NumNot, ark_trouve, typeConversionNumNot, NumNotBib,
+    liste_metadonnees = [NumNot, nbARK, ark_trouve, typeConversionNumNot, NumNotBib,
                          ark_bib_init, frbnf_bib_init, titre, isni, nom, prenom, dates_auteur]
+
     if (parametres['meta_bnf'] == 1):
         liste_metadonnees.extend(ark2metadc(ark_trouve))
     if (parametres['file_nb'] == 1):
@@ -435,7 +435,7 @@ def align_from_bib(form, entry_filename, liste_reports, parametres):
     (métadonnées BIB + Nom, prénom et dates de l'auteur)
     """
     header_columns = [
-        "NumNot", "nbARK", "ark AUT trouvé", "ark BIB initial",
+        "NumNot", "nbARK", "ark AUT trouvé", "Méthode alignement", "Numéro notice BIB initial", "ark BIB initial",
         "frbnf BIB initial", "Titre", "ISNI", "Nom", "Complément nom",
         "dates Auteur"
     ]
@@ -576,6 +576,8 @@ def frbnfBib2arkAut(NumNot, frbnf, nom, prenom, date_debut):
                 listeArk.extend(extractARKautfromBIB(
                     record, nom, prenom, date_debut))
     listeArk = ",".join(set(listeArk))
+    if (listeArk != ""):
+        NumNotices2methode[NumNot].append("FRBNF bib > ARK")
     return listeArk
 
 # Si le FRBNF n'a pas été trouvé, on le recherche comme numéro système ->
@@ -727,7 +729,11 @@ def bib2arkAUT(NumNot, titre, pubDate, nom, prenom, date_debut):
     url = funcs.url_requete_sru("".join(['bib.title all "', titre,
                                          '" and bib.author all "', nom, " ", prenom,
                                          '" and bib.publicationdate all "', pubDate, '"'
-                                         ]))
+                                         ])).replace(
+                                             "%20and%20bib.publicationdate%20all%20%22-%22",
+                                             ""
+                                         )
+    print(url)
     (test, results) = funcs.testURLetreeParse(url)
     if (test):
         for record in results.xpath(
@@ -735,6 +741,8 @@ def bib2arkAUT(NumNot, titre, pubDate, nom, prenom, date_debut):
             listeArk.extend(extractARKautfromBIB(
                 record, nom, prenom, date_debut))
     listeArk = ",".join(set(listeArk))
+    if (listeArk != ""):
+        NumNotices2methode[NumNot].append("Titre-Auteur-Date")
     return listeArk
 
 
