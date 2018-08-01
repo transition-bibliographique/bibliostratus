@@ -325,7 +325,7 @@ def align_from_aut_item(row, n, form_aut2ark, parametres, liste_reports):
         if (len(set(NumNotices2methode[input_record.NumNot])) == 1):
             typeConversionNumNot = list(set(NumNotices2methode[input_record.NumNot]))[0]
     liste_metadonnees = [input_record.NumNot, nbARK, ark, typeConversionNumNot]
-    liste_metadonnees.append(input_record.metas_init)
+    liste_metadonnees.extend(input_record.metas_init)
     if (parametres["meta_bnf"] == 1):
         liste_metadonnees.extend(ark2metadc(ark))
     if (parametres["file_nb"] == 1):
