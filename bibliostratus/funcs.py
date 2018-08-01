@@ -531,7 +531,7 @@ class Name:
 
     def __init__(self, string):  # Notre méthode constructeur
         self.init = string
-        self.propre = nettoyage(self.init)
+        self.propre = nettoyage(self.init, remplacerEspaces=False, remplacerTirets=False)
 
 
     def __str__(self):

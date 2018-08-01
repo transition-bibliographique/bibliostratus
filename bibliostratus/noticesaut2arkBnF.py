@@ -301,7 +301,14 @@ def align_from_aut_item(row, n, form_aut2ark, parametres, liste_reports):
     ark = ""
     if (parametres["preferences_alignement"] == 1):
         ark = aut2ark_by_id(input_record,parametres)
-    
+    if (ark == "" and parametres["preferences_alignement"] == 1):
+        ark = accesspoint2arkAut(
+                input_record.NumNot, 
+                input_record.lastname.propre,
+                input_record.firstname.propre,
+                input_record.firstdate.propre,
+                input_record.lastdate.propre
+                )
     if (ark == "" and parametres["isni_option"] == 1):
         ark = accesspoint2isniorg(input_record)
     print(str(n) + ". " + input_record.NumNot + " : " + ark)
@@ -317,8 +324,8 @@ def align_from_aut_item(row, n, form_aut2ark, parametres, liste_reports):
         typeConversionNumNot = ",".join(NumNotices2methode[input_record.NumNot])
         if (len(set(NumNotices2methode[input_record.NumNot])) == 1):
             typeConversionNumNot = list(set(NumNotices2methode[input_record.NumNot]))[0]
-    liste_metadonnees = [input_record.NumNot, nbARK, ark, typeConversionNumNot,
-                         input_record.metas_init]
+    liste_metadonnees = [input_record.NumNot, nbARK, ark, typeConversionNumNot]
+    liste_metadonnees.append(input_record.metas_init)
     if (parametres["meta_bnf"] == 1):
         liste_metadonnees.extend(ark2metadc(ark))
     if (parametres["file_nb"] == 1):
@@ -688,11 +695,15 @@ def relancerNNA_nomAuteur(NumNot, systemid, nom):
 def accesspoint2arkAut(NumNot, nom_nett, prenom_nett, date_debut, date_fin):
     listeArk = []
     url = funcs.url_requete_sru(
-        'aut.accesspoint adj "' + " ".join([nom_nett, prenom_nett, date_debut]) + '"')
+        'aut.accesspoint adj "' + " ".join([nom_nett, prenom_nett, date_debut]) 
+        + '" and aut.status any "sparse validated"'
+        + ' and aut.type any "PEP ORG"')
     testdatefin = False
     if (date_debut == "" and date_fin != ""):
         url = funcs.url_requete_sru('aut.accesspoint adj "' + " ".join(
-            [nom_nett, prenom_nett]) + '" and aut.accesspoint all "' + date_fin + '"')
+            [nom_nett, prenom_nett]) + '" and aut.accesspoint all "' + date_fin 
+        + '" and aut.status any "sparse validated"'
+        + ' and aut.type any "PEP ORG"')
         testdatefin = True
     # print(url)
     (test, results) = funcs.testURLetreeParse(url)
@@ -733,7 +744,6 @@ def bib2arkAUT(NumNot, titre, pubDate, nom, prenom, date_debut):
                                              "%20and%20bib.publicationdate%20all%20%22-%22",
                                              ""
                                          )
-    print(url)
     (test, results) = funcs.testURLetreeParse(url)
     if (test):
         for record in results.xpath(
