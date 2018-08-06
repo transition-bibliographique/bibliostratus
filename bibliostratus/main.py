@@ -117,7 +117,7 @@ def annuler(master):
 def check_last_compilation(programID):
     programID_last_compilation = 0
     display_update_button = False
-    url = "https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/source/last_compilations.json"  # noqa
+    url = "https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/bibliostratus/last_compilations.json"  # noqa
     try:
         last_compilations = request.urlopen(url)
         reader = codecs.getreader("utf-8")

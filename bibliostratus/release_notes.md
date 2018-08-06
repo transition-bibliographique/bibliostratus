@@ -1,3 +1,9 @@
+### version 1.22
+août 2018
+- Module rouge (ark2records): Correction problèmes à l'export :
+	- apostrophes converties en backslash-apostrophe par pymarc
+	- apostrophe en fin de record Sudoc dans le format XML
+
 ### version 1.21
 juillet 2018
 - Enrichissement des classes Bib_record et Aut_record

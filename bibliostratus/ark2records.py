@@ -97,8 +97,11 @@ def ark2record(ark, type_record, format_BIB, renvoyerNotice=False):
 
 def XMLrecord2string(record):
     record_str = str(etree.tostring(record))
+    record_str = record_str.replace("<mxc:", "<").replace("</mxc:", "</")
+    record_str = re.sub(r"<record[^>]+>", r"<record>", record_str)
     record_str = record_str.replace("b'", "").replace("      '", "\n").replace(
-        "\\n", "\n").replace("\\t", "\t").replace("\\r", "\n")
+        "\\n", "\n").replace("\\t", "\t").replace("\\r", "\n").replace(
+            "</record>'", "</record>")
     return (record_str)
 
 
@@ -185,6 +188,27 @@ def XMLrec2isorecord(XMLrec):
     file_temp.write(XMLrec)
     return filename_temp
 
+def record_correct(pymarc_record):
+    """Corrections des chaînes de caractères des valeurs fournies par Pymarc 
+    La librairie transforme notamment les apostrophes en antislash + apostrophe """
+    corrected_record = mc.Record()
+    for field in pymarc_record:
+        field_tag = field.tag
+        if (field_tag[0:2] == "00"):
+            corrected_record.add_field(field)
+        else:
+            field_indicators = field.indicators
+            subfields_corrected = []
+            for subfield in field.subfields:
+                subfields_corrected.append(subfield.replace("\\'", "'"))
+            corrected_record.add_field(
+                mc.Field(
+                    tag=field_tag,
+                    indicators=field_indicators,
+                    subfields=subfields_corrected)
+                    )
+    return corrected_record
+
 
 def record2file(file, XMLrec, format_file):
     # Si sortie en iso2709
@@ -194,6 +218,7 @@ def record2file(file, XMLrec, format_file):
         collection = mc.marcxml.parse_xml_to_array(filename_temp, strict=False)
         for record in collection:
             record.force_utf8 = True
+            record = record_correct(record)
             try:
                 file.write(record)
             except UnicodeEncodeError as err:
@@ -218,6 +243,8 @@ def extract1record(row, j, form, headers, parametres):
     ark = row[0]
     ark = ark.replace("http://www.sudoc.fr/",
                       "ppn").replace("https://www.sudoc.fr/", "ppn")
+    ark = ark.replace("http://www.idref.fr/",
+                      "ppn").replace("https://www.idref.fr/", "ppn")
     if ("ark:/12148" in ark):
         ark = ark[ark.find("ark:/12148"):]
     if (len(ark) > 1 and ark not in listeARK_BIB):
@@ -226,6 +253,7 @@ def extract1record(row, j, form, headers, parametres):
         (test, page) = funcs.testURLetreeParse(ark2url(ark, parametres))
         if(test):
             nbResults = page2nbresults(page, ark)
+            # Si on part d'un ARK
             if (nbResults == "1" and "ark" in ark):
                 for XMLrec in page.xpath(
                         "//srw:record/srw:recordData/mxc:record",
@@ -236,6 +264,7 @@ def extract1record(row, j, form, headers, parametres):
                     )
                     if (parametres["AUTliees"] > 0):
                         bib2aut(XMLrec, ark, parametres)
+            # Si on part d'un PPN
             elif (nbResults == "1" and "ppn" in ark.lower()):
                 for XMLrec in page.xpath("//record"):
                     record2file(parametres["bib_file"],
