@@ -17,6 +17,11 @@ import os
 import tkinter as tk
 import urllib.parse
 from collections import defaultdict
+import pymarc as mc
+from lxml import etree
+from lxml.html import parse
+from urllib import request
+import marc2tables
 
 from unidecode import unidecode
 
@@ -1187,102 +1192,6 @@ def eanauteur2sru(NumNot, ean, titre, auteur, date):
     return listeARK
 
 
-# def testURLetreeParse(url):
-#    test = True
-#    resultat = ""
-#    try:
-#        resultat = etree.parse(request.urlopen(url))
-#    except etree.XMLSyntaxError as err:
-#        print(url)
-#        print(err)
-#        url_access_pbs.append([url,"etree.XMLSyntaxError"])
-#        test = False
-#    except etree.ParseError as err:
-#        print(url)
-#        print(err)
-#        test = False
-#        url_access_pbs.append([url,"etree.ParseError"])
-#    except error.URLError as err:
-#        print(url)
-#        print(err)
-#        test = False
-#        url_access_pbs.append([url,"urllib.error.URLError"])
-#    except ConnectionResetError as err:
-#        print(url)
-#        print(err)
-#        test = False
-#        url_access_pbs.append([url,"ConnectionResetError"])
-#    except TimeoutError as err:
-#        print(url)
-#        print(err)
-#        test = False
-#        url_access_pbs.append([url,"TimeoutError"])
-#    except http.client.RemoteDisconnected as err:
-#        print(url)
-#        print(err)
-#        test = False
-#        url_access_pbs.append([url,"http.client.RemoteDisconnected"])
-#    except http.client.BadStatusLine as err:
-#        print(url)
-#        print(err)
-#        test = False
-#        url_access_pbs.append([url,"http.client.BadStatusLine"])
-#    except ConnectionAbortedError as err:
-#        print(url)
-#        print(err)
-#        test = False
-#        url_access_pbs.append([url,"ConnectionAbortedError"])
-#    return (test,resultat)
-#
-#
-# def testURLurlopen(url):
-#    test = True
-#    resultat = ""
-#    try:
-#        resultat = request.urlopen(url)
-#    except etree.XMLSyntaxError as err:
-#        print(url)
-#        print(err)
-#        url_access_pbs.append([url,"etree.XMLSyntaxError"])
-#        test = False
-#    except etree.ParseError as err:
-#        print(url)
-#        print(err)
-#        test = False
-#        url_access_pbs.append([url,"etree.ParseError"])
-#    except error.URLError as err:
-#        print(url)
-#        print(err)
-#        test = False
-#        url_access_pbs.append([url,"urllib.error.URLError"])
-#    except ConnectionResetError as err:
-#        print(url)
-#        print(err)
-#        test = False
-#        url_access_pbs.append([url,"ConnectionResetError"])
-#    except TimeoutError as err:
-#        print(url)
-#        print(err)
-#        test = False
-#        url_access_pbs.append([url,"TimeoutError"])
-#    except http.client.RemoteDisconnected as err:
-#        print(url)
-#        print(err)
-#        test = False
-#        url_access_pbs.append([url,"http.client.RemoteDisconnected"])
-#    except http.client.BadStatusLine as err:
-#        print(url)
-#        print(err)
-#        test = False
-#        url_access_pbs.append([url,"http.client.BadStatusLine"])
-#    except ConnectionAbortedError as err:
-#        print(url)
-#        print(err)
-#        test = False
-#        url_access_pbs.append([url,"ConnectionAbortedError"])
-#    return (test,resultat)
-
-
 # Si l'ISBN n'a été trouvé ni dans l'index ISBN, ni dans l'index EAN
 # on le recherche dans tous les champs (not. les données d'exemplaires, pour des
 # réimpressions achetées par un département de la Direction des
@@ -1442,7 +1351,7 @@ def ean2sudoc(NumNot, ean_propre, titre_nett, auteur_nett, date_nett, parametres
         return Listeppn
 
 
-def ppn2ark(NumNot, ppn, isbn, titre, auteur, date):
+def ppn2ark(input_record, ppn):
     ark = ""
     url = "http://www.sudoc.fr/" + ppn + ".rdf"
     (test, record) = funcs.testURLetreeParse(url)
@@ -1453,13 +1362,18 @@ def ppn2ark(NumNot, ppn, isbn, titre, auteur, date):
             )
             if resource.find("ark:/12148/") > 0:
                 ark = resource[24:46]
-                NumNotices2methode[NumNot].append("PPN > ARK")
+                NumNotices2methode[input_record.NumNot].append("PPN > ARK")
         if ark == "":
             for frbnf in record.xpath("//bnf-onto:FRBNF", namespaces=main.nsSudoc):
                 frbnf_val = frbnf.text
-                NumNotices2methode[NumNot].append("PPN > FRBNF")
+                NumNotices2methode[input_record.NumNot].append("PPN > FRBNF")
                 temp_record = funcs.Bib_record(
-                    [NumNot, frbnf_val, "", isbn, "", titre, auteur, date, "", ""], 1
+                    [input_record.NumNot, frbnf_val,
+                        "", input_record.isbn.init, "",
+                        input_record.titre,
+                        input_record.auteur,
+                        input_record.date, "", ""
+                        ], 1
                 )
                 ark = frbnf2ark(temp_record)
     return ark
@@ -1562,7 +1476,8 @@ def issn2sudoc(NumNot, issn_init, issn_nett, titre, auteur, date, parametres):
             for ppn in resultats.xpath("//ppn"):
                 ppn_val = ppn.text
                 Listeppn.append("PPN" + ppn_val)
-                ark.append(ppn2ark(NumNot, ppn_val, issn_nett, titre, auteur, date))
+                if (parametres["preferences_alignement"] == 1):
+                    ark.append(ppn2ark(NumNot, ppn_val, issn_nett, titre, auteur, date))
     # Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK
     # déclaré comme équivalent --> dans ce cas on récupère l'ARK
     Listeppn = ",".join([ppn for ppn in Listeppn if ppn != ""])
@@ -1902,101 +1817,182 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
     return listeArk
 
 
-def tad2ppn(NumNot, titre, auteur, auteur_nett, date, typeRecord):
+def tad2ppn(input_record, parametres):
     # Recherche dans DoMyBiblio : Titre & Auteur dans tous champs, Date dans
     # un champ spécifique
     Listeppn = []
     ark = []
-    titre = funcs.nettoyageTitrePourRecherche(titre).replace(" ", "+")
-    auteur_nett = auteur_nett.replace(" ", "+")
+
     typeRecord4DoMyBiblio = "all"
     """all (pour tous les types de document),
            B (pour les livres),
            T (pour les périodiques),
            Y (pour les thèses version de soutenance),
            V (pour le matériel audio-visuel)"""
-    typeRecordDic = {"monimpr": "B", "cddvd": "V", "perimpr": "T"}
-    if typeRecord in typeRecordDic:
-        typeRecord4DoMyBiblio = typeRecordDic[typeRecord]
-    url = "".join(
+    typeRecordDic = {"TEX": "B", "VID": "V", "AUD": "V", "PER": "T"}
+    if input_record.type in typeRecordDic:
+        typeRecord4DoMyBiblio = typeRecordDic[input_record.type]
+    kw = " ".join([input_record.titre.recherche, input_record.auteur_nett])
+
+    # On prévoit 2 URL : par défaut, requête sur l'API DoMyBiblio (XML)
+    # Si plante > screenscraping de DoMyBiblio version HTML
+    url1 = "".join(
         [
             "http://domybiblio.net/search/search_api.php?type_search=all&q=",
-            urllib.parse.quote(" ".join([titre, auteur_nett])),
+            urllib.parse.quote(kw),
             "&type_doc=",
             typeRecord4DoMyBiblio,
             "&period=",
-            date,
+            input_record.date_debut,
             "&pageID=1&wp=true&idref=true&loc=true",
         ]
     )
 
-    (test, results) = funcs.testURLetreeParse(url)
-    if test:
-        nb_results = str(results.find(".//results").text)
-        for record in results.xpath("//records/record"):
+    url2 = "".join(
+        [
+            "http://domybiblio.net/search/search.php?type_search=all&q=",
+            urllib.parse.quote(kw),
+            "&type_doc=",
+            typeRecord4DoMyBiblio,
+            "&period=",
+            input_record.date_debut,
+            "&pageID=1&wp=true&idref=true&loc=true",
+        ]
+    )
+    try:
+        type_page = "xml"
+        page = etree.parse(request.urlopen(url1))
+    except urllib.error.HTTPError:
+        type_page = "html"
+        page = parse(request.urlopen(url2))
+    if (type_page == "html"):
+        liste_resultats = page.xpath("//li[@class='list-group-item']/a")
+        for lien in liste_resultats:
+            href = lien.get("href")
+            ppn = "PPN" + href[href.find("id=") + 3:href.find("id=") + 12]
+            ppn = controle_keywords2ppn(input_record, ppn)
+            Listeppn.append(ppn)
+    else:
+        liste_resultats = page.xpath("//records/record")
+        nb_results = int(page.find(".//results").text)
+        for record in liste_resultats:
             ppn = record.find("identifier").text
-            NumNotices2methode[NumNot].append("Titre-Auteur-Date DoMyBiblio")
-            Listeppn.append("PPN" + ppn)
-            ark.append(ppn2ark(NumNot, ppn, "", titre, auteur, date))
-        if nb_results < 11:
+            ppn = controle_keywords2ppn(input_record, ppn)
+            Listeppn.append(ppn)
+        if nb_results > 10:
             tad2ppn_pages_suivantes(
-                NumNot,
-                titre,
-                auteur,
-                auteur_nett,
-                date,
-                typeRecord,
-                url,
+                input_record,
+                url1,
                 nb_results,
                 2,
                 Listeppn,
-                ark,
             )
     # Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK
     # déclaré comme équivalent --> dans ce cas on récupère l'ARK
     Listeppn = ",".join([ppn for ppn in Listeppn if ppn != ""])
+    if (Listeppn):
+        NumNotices2methode[input_record.NumNot].append("Titre-Auteur-Date DoMyBiblio")
+    if (Listeppn and parametres["preferences_alignement"] == 1):
+        for ppn in Listeppn:
+            ark.append(ppn2ark(input_record, ppn))
     ark = ",".join([ark1 for ark1 in ark if ark1 != ""])
     if ark != "":
+        NumNotices2methode[input_record.NumNot].append("PPN > ARK")
         return ark
     else:
         return Listeppn
 
 
 def tad2ppn_pages_suivantes(
-    NumNot,
-    titre,
-    auteur,
-    auteur_nett,
-    date,
-    typeRecord,
+    input_record,
     url,
     nb_results,
     pageID,
     Listeppn,
-    ark,
 ):
-    url = url + "pageID=" + pageID
+    url = url + "pageID=" + str(pageID)
     (test, results) = funcs.testURLetreeParse(url)
     if test:
         for record in results.xpath("//records/record"):
-            ppn = record.find("identifier").text
-            NumNotices2methode[NumNot].append("Titre-Auteur-Date DoMyBiblio")
-            Listeppn.append("PPN" + ppn)
-            ark.append(ppn2ark(NumNot, ppn, "", titre, auteur, date))
+            ppn = "PPN" + record.find("identifier").text
+            ppn = controle_keywords2ppn(input_record, ppn)
+            Listeppn.append(ppn)
         if nb_results >= pageID * 10:
             tad2ppn_pages_suivantes(
-                NumNot,
-                titre,
-                auteur,
-                auteur_nett,
-                date,
-                typeRecord,
+                input_record,
                 url,
                 nb_results,
                 pageID + 1,
                 Listeppn,
-                ark,
             )
+    return Listeppn
+
+def controle_keywords2ppn(input_record, ppn):
+    """Pour les notices obtenues en recherche par mot-clé
+    via DoMyBiblio, il faut vérifier que les mots cherchés comme
+    titre, auteur et date sont bien présents dans ces zones 
+    respectives, car la recherche est effectuée 
+    dans toute la notice """
+    resultat = ""
+    sudoc_record = defaultdict(dict)
+    url_sudoc_record = "https://www.sudoc.fr/" + ppn.replace("PPN","") + ".xml"
+    urllib.request.urlretrieve(url_sudoc_record, 'temp.xml') 
+    collection = mc.marcxml.parse_xml_to_array(
+        "temp.xml", strict=False)
+    for sudoc_marc_record in collection:
+        (sudoc_record["title"], sudoc_record["keyTitle"],
+            sudoc_record["authors"], sudoc_record["authors2keywords"],
+            sudoc_record["date"], sudoc_record["numeroTome"],
+            sudoc_record["publisher"], sudoc_record["pubPlace"],
+            sudoc_record["ark"], sudoc_record["frbnf"],
+            sudoc_record["isbn"], sudoc_record["issn"],
+            sudoc_record["ean"],
+            sudoc_record["id_commercial_aud"]) = marc2tables.metas_from_unimarc(sudoc_marc_record)
+        controle_titre = controle_titres(input_record, sudoc_record)
+        controle_auteur = controle_auteurs(input_record, sudoc_record)
+        controle_date = controle_dates(input_record, sudoc_record)
+        if (controle_titre and controle_auteur and controle_date):
+            resultat = ppn
+    os.remove("temp.xml")
+    return resultat
+
+
+def controle_titres(input_record, sudoc_record):
+    """Contrôle zones de titre entre une input_record (class Bib_record)
+    et une sudoc_record(dictionnaire, généré comme pour marc2tables) """
+    check = True
+    sudoc_titles = funcs.nettoyage(
+        " ".join([sudoc_record["title"], sudoc_record["keyTitle"]]),
+        False,
+        True)
+    for word in input_record.titre.recherche.split(" "):
+        if (word not in sudoc_titles):
+            check = False
+    print("checkTitres", check, sudoc_titles, "|", input_record.titre.recherche)
+    return check
+
+
+def controle_auteurs(input_record, sudoc_record):
+    """Contrôle zones de titre entre une input_record (class Bib_record)
+    et une sudoc_record(dictionnaire, généré comme pour marc2tables) """
+    check = True
+    for word in input_record.auteur_nett.split(" "):
+        if (funcs.nettoyage(word) not in funcs.nettoyage(sudoc_record["authors"])):
+            check = False
+    print("checkAuteurs", check, sudoc_record["authors"], "|", input_record.auteur_nett)
+    return check
+
+
+def controle_dates(input_record, sudoc_record):
+    """Contrôle zones de titre entre une input_record (class Bib_record)
+    et une sudoc_record(dictionnaire, généré comme pour marc2tables) """
+    check = True
+    if (input_record.date_debut not in sudoc_record["date"]):
+        check = False
+    print("checkDates", check, sudoc_record["date"], "|", input_record.date_debut)
+    return check
+
+
 
 
 def checkTypeRecord(ark, typeRecord_attendu):
@@ -2369,16 +2365,24 @@ def item2ppn_by_id(input_record, parametres):
 
 
 def item2ark_by_keywords(input_record, parametres):
-    """Alignement par mots clés"""
+    """Alignement par mots clés sur le catalogue BnF"""
     ark = ""
     # A défaut, recherche sur Titre-Auteur-Date
-    if ark == "" and input_record.titre != "":
+    if input_record.titre != "":
         ark = tad2ark(input_record, False, False)
         # print("1." + NumNot + " : " + ark)
+    # Si pas trouvé, on cherche l'ensemble des 
+    # mots dans toutes les zones indifféremment
     if ark == "" and input_record.titre != "":
         ark = tad2ark(input_record, True, False)
-
     return ark
+
+def item2ppn_by_keywords(input_record, parametres):
+    """Alignement par mots clés sur le catalogue Sudoc"""
+    ppn = ""
+    if input_record.titre != "":
+        ppn = tad2ppn(input_record, parametres)
+    return ppn
 
 
 def item2id(row, n, form_bib2ark, parametres, liste_reports):
@@ -2400,13 +2404,19 @@ def item2id(row, n, form_bib2ark, parametres, liste_reports):
     if parametres["preferences_alignement"] == 1:
         ark = item2ark_by_id(input_record, parametres)
         if ark == "":
+            ark = item2ark_by_keywords(input_record, parametres)
+        if ark == "":
             ark = item2ppn_by_id(input_record, parametres)
+        if ark == "":
+            ark = item2ppn_by_keywords(input_record, parametres)
     else:
         ark = item2ppn_by_id(input_record, parametres)
         if ark == "":
+            ark = item2ppn_by_keywords(input_record, parametres)
+        if ark == "":
             ark = item2ark_by_id(input_record, parametres)
-    if ark == "":
-        ark = item2ark_by_keywords(input_record, parametres)
+        if ark == "":
+            ark = item2ark_by_keywords(input_record, parametres)
 
     print(str(n) + ". " + input_record.NumNot + " : " + ark)
     nbARK = len(ark.split(","))
@@ -2529,488 +2539,6 @@ def file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parame
             n += 1
 
 
-# ==============================================================================
-#
-# def monimpr_item(row, n, form_bib2ark, parametres, liste_reports):
-#     """Alignement pour 1 item (1 ligne) monographie imprimée"""
-#     if (n == 0):
-#         assert main.control_columns_number(
-#             form_bib2ark, row, header_columns_init_monimpr
-#         )
-#     if (n % 100 == 0):
-#         main.check_access2apis(n, dict_check_apis)
-#     # print(row)
-
-#     input_record = funcs.Bib_record(row, 1)
-#     ark = ""
-#     if (input_record.ark_init != ""):
-#         ark = ark2ark(input_record)
-
-#     # A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
-#     if (ark == "" and input_record.frbnf != ""):
-#         ark = frbnf2ark(input_record)
-#         ark = ",".join([ark1 for ark1 in ark.split(",") if ark1 != ''])
-#     # A défaut, recherche sur ISBN
-#     # Si plusieurs résultats, contrôle sur l'auteur
-#     if (ark == "" and input_record.isbn.nett != ""):
-#         ark = isbn2ark(
-#             input_record.NumNot, input_record.isbn.init,
-#             input_record.isbn.propre, input_record.isbn.converti,
-#             input_record.titre_nett, input_record.auteur_nett,
-#             input_record.date_nett
-#         )
-
-#     # Si la recherche ISBN + contrôle Titre/Date n'a rien donné -> on cherche ISBN seul
-#     if (ark == "" and input_record.isbn.nett != ""):
-#         ark = isbn2ark(
-#             input_record.NumNot, input_record.isbn.init,
-#             input_record.isbn_propre, "", "", ""
-#         )
-
-#     # Si pas de résultats : on relance une recherche dans le Sudoc
-#     if (ark == "" and input_record.isbn.nett != ""):
-#         ark = isbn2sudoc(input_record)
-
-#     # A défaut, recherche sur EAN
-#     if (ark == "" and input_record.ean.nett != ""):
-#         ark = ean2ark(
-#             input_record.NumNot, input_record.ean.propre,
-#             input_record.titre_nett, input_record.auteur_nett,
-#             input_record.date_nett
-#         )
-
-#     # Si la recherche EAN + contrôles Titre/Date n'a rien donné -> on cherche EAN seul
-#     if (ark == "" and input_record.ean.nett != ""):
-#         ark = ean2ark(input_record.NumNot, input_record.ean.propre, "", "", "")
-
-#     # Si pas de résultats : on relance une recherche dans le Sudoc
-#     if (ark == ""):
-#         ark = ean2sudoc(
-#             input_record.NumNot, input_record.ean.propre,
-#             input_record.titre_nett, input_record.auteur_nett,
-#             input_record.date_nett
-#         )
-
-#     # Si pas de résultats : on relance une recherche dans le Sudoc avec l'EAN seul
-#     if (ark == ""):
-#         ark = ean2sudoc(
-#             input_record.NumNot, input_record.ean.propre, "", "", ""
-#         )
-
-#     # A défaut, recherche sur Titre-Auteur-Date
-#     if (ark == "" and input_record.titre != ""):
-#         ark = tad2ark(input_record, False, False)
-#         # print("1." + NumNot + " : " + ark)
-#     if (ark == "" and input_record.titre != ""):
-#         ark = tad2ark(input_record, True, False)
-#     """if (ark == "" and titre != ""):
-#         ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"monimpr")"""
-
-#     print(str(n) + ". " + input_record.NumNot + " : " + ark)
-#     nbARK = len(ark.split(","))
-#     if (ark == ""):
-#         nbARK = 0
-#     if (ark == "Pb FRBNF"):
-#         nb_notices_nb_ARK["Pb FRBNF"] += 1
-#     else:
-#         nb_notices_nb_ARK[nbARK] += 1
-#     typeConversionNumNot = ""
-#     if (input_record.NumNot in NumNotices2methode):
-#         typeConversionNumNot = ",".join(NumNotices2methode[input_record.NumNot])
-#         if (len(set(NumNotices2methode[input_record.NumNot])) == 1):
-#             typeConversionNumNot = list(
-#                 set(NumNotices2methode[input_record.NumNot])
-#             )[0]
-#     liste_metadonnees = [
-#         input_record.NumNot, nbARK, ark, typeConversionNumNot
-#     ] + input_record.metas_init
-#     if (parametres["meta_bib"] == 1):
-#         liste_metadonnees.extend(ark2metadc(ark))
-#     if (parametres["file_nb"] == 1):
-#         row2file(liste_metadonnees, liste_reports)
-#     elif (parametres["file_nb"] == 2):
-#         row2files(liste_metadonnees, liste_reports)
-
-
-# def monimpr(
-#         form_bib2ark, zone_controles, entry_filename, liste_reports, parametres
-# ):
-#     header_columns = [
-#         "NumNot", "nbARK", "ark trouvé", "Méthode", "ark initial", "FRBNF",
-#         "ISBN", "EAN", "Titre", "auteur", "date", "Tome/Volume", "editeur"
-#     ]
-#     if (parametres["meta_bib"] == 1):
-#         header_columns.extend(
-#             [
-#                 "[BnF] Titre", "[BnF] 1er auteur Prénom",
-#                 "[BnF] 1er auteur Nom", "[BnF] Tous auteurs", "[BnF] Date"
-#             ]
-#         )
-#     if (parametres["file_nb"] == 1):
-#         row2file(header_columns, liste_reports)
-#     elif (parametres["file_nb"] == 2):
-#         row2files(header_columns, liste_reports)
-#     n = 0
-#     with open(entry_filename, newline='\n', encoding="utf-8") as csvfile:
-#         entry_file = csv.reader(csvfile, delimiter='\t')
-#         try:
-#             next(entry_file)
-#         except UnicodeDecodeError:
-#             main.popup_errors(
-#                 form_bib2ark, main.errors["pb_input_utf8"],
-#                 "Comment modifier l'encodage du fichier",
-#                 "https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e"  # noqa
-#             )
-#         for row in entry_file:
-#             monimpr_item(row, n, form_bib2ark, parametres, liste_reports)
-#             n += 1
-
-
-# def dvd_item(row, n, form_bib2ark, parametres, liste_reports):
-#     if (n == 0):
-#         assert main.control_columns_number(
-#             form_bib2ark, row, header_columns_init_cddvd
-#         )
-#     if (n % 100 == 0):
-#         main.check_access2apis(n, dict_check_apis)
-
-#     input_record = funcs.Bib_record(row, 2)
-
-#     # Actualisation de l'ARK à partir de l'ARK
-#     ark = ""
-#     if (input_record.ark_init != ""):
-#         ark = ark2ark(input_record)
-
-#     # A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
-#     elif (input_record.frbnf != ""):
-#         ark = frbnf2ark(input_record)
-#         ark = ",".join([ark1 for ark1 in ark.split(",") if ark1 != ''])
-#     # A défaut, recherche sur EAN
-#     # Si plusieurs résultats, contrôle sur l'auteur
-#     if (ark == "" and input_record.ean.nett != ""):
-#         ark = ean2ark(
-#             input_record.NumNot, input_record.ean.propre,
-#             input_record.titre_nett, input_record.auteur_nett,
-#             input_record.date_nett
-#         )
-#     # Si la recherche EAN + contrôle n'a rien donné -> on cherche EAN seul
-#     if (ark == "" and input_record.ean.nett != ""):
-#         ark = ean2ark(input_record.NumNot, input_record.ean.propre, "", "", "")
-
-#     # A défaut, recherche sur no_commercial
-#     if (ark == "" and input_record.no_commercial != ""):
-#         ark = no_commercial2ark(
-#             input_record.NumNot, input_record.no_commercial_propre,
-#             input_record.titre_nett, input_record.auteur_nett,
-#             input_record.date_nett, False, input_record.publisher_nett
-#         )
-
-#     # Si pas de résultats : on relance une recherche dans le Sudoc
-#     if (ark == "" and input_record.ean.nett != ""):
-#         ark = ean2sudoc(
-#             input_record.NumNot, input_record.ean.propre,
-#             input_record.titre_nett, input_record.auteur_nett,
-#             input_record.date_nett
-#         )
-#     # Si pas de résultats : on relance une recherche dans le Sudoc
-#     if (ark == "" and input_record.ean.nett != ""):
-#         ark = ean2sudoc(
-#             input_record.NumNot, input_record.ean.propre, "", "", ""
-#         )
-
-#     # Si la recherche N° commercial + contrôle n'a rien donné -> on cherche N° commercial seul
-#     # if (ark == "" and no_commercial != ""):
-#     #    ark = no_commercial2ark(NumNot,no_commercial_propre,"","","",False, "")
-
-#     # Si la recherche sur bib.comref n'a rien donné -> recherche du numéro partout dans la notice
-#     # if (ark == "" and no_commercial != ""):
-#     #     ark = no_commercial2ark(
-#     #         NumNot, no_commercial_propre, titre_nett, auteur_nett, date_nett,
-#     #         True, publisher_nett
-#     #     )
-
-#     # A défaut, recherche sur Titre-Auteur-Date
-#     if (ark == "" and input_record.titre_nett != ""):
-#         ark = tad2ark(input_record, False, False)
-#     # A défaut, on recherche Titre-Auteur dans tous champs (+Date comme date)
-#     if (ark == "" and input_record.titre_nett != ""):
-#         ark = tad2ark(input_record, True, False)
-#     """
-#     if (ark == "" and titre != ""):
-#         ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"cddvd")
-#     """
-#     print(str(n) + "." + input_record.NumNot + " : " + ark)
-#     nbARK = len(ark.split(","))
-#     if (ark == ""):
-#         nbARK = 0
-#     if (ark == "Pb FRBNF"):
-#         nb_notices_nb_ARK["Pb FRBNF"] += 1
-#     else:
-#         nb_notices_nb_ARK[nbARK] += 1
-
-#     typeConversionNumNot = ""
-#     if (input_record.NumNot in NumNotices2methode):
-#         typeConversionNumNot = ",".join(NumNotices2methode[input_record.NumNot])
-#         if (len(set(NumNotices2methode[input_record.NumNot])) == 1):
-#             typeConversionNumNot = list(
-#                 set(NumNotices2methode[input_record.NumNot])
-#             )[0]
-#     liste_metadonnees = [
-#         input_record.NumNot, nbARK, ark, typeConversionNumNot
-#     ] + input_record.metas_init
-#     if (parametres["meta_bib"] == 1):
-#         liste_metadonnees.extend(ark2metadc(ark))
-#     if (parametres["file_nb"] == 1):
-#         row2file(liste_metadonnees, liste_reports)
-#     elif (parametres["file_nb"] == 2):
-#         row2files(liste_metadonnees, liste_reports)
-
-
-# def dvd(
-#         form_bib2ark, zone_controles, entry_filename, liste_reports, parametres
-# ):
-#     header_columns = [
-#         "NumNot", "nbARK", "ark trouvé", "Méthode", "ark initial", "FRBNF",
-#         "EAN", "no_commercial_propre", "titre", "auteur", "date", "editeur"
-#     ]
-#     if (parametres["meta_bib"] == 1):
-#         header_columns.extend(
-#             [
-#                 "[BnF] Titre", "[BnF] 1er auteur Prénom",
-#                 "[BnF] 1er auteur Nom", "[BnF] Tous auteurs", "[BnF] Date"
-#             ]
-#         )
-#     if (parametres["file_nb"] == 1):
-#         row2file(header_columns, liste_reports)
-#     elif (parametres["file_nb"] == 2):
-#         row2files(header_columns, liste_reports)
-#     # results2file(nb_fichiers_a_produire)
-#     n = 0
-#     with open(entry_filename, newline='\n', encoding="utf-8") as csvfile:
-#         entry_file = csv.reader(csvfile, delimiter='\t')
-#         try:
-#             next(entry_file)
-#         except UnicodeDecodeError:
-#             main.popup_errors(
-#                 form_bib2ark, main.errors["pb_input_utf8"],
-#                 "Comment modifier l'encodage du fichier",
-#                 "https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e"
-#             )
-#         for row in entry_file:
-#             dvd_item(row, n, form_bib2ark, parametres, liste_reports)
-#             n += 1
-
-
-# def cd_item(row, n, form_bib2ark, parametres, liste_reports):
-#     if (n == 0):
-#         assert main.control_columns_number(
-#             form_bib2ark, row, header_columns_init_cddvd
-#         )
-#     if (n % 100 == 0):
-#         main.check_access2apis(n, dict_check_apis)
-
-#     input_record = funcs.Bib_record(row, 3)
-#     # Actualisation de l'ARK à partir de l'ARK
-#     ark = ""
-#     if (input_record.ark_init != ""):
-#         ark = ark2ark(input_record)
-
-#     # A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
-#     elif (input_record.frbnf != ""):
-#         ark = frbnf2ark(input_record)
-#         ark = ",".join([ark1 for ark1 in ark.split(",") if ark1 != ''])
-#     # A défaut, recherche sur EAN
-#     # Si plusieurs résultats, contrôle sur l'auteur
-#     if (ark == "" and input_record.ean.nett != ""):
-#         ark = ean2ark(
-#             input_record.NumNot, input_record.ean.propre,
-#             input_record.titre_nett, input_record.auteur_nett,
-#             input_record.date_nett
-#         )
-#     # Si la recherche EAN + contrôle n'a rien donné -> on cherche EAN seul
-#     if (ark == "" and input_record.ean.nett != ""):
-#         ark = ean2ark(input_record.NumNot, input_record.ean.propre, "", "", "")
-
-#     # A défaut, recherche sur no_commercial
-#     if (ark == "" and input_record.no_commercial != ""):
-#         ark = no_commercial2ark(
-#             input_record.NumNot, input_record.no_commercial_propre,
-#             input_record.titre_nett, input_record.auteur_nett,
-#             input_record.date_nett, False, input_record.publisher_nett
-#         )
-
-#     # Si la recherche N° commercial + contrôle n'a rien donné -> on cherche N° commercial seul
-#     # if (ark == "" and no_commercial != ""):
-#     #    ark = no_commercial2ark(NumNot,no_commercial_propre,"","","",False, "")
-
-#     # Si la recherche sur bib.comref n'a rien donné -> recherche du numéro partout dans la notice
-#     # if (ark == "" and no_commercial != ""):
-#     #    ark = no_commercial2ark(NumNot,no_commercial_propre,titre_nett,auteur_nett,
-#     #                            date_nett,True, publisher_nett)
-
-#     # A défaut, recherche sur Titre-Auteur-Date
-#     if (ark == "" and input_record.titre != ""):
-#         ark = tad2ark(input_record, False, False)
-#     # A défaut, on recherche Titre-Auteur dans tous champs (+Date comme date)
-#     if (ark == "" and input_record.titre != ""):
-#         ark = tad2ark(input_record, True, False)
-#     """
-#     if (ark == "" and titre != ""):
-#         ark = tad2ppn(NumNot,titre,auteur,auteur_nett,date,"cddvd")
-#     """
-#     print(str(n) + "." + input_record.NumNot + " : " + ark)
-#     nbARK = len(ark.split(","))
-#     if (ark == ""):
-#         nbARK = 0
-#     if (ark == "Pb FRBNF"):
-#         nb_notices_nb_ARK["Pb FRBNF"] += 1
-#     else:
-#         nb_notices_nb_ARK[nbARK] += 1
-
-#     typeConversionNumNot = ""
-#     if (input_record.NumNot in NumNotices2methode):
-#         typeConversionNumNot = ",".join(NumNotices2methode[input_record.NumNot])
-#         if (len(set(NumNotices2methode[input_record.NumNot])) == 1):
-#             typeConversionNumNot = list(
-#                 set(NumNotices2methode[input_record.NumNot])
-#             )[0]
-#     liste_metadonnees = [
-#         input_record.NumNot, nbARK, ark, typeConversionNumNot
-#     ] + input_record.metas_init
-#     if (parametres["meta_bib"] == 1):
-#         liste_metadonnees.extend(ark2metadc(ark))
-#     if (parametres["file_nb"] == 1):
-#         row2file(liste_metadonnees, liste_reports)
-#     elif (parametres["file_nb"] == 2):
-#         row2files(liste_metadonnees, liste_reports)
-
-
-# def cd(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres):
-#     header_columns = [
-#         "NumNot", "nbARK", "ark trouvé", "Méthode", "ark initial", "FRBNF",
-#         "EAN", "no_commercial_propre", "titre", "auteur", "date", "editeur"
-#     ]
-#     if (parametres["meta_bib"] == 1):
-#         header_columns.extend(
-#             [
-#                 "[BnF] Titre", "[BnF] 1er auteur Prénom",
-#                 "[BnF] 1er auteur Nom", "[BnF] Tous auteurs", "[BnF] Date"
-#             ]
-#         )
-#     if (parametres["file_nb"] == 1):
-#         row2file(header_columns, liste_reports)
-#     elif (parametres["file_nb"] == 2):
-#         row2files(header_columns, liste_reports)
-#     # results2file(nb_fichiers_a_produire)
-#     n = 0
-#     with open(entry_filename, newline='\n', encoding="utf-8") as csvfile:
-#         entry_file = csv.reader(csvfile, delimiter='\t')
-#         try:
-#             next(entry_file)
-#         except UnicodeDecodeError:
-#             main.popup_errors(
-#                 form_bib2ark, main.errors["pb_input_utf8"],
-#                 "Comment modifier l'encodage du fichier",
-#                 "https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e"  # noqa
-#             )
-#         for row in entry_file:
-#             cd_item(row, n, form_bib2ark, parametres, liste_reports)
-#             n += 1
-
-
-# def perimpr_item(row, n, form_bib2ark, parametres, liste_reports):
-#     if (n == 0):
-#         assert main.control_columns_number(
-#             form_bib2ark, row, header_columns_init_perimpr
-#         )
-#     if (n % 100 == 0):
-#         main.check_access2apis(n, dict_check_apis)
-#     # print(row)
-#     input_record = funcs.Bib_record(row, 4)
-#     # Actualisation de l'ARK à partir de l'ARK
-#     ark = ""
-#     if (input_record.ark_init != ""):
-#         ark = ark2ark(input_record)
-
-#     # A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou Titre, ou Auteur)
-#     if (ark == "" and input_record.frbnf != ""):
-#         ark = frbnf2ark(input_record)
-#         ark = ",".join(ark1 for ark1 in ark.split(",") if ark1 != '')
-#     # A défaut, recherche sur ISSN
-#     if (ark == "" and input_record.issn.nett != ""):
-#         ark = issn2ark(
-#             input_record.NumNot, input_record.issn.init,
-#             input_record.issn.propre, input_record.titre_nett,
-#             input_record.auteur_nett, input_record.date_nett
-#         )
-#     # A défaut, recherche sur Titre-Auteur-Date
-#     if (ark == "" and input_record.titre != ""):
-#         ark = tad2ark(input_record, False, False)
-#     # A défaut, recherche sur T-A-D tous mots
-#     if (ark == "" and input_record.titre != ""):
-#         ark = tad2ark(input_record, True, False)
-#     print(str(n) + ". " + input_record.NumNot + " : " + ark)
-#     nbARK = len(ark.split(","))
-#     if (ark == ""):
-#         nbARK = 0
-#     if (ark == "Pb FRBNF"):
-#         nb_notices_nb_ARK["Pb FRBNF"] += 1
-#     else:
-#         nb_notices_nb_ARK[nbARK] += 1
-
-#     typeConversionNumNot = ""
-#     if (input_record.NumNot in NumNotices2methode):
-#         typeConversionNumNot = ",".join(NumNotices2methode[input_record.NumNot])
-#         if (len(set(NumNotices2methode[input_record.NumNot])) == 1):
-#             typeConversionNumNot = list(
-#                 set(NumNotices2methode[input_record.NumNot])
-#             )[0]
-#     liste_metadonnees = [
-#         input_record.NumNot, nbARK, ark, typeConversionNumNot
-#     ] + input_record.metas_init
-#     if (parametres["meta_bib"] == 1):
-#         liste_metadonnees.extend(ark2metadc(ark))
-#     if (parametres["file_nb"] == 1):
-#         row2file(liste_metadonnees, liste_reports)
-#     elif (parametres["file_nb"] == 2):
-#         row2files(liste_metadonnees, liste_reports)
-
-
-# # Si option du formulaire = périodiques imprimés
-# def perimpr(
-#         form_bib2ark, zone_controles, entry_filename, liste_reports, parametres
-# ):
-#     header_columns = [
-#         "NumNot", "nbARK", "ark trouvé", "Méthode", "ark initial", "frbnf",
-#         "ISSN", "titre", "auteur", "date", "lieu"
-#     ]
-#     if (parametres["meta_bib"] == 1):
-#         header_columns.extend(
-#             [
-#                 "[BnF] Titre", "[BnF] 1er auteur Prénom",
-#                 "[BnF] 1er auteur Nom", "[BnF] Tous auteurs", "[BnF] Date"
-#             ]
-#         )
-#     if (parametres["file_nb"] == 1):
-#         row2file(header_columns, liste_reports)
-#     elif (parametres["file_nb"] == 2):
-#         row2files(header_columns, liste_reports)
-#     n = 0
-#     with open(entry_filename, newline='\n', encoding="utf-8") as csvfile:
-#         entry_file = csv.reader(csvfile, delimiter='\t')
-#         try:
-#             next(entry_file)
-#         except UnicodeDecodeError:
-#             main.popup_errors(
-#                 form_bib2ark, main.errors["pb_input_utf8"],
-#                 "Comment modifier l'encodage du fichier",
-#                 "https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e"  # noqa
-#             )
-#         for row in entry_file:
-#             perimpr_item(row, n, form_bib2ark, parametres, liste_reports)
-#             n += 1
-
-
 def launch(
     form_bib2ark,
     zone_controles,
@@ -3039,28 +2567,11 @@ def launch(
     }
     main.check_file_name(form_bib2ark, entry_filename)
 
-    # results2file(nb_fichiers_a_produire)
-    # print("type_doc_bib : ", type_doc_bib)
-    # print("file_nb : ",file_nb)
-    # print("id_traitement : ", id_traitement)
+
     liste_reports = create_reports(id_traitement, file_nb)
     file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres)
-    # ==============================================================================
-    #      if (type_doc_bib == 1):
-    #          monimpr(form_bib2ark,zone_controles, entry_filename, liste_reports, parametres)
-    #      elif (type_doc_bib == 2):
-    #          dvd(form_bib2ark,zone_controles, entry_filename, liste_reports, parametres)
-    #      elif (type_doc_bib == 3):
-    #          cd(form_bib2ark,zone_controles, entry_filename, liste_reports, parametres)
-    #      elif (type_doc_bib == 4):
-    #          perimpr(form_bib2ark,zone_controles, entry_filename, liste_reports, parametres)
-    #
-    #      else:
-    #          print("Erreur : type de document non reconnu")
-    #
-    # ==============================================================================
-    fin_traitements(form_bib2ark, liste_reports, nb_notices_nb_ARK)
 
+    fin_traitements(form_bib2ark, liste_reports, nb_notices_nb_ARK)
 
 #
 # ==============================================================================

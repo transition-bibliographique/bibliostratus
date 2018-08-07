@@ -3,6 +3,11 @@ août 2018
 - Module rouge (ark2records): Correction problèmes à l'export :
 	- apostrophes converties en backslash-apostrophe par pymarc
 	- apostrophe en fin de record Sudoc dans le format XML
+- Module blanc (Alignements BIB):
+	- Alignement par mots-clés (titre-auteur-date) dans le Sudoc :
+		- recherche dans DoMyBiblio (par API, ou par HTML si un seul résultat) en mode "anywhere"
+		(pas d'autre option de recherche)
+		- puis analyse des notices trouvées : comparaison Mots du titre, mots Auteur, date
 
 ### version 1.21
 juillet 2018

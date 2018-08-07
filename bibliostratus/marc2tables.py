@@ -412,6 +412,7 @@ en UTF-8 avant de le mettre en entrée du logiciel"""
         error_file.write(message)
         error_file.close()
 
+
 def metas_from_marc21(record):
     title = record2title(
         record2meta(record, ["245$a", "245$e"])
@@ -450,10 +451,12 @@ def metas_from_marc21(record):
             ark, frbnf, isbn, issn, ean, id_commercial_aud
             )
 
+
 def metas_from_unimarc(record):
     title = record2title(
         record2meta(record, ["200$a", "200$e"])
     )
+    print(title)
     keyTitle = record2title(
         record2meta(record, ["530$a"], ["200$a", "200$e"])
     )
