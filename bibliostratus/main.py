@@ -632,7 +632,7 @@ def formulaire_main(access_to_network, last_version):
         )
         download_update.pack()
         url_release_notes = (
-            "https://github.com/Transition-bibliographique/bibliostratus/blob/master/source/release_notes.md#"  # noqa
+            "https://github.com/Transition-bibliographique/bibliostratus/blob/master/bibliostratus/release_notes.md#"  # noqa
             + "version-" + str(last_version[0]).replace(".", "")
         )
         release_notes = tk.Button(
