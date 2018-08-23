@@ -22,6 +22,7 @@ import pymarc as mc
 from unidecode import unidecode
 
 import main
+import funcs
 import noticesaut2arkBnF as aut2ark
 import noticesbib2arkBnF as bib2ark
 
@@ -124,6 +125,7 @@ def clean_punctation(text):
 
 
 def clean_letters(text):
+    text = funcs.unidecode_local(text.lower())
     for char in letters:
         text = text.replace(char, " ")
     return text
@@ -223,6 +225,8 @@ def record2date(f100a, f210d):
     date = clean_punctation(date)
     date = clean_letters(date)
     date = clean_spaces(date)
+    if (len(date) < 3):
+        date = ""
     return date
 
 
@@ -456,7 +460,6 @@ def metas_from_unimarc(record):
     title = record2title(
         record2meta(record, ["200$a", "200$e"])
     )
-    print(title)
     keyTitle = record2title(
         record2meta(record, ["530$a"], ["200$a", "200$e"])
     )

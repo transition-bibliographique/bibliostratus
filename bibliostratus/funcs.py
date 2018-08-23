@@ -13,6 +13,7 @@ from urllib import error, request
 
 from lxml import etree
 from unidecode import unidecode
+from collections import defaultdict
 
 import main
 
@@ -35,12 +36,33 @@ ponctuation = [
 
 url_access_pbs = []
 
+def unidecode_local(string):
+    """personnalisation de la fonction unidecode, 
+    qui modifie aussi certains caractères de manière problématique
+    par exemple : 
+    ° devient 'deg' 
+    """
+    corr_temp_dict = {
+        '°': '#deg#'
+    }
+
+    reverse_corr_temp_dict = defaultdict(str)
+    for key in corr_temp_dict:
+        reverse_corr_temp_dict[corr_temp_dict[key]] = key
+
+    for char in corr_temp_dict:
+        string = string.replace(char, corr_temp_dict[char])
+
+    string = unidecode(string)
+    for char in reverse_corr_temp_dict:
+        string = string.replace(char, reverse_corr_temp_dict[char])
+    return string
 
 def nettoyage(string, remplacerEspaces=True, remplacerTirets=True):
     """nettoyage des chaines de caractères (titres, auteurs, isbn)
 
     suppression ponctuation, espaces (pour les titres et ISBN) et diacritiques"""
-    string = unidecode(string.lower())
+    string = unidecode_local(string.lower())
     for signe in ponctuation:
         string = string.replace(signe, "")
     string = string.replace("'", " ")
@@ -54,7 +76,7 @@ def nettoyage(string, remplacerEspaces=True, remplacerTirets=True):
 
 
 def nettoyage_lettresISBN(isbn):
-    isbn = unidecode(isbn.lower())
+    isbn = unidecode_local(isbn.lower())
     char_cle = "0123456789xX"
     for signe in ponctuation:
         isbn = isbn.replace(signe, "")
@@ -94,7 +116,7 @@ def nettoyageIssnPourControle(issn):
 
 
 def nettoyage_no_commercial(no_commercial_propre):
-    no_commercial_propre = unidecode(no_commercial_propre.lower())
+    no_commercial_propre = unidecode_local(no_commercial_propre.lower())
     return no_commercial_propre
 
 
@@ -132,7 +154,7 @@ def nettoyageTitrePourRecherche(string):
 
 
 def nettoyageDate(date):
-    date = unidecode(date.lower())
+    date = unidecode_local(date.lower())
     for lettre in lettres:
         date = date.replace(lettre, "")
     for signe in ponctuation:
@@ -144,7 +166,7 @@ def nettoyageDate(date):
 
 def nettoyageTome(numeroTome):
     if (numeroTome):
-        numeroTome = unidecode(numeroTome.lower())
+        numeroTome = unidecode_local(numeroTome.lower())
         for lettre in lettres:
             numeroTome = numeroTome.replace(lettre, "")
         for signe in ponctuation:
@@ -163,7 +185,7 @@ def nettoyageTome(numeroTome):
 
 def nettoyagePubPlace(pubPlace):
     """Nettoyage du lieu de publication"""
-    pubPlace = unidecode(pubPlace.lower())
+    pubPlace = unidecode_local(pubPlace.lower())
     for chiffre in listeChiffres:
         pubPlace = pubPlace.replace(chiffre, "")
     for signe in ponctuation:
@@ -190,7 +212,7 @@ def ltrim(nombre_texte):
 def nettoyage_isbn(isbn):
     isbn_nett = isbn.split(";")[0].split(",")[0].split("(")[0].split("[")[0]
     isbn_nett = isbn_nett.replace("-", "").replace(" ", "")
-    isbn_nett = unidecode(isbn_nett)
+    isbn_nett = unidecode_local(isbn_nett)
     for signe in ponctuation:
         isbn_nett = isbn_nett.replace(signe, "")
     isbn_nett = isbn_nett.lower()
@@ -212,7 +234,7 @@ def nettoyage_isni(isni):
 def nettoyageFRBNF(frbnf):
     frbnf_nett = ""
     if (frbnf[0:4].lower() == "frbn"):
-        frbnf_nett = unidecode(frbnf.lower())
+        frbnf_nett = unidecode_local(frbnf.lower())
     for signe in ponctuation:
         frbnf_nett = frbnf_nett.split(signe)[0]
     return frbnf_nett
@@ -563,7 +585,7 @@ class Bib_record:
         self.ark_init = input_row[2]
         self.isbn = International_id("")
         self.ean = International_id("")
-        self.titre = ""
+        self.titre = Titre("")
         self.auteur = ""
         self.date = ""
         self.tome = ""

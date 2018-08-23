@@ -482,179 +482,27 @@ def comparaisonTitres(
     recordBNF,
     origineComparaison,
 ):
-    ark = comparaisonTitres_sous_zone(
-        NumNot,
-        ark_current,
-        systemid,
-        isbn,
-        titre,
-        auteur,
-        date,
-        recordBNF,
-        origineComparaison,
-        "200$a",
-    )
-    if ark == "":
-        ark = comparaisonTitres_sous_zone(
-            NumNot,
-            ark_current,
-            systemid,
-            isbn,
-            titre,
-            auteur,
-            date,
-            recordBNF,
-            origineComparaison,
-            "200$e",
-        )
-    if ark == "":
-        ark = comparaisonTitres_sous_zone(
-            NumNot,
-            ark_current,
-            systemid,
-            isbn,
-            titre,
-            auteur,
-            date,
-            recordBNF,
-            origineComparaison,
-            "200$i",
-        )
-    if ark == "":
-        ark = comparaisonTitres_sous_zone(
-            NumNot,
-            ark_current,
-            systemid,
-            isbn,
-            titre,
-            auteur,
-            date,
-            recordBNF,
-            origineComparaison,
-            "750$a",
-        )
-    if ark == "":
-        ark = comparaisonTitres_sous_zone(
-            NumNot,
-            ark_current,
-            systemid,
-            isbn,
-            titre,
-            auteur,
-            date,
-            recordBNF,
-            origineComparaison,
-            "753$a",
-        )
-    if ark == "":
-        ark = comparaisonTitres_sous_zone(
-            NumNot,
-            ark_current,
-            systemid,
-            isbn,
-            titre,
-            auteur,
-            date,
-            recordBNF,
-            origineComparaison,
-            "500$a",
-        )
-    if ark == "":
-        ark = comparaisonTitres_sous_zone(
-            NumNot,
-            ark_current,
-            systemid,
-            isbn,
-            titre,
-            auteur,
-            date,
-            recordBNF,
-            origineComparaison,
-            "500$e",
-        )
-    # if (ark == ""):
-    #     ark = comparaisonTitres_sous_zone(
-    #         NumNot, ark_current, systemid, isbn, titre, auteur, date, recordBNF,
-    #         origineComparaison, "503$a"
-    #     )
-    if ark == "":
-        ark = comparaisonTitres_sous_zone(
-            NumNot,
-            ark_current,
-            systemid,
-            isbn,
-            titre,
-            auteur,
-            date,
-            recordBNF,
-            origineComparaison,
-            "503$e",
-        )
-    if ark == "":
-        ark = comparaisonTitres_sous_zone(
-            NumNot,
-            ark_current,
-            systemid,
-            isbn,
-            titre,
-            auteur,
-            date,
-            recordBNF,
-            origineComparaison,
-            "540$a",
-        )
-    if ark == "":
-        ark = comparaisonTitres_sous_zone(
-            NumNot,
-            ark_current,
-            systemid,
-            isbn,
-            titre,
-            auteur,
-            date,
-            recordBNF,
-            origineComparaison,
-            "540$e",
-        )
-    if ark == "":
-        ark = comparaisonTitres_sous_zone(
-            NumNot,
-            ark_current,
-            systemid,
-            isbn,
-            titre,
-            auteur,
-            date,
-            recordBNF,
-            origineComparaison,
-            "410$a",
-        )
-    if ark == "":
-        ark = comparaisonTitres_sous_zone(
-            NumNot,
-            ark_current,
-            systemid,
-            isbn,
-            titre,
-            auteur,
-            date,
-            recordBNF,
-            origineComparaison,
-            "225$a",
-        )
-    if ark == "":
-        ark = comparaisonTitres_sous_zone(
-            NumNot,
-            ark_current,
-            systemid,
-            isbn,
-            titre,
-            auteur,
-            date,
-            recordBNF,
-            origineComparaison,
-            "461$t",
-        )
+    ark = ""
+    subfields_list = ["200$a", "200$e", "200$i",
+                        "750$a", "753$a", "500$a",
+                        "500$e", "503$e", "540$a",
+                        "540$e", "410$a", "225$a",
+                        "461$t"]
+    for subfield in subfields_list:
+        if (ark == ""):
+            ark = comparaisonTitres_sous_zone(
+                                            NumNot,
+                                            ark_current,
+                                            systemid,
+                                            isbn,
+                                            titre,
+                                            auteur,
+                                            date,
+                                            recordBNF,
+                                            origineComparaison,
+                                            subfield
+                                            )
+
     if ark != "" and numeroTome != "":
         ark = verificationTomaison(ark, numeroTome, recordBNF)
     if ark != "" and date != "":
@@ -716,7 +564,7 @@ def verificationTomaison_sous_zone(ark, numeroTome, numeroTomeBnF):
 def checkDate(ark, date_init, recordBNF):
     ark_checked = ""
     dateBNF = []
-    dateBNF_100 = unidecode(
+    dateBNF_100 = funcs.unidecode_local(
         main.extract_subfield(recordBNF, "100", "a", 1, sep="~").lower()
     )[9:13]
     if len(dateBNF_100) > 4:
@@ -725,10 +573,10 @@ def checkDate(ark, date_init, recordBNF):
         dateBNF_100 = int(dateBNF_100)
         dateBNF.extend([dateBNF_100 + 1, dateBNF_100 - 1])
     dateBNF.append(dateBNF_100)
-    dateBNF_210d = unidecode(
+    dateBNF_210d = funcs.unidecode_local(
         main.extract_subfield(recordBNF, "210", "d", 1, sep="~").lower()
     )
-    dateBNF_306a = unidecode(
+    dateBNF_306a = funcs.unidecode_local(
         main.extract_subfield(recordBNF, "306", "a", 1, sep="~").lower()
     )
     for lettre in lettres:
@@ -1264,12 +1112,9 @@ def isbn2sudoc(input_record, parametres):
                 if parametres["preferences_alignement"] == 1:
                     ark.append(
                         ppn2ark(
-                            input_record.NumNot,
+                            input_record,
                             ppn_val,
-                            input_record.isbn.propre,
-                            input_record.titre_nett,
-                            input_record.auteur_nett,
-                            input_record.date_nett,
+                            parametres
                         )
                     )
             if Listeppn == "" and ark == []:
@@ -1287,12 +1132,9 @@ def isbn2sudoc(input_record, parametres):
                             # Si BnF > Sudoc : on cherche l'ARK dans la notice Sudoc trouvée
                             if parametres["preferences_alignement"] == 1:
                                 ark = ppn2ark(
-                                    input_record.NumNot,
+                                    input_record,
                                     ppn_val,
-                                    input_record.isbn.converti,
-                                    input_record.titre_nett,
-                                    input_record.auteur_nett,
-                                    input_record.date_nett,
+                                    parametres
                                 )
                             if Listeppn != []:
                                 add_to_conversionIsbn(
@@ -1331,16 +1173,15 @@ def ean2sudoc(NumNot, ean_propre, titre_nett, auteur_nett, date_nett, parametres
                 NumNotices2methode[NumNot].append("EAN > PPN")
                 # Si BnF > Sudoc : on cherche l'ARK dans la notice Sudoc trouvée
                 if parametres["preferences_alignement"] == 1:
-                    ark.append(
-                        ppn2ark(
-                            NumNot,
-                            ppn_val,
-                            ean_propre,
-                            titre_nett,
-                            auteur_nett,
-                            date_nett,
+                    temp_record = funcs.Bib_record(
+                        [NumNot, "", "", "", ean_propre,
+                        titre_nett, auteur_nett, date_nett,
+                        "", ""],
+                        preferences["meta_bib"]
                         )
-                    )
+                    ark.append(
+                               ppn2ark(temp_record, ppn_val, parametres)
+                              )
     # Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK
     # déclaré comme équivalent --> dans ce cas on récupère l'ARK
     Listeppn = ",".join([ppn for ppn in Listeppn if ppn != ""])
@@ -1351,9 +1192,10 @@ def ean2sudoc(NumNot, ean_propre, titre_nett, auteur_nett, date_nett, parametres
         return Listeppn
 
 
-def ppn2ark(input_record, ppn):
+def ppn2ark(input_record, ppn, parametres):
     ark = ""
-    url = "http://www.sudoc.fr/" + ppn + ".rdf"
+    ppn = ppn.replace("PPN","")
+    url = "https://www.sudoc.fr/" + ppn + ".rdf"
     (test, record) = funcs.testURLetreeParse(url)
     if test:
         for sameAs in record.xpath("//owl:sameAs", namespaces=main.nsSudoc):
@@ -1373,7 +1215,7 @@ def ppn2ark(input_record, ppn):
                         input_record.titre,
                         input_record.auteur,
                         input_record.date, "", ""
-                        ], 1
+                        ], parametres["meta_bib"]
                 )
                 ark = frbnf2ark(temp_record)
     return ark
@@ -1477,7 +1319,18 @@ def issn2sudoc(NumNot, issn_init, issn_nett, titre, auteur, date, parametres):
                 ppn_val = ppn.text
                 Listeppn.append("PPN" + ppn_val)
                 if (parametres["preferences_alignement"] == 1):
-                    ark.append(ppn2ark(NumNot, ppn_val, issn_nett, titre, auteur, date))
+                    temp_record = funcs.Bib_record(
+                                                    [
+                                                    NumNot,
+                                                    "",
+                                                    "",
+                                                    issn_nett,
+                                                    titre,
+                                                    auteur,
+                                                    date],
+                                                    parametres["meta_bib"]
+                                                    )
+                    ark.append(ppn2ark(temp_record, ppn_val, parametres))
     # Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK
     # déclaré comme équivalent --> dans ce cas on récupère l'ARK
     Listeppn = ",".join([ppn for ppn in Listeppn if ppn != ""])
@@ -1581,11 +1434,12 @@ def ark2metas(ark, unidec=True):
             ).text
     metas = [titre, premierauteurPrenom, premierauteurNom, tousauteurs, date]
     if unidec:
-        metas = [unidecode(meta) for meta in metas]
+        metas = [funcs.unidecode_local(meta) for meta in metas]
     return metas
 
 
 def ppn2metas(ppn):
+    ppn = ppn.replace("PPN","")
     url = "https://www.sudoc.fr/" + ppn + ".rdf"
     (test, record) = funcs.testURLetreeParse(url)
     titre = ""
@@ -1595,11 +1449,11 @@ def ppn2metas(ppn):
     if test:
         if record.find("//dc:title", namespaces=main.nsSudoc) is not None:
             titre = (
-                unidecode(record.find("//dc:title", namespaces=main.nsSudoc).text)
+                funcs.unidecode_local(record.find("//dc:title", namespaces=main.nsSudoc).text)
                 .split("[")[0]
                 .split("/")[0]
             )
-            tousauteurs = unidecode(
+            tousauteurs = funcs.unidecode_local(
                 record.find("//dc:title", namespaces=main.nsSudoc).text
             ).split("/")[1]
             if titre[0:5] == tousauteurs[0:5]:
@@ -1608,7 +1462,7 @@ def ppn2metas(ppn):
             record.find("//marcrel:aut/foaf:Person/foaf:name", namespaces=main.nsSudoc)
             is not None
         ):
-            premierauteurNom = unidecode(
+            premierauteurNom = funcs.unidecode_local(
                 record.find(
                     "//marcrel:aut/foaf:Person/foaf:name", namespaces=main.nsSudoc
                 ).text
@@ -1619,7 +1473,7 @@ def ppn2metas(ppn):
                 ).text.find(",")
                 > 0
             ):
-                premierauteurPrenom = unidecode(
+                premierauteurPrenom = funcs.unidecode_local(
                     record.find(
                         "//marcrel:aut/foaf:Person/foaf:name", namespaces=main.nsSudoc
                     ).text
@@ -1697,6 +1551,7 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
                 + input_record.intermarc_type_doc
                 + '"'
             )
+        # print(url)
         (test, results) = funcs.testURLetreeParse(url)
         index = ""
         if (
@@ -1785,7 +1640,7 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
                                 recordBNF,
                                 "Titre-Auteur-Date" + index,
                             )
-                            if date_nett != "":
+                            if (date_nett != "-"):
                                 ark = checkDate(ark, date_nett, recordBNF)
                             if ark != "":
                                 listeArk.append(ark)
@@ -1864,7 +1719,18 @@ def tad2ppn(input_record, parametres):
         page = etree.parse(request.urlopen(url1))
     except urllib.error.HTTPError:
         type_page = "html"
-        page = parse(request.urlopen(url2))
+        test, result = funcs.testURLurlopen(url2)
+        if (test):
+            page = parse(result)
+        else:
+            type_page = ""
+    except etree.XMLSyntaxError:
+        # problème de conformité XML du résultat
+        #type_page = "html"
+        #page = parse(request.urlopen(url2))
+        type_page = ""
+        print("erreur XML", url1)
+
     if (type_page == "html"):
         liste_resultats = page.xpath("//li[@class='list-group-item']/a")
         for lien in liste_resultats:
@@ -1872,7 +1738,7 @@ def tad2ppn(input_record, parametres):
             ppn = "PPN" + href[href.find("id=") + 3:href.find("id=") + 12]
             ppn = controle_keywords2ppn(input_record, ppn)
             Listeppn.append(ppn)
-    else:
+    elif (type_page == "xml"):
         liste_resultats = page.xpath("//records/record")
         nb_results = int(page.find(".//results").text)
         for record in liste_resultats:
@@ -1893,8 +1759,8 @@ def tad2ppn(input_record, parametres):
     if (Listeppn):
         NumNotices2methode[input_record.NumNot].append("Titre-Auteur-Date DoMyBiblio")
     if (Listeppn and parametres["preferences_alignement"] == 1):
-        for ppn in Listeppn:
-            ark.append(ppn2ark(input_record, ppn))
+        for ppn in Listeppn.split(","):
+            ark.append(ppn2ark(input_record, ppn, parametres))
     ark = ",".join([ark1 for ark1 in ark if ark1 != ""])
     if ark != "":
         NumNotices2methode[input_record.NumNot].append("PPN > ARK")
@@ -1968,7 +1834,7 @@ def controle_titres(input_record, sudoc_record):
     for word in input_record.titre.recherche.split(" "):
         if (word not in sudoc_titles):
             check = False
-    print("checkTitres", check, sudoc_titles, "|", input_record.titre.recherche)
+    # print("checkTitres", check, sudoc_titles, "|", input_record.titre.recherche)
     return check
 
 
@@ -1979,7 +1845,7 @@ def controle_auteurs(input_record, sudoc_record):
     for word in input_record.auteur_nett.split(" "):
         if (funcs.nettoyage(word) not in funcs.nettoyage(sudoc_record["authors"])):
             check = False
-    print("checkAuteurs", check, sudoc_record["authors"], "|", input_record.auteur_nett)
+    # print("checkAuteurs", check, sudoc_record["authors"], "|", input_record.auteur_nett)
     return check
 
 
@@ -1989,7 +1855,7 @@ def controle_dates(input_record, sudoc_record):
     check = True
     if (input_record.date_debut not in sudoc_record["date"]):
         check = False
-    print("checkDates", check, sudoc_record["date"], "|", input_record.date_debut)
+    # print("checkDates", check, sudoc_record["date"], "|", input_record.date_debut)
     return check
 
 
@@ -2108,7 +1974,7 @@ def ean2ark(NumNot, ean, titre, auteur, date):
 
 
 def nettoyage_no_commercial(no_commercial_propre):
-    no_commercial_propre = unidecode(no_commercial_propre.lower())
+    no_commercial_propre = funcs.unidecode_local(no_commercial_propre.lower())
     return no_commercial_propre
 
 
@@ -2368,19 +2234,19 @@ def item2ark_by_keywords(input_record, parametres):
     """Alignement par mots clés sur le catalogue BnF"""
     ark = ""
     # A défaut, recherche sur Titre-Auteur-Date
-    if input_record.titre != "":
+    if input_record.titre.init != "":
         ark = tad2ark(input_record, False, False)
         # print("1." + NumNot + " : " + ark)
     # Si pas trouvé, on cherche l'ensemble des 
     # mots dans toutes les zones indifféremment
-    if ark == "" and input_record.titre != "":
+    if ark == "" and input_record.titre.init != "":
         ark = tad2ark(input_record, True, False)
     return ark
 
 def item2ppn_by_keywords(input_record, parametres):
     """Alignement par mots clés sur le catalogue Sudoc"""
     ppn = ""
-    if input_record.titre != "":
+    if input_record.titre.init != "":
         ppn = tad2ppn(input_record, parametres)
     return ppn
 
