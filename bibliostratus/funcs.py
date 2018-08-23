@@ -36,11 +36,12 @@ ponctuation = [
 
 url_access_pbs = []
 
+
 def unidecode_local(string):
-    """personnalisation de la fonction unidecode, 
+    """personnalisation de la fonction unidecode,
     qui modifie aussi certains caractères de manière problématique
-    par exemple : 
-    ° devient 'deg' 
+    par exemple :
+    ° devient 'deg'
     """
     corr_temp_dict = {
         '°': '#deg#'
@@ -58,14 +59,14 @@ def unidecode_local(string):
         string = string.replace(char, reverse_corr_temp_dict[char])
     return string
 
+
 def nettoyage(string, remplacerEspaces=True, remplacerTirets=True):
     """nettoyage des chaines de caractères (titres, auteurs, isbn)
-
     suppression ponctuation, espaces (pour les titres et ISBN) et diacritiques"""
     string = unidecode_local(string.lower())
     for signe in ponctuation:
         string = string.replace(signe, "")
-    string = string.replace("'", " ")
+    string = string.replace("\\'", "'")
     string = " ".join([el for el in string.split(" ") if el != ""])
     if remplacerTirets:
         string = string.replace("-", " ")
@@ -488,16 +489,17 @@ def url_requete_sru(query, recordSchema="unimarcxchange",
         startRecord + "&origin=bibliostratus"
     return url
 
+
 def open_local_file(path):
     """Construit le chemin absolu vers un fichier en local
-    Permet d'être correct à la fois en mode "code source" 
+    Permet d'être correct à la fois en mode "code source"
     et en version précompilée"""
     try:
         dirname = os.path.dirname(__file__)
         filepath = os.path.join(dirname, path)
         os.startfile(filepath)
     except FileNotFoundError:
-        filepath = filepath.replace("main/examples","examples").replace("/","\\")
+        filepath = filepath.replace("main/examples", "examples").replace("/", "\\")
         os.startfile(filepath)
 
 
@@ -515,6 +517,7 @@ class International_id:
         """Méthode permettant d'afficher plus joliment notre objet"""
         return "{}".format(self.init)
 
+
 class Isni:
     """Classe pour les ISNI"""
     def __init__(self, string):  # Notre méthode constructeur
@@ -524,6 +527,7 @@ class Isni:
     def __str__(self):
         """Méthode permettant d'afficher plus joliment notre objet"""
         return "{}".format(self.init)
+
 
 class FRBNF:
     """Classe pour les ISNI"""
@@ -547,7 +551,6 @@ class Date:
         return "{}".format(self.init)
 
 
-
 class Name:
     """Zone de titre"""
 
@@ -555,11 +558,9 @@ class Name:
         self.init = string
         self.propre = nettoyage(self.init, remplacerEspaces=False, remplacerTirets=False)
 
-
     def __str__(self):
         """Méthode permettant d'afficher plus joliment notre objet"""
         return "{}".format(self.init)
-
 
 
 class Titre:
@@ -660,7 +661,8 @@ class Aut_record:
         self.firstname = Name(input_row[5])
         self.firstdate = Date(input_row[6])
         self.lastdate = Date(input_row[7])
-        
+
+
 class Aut_bib_record:
     """Classe définissant les propriétés d'une combinaison de métadonnées
     AUT + BIB, à partir d'une notice bibliographique, pour permettre
@@ -670,3 +672,11 @@ class Aut_bib_record:
         self.metas_init = input_row[1:]
         self.NumNot = input_row[0]
         self.frbnf = input_row[1]
+
+
+if __name__ == '__main__':
+    access_to_network = main.check_access_to_network()
+    if(access_to_network is True):
+        last_version = main.check_last_compilation(main.programID)
+    main.formulaire_main(access_to_network, last_version)
+    # formulaire_marc2tables(access_to_network,last_version)

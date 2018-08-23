@@ -23,8 +23,6 @@ from lxml.html import parse
 from urllib import request
 import marc2tables
 
-from unidecode import unidecode
-
 import funcs
 import main
 
@@ -484,10 +482,10 @@ def comparaisonTitres(
 ):
     ark = ""
     subfields_list = ["200$a", "200$e", "200$i",
-                        "750$a", "753$a", "500$a",
-                        "500$e", "503$e", "540$a",
-                        "540$e", "410$a", "225$a",
-                        "461$t"]
+                      "750$a", "753$a", "500$a",
+                      "500$e", "503$e", "540$a",
+                      "540$e", "410$a", "225$a",
+                      "461$t"]
     for subfield in subfields_list:
         if (ark == ""):
             ark = comparaisonTitres_sous_zone(
@@ -600,6 +598,8 @@ def checkDate(ark, date_init, recordBNF):
     dateBNF = " ".join([str(date) for date in dateBNF])
     if len(str(date_init)) > 3 and str(date_init)[0:4] in dateBNF:
         ark_checked = ark
+    elif (date_init in dateBNF):
+        ark_checked = ark
     return ark_checked
 
 
@@ -621,6 +621,7 @@ def comparaisonTitres_sous_zone(
     titreBNF = funcs.nettoyageTitrePourControle(
         main.extract_subfield(recordBNF, field, subfield, 1)
     )
+    # print(titre, titreBNF, sous_zone)
     if titre != "" and titreBNF != "":
         if titre == titreBNF:
             ark = ark_current
@@ -1174,10 +1175,12 @@ def ean2sudoc(NumNot, ean_propre, titre_nett, auteur_nett, date_nett, parametres
                 # Si BnF > Sudoc : on cherche l'ARK dans la notice Sudoc trouvée
                 if parametres["preferences_alignement"] == 1:
                     temp_record = funcs.Bib_record(
-                        [NumNot, "", "", "", ean_propre,
-                        titre_nett, auteur_nett, date_nett,
-                        "", ""],
-                        preferences["meta_bib"]
+                        [
+                         NumNot, "", "", "", ean_propre,
+                         titre_nett, auteur_nett, date_nett,
+                         "", ""
+                        ],
+                        parametres["meta_bib"]
                         )
                     ark.append(
                                ppn2ark(temp_record, ppn_val, parametres)
@@ -1194,7 +1197,7 @@ def ean2sudoc(NumNot, ean_propre, titre_nett, auteur_nett, date_nett, parametres
 
 def ppn2ark(input_record, ppn, parametres):
     ark = ""
-    ppn = ppn.replace("PPN","")
+    ppn = ppn.replace("PPN", "")
     url = "https://www.sudoc.fr/" + ppn + ".rdf"
     (test, record) = funcs.testURLetreeParse(url)
     if test:
@@ -1210,12 +1213,14 @@ def ppn2ark(input_record, ppn, parametres):
                 frbnf_val = frbnf.text
                 NumNotices2methode[input_record.NumNot].append("PPN > FRBNF")
                 temp_record = funcs.Bib_record(
-                    [input_record.NumNot, frbnf_val,
-                        "", input_record.isbn.init, "",
-                        input_record.titre,
-                        input_record.auteur,
-                        input_record.date, "", ""
-                        ], parametres["meta_bib"]
+                    [
+                     input_record.NumNot, frbnf_val,
+                     "", input_record.isbn.init, "",
+                     input_record.titre,
+                     input_record.auteur,
+                     input_record.date, "", ""
+                    ],
+                    parametres["meta_bib"]
                 )
                 ark = frbnf2ark(temp_record)
     return ark
@@ -1320,16 +1325,17 @@ def issn2sudoc(NumNot, issn_init, issn_nett, titre, auteur, date, parametres):
                 Listeppn.append("PPN" + ppn_val)
                 if (parametres["preferences_alignement"] == 1):
                     temp_record = funcs.Bib_record(
-                                                    [
+                                                   [
                                                     NumNot,
                                                     "",
                                                     "",
                                                     issn_nett,
                                                     titre,
                                                     auteur,
-                                                    date],
-                                                    parametres["meta_bib"]
-                                                    )
+                                                    date
+                                                   ],
+                                                   parametres["meta_bib"]
+                                                  )
                     ark.append(ppn2ark(temp_record, ppn_val, parametres))
     # Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK
     # déclaré comme équivalent --> dans ce cas on récupère l'ARK
@@ -1439,7 +1445,7 @@ def ark2metas(ark, unidec=True):
 
 
 def ppn2metas(ppn):
-    ppn = ppn.replace("PPN","")
+    ppn = ppn.replace("PPN", "")
     url = "https://www.sudoc.fr/" + ppn + ".rdf"
     (test, record) = funcs.testURLetreeParse(url)
     titre = ""
@@ -1641,7 +1647,7 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
                                 "Titre-Auteur-Date" + index,
                             )
                             if (date_nett != "-"):
-                                ark = checkDate(ark, date_nett, recordBNF)
+                                ark = checkDate(ark, input_record.date_nett, recordBNF)
                             if ark != "":
                                 listeArk.append(ark)
                                 methode = "Titre-Auteur-Date"
@@ -1726,8 +1732,8 @@ def tad2ppn(input_record, parametres):
             type_page = ""
     except etree.XMLSyntaxError:
         # problème de conformité XML du résultat
-        #type_page = "html"
-        #page = parse(request.urlopen(url2))
+        # type_page = "html"
+        # page = parse(request.urlopen(url2))
         type_page = ""
         print("erreur XML", url1)
 
@@ -1793,16 +1799,17 @@ def tad2ppn_pages_suivantes(
             )
     return Listeppn
 
+
 def controle_keywords2ppn(input_record, ppn):
     """Pour les notices obtenues en recherche par mot-clé
     via DoMyBiblio, il faut vérifier que les mots cherchés comme
-    titre, auteur et date sont bien présents dans ces zones 
-    respectives, car la recherche est effectuée 
+    titre, auteur et date sont bien présents dans ces zones
+    respectives, car la recherche est effectuée
     dans toute la notice """
     resultat = ""
     sudoc_record = defaultdict(dict)
-    url_sudoc_record = "https://www.sudoc.fr/" + ppn.replace("PPN","") + ".xml"
-    urllib.request.urlretrieve(url_sudoc_record, 'temp.xml') 
+    url_sudoc_record = "https://www.sudoc.fr/" + ppn.replace("PPN", "") + ".xml"
+    urllib.request.urlretrieve(url_sudoc_record, 'temp.xml')
     collection = mc.marcxml.parse_xml_to_array(
         "temp.xml", strict=False)
     for sudoc_marc_record in collection:
@@ -1857,8 +1864,6 @@ def controle_dates(input_record, sudoc_record):
         check = False
     # print("checkDates", check, sudoc_record["date"], "|", input_record.date_debut)
     return check
-
-
 
 
 def checkTypeRecord(ark, typeRecord_attendu):
@@ -2237,11 +2242,12 @@ def item2ark_by_keywords(input_record, parametres):
     if input_record.titre.init != "":
         ark = tad2ark(input_record, False, False)
         # print("1." + NumNot + " : " + ark)
-    # Si pas trouvé, on cherche l'ensemble des 
+    # Si pas trouvé, on cherche l'ensemble des
     # mots dans toutes les zones indifféremment
     if ark == "" and input_record.titre.init != "":
         ark = tad2ark(input_record, True, False)
     return ark
+
 
 def item2ppn_by_keywords(input_record, parametres):
     """Alignement par mots clés sur le catalogue Sudoc"""
@@ -2432,8 +2438,6 @@ def launch(
         "preferences_alignement": preferences_alignement,
     }
     main.check_file_name(form_bib2ark, entry_filename)
-
-
     liste_reports = create_reports(id_traitement, file_nb)
     file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres)
 
