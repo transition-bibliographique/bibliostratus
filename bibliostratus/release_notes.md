@@ -16,7 +16,7 @@ juillet 2018
 - Module bleu : possibilité d'importer un fichier Marc21 (en modifiant le fichier main/files/preferences.json)
 - favicône "Transition bibliographique" sur les fenêtres du module
 
-###version 1.20
+### version 1.20
 04/07/2018
 - Tous modules : 
 	- mise en forme PEP8 et flake8
