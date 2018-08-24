@@ -60,7 +60,7 @@ def unidecode_local(string):
     return string
 
 
-def nettoyage(string, remplacerEspaces=True, remplacerTirets=True):
+def nettoyage(string, remplacerEspaces=True, remplacerTirets=True, remplacerApostrophe=True):
     """nettoyage des chaines de caractères (titres, auteurs, isbn)
     suppression ponctuation, espaces (pour les titres et ISBN) et diacritiques"""
     string = unidecode_local(string.lower())
@@ -70,6 +70,8 @@ def nettoyage(string, remplacerEspaces=True, remplacerTirets=True):
     string = " ".join([el for el in string.split(" ") if el != ""])
     if remplacerTirets:
         string = string.replace("-", " ")
+    if remplacerApostrophe:
+        string = string.replace("'", " ")
     if remplacerEspaces:
         string = string.replace(" ", "")
     string = string.strip()
