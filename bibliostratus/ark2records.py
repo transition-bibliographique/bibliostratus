@@ -192,6 +192,8 @@ def record_correct(pymarc_record):
     """Corrections des chaînes de caractères des valeurs fournies par Pymarc 
     La librairie transforme notamment les apostrophes en antislash + apostrophe """
     corrected_record = mc.Record()
+    corrected_record.force_utf8 = True
+    corrected_record.leader = pymarc_record.leader
     for field in pymarc_record:
         field_tag = field.tag
         if (field_tag[0:2] == "00"):

@@ -1,5 +1,5 @@
 ### version 1.22
-août 2018
+27/08/2018
 - Module rouge (ark2records): Correction problèmes à l'export :
 	- apostrophes converties en backslash-apostrophe par pymarc
 	- apostrophe en fin de record Sudoc dans le format XML
@@ -8,6 +8,7 @@ août 2018
 		- recherche dans DoMyBiblio (par API, ou par HTML si un seul résultat) en mode "anywhere"
 		(pas d'autre option de recherche)
 		- puis analyse des notices trouvées : comparaison Mots du titre, mots Auteur, date
+	- Améliorations sur les notices dont la date à moins de 4 chiffres
 
 ### version 1.21
 juillet 2018
