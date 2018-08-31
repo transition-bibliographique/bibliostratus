@@ -40,11 +40,13 @@ entry_file_list = []
 # Pour chaque notice, on recense la méthode qui a permis de récupérer le
 # ou les ARK
 NumNotices2methode = defaultdict(list)
-# Si on trouve la notice grâce à un autre ISBN : on l'indique dans un dictionnaire qui
+# Si on trouve la notice grâce à un autre ISBN : 
+# on l'indique dans un dictionnaire qui
 # est ajouté dans le rapport stat
 NumNotices_conversionISBN = defaultdict(dict)
 
-# Toutes les 100 notices, on vérifie que les API BnF et Abes répondent correctement.
+# Toutes les 100 notices, on vérifie que les API BnF et Abes 
+# répondent correctement.
 # Résultats (True/False) enregistrés dans ce dictionnaire
 dict_check_apis = defaultdict(dict)
 
@@ -182,9 +184,6 @@ def create_reports(id_traitement_code, nb_fichiers_a_produire):
     stats_report_file = open(stats_report_file_name, "w")
     stats_report_file.write("Nb ARK trouvés\tNb notices concernées\n")
 
-    # report_type_convert_file_name = id_traitement_code + "-" + "NumNotices-TypeConversion.txt"
-    # report_type_convert_file = open(report_type_convert_file_name,"w")
-    # report_type_convert_file.write("NumNotice\tMéthode pour trouver l'ARK\n")
     if nb_fichiers_a_produire == 1:
         reports = create_reports_1file(id_traitement_code)
     else:
@@ -208,8 +207,10 @@ def create_reports_files(id_traitement_code):
     multiple_files_pbFRBNF_ISBN_name = (
         id_traitement_code + "-resultats_Probleme_FRBNF_ISBN.txt"
     )
-    multiple_files_0_ark_name = id_traitement_code + "-resultats_0_ark_trouve.txt"
-    multiple_files_1_ark_name = id_traitement_code + "-resultats_1_ark_trouve.txt"
+    multiple_files_0_ark_name = "".join([id_traitement_code,
+                                        "-resultats_0_ark_trouve.txt"])
+    multiple_files_1_ark_name = "".join([id_traitement_code,
+                                        "-resultats_1_ark_trouve.txt"])
     multiple_files_plusieurs_ark_name = (
         id_traitement_code + "-resultats_plusieurs_ark_trouves.txt"
     )
@@ -217,8 +218,10 @@ def create_reports_files(id_traitement_code):
     multiple_files_pbFRBNF_ISBN = open(
         multiple_files_pbFRBNF_ISBN_name, "w", encoding="utf-8"
     )
-    multiple_files_0_ark = open(multiple_files_0_ark_name, "w", encoding="utf-8")
-    multiple_files_1_ark = open(multiple_files_1_ark_name, "w", encoding="utf-8")
+    multiple_files_0_ark = open(multiple_files_0_ark_name, 
+                                "w", encoding="utf-8")
+    multiple_files_1_ark = open(multiple_files_1_ark_name, 
+                                "w", encoding="utf-8")
     multiple_files_plusieurs_ark_name = open(
         multiple_files_plusieurs_ark_name, "w", encoding="utf-8"
     )
@@ -268,17 +271,22 @@ nsSudoc = {
 
 # fonction de mise à jour de l'ARK s'il existe un ARK
 def ark2ark(input_record):
-    url = funcs.url_requete_sru('bib.persistentid all "' + input_record.ark_init + '"')
+    url = funcs.url_requete_sru(
+                                "".join(['bib.persistentid all "',
+                                        input_record.ark_init, '"'])
+                                )
     (test, page) = funcs.testURLetreeParse(url)
     nv_ark = ""
     if test:
         if page.find("//srw:recordIdentifier", namespaces=main.ns) is not None:
-            nv_ark = page.find("//srw:recordIdentifier", namespaces=main.ns).text
+            nv_ark = page.find("//srw:recordIdentifier", 
+                               namespaces=main.ns).text
             NumNotices2methode[input_record.NumNot].append("Actualisation ARK")
     return nv_ark
 
 
-# nettoyage des chaines de caractères (titres, auteurs, isbn) : suppression ponctuation,
+# nettoyage des chaines de caractères (titres, auteurs, isbn) : 
+# suppression ponctuation,
 # espaces (pour les titres et ISBN) et diacritiques
 # =============================================================================
 # def nettoyage(string,remplacerEspaces=True,remplacerTirets=True):
@@ -403,13 +411,17 @@ def ark2ark(input_record):
 def relancerNNBAuteur(NumNot, systemid, isbn, titre, auteur, date):
     listeArk = []
     if auteur != "" and auteur is not None:
-        urlSRU = funcs.url_requete_sru(
-            'bib.author all "' + auteur + '" and bib.otherid all "' + systemid + '"'
-        )
+        urlSRU = funcs.url_requete_sru("".join([
+                                               'bib.author all "', auteur, 
+                                               '" and bib.otherid all "', 
+                                               systemid, '"'])
+                                       )
         (test, pageSRU) = funcs.testURLetreeParse(urlSRU)
         if test:
-            for record in pageSRU.xpath("//srw:records/srw:record", namespaces=main.ns):
-                ark = record.find("srw:recordIdentifier", namespaces=main.ns).text
+            for record in pageSRU.xpath("//srw:records/srw:record",
+                                        namespaces=main.ns):
+                ark = record.find("srw:recordIdentifier",
+                                  namespaces=main.ns).text
                 NumNotices2methode[NumNot].append("N° sys FRBNF + Auteur")
                 listeArk.append(ark)
     listeArk = ",".join([ark for ark in listeArk if ark != ""])
@@ -417,11 +429,13 @@ def relancerNNBAuteur(NumNot, systemid, isbn, titre, auteur, date):
 
 
 # Quand on a trouvé l'ancien numéro système dans une notice BnF :
-# on compare l'ISBN de la notice de la Bibliothèque avec celui de la BnF pour voir si ça colle
+# on compare l'ISBN de la notice de la Bibliothèque 
+# avec celui de la BnF pour voir si ça colle
 # à défaut, on compare les titres (puis demi-titres)
 def comparerBibBnf(
-    NumNot, ark_current, systemid, isbn, titre, auteur, date, origineComparaison
-):
+                   NumNot, ark_current, systemid, isbn, titre, auteur, 
+                   date, origineComparaison
+                  ):
     ark = ""
     url = funcs.url_requete_sru('bib.persistentid all "' + ark_current + '"')
     (test, recordBNF) = funcs.testURLetreeParse(url)
@@ -456,10 +470,12 @@ def comparaisonIsbn(
     # ou à défaut les ISSN (il peut s'agir d'un périodique)
     isbnBNF = funcs.nettoyage(main.extract_subfield(recordBNF, "010", "a", 1))
     if isbnBNF == "":
-        isbnBNF = funcs.nettoyage(main.extract_subfield(recordBNF, "038", "a", 1))
+        isbnBNF = funcs.nettoyage(main.extract_subfield(recordBNF, "038",
+                                                        "a", 1))
         sourceID = "EAN"
     if isbnBNF == "":
-        isbnBNF = funcs.nettoyage(main.extract_subfield(recordBNF, "011", "a", 1))
+        isbnBNF = funcs.nettoyage(main.extract_subfield(recordBNF, "011",
+                                                        "a", 1))
         sourceID = "ISSN"
     if isbn != "" and isbnBNF != "":
         if isbn in isbnBNF:
@@ -519,10 +535,11 @@ def verificationTomaison(ark, numeroTome, recordBNF):
     si on le retrouve bien dans une des zones où il pourrait se trouver :
     D'abord 200$h, 461$v
     Si ces deux zones sont vides, on va regarder les nombres dans la zone 200$a
-    La comparaison se fait en normalisant les données de part en d'autres, pour n'avoir
-    que des chiffres arabes sans 0 initial
-    Conséquence : s'il y a un numéro de volume en entrée, le programme peut aller jusqu'à convertir
-    tout ce qui ressemble à un chiffre romain dans la zone de titre"""
+    La comparaison se fait en normalisant les données de part en d'autres, 
+    pour n'avoir que des chiffres arabes sans 0 initial
+    Conséquence : s'il y a un numéro de volume en entrée, le programme peut 
+    aller jusqu'à convertir tout ce qui ressemble à un chiffre romain dans 
+    la zone de titre"""
     liste_subfields_volume = ["200$h", "200$u", "461$v"]
     volumesBNF = ""
     for subf in liste_subfields_volume:
@@ -552,7 +569,8 @@ def verificationTomaison_sous_zone(ark, numeroTome, numeroTomeBnF):
 
 # =============================================================================
 # def ltrim(nombre_texte):
-#     "Supprime les 0 initiaux d'un nombre géré sous forme de chaîne de caractères"
+#     "Supprime les 0 initiaux d'un nombre géré sous forme de 
+#      chaîne de caractères"
 #     while(len(nombre_texte) > 1 and nombre_texte[0] == "0"):
 #         nombre_texte = nombre_texte[1:]
 #     return nombre_texte
@@ -630,7 +648,8 @@ def comparaisonTitres_sous_zone(
             )
             if len(titre) < 5:
                 NumNotices2methode[NumNot].append("[titre court]")
-        elif titre[0: round(len(titre) / 2)] == titreBNF[0: round(len(titre) / 2)]:
+        elif titre[0: round(len(titre) / 2)] == titreBNF[
+                                                0: round(len(titre) / 2)]:
             ark = ark_current
             NumNotices2methode[NumNot].append(
                 origineComparaison + " + contrôle Titre " + sous_zone
@@ -641,12 +660,14 @@ def comparaisonTitres_sous_zone(
                 )
         elif titreBNF in titre:
             NumNotices2methode[NumNot].append(
-                origineComparaison + " + contrôle Titre BNF contenu dans titre initial"
+                origineComparaison + " + contrôle Titre BNF \
+                contenu dans titre initial"
             )
             ark = ark_current
         elif titre in titreBNF:
             NumNotices2methode[NumNot].append(
-                origineComparaison + " + contrôle Titre initial contenu dans titre BNF"
+                origineComparaison + " + contrôle Titre initial \
+                contenu dans titre BNF"
             )
             ark = ark_current
     elif titre == "":
@@ -673,8 +694,10 @@ def systemid2ark(NumNot, systemid, tronque, isbn, titre, auteur, date):
     listeARK = []
     (test, page) = funcs.testURLetreeParse(url)
     if test:
-        for record in page.xpath("//srw:records/srw:record", namespaces=main.ns):
-            ark_current = record.find("srw:recordIdentifier", namespaces=main.ns).text
+        for record in page.xpath("//srw:records/srw:record",
+                                 namespaces=main.ns):
+            ark_current = record.find("srw:recordIdentifier",
+                                      namespaces=main.ns).text
             for zone9XX in record.xpath(
                 "srw:recordData/mxc:record/mxc:datafield", namespaces=main.ns
             ):
@@ -682,7 +705,8 @@ def systemid2ark(NumNot, systemid, tronque, isbn, titre, auteur, date):
                 tag = zone9XX.get("tag")
                 if tag[0:1] == "9":
                     if (
-                        zone9XX.find("mxc:subfield[@code='a']", namespaces=main.ns)
+                        zone9XX.find("mxc:subfield[@code='a']",
+                                     namespaces=main.ns)
                         is not None
                     ):
                         if (
@@ -693,7 +717,8 @@ def systemid2ark(NumNot, systemid, tronque, isbn, titre, auteur, date):
                         ):
                             if (
                                 zone9XX.find(
-                                    "mxc:subfield[@code='a']", namespaces=main.ns
+                                    "mxc:subfield[@code='a']",
+                                    namespaces=main.ns
                                 ).text
                                 == systemid
                             ):
@@ -714,7 +739,8 @@ def systemid2ark(NumNot, systemid, tronque, isbn, titre, auteur, date):
 
     # Si pas de réponse, on fait la recherche SystemID + Auteur
     if listeARK == "":
-        listeARK = relancerNNBAuteur(NumNot, systemid, isbn, titre, auteur, date)
+        listeARK = relancerNNBAuteur(NumNot, systemid, isbn, 
+                                     titre, auteur, date)
     listeARK = ",".join([ark1 for ark1 in listeARK.split(",") if ark1 != ""])
 
     # Si à l'issue d'une première requête sur le numéro système dont on a
@@ -737,7 +763,8 @@ def rechercheNNB(input_record, nnb):
         url = funcs.url_requete_sru('bib.recordid any "' + nnb + '"')
         (test, page) = funcs.testURLetreeParse(url)
         if test:
-            for record in page.xpath("//srw:records/srw:record", namespaces=main.ns):
+            for record in page.xpath("//srw:records/srw:record",
+                                     namespaces=main.ns):
                 ark_current = record.find(
                     "srw:recordIdentifier", namespaces=main.ns
                 ).text
@@ -805,9 +832,12 @@ def frbnf2ark(input_record):
             if nb_resultats == 0:
                 ark = oldfrbnf2ark(input_record)
             elif nb_resultats == 1:
-                ark = page.find("//srw:recordIdentifier", namespaces=main.ns).text
+                ark = page.find("//srw:recordIdentifier",
+                                namespaces=main.ns).text
                 if ark != "":
-                    NumNotices2methode[input_record.NumNot].append("FRBNF > ARK")
+                    NumNotices2methode[input_record.NumNot].append(
+                        "FRBNF > ARK"
+                        )
             else:
                 ark = ",".join(
                     [
@@ -852,123 +882,15 @@ def row2files(liste_metadonnees, liste_reports):
         liste_reports[3].write("\t".join(liste_metadonnees_to_report) + "\n")
 
 
-# =============================================================================
-# def nettoyage_isbn(isbn):
-#     isbn_nett = isbn.split(";")[0].split(",")[0].split("(")[0].split("[")[0]
-#     isbn_nett = isbn_nett.replace("-","").replace(" ","")
-#     isbn_nett = unidecode(isbn_nett)
-#     for signe in ponctuation:
-#         isbn_nett = isbn_nett.replace(signe,"")
-#     isbn_nett = isbn_nett.lower()
-#     for lettre in lettres_sauf_x:
-#         isbn_nett = isbn_nett.replace(lettre,"")
-#     return isbn_nett
-#
-# def conversionIsbn(isbn):
-#     longueur = len(isbn)
-#     isbnConverti = ""
-#     if (longueur == 10):
-#         isbnConverti = conversionIsbn1013(isbn)
-#     elif (longueur == 13):
-#         isbnConverti = conversionIsbn1310(isbn)
-#     return isbnConverti
-#
-# # conversion isbn13 en isbn10
-# def conversionIsbn1310(isbn):
-#     if (isbn[0:3] == "978"):
-#         prefix = isbn[3:-1]
-#         check = check_digit_10(prefix)
-#         return prefix + check
-#     else:
-#         return ""
-#
-# # conversion isbn10 en isbn13
-# def conversionIsbn1013(isbn):
-#     prefix = '978' + isbn[:-1]
-#     check = check_digit_13(prefix)
-#     return prefix + check
-#
-# def check_digit_10(isbn):
-#     assert len(isbn) == 9
-#     sum = 0
-#     for i in range(len(isbn)):
-#         c = int(isbn[i])
-#         w = i + 1
-#         sum += w * c
-#     r = sum % 11
-#     if (r == 10):
-#         return 'X'
-#     else:
-#         return str(r)
-#
-# def check_digit_13(isbn):
-#     assert len(isbn) == 12
-#     sum = 0
-#     for i in range(len(isbn)):
-#         c = int(isbn[i])
-#         if (i % 2):
-#             w = 3
-#         else:
-#             w = 1
-#         sum += w * c
-#     r = 10 - (sum % 10)
-#     if (r == 10):
-#         return '0'
-#     else:
-#         return str(r)
-# #==============================================================================
-# # Fonctions pour convertir les chiffres romains en chiffres arabes (et l'inverse)
-# # Utilisé pour comparer les volumaisons
-# #==============================================================================
-# numeral_map = tuple(zip(
-#     (1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1),
-#     ('M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I')
-# ))
-#
-# def int_to_roman(i):
-#     result = []
-#     for integer, numeral in numeral_map:
-#         count = i // integer
-#         result.append(numeral * count)
-#         i -= integer * count
-#     return ''.join(result)
-#
-# def roman_to_int(n):
-#     i = result = 0
-#     for integer, numeral in numeral_map:
-#         while n[i:i + len(numeral)] == numeral:
-#             result += integer
-#             i += len(numeral)
-#     return result
-#
-# def convert_volumes_to_int(n):
-#     for char in ponctuation:
-#         n = n.replace(char,"-")
-#     n = n.replace(" ","-")
-#     liste_n = [e for e in n.split("-") if e != ""]
-#     liste_n_convert = []
-#     for n in liste_n:
-#         try:
-#             int(n)
-#             liste_n_convert.append(n)
-#         except ValueError:
-#             c = roman_to_int(n)
-#             if (c != 0):
-#                 liste_n_convert.append(c)
-#     liste_n_convert = set(ltrim(str(nb)) for nb in liste_n_convert if nb != "")
-#     n_convert = " ".join([str(el) for el in list(liste_n_convert)])
-#     return n_convert
-#
-# =============================================================================
-
-
 def isbn2sru(NumNot, isbn, titre, auteur, date):
     urlSRU = funcs.url_requete_sru('bib.isbn all "' + isbn + '"')
     listeARK = []
     (test, resultats) = funcs.testURLetreeParse(urlSRU)
     if test:
-        for record in resultats.xpath("//srw:records/srw:record", namespaces=main.ns):
-            ark_current = record.find("srw:recordIdentifier", namespaces=main.ns).text
+        for record in resultats.xpath("//srw:records/srw:record",
+                                      namespaces=main.ns):
+            ark_current = record.find("srw:recordIdentifier",
+                                      namespaces=main.ns).text
             recordBNF_url = funcs.url_requete_sru(
                 'bib.persistentid all "' + ark_current + '"'
             )
@@ -1943,6 +1865,12 @@ def ark2recordBNF(ark, typeRecord="bib"):
     (test, recordBNF) = funcs.testURLetreeParse(url)
     return (test, recordBNF)
 
+def ppn2recordSudoc(ppn):
+    ppn = ppn.replace("PPN").split("/")[-1].split(".")[0]
+    url = "https://www.sudoc.fr/" + ppn + ".xml"
+    (test, recordSudoc) = funcs.testURLetreeParse(url)
+    return (test, recordSudoc)
+
 
 def ean2ark(NumNot, ean, titre, auteur, date):
     listeARK = []
@@ -2172,6 +2100,17 @@ def item2ark_by_id(input_record, parametres):
             "",
         )
 
+    # Après alignement sur ISBN/EAN, on
+    # ajoute un contrôle sur le numéro
+    # de tome/volume, s'il est renseigné
+    # dans les données en entrée
+    if ark != "" and input_record.tome != "":
+        numeroTome = funcs.nettoyageTome(input_record.tome)
+        if (numeroTome != ""):
+                (test, recordBNF) = ark2recordBNF(ark)
+                if test:
+                    ark = verificationTomaison(ark, numeroTome, recordBNF)
+
     # A défaut, recherche sur no_commercial
     if ark == "" and input_record.no_commercial != "":
         ark = no_commercial2ark(
@@ -2200,11 +2139,11 @@ def item2ark_by_id(input_record, parametres):
 def item2ppn_by_id(input_record, parametres):
     """Tronc commun de fonctions d'alignement, applicables pour tous les types de notices
     Quand l'option "BnF" d'abord a été choisie"""
-    ark = ""
+    ppn = ""
 
     # Si pas de résultats : on relance une recherche dans le Sudoc
-    if ark == "":
-        ark = ean2sudoc(
+    if ppn == "":
+        ppn = ean2sudoc(
             input_record.NumNot,
             input_record.ean.propre,
             input_record.titre_nett,
@@ -2215,14 +2154,26 @@ def item2ppn_by_id(input_record, parametres):
 
     # Si pas de résultats : on relance une recherche dans le Sudoc avec l'EAN
     # seul
-    if ark == "":
-        ark = ean2sudoc(
+    if ppn == "":
+        ppn = ean2sudoc(
             input_record.NumNot, input_record.ean.propre, "", "", "", parametres
         )
-    if ark == "":
-        ark = isbn2sudoc(input_record, parametres)
-    if ark == "":
-        ark = issn2sudoc(
+    if ppn == "":
+        ppn = isbn2sudoc(input_record, parametres)
+
+    # Après alignement sur ISBN/EAN, on
+    # ajoute un contrôle sur le numéro
+    # de tome/volume, s'il est renseigné
+    # dans les données en entrée
+    """if ppn != "" and input_record.tome != "":
+        numeroTome = funcs.nettoyageTome(input_record.tome)
+        if (numeroTome != ""):
+                url = ppn2recordSudoc(ppn)
+                (test, recordSudoc) = funcs.testURLetreeParse(url)
+                if test:
+                    ppn = verificationTomaison(ppn, numeroTome, recordSudoc)"""
+    if ppn == "":
+        ppn = issn2sudoc(
             input_record.NumNot,
             input_record.issn.init,
             input_record.issn.propre,
@@ -2232,7 +2183,7 @@ def item2ppn_by_id(input_record, parametres):
             parametres,
         )
 
-    return ark
+    return ppn
 
 
 def item2ark_by_keywords(input_record, parametres):

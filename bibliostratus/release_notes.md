@@ -1,3 +1,8 @@
+### version 1.23
+Septembre 2018
+- Module blanc (alignement notices bib) :
+	- Si alignement par ISBN, contrôle sur le numéro de volume (si renseigné)
+
 ### version 1.22
 27/08/2018
 - Module rouge (ark2records): Correction problèmes à l'export :
