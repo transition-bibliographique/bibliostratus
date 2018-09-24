@@ -705,7 +705,6 @@ def accesspoint2arkAut(NumNot, nom_nett, prenom_nett, date_debut, date_fin):
         + '" and aut.status any "sparse validated"'
         + ' and aut.type any "PEP ORG"')
         testdatefin = True
-    # print(url)
     (test, results) = funcs.testURLetreeParse(url)
     if (test):
         for record in results.xpath("//srw:records/srw:record", namespaces=main.ns):

@@ -16,7 +16,7 @@ from unidecode import unidecode
 from collections import defaultdict
 
 import main
-
+from udecode import udecode
 
 # Quelques listes de signes à nettoyer
 listeChiffres = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
@@ -54,7 +54,7 @@ def unidecode_local(string):
     for char in corr_temp_dict:
         string = string.replace(char, corr_temp_dict[char])
 
-    string = unidecode(string)
+    string = udecode(string)
     for char in reverse_corr_temp_dict:
         string = string.replace(char, reverse_corr_temp_dict[char])
     return string
