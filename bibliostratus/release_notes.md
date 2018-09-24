@@ -2,6 +2,9 @@
 Septembre 2018
 - Module blanc (alignement notices bib) :
 	- Si alignement par ISBN, contrôle sur le numéro de volume (si renseigné)
+	- Modification dans la manière d'ignorer les caractères accentués : 
+	seules les lettres de l'alphabet latin avec diacritiques sont nettoyés
+	les caractères arabes ou chinois en entrée sont laissés tels quels
 
 ### version 1.22
 27/08/2018
