@@ -1185,8 +1185,8 @@ def add_to_conversionIsbn(NumNot, isbn_init, isbn_trouve, via_Sudoc=False):
 
 
 def isbn2ark(
-    NumNot, isbn_init, isbn_propre, isbn_converti,
-    titre_nett, auteur_nett, date_nett):
+             NumNot, isbn_init, isbn_propre, isbn_converti,
+             titre_nett, auteur_nett, date_nett):
     # Recherche sur l'ISBN tel que saisi dans la source
     resultatsIsbn2ARK = isbn2sru(NumNot, isbn_init, titre_nett,
                                  auteur_nett, date_nett)

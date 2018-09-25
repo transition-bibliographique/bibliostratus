@@ -12,7 +12,6 @@ import os
 from urllib import error, request
 
 from lxml import etree
-from unidecode import unidecode
 from collections import defaultdict
 
 import main

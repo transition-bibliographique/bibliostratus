@@ -164,9 +164,9 @@ def check_access2apis(i, dict_report):
         "https://www.sudoc.fr/services/isbn2ppn/0195141156")
     dict_report["testAbes"][i] = testAbes
     dict_report["testBnF"][i] = testBnF
-    if (testAbes == False):
+    if testAbes is False:
         dict_report["testAbes"]["global"] = False
-    if (testBnF == False):
+    if testBnF is False:
         dict_report["testBnF"]["global"] = False
 
 
@@ -249,7 +249,7 @@ def form_generic_frames(master, title, couleur_fond,
     zone_notes = tk.Frame(form, bg=couleur_fond, pady=10)
     zone_notes.pack()
 
-    if (access_to_network ==  False):
+    if (access_to_network is False):
         tk.Label(zone_alert_explications, text=errors["no_internet"],
                  bg=couleur_fond, fg="red").pack()
 
@@ -295,7 +295,7 @@ def main_form_frames(title, couleur_fond, couleur_bordure, access_to_network):
     zone_notes = tk.Frame(master, bg=couleur_fond, pady=10)
     zone_notes.pack()
 
-    if (access_to_network == False):
+    if (access_to_network is False):
         tk.Label(zone_alert_explications, text=errors["no_internet"],
                  bg=couleur_fond, fg="red").pack()
 
