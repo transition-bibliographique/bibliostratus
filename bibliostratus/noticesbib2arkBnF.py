@@ -173,6 +173,19 @@ header_columns_init_perimpr = [
     "Lieu de publication",
 ]
 
+header_columns_init_cartes = [
+    "Num Not",
+    "FRBNF",
+    "ARK",
+    "ISBN",
+    "EAN",
+    "Titre",
+    "Auteur",
+    "Date",
+    "Editeur",
+    "Echelle"
+]
+
 # Noms des fichiers en sortie
 
 
@@ -2357,6 +2370,21 @@ def file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parame
             "date",
             "lieu",
         ],
+        5: [
+            "NumNot",
+            "nbARK",
+            "ark trouvé",
+            "Méthode",
+            "ark initial",
+            "FRBNF",
+            "ISBN",
+            "EAN",
+            "titre",
+            "auteur",
+            "date",
+            "éditeur",
+            "échelle",
+        ]
     }
     header_columns = header_columns_dic[parametres["type_doc_bib"]]
     if parametres["meta_bib"] == 1:
@@ -2366,7 +2394,7 @@ def file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parame
                 "[BnF] 1er auteur Prénom",
                 "[BnF] 1er auteur Nom",
                 "[BnF] Tous auteurs",
-                "[BnF] Date",
+                "[BnF] Date"
             ]
         )
     # Ajout des en-têtes de colonne dans les fichiers
@@ -2408,6 +2436,7 @@ def launch(
         2: header_columns_init_cddvd,
         3: header_columns_init_cddvd,
         4: header_columns_init_perimpr,
+        5: header_columns_init_cartes
     }
     parametres = {
         "meta_bib": meta_bib,
@@ -2770,6 +2799,15 @@ def formulaire_noticesbib2arkBnF(
         "[PER] Périodiques",
         "(" + " | ".join(header_columns_init_perimpr) + ")",
         "main/examples/per.tsv",  # noqa
+    )
+    radioButton_lienExample(
+        cadre_input_type_docs,
+        type_doc_bib,
+        5,
+        couleur_fond,
+        "[CAR] Cartes",
+        "(" + " | ".join(header_columns_init_cartes) + ")",
+        "",  # noqa
     )
     type_doc_bib.set(1)
 

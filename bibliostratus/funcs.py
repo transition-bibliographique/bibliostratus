@@ -599,6 +599,7 @@ class Bib_record:
         self.metas_init = input_row[1:]
         self.date_debut = ""
         self.dates_elargies_perios = ""
+        self.scale = ""
         if (option_record == 1):
             self.type = "TEX"
             self.intermarc_type_doc = "a"
@@ -633,6 +634,17 @@ class Bib_record:
             self.auteur = input_row[5]
             self.date = input_row[6]
             self.pubPlace = input_row[7]
+        if (option_record == 5):
+            self.type = "CP"
+            self.intermarc_type_record = "m"
+            self.intermarc_type_doc = "e"
+            self.isbn = International_id(input_row[3])
+            self.ean = International_id(input_row[4])
+            self.titre = Titre(input_row[5])
+            self.auteur = input_row[6]
+            self.date = input_row[7]
+            self.publisher = input_row[8]
+            self.scale = input_row[9]
         self.titre_nett = nettoyageTitrePourControle(self.titre.init)
         self.auteur_nett = nettoyageAuteur(self.auteur, False)
         self.no_commercial_propre = nettoyage_no_commercial(
