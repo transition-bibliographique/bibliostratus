@@ -269,6 +269,18 @@ def record2pubPlace(f210a):
     pubPlace = f210a
     return pubPlace
 
+def record2scale(f123a):
+    scale = f123a
+    if (":" in scale):
+        # C'est alors la zone non codée (texte libre)
+        scale = scale.split(":")[1]
+        for char in funcs.ponctuation:
+            if (char != "," and char != "."):
+                scale = scale.split(char)[0]
+        scale = scale.replace(" ", "").replace(".", "").replace(",", "")                
+    if not main.RepresentsInt(scale):
+        scale = ""
+    return f123a
 
 def record2publisher(f210c):
     publisher = clean_spaces(f210c)
@@ -434,6 +446,7 @@ def metas_from_marc21(record):
     numeroTome = record2numeroTome(record2meta(record, ["245$n"], ["490$v"]))
     publisher = record2publisher(record2meta(record, ["260$b"]))
     pubPlace = record2pubPlace(record2meta(record, ["260$a"]))
+    scale = record2scale(record2meta(record, ["034$b"], ["255$a"]))
     ark = record2ark(record2meta(record, ["033$a"]))
     frbnf = record2frbnf(record2meta(record, ["035$a"]))
     isbn = record2isbn(record2meta(record, ["020$a"]))
@@ -443,7 +456,8 @@ def metas_from_marc21(record):
         record2meta(record, ["073$a"]))
     return (
             title, keyTitle, authors,
-            authors2keywords, date, numeroTome, publisher, pubPlace,
+            authors2keywords, date, numeroTome, publisher,
+            pubPlace, scale,
             ark, frbnf, isbn, issn, ean, id_commercial_aud
             )
 
@@ -477,6 +491,7 @@ def metas_from_unimarc(record):
     numeroTome = record2numeroTome(record2meta(record, ["200$h"], ["461$v"]))
     publisher = record2publisher(record2meta(record, ["210$c"]))
     pubPlace = record2pubPlace(record2meta(record, ["210$a"]))
+    scale = record2scale(record2meta(record, ["123$b"], ["206$b"]))
     ark = record2ark(record2meta(record, ["033$a"]))
     frbnf = record2frbnf(record2meta(record, ["035$a"]))
     isbn = record2isbn(record2meta(record, ["010$a"]))
@@ -486,7 +501,8 @@ def metas_from_unimarc(record):
         record2meta(record, ["071$b", "071$a"]))
     return (
             title, keyTitle, authors,
-            authors2keywords, date, numeroTome, publisher, pubPlace,
+            authors2keywords, date,
+            numeroTome, publisher, pubPlace, scale,
             ark, frbnf, isbn, issn, ean, id_commercial_aud
             )
 
@@ -495,11 +511,13 @@ def bibrecord2metas(numNot, doc_record, record):
 
     if (prefs["marc2tables_input_format"]["value"] == "marc21"):
         (title, keyTitle, authors, authors2keywords,
-         date, numeroTome, publisher, pubPlace, ark, frbnf, isbn, issn, ean,
+         date, numeroTome, publisher, pubPlace, scale,
+         ark, frbnf, isbn, issn, ean,
          id_commercial_aud) = metas_from_marc21(record)
     else:
         (title, keyTitle, authors, authors2keywords,
-         date, numeroTome, publisher, pubPlace, ark, frbnf, isbn, issn, ean,
+         date, numeroTome, publisher, pubPlace, scale,
+         ark, frbnf, isbn, issn, ean,
          id_commercial_aud) = metas_from_unimarc(record)
 
     if (doc_record not in liste_fichiers):
@@ -507,6 +525,9 @@ def bibrecord2metas(numNot, doc_record, record):
     if (doc_record == "am" or doc_record == "lm"):
         meta = [numNot, frbnf, ark, isbn, ean, title,
                 authors2keywords, date, numeroTome, publisher]
+    if (doc_record == "em"):
+        meta = [numNot, frbnf, ark, isbn, ean, title,
+                authors2keywords, date, publisher, scale]
     elif (doc_record == "im" or doc_record == "jm" or doc_record == "gm"):
         meta = [numNot, frbnf, ark, ean, id_commercial_aud,
                 title, authors2keywords, date, publisher]
@@ -666,6 +687,9 @@ def write_reports(id_traitement, doc_record, rec_format):
         if (doc_record == "am" or doc_record == "lm"):
             filename = "TEX-" + filename
             header_columns = bib2ark.header_columns_init_monimpr
+        elif (doc_record == "em"):
+            header_columns = bib2ark.header_columns_init_cartes
+            filename = "CAR-" + filename
         elif (doc_record == "gm"):
             header_columns = bib2ark.header_columns_init_cddvd
             filename = "VID-" + filename

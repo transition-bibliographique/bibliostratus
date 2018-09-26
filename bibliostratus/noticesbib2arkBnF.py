@@ -1583,7 +1583,7 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
                 (test, recordBNF) = funcs.testURLetreeParse(recordBNF_url)
                 if test:
                     if (
-                        recordBNF.find("//mxc:record/mxc:leader", 
+                        recordBNF.find("//mxc:record/mxc:leader",
                                        namespaces=main.ns)
                         is not None
                         and recordBNF.find(
@@ -1608,7 +1608,7 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
                                 "Titre-Auteur-Date" + index,
                             )
                             if (date_nett != "-"):
-                                ark = checkDate(ark, input_record.date_nett, 
+                                ark = checkDate(ark, input_record.date_nett,
                                                 recordBNF)
                             if ark != "":
                                 listeArk.append(ark)
@@ -1771,7 +1771,7 @@ def controle_keywords2ppn(input_record, ppn):
     dans toute la notice """
     resultat = ""
     sudoc_record = defaultdict(dict)
-    url_sudoc_record = "https://www.sudoc.fr/" 
+    url_sudoc_record = "https://www.sudoc.fr/"
     + ppn.replace("PPN", "") + ".xml"
     urllib.request.urlretrieve(url_sudoc_record, 'temp.xml')
     collection = mc.marcxml.parse_xml_to_array(
