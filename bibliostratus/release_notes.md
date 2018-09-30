@@ -1,10 +1,12 @@
 ### version 1.23
 Septembre 2018
+- Module bleu (marc2tables) : ajout du type "cartes", avec récupération de l'échelle en dernière colonne
 - Module blanc (alignement notices bib) :
 	- Si alignement par ISBN, contrôle sur le numéro de volume (si renseigné)
 	- Modification dans la manière d'ignorer les caractères accentués : 
 	seules les lettres de l'alphabet latin avec diacritiques sont nettoyés
 	les caractères arabes ou chinois en entrée sont laissés tels quels
+	- Ajout de l'alignement sur les cartes : si c'est une carte, on cherche l'échelle dans "tous mots" (bib.anywhere)
 
 ### version 1.22
 27/08/2018
