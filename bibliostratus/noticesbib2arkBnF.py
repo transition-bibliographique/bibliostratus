@@ -1482,37 +1482,39 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
             auteur_nett = "-"
         if pubPlace_nett == "":
             pubPlace_nett = "-"
-        url = funcs.url_requete_sru(
-            'bib.title all "'
-            + input_record.titre.recherche
-            + '" and bib.author all "'
-            + auteur
-            + '" and bib.date '
-            + param_date
-            + ' "'
-            + date_nett
-            + '" and bib.publisher all "'
-            + pubPlace_nett
-            + '" and bib.doctype any "'
-            + input_record.intermarc_type_doc
-            + '"'
-        )
+        search_query = "".join(['bib.title all "',
+                                input_record.titre.recherche,
+                                '" and bib.author all "',
+                                auteur,
+                                '" and bib.date ',
+                                param_date,
+                                ' "',
+                                date_nett,
+                                '" and bib.publisher all "',
+                                pubPlace_nett,
+                                '" and bib.doctype any "',
+                                input_record.intermarc_type_doc,
+                                '"'])
         if anywhere:
-            url = funcs.url_requete_sru(
-                'bib.anywhere all "'
-                + input_record.titre.recherche
-                + " "
-                + auteur
-                + " "
-                + pubPlace_nett
-                + '" and bib.anywhere '
-                + param_date
-                + ' "'
-                + date_nett
-                + '" and bib.doctype any "'
-                + input_record.intermarc_type_doc
-                + '"'
-            )
+            search_query = "".join(['bib.anywhere all "',
+                                    input_record.titre.recherche,
+                                    " ",
+                                    auteur,
+                                    " ",
+                                    pubPlace_nett,
+                                    '" and bib.anywhere ',
+                                    param_date,
+                                    ' "',
+                                    date_nett,
+                                    '" and bib.doctype any "',
+                                    input_record.intermarc_type_doc,
+                                    '"'])
+        
+        #Ajout du critère Echelle pour les cartes
+        if (input_record.type == "CP"
+            and input_record.scale):
+            search_query += f' and bib.anywhere all "{input_record.scale}"'
+        url = funcs.url_requete_sru(search_query)
         # print(url)
         (test, results) = funcs.testURLetreeParse(url)
         index = ""
