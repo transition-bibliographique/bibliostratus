@@ -3,6 +3,7 @@
 Les noms des fichiers contiennent :
 - le nom du logiciel
 - le numéro de version
+- (avec éventuellement la mention *RC* pour *release candidate*, qui sont des versions qui ajoutent de nouvelles fonctions mais qui n'ont pas été complètement débugguées)
 - le système d'exploitation (windows 64 bits, windows 32 bits)
 - la version Python utilisée
 
