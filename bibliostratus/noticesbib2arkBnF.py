@@ -298,130 +298,10 @@ def ark2ark(input_record):
     return nv_ark
 
 
-# nettoyage des chaines de caractères (titres, auteurs, isbn) :
-# suppression ponctuation,
-# espaces (pour les titres et ISBN) et diacritiques
-# =============================================================================
-# def nettoyage(string,remplacerEspaces=True,remplacerTirets=True):
-#     string = unidecode(string.lower())
-#     for signe in ponctuation:
-#         string = string.replace(signe,"")
-#     string = string.replace("'"," ")
-#     if remplacerTirets:
-#         string = string.replace("-"," ")
-#     if remplacerEspaces:
-#         string = string.replace(" ","")
-#     return string
-#
-# def nettoyageTitrePourControle(titre):
-#     titre = nettoyage(titre,True)
-#     return titre
-#
-# def nettoyageTitrePourRecherche(titre):
-#     titre = nettoyage(titre,False)
-#     titre = titre.split(" ")
-#     titre = [mot for mot in titre if len(mot) > 1]
-#     titre = " ".join(titre)
-#     return titre
-#
-# def nettoyage_lettresISBN(isbn):
-#     isbn = unidecode(isbn.lower())
-#     char_cle = "0123456789xX"
-#     for signe in ponctuation:
-#         isbn = isbn.replace(signe,"")
-#     prefix = isbn[0:-1]
-#     cle = isbn[-1]
-#     for lettre in lettres:
-#         prefix = prefix.replace(lettre, "")
-#     if (cle in char_cle):
-#         cle = cle.upper()
-#     else:
-#         cle = ""
-#     return prefix+cle
-#
-# def nettoyageIsbnPourControle(isbn):
-#     isbn = nettoyage(isbn)
-#     if (isbn != ""):
-#         isbn = nettoyage_lettresISBN(isbn)
-#     if (len(isbn) < 10):
-#         isbn = ""
-#     elif (isbn[0:3] == "978" or isbn[0:3] == "979"):
-#         isbn = isbn[3:12]
-#     else:
-#         isbn = isbn[0:10]
-#     return isbn
-#
-# def nettoyageIssnPourControle(issn):
-#     issn = nettoyage(issn).replace(" ","")
-#     if (issn != ""):
-#         issn = nettoyage_lettresISBN(issn)
-#     if (len(issn) < 8):
-#         issn = ""
-#     else:
-#         issn = issn[0:8]
-#     return issn
-#
-# def nettoyageAuteur(auteur,justeunmot=True):
-#     listeMots = [" par "," avec "," by "," Mr. "," M. "," Mme "," Mrs "]
-#     for mot in listeMots:
-#         auteur = auteur.replace(mot,"")
-#     for chiffre in listeChiffres:
-#         auteur = auteur.replace(chiffre,"")
-#     auteur = nettoyage(auteur.lower(),False)
-#     auteur = auteur.split(" ")
-#     auteur = sorted(auteur,key=len,reverse=True)
-#     auteur = [auteur1 for auteur1 in auteur if len(auteur1) > 1]
-#     if (auteur is not None and auteur != []):
-#         if (justeunmot==True):
-#             auteur = auteur[0]
-#         else:
-#             auteur = " ".join(auteur)
-#     else:
-#         auteur = ""
-#     return auteur
-#
-# def nettoyageDate(date):
-#     date = unidecode(date.lower())
-#     for lettre in lettres:
-#         date = date.replace(lettre,"")
-#     for signe in ponctuation:
-#         date = date.split(signe)
-#         date = " ".join(annee for annee in date if annee != "")
-#     return date
-#
-# def nettoyageTome(numeroTome):
-#     if (numeroTome):
-#         numeroTome = unidecode(numeroTome.lower())
-#         for lettre in lettres:
-#             numeroTome = numeroTome.replace(lettre,"")
-#         for signe in ponctuation:
-#             numeroTome = numeroTome.split(signe)
-#             numeroTome = "~".join(numero for numero in numeroTome)
-#         numeroTome = numeroTome.split("~")
-#         numeroTome = [numero for numero in numeroTome if numero != ""]
-#         if (numeroTome != []):
-#             numeroTome = numeroTome[-1]
-#         numeroTome = ltrim(numeroTome)
-#     return numeroTome
-#
-#
-# def nettoyagePubPlace(pubPlace) :
-#     """Nettoyage du lieu de publication"""
-#     pubPlace = unidecode(pubPlace.lower())
-#     for chiffre in listeChiffres:
-#         pubPlace = pubPlace.replace(chiffre,"")
-#     for signe in ponctuation:
-#         pubPlace = pubPlace.split(signe)
-#         pubPlace = " ".join(mot for mot in pubPlace if mot != "")
-#     return pubPlace
-# =============================================================================
-
-# Si la recherche NNB avec comporaison Mots du titre n'a rien donné, on
-# recherche sur N° interne BnF + Auteur (en ne gardant que le mot le plus
-# long du champ Auteur)
-
-
 def relancerNNBAuteur(NumNot, systemid, isbn, titre, auteur, date):
+    """Si la recherche NNB avec comporaison Mots du titre n'a rien donné, on
+    recherche sur N° interne BnF + Auteur (en ne gardant que le mot le plus
+    long du champ Auteur)"""
     listeArk = []
     if auteur != "" and auteur is not None:
         urlSRU = funcs.url_requete_sru("".join([
@@ -1773,8 +1653,7 @@ def controle_keywords2ppn(input_record, ppn):
     dans toute la notice """
     resultat = ""
     sudoc_record = defaultdict(dict)
-    url_sudoc_record = "https://www.sudoc.fr/"
-    + ppn.replace("PPN", "") + ".xml"
+    url_sudoc_record = "https://www.sudoc.fr/" + ppn.replace("PPN", "") + ".xml"
     urllib.request.urlretrieve(url_sudoc_record, 'temp.xml')
     collection = mc.marcxml.parse_xml_to_array(
         "temp.xml", strict=False)
@@ -1783,6 +1662,7 @@ def controle_keywords2ppn(input_record, ppn):
             sudoc_record["authors"], sudoc_record["authors2keywords"],
             sudoc_record["date"], sudoc_record["numeroTome"],
             sudoc_record["publisher"], sudoc_record["pubPlace"],
+            sudoc_record["scale"],
             sudoc_record["ark"], sudoc_record["frbnf"],
             sudoc_record["isbn"], sudoc_record["issn"],
             sudoc_record["ean"],
@@ -1807,6 +1687,11 @@ def controle_titres(input_record, sudoc_record):
     for word in input_record.titre.recherche.split(" "):
         if (word not in sudoc_titles):
             check = False
+    if not check:
+        check = True
+        for word in sudoc_titles.split(" "):
+            if (word not in sudoc_titles):
+                check = False
     return check
 
 
@@ -1884,23 +1769,6 @@ def extract_meta(recordBNF, field_subfield, occ="all", anl=False):
     elif occ == "all":
         value = " ".join(value)
     return value
-
-
-# def url_requete_sru(
-#     query, recordSchema="unimarcxchange", maximumRecords="1000", startRecord="1"
-# ):
-#     url = (
-#         main.urlSRUroot
-#         + urllib.parse.quote(query)
-#         + "&recordSchema="
-#         + recordSchema
-#         + "&maximumRecords="
-#         + maximumRecords
-#         + "&startRecord="
-#         + startRecord
-#         + "&origin=bibliostratus"
-#     )
-#     return url
 
 
 def ark2recordBNF(ark, typeRecord="bib"):
