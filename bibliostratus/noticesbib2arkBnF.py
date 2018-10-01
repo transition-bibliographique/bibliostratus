@@ -16,6 +16,8 @@ import csv
 import os
 import tkinter as tk
 import urllib.parse
+from random import choice
+import string
 from collections import defaultdict
 import pymarc as mc
 from lxml import etree
@@ -1654,9 +1656,10 @@ def controle_keywords2ppn(input_record, ppn):
     resultat = ""
     sudoc_record = defaultdict(dict)
     url_sudoc_record = "https://www.sudoc.fr/" + ppn.replace("PPN", "") + ".xml"
-    urllib.request.urlretrieve(url_sudoc_record, 'temp.xml')
+    tempfile_name = "".join([choice(string.ascii_lowercase) for _ in range(10)]) + ".xml"
+    urllib.request.urlretrieve(url_sudoc_record, tempfile_name)
     collection = mc.marcxml.parse_xml_to_array(
-        "temp.xml", strict=False)
+        tempfile_name, strict=False)
     for sudoc_marc_record in collection:
         (sudoc_record["title"], sudoc_record["keyTitle"],
             sudoc_record["authors"], sudoc_record["authors2keywords"],
@@ -1672,7 +1675,7 @@ def controle_keywords2ppn(input_record, ppn):
         controle_date = controle_dates(input_record, sudoc_record)
         if (controle_titre and controle_auteur and controle_date):
             resultat = ppn
-    os.remove("temp.xml")
+    os.remove(tempfile_name)
     return resultat
 
 
