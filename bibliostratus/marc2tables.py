@@ -751,6 +751,7 @@ def launch(form, entry_filename, file_format, rec_format, output_ID, master):
     main.check_file_name(form, entry_filename)
     # popup_en_cours = main.message_programme_en_cours(form)
 
+    # Notices BIB : Type de document / type de notice
     if (rec_format == 1):
         for doct in doctype:
             for recordt in recordtype:
@@ -763,6 +764,7 @@ def launch(form, entry_filename, file_format, rec_format, output_ID, master):
                     recordt_libelle = recordtype[recordt]
                 dcrec_libelles = "-".join([doct_libelle, recordt_libelle])
                 doc_record_type[dcrec] = dcrec_libelles
+    # Notices AUT : type d'autorité
     else:
         doct = "c"
         for recordt in recordtypeAUT:
