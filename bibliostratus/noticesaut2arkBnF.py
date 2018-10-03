@@ -302,7 +302,7 @@ def align_from_aut_item(row, n, form_aut2ark, parametres, liste_reports):
     if (parametres["preferences_alignement"] == 1):
         ark = aut2ark_by_id(input_record,parametres)
     if (ark == "" and parametres["preferences_alignement"] == 1):
-        ark = accesspoint2arkAut(
+        ark = aut2ark_by_accesspoint(
                 input_record.NumNot, 
                 input_record.lastname.propre,
                 input_record.firstname.propre,
@@ -692,7 +692,7 @@ def relancerNNA_nomAuteur(NumNot, systemid, nom):
     return listeArk
 
 
-def accesspoint2arkAut(NumNot, nom_nett, prenom_nett, date_debut, date_fin):
+def aut2ark_by_accesspoint(NumNot, nom_nett, prenom_nett, date_debut, date_fin):
     listeArk = []
     url = funcs.url_requete_sru(
         'aut.accesspoint adj "' + " ".join([nom_nett, prenom_nett, date_debut]) 
