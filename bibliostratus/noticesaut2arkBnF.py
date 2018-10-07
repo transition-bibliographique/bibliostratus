@@ -13,18 +13,22 @@ import csv
 import tkinter as tk
 import urllib.parse
 from collections import defaultdict
+import os, ssl
 
 from unidecode import unidecode
 
 import funcs
 import main
 import noticesbib2arkBnF as bib2ark
+import aut_align_idref
 
+# Ajout exception SSL pour éviter
+# plantages en interrogeant les API IdRef
+# (HTTPS sans certificat)
+if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
+    getattr(ssl, '_create_unverified_context', None)): 
+    ssl._create_default_https_context = ssl._create_unverified_context
 
-# import matplotlib.pyplot as plt
-
-version = 0.03
-lastupdate = "26/12/2017"
 programID = "noticesaut2arkBnF"
 
 # Permet d'écrire dans une liste accessible au niveau général depuis le
@@ -213,7 +217,7 @@ def isni2ark(NumNot, isni, origine="isni"):
 #             input_record.firstname.propre, input_record.firstdate.propre, 
 #             input_record.lastdate.propre
 #==============================================================================
-def accesspoint2isniorg(input_record):
+def accesspoint2isniorg(input_record, parametres):
     url = "http://isni.oclc.nl/sru/?query=pica.nw%3D%22" + urllib.parse.quote(
         " ".join([
                 input_record.lastname.propre, 
@@ -252,14 +256,15 @@ def accesspoint2isniorg(input_record):
     if (isnis != []):
         NumNotices2methode[input_record.NumNot].append("Point d'accès > ISNI")
     i = 0
-    for isni in isnis:
-        NumNotices2methode[input_record.NumNot][-1]
-        isni_id = isni.split("/")[-1]
-        ark = isni2ark(input_record.NumNot, isni_id, origine="accesspoint")
-        if (ark != ""):
-            isnis[i] = ark
-            NumNotices2methode[input_record.NumNot].append("ISNI > ARK")
-        i += 1
+    if (parametres["preferences_alignement"] == 1):
+        for isni in isnis:
+            NumNotices2methode[input_record.NumNot][-1]
+            isni_id = isni.split("/")[-1]
+            ark = isni2ark(input_record.NumNot, isni_id, origine="accesspoint")
+            if (ark != ""):
+                isnis[i] = ark
+                NumNotices2methode[input_record.NumNot].append("ISNI > ARK")
+            i += 1
     isnis = ",".join(isnis)
     return isnis
 
@@ -286,31 +291,25 @@ def align_from_aut_item(row, n, form_aut2ark, parametres, liste_reports):
     n += 1
     if (n % 100 == 0):
         main.check_access2apis(n, dict_check_apis)
-#==============================================================================
-#     (NumNot, frbnf_aut_init, ark_aut_init, isni,
-#      nom, prenom, date_debut, date_fin) = bib2ark.extract_cols_from_row(row,
-#                                                                         header_columns_init_aut2aut)
-#     ark_aut_init = nettoyageArk(ark_aut_init)
-#     isni_nett = nettoyage_isni(isni)
-#     nom_nett = main.clean_string(nom, False, True)
-#     prenom_nett = main.clean_string(prenom, False, True)
-#     date_debut_nett = date_debut
-#     date_fin_nett = date_fin
-#==============================================================================
+
     input_record = funcs.Aut_record(row,parametres)
     ark = ""
     if (parametres["preferences_alignement"] == 1):
         ark = aut2ark_by_id(input_record,parametres)
-    if (ark == "" and parametres["preferences_alignement"] == 1):
-        ark = aut2ark_by_accesspoint(
-                input_record.NumNot, 
-                input_record.lastname.propre,
-                input_record.firstname.propre,
-                input_record.firstdate.propre,
-                input_record.lastdate.propre
-                )
+        if (ark == ""):
+            ark = aut2ark_by_accesspoint(
+                    input_record.NumNot, 
+                    input_record.lastname.propre,
+                    input_record.firstname.propre,
+                    input_record.firstdate.propre,
+                    input_record.lastdate.propre
+                    )
+    else:
+        ark = aut_align_idref.aut2ppn_by_id(input_record, parametres)
+        if (ark == "" and input_record.lastname.propre):
+            ark = aut_align_idref.aut2ppn_by_accesspoint(input_record, parametres)
     if (ark == "" and parametres["isni_option"] == 1):
-        ark = accesspoint2isniorg(input_record)
+        ark = accesspoint2isniorg(input_record, parametres)
     print(str(n) + ". " + input_record.NumNot + " : " + ark)
     nbARK = len(ark.split(","))
     if (ark == ""):
@@ -882,8 +881,12 @@ def extractARKautfromBIB(record, nom, prenom, date_debut):
 # Gestion du formulaire
 # ==============================================================================
 
-def launch(form, entry_filename, headers, input_data_type,
-           isni_option, file_nb, id_traitement, meta_bnf, preferences_alignement=1):
+def launch(form, entry_filename, headers, input_data_type, preferences_alignement, 
+           isni_option, file_nb, id_traitement, meta_bnf):
+    """
+    Exécution du programme avec tous les paramètres, quand on clique
+    sur le bouton OK
+    """
     # main.check_file_name(entry_filename)
     # results2file(nb_fichiers_a_produire)
     parametres = {"headers": headers,
@@ -988,6 +991,35 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
 
     input_data_type.set(1)
 
+    tk.Label(
+        frame_input_aut,
+        bg=couleur_fond,
+        text="\nAligner de préférence :",
+        font="Arial 10 bold",
+        justify="left",
+    ).pack(anchor="w")
+    preferences_alignement = tk.IntVar()
+    bib2ark.radioButton_lienExample(
+        frame_input_aut,
+        preferences_alignement,
+        1,
+        couleur_fond,
+        "Avec la BnF (et à défaut avec le Sudoc)",
+        "",
+        "",
+    )
+    bib2ark.radioButton_lienExample(
+        frame_input_aut,
+        preferences_alignement,
+        2,
+        couleur_fond,
+        "Avec IdRef (et à défaut avec la BnF) - uniquement à partir d'AUT",
+        "",
+        "",
+    )
+    preferences_alignement.set(1)
+
+
     # Option Relance sur isni ?
     isni_option = tk.IntVar()
     tk.Checkbutton(frame_input_aut, text="Relancer sur isni.org en cas d'absence de réponse",
@@ -1039,7 +1071,9 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
     # file_format.focus_set()
     b = tk.Button(zone_ok_help_cancel, text="Aligner\nles autorités",
                   command=lambda: launch(form, entry_file_list[0], headers.get(),
-                                         input_data_type.get(), isni_option.get(),
+                                         input_data_type.get(),
+                                         preferences_alignement.get(), 
+                                         isni_option.get(),
                                          file_nb.get(), outputID.get(), meta_bnf.get()),
                   width=15, borderwidth=1, pady=40, fg="white",
                   bg=couleur_bouton, font="Arial 10 bold"

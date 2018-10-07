@@ -15,6 +15,7 @@ import tkinter as tk
 import webbrowser
 from tkinter import filedialog
 from urllib import error, request
+import os, ssl
 
 from unidecode import unidecode
 
@@ -24,8 +25,12 @@ import marc2tables
 import noticesaut2arkBnF as aut2ark
 import noticesbib2arkBnF as bib2ark
 
-
-# import matplotlib.pyplot as plt
+# Ajout exception SSL pour éviter
+# plantages en interrogeant les API IdRef
+# (HTTPS sans certificat)
+if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
+    getattr(ssl, '_create_unverified_context', None)): 
+    ssl._create_default_https_context = ssl._create_unverified_context
 
 version = 1.23
 lastupdate = "24/09/2018"
