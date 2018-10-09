@@ -15,6 +15,7 @@ Puis modifier le formulaire pour proposer l'option "Périodiques"
 import csv
 import os
 import tkinter as tk
+import http.client
 import urllib.parse
 from random import choice
 import string
@@ -1582,6 +1583,9 @@ def tad2ppn(input_record, parametres):
         # page = parse(request.urlopen(url2))
         type_page = ""
         print("erreur XML", url1)
+    except http.client.RemoteDisconnected:
+        type_page = ""
+        print("erreur connexion DoMyBiblio", url1)
 
     if (type_page == "html"):
         liste_resultats = page.xpath("//li[@class='list-group-item']/a")
