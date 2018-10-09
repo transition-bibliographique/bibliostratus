@@ -693,10 +693,10 @@ def oldfrbnf2ark(input_record):
     puis sur 8 si besoin, avec un contrôle des résultats sur le
     contenu du titre ou sur l'auteur"""
     systemid = ""
-    if input_record.frbnf[0:5].upper() == "FRBNF":
-        systemid = input_record.frbnf[5:14]
+    if input_record.frbnf.propre[0:5].upper() == "FRBNF":
+        systemid = input_record.frbnf.propre[5:14]
     else:
-        systemid = input_record.frbnf[4:13]
+        systemid = input_record.frbnf.propre[4:13]
 
     ark = rechercheNNB(input_record, systemid[0:8])
     if ark == "":
@@ -719,9 +719,9 @@ def frbnf2ark(input_record):
     uniquement le numéro, soit comme NNB/NNA, soit comme ancien
     numéro système (en zone 9XX)"""
     ark = ""
-    if input_record.frbnf[0:4].lower() == "frbn":
+    if input_record.frbnf.propre[0:4].lower() == "frbn":
         url = funcs.url_requete_sru('bib.otherid all "'
-                                    + input_record.frbnf + '"')
+                                    + input_record.frbnf.propre + '"')
         (test, page) = funcs.testURLetreeParse(url)
         if test:
             nb_resultats = int(
@@ -1974,7 +1974,7 @@ def item2ark_by_id(input_record, parametres):
 
     # A défaut, recherche de l'ARK à partir du FRBNF (+ contrôles sur ISBN, ou
     # Titre, ou Auteur)
-    if ark == "" and input_record.frbnf != "":
+    if ark == "" and input_record.frbnf.propre != "":
         ark = frbnf2ark(input_record)
         ark = ",".join([ark1 for ark1 in ark.split(",") if ark1 != ""])
 

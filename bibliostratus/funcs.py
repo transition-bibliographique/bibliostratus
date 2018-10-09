@@ -235,10 +235,11 @@ def nettoyage_isni(isni):
 
 def nettoyageFRBNF(frbnf):
     frbnf_nett = ""
-    if (frbnf[0:4].lower() == "frbn"):
-        frbnf_nett = unidecode_local(frbnf.lower())
-    for signe in ponctuation:
-        frbnf_nett = frbnf_nett.split(signe)[0]
+    frbnf = unidecode_local(frbnf.lower())
+    if ("frbn" in frbnf):
+        frbnf_nett = frbnf[frbnf.find("frbn"):]
+        for signe in ponctuation:
+            frbnf_nett = frbnf_nett.split(signe)[0]
     return frbnf_nett
 
 
@@ -531,7 +532,7 @@ class Isni:
 
 
 class FRBNF:
-    """Classe pour les ISNI"""
+    """Classe pour les FRBNF"""
     def __init__(self, string):  # Notre méthode constructeur
         self.init = string
         self.propre = nettoyageFRBNF(self.init)
@@ -583,7 +584,7 @@ class Bib_record:
 
     def __init__(self, input_row, option_record):  # Notre méthode constructeur
         self.NumNot = input_row[0]
-        self.frbnf = input_row[1]
+        self.frbnf = FRBNF(input_row[1])
         self.ark_init = input_row[2]
         self.isbn = International_id("")
         self.ean = International_id("")

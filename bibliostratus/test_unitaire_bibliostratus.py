@@ -108,8 +108,17 @@ def test_row_bib():
                                 ],
                                 1
                                 )
+    record2 = funcs.Bib_record(
+                                [
+                                 "1/104953", "(moccam)frbnf43632681", 
+                                 "", "978-2-7436-2583-2", "9782743625832", 
+                                 "Faillir être flingué roman", "celine minard", 
+                                 "2013", "", "Payot   Rivages"
+                                ],
+                                1
+                               )
     assert record.NumNot == "315756"
-    assert record.frbnf == "FRBNF435361100000003"
+    assert record.frbnf.propre == "frbnf435361100000003"
     assert record.ark_init == ""
     assert record.isbn.init == "978-2-213-67203-8"
     assert record.ean.init == ""
@@ -119,3 +128,4 @@ def test_row_bib():
     assert record.auteur_nett == "morin edgar"
     assert record.date_nett == "2013"
     assert record.publisher_nett == "fayard"
+    assert record2.frbnf.propre == "frbnf43632681"
