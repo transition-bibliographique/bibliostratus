@@ -95,6 +95,7 @@ def check_idref_record(input_record, idref_record, parametres):
     """
     Compare une notice d'autorité en entrée (class Aut_record)
     et une notice IdRef (class Aut_record aussi)
+    Reprendre ici
     """
     test = True
     return test
