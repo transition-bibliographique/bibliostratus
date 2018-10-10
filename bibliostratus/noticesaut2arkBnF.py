@@ -895,6 +895,7 @@ def launch(form, entry_filename, headers, input_data_type, preferences_alignemen
                   "file_nb": file_nb,
                   "meta_bnf": meta_bnf,
                   "id_traitement": id_traitement,
+                  "type_aut": "a",
                   "preferences_alignement": preferences_alignement}
     liste_reports = create_reports(id_traitement, file_nb)
 

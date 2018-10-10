@@ -631,13 +631,21 @@ def bibrecord2autmetas(numNot, doc_record, record):
     return fields2metas
 
 
-def record2listemetas(id_traitement, record, rec_format=1):
-    numNot = record2meta(record, ["001"])
-    doctype = record2doctype(record.leader, rec_format)
-    recordtype = record2recordtype(record.leader, rec_format)
-
+def record2doc_recordtype(leader, rec_format):
+    """Récupération de la combinaison
+    type de document + type de notice
+    à partir du label"""
+    doctype = record2doctype(leader, rec_format)
+    recordtype = record2recordtype(leader, rec_format)
     doc_record = doctype + recordtype
     doc_record = doc_record.strip()
+    return doctype, recordtype, doc_record
+
+
+def record2listemetas(id_traitement, record, rec_format=1):
+    numNot = record2meta(record, ["001"])
+    doctype, recordtype, doc_record = record2doc_recordtype(record.leader,
+                                                     rec_format)
     meta = []
     if (rec_format == 2):
         meta = autrecord2metas(numNot, doc_record, record)

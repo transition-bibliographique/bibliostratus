@@ -10,6 +10,7 @@ A lancer avec pytest
 
 import funcs
 import main
+import aut_align_idref
 
 # =============================================================================
 # Tests des fonctions de nettoyage de chaînes de caractères
@@ -107,7 +108,7 @@ def test_row_bib():
                                  "DL 2013", "", "Fayard"
                                 ],
                                 1
-                                )
+                              )
     record2 = funcs.Bib_record(
                                 [
                                  "1/104953", "(moccam)frbnf43632681", 
@@ -129,3 +130,15 @@ def test_row_bib():
     assert record.date_nett == "2013"
     assert record.publisher_nett == "fayard"
     assert record2.frbnf.propre == "frbnf43632681"
+
+def test_ppnidref_to_row():
+    """Vérifie la fonction ppn2metasAut :
+    à partir d'un PPN, on récupère des données en
+    entrée sous forme d'une liste à 8 items, structurée
+    comme les fichiers en entrée des alignements d'autorités"""
+    ppn = "026973065" # Jacques Le Goff (1924-2014)
+    metas_row = aut_align_idref.ppn2metasAut(ppn)
+    assert metas_row[4] == "Le Goff"
+    assert metas_row[5] == "Jacques"
+    assert metas_row[6] == "1924"
+    assert metas_row[7] == "2014"

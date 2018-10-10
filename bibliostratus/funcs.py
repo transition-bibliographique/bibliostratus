@@ -10,9 +10,13 @@ import http.client
 import urllib.parse
 import os
 from urllib import error, request
+import string
+import random
 
 from lxml import etree
 from collections import defaultdict
+
+import pymarc as mc
 
 import main
 from udecode import udecode
@@ -686,6 +690,26 @@ class Aut_bib_record:
         self.metas_init = input_row[1:]
         self.NumNot = input_row[0]
         self.frbnf = input_row[1]
+
+
+def xml2pymarcrecord(xml_record):
+    """
+    Sert à récupérer un fichier en ligne, contenant
+    une notice simple en XML (balise racine <record/>)
+    pour générer un fichier local
+    Renvoie le nom du fichier et le fichier lui-même
+    Celui-ci est à fermer après traitement (hors fonction)
+    """
+    temp_name = ''.join(random.choice(string.ascii_lowercase) for _ in range(10))
+    record_file = open(temp_name, "w", encoding="utf-8")
+    record_file.write("<collection>")
+    record_file.write(etree.tostring(xml_record).decode(encoding="utf-8"))
+    record_file.write("</collection>")
+    record_file.close()
+    pymarc_record = mc.marcxml.parse_xml_to_array(temp_name, strict=False)[0]
+    os.remove(temp_name)
+    return pymarc_record
+
 
 
 if __name__ == '__main__':

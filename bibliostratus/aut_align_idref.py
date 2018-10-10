@@ -8,10 +8,24 @@ A intégrer prochainement dans
 noticesaut2ark
 """
 import urllib.parse
+import os, ssl
+
+
+from lxml import etree
+import pymarc as mc
 
 import funcs
-
 import noticesaut2arkBnF as aut2ark
+import marc2tables
+
+
+# Ajout exception SSL pour éviter
+# plantages en interrogeant les API IdRef
+# (HTTPS sans certificat)
+if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
+    getattr(ssl, '_create_unverified_context', None)): 
+    ssl._create_default_https_context = ssl._create_unverified_context
+
 
 def aut2ppn_by_id(input_record, parametres):
     """
@@ -69,6 +83,50 @@ def aut2ppn_by_accesspoint(input_record, parametres):
     if test:
         for record in results.xpath("//doc"):
             ppn = record.find("str[@name='ppn_z']").text
-            Liste_ppn.append(ppn)
+            ppn = check_idref_record(input_record, ppn2idrefrecord(ppn, parametres), parametres)
+            if ppn:
+                Liste_ppn.append(ppn)
+
     Liste_ppn = ",".join(["PPN"+el for el in Liste_ppn])
     return Liste_ppn
+
+
+def check_idref_record(input_record, idref_record, parametres):
+    """
+    Compare une notice d'autorité en entrée (class Aut_record)
+    et une notice IdRef (class Aut_record aussi)
+    """
+    test = True
+    return test
+
+
+def ppn2idrefrecord(ppn, parametres):
+    """
+    A partir d'un PPN IdRef, récupère la notice en MARC
+    et la convertit en Aut_record
+    """
+    metas = ppn2metasAut(ppn, parametres)
+    record = funcs.Aut_record(metas, {})
+    return record
+
+
+def ppn2metasAut(ppn, parametres={"type_aut":"a"}):
+    """
+    A partir d'un PPN, génère une ligne de métadonnées 
+    telles qu'attendues par le module d'alignement
+    pour générer
+    """
+    url = f"https://www.idref.fr/{ppn}.xml"
+    line = []
+    #Si le fichier en entrée est composé de notices d'autorité
+    # PEP (a) ou ORG (b) : on s'attend à avoir 8 éléments
+    if ("type_aut" not in parametres
+        or parametres["type_aut"] == "a" 
+        or parametres["type_aut"] == "b"):
+        line = ["","","","","","","",""]
+    (test, record) = funcs.testURLetreeParse(url)
+    if (test):
+        record = funcs.xml2pymarcrecord(record)
+        doctype, recordtype, doc_record = marc2tables.record2doc_recordtype(record.leader, 2)
+        line = marc2tables.autrecord2metas(ppn, doc_record, record)
+    return line
