@@ -14,6 +14,7 @@ import re
 import tkinter as tk
 import webbrowser
 import xml
+from lxml import etree
 from collections import defaultdict
 import json
 
@@ -164,14 +165,24 @@ def path2value(record, field_subfield):
     if (field_subfield.find("$") > -1):
         field = field_subfield.split("$")[0]
         subfield = field_subfield.split("$")[1]
-        for f in record.get_fields(field):
-            for subf in f.get_subfields(subfield):
-                val_list.append(subf)
+        if (type(record) is etree._ElementTree):
+            for f in record.xpath(f".//*[@tag='{field}']"):
+                for subf in f.xpath(f".//*[@code='{subfield}']"):
+                    val_list.append(subf.text)
+        else:
+            for f in record.get_fields(field):
+                for subf in f.get_subfields(subfield):
+                    val_list.append(subf)
         if (val_list != []):
             value = ";".join(val_list)
     else:
-        if (record[field_subfield] is not None and int(field_subfield) < 10):
-            value = record[field_subfield].data
+        if (type(record) is etree._ElementTree):
+            if record.find(f".//*[@tag='{field_subfield}']"):
+                value = record.find(f".//*[@tag='{field_subfield}']").text
+        else:
+            if (record[field_subfield] is not None 
+                and int(field_subfield) < 10):
+                value = record[field_subfield].data
     return value
 
 

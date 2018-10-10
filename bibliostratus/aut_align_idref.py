@@ -83,22 +83,24 @@ def aut2ppn_by_accesspoint(input_record, parametres):
     if test:
         for record in results.xpath("//doc"):
             ppn = record.find("str[@name='ppn_z']").text
-            ppn = check_idref_record(input_record, ppn2idrefrecord(ppn, parametres), parametres)
+            ppn = check_idref_record(ppn, input_record, ppn2idrefrecord(ppn, parametres), parametres)
             if ppn:
                 Liste_ppn.append(ppn)
-
     Liste_ppn = ",".join(["PPN"+el for el in Liste_ppn])
     return Liste_ppn
 
 
-def check_idref_record(input_record, idref_record, parametres):
+def check_idref_record(ppn, input_record, idref_record, parametres):
     """
     Compare une notice d'autorité en entrée (class Aut_record)
     et une notice IdRef (class Aut_record aussi)
     Reprendre ici
     """
     test = True
-    return test
+    if test:
+        return ppn
+    else:
+        return ""
 
 
 def ppn2idrefrecord(ppn, parametres):
@@ -127,7 +129,7 @@ def ppn2metasAut(ppn, parametres={"type_aut":"a"}):
         line = ["","","","","","","",""]
     (test, record) = funcs.testURLetreeParse(url)
     if (test):
-        record = funcs.xml2pymarcrecord(record)
-        doctype, recordtype, doc_record = marc2tables.record2doc_recordtype(record.leader, 2)
+        leader = record.find(".//leader").text
+        doctype, recordtype, doc_record = marc2tables.record2doc_recordtype(leader, 2)
         line = marc2tables.autrecord2metas(ppn, doc_record, record)
     return line
