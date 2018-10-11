@@ -17,8 +17,6 @@ import os
 import tkinter as tk
 import http.client
 import urllib.parse
-from random import choice
-import string
 from collections import defaultdict
 import pymarc as mc
 from lxml import etree
@@ -1660,7 +1658,20 @@ def controle_keywords2ppn(input_record, ppn):
     resultat = ""
     sudoc_record = defaultdict(dict)
     url_sudoc_record = "https://www.sudoc.fr/" + ppn.replace("PPN", "") + ".xml"
-    tempfile_name = "".join([choice(string.ascii_lowercase) for _ in range(10)]) + ".xml"
+    (test, record) = funcs.testURLetreeParse(url_sudoc_record)
+    if (test):
+        leader = record.find(".//leader").text
+        doctype, recordtype, doc_record = marc2tables.record2doc_recordtype(leader, 2)
+        (sudoc_record["title"], sudoc_record["keyTitle"],
+            sudoc_record["authors"], sudoc_record["authors2keywords"],
+            sudoc_record["date"], sudoc_record["numeroTome"],
+            sudoc_record["publisher"], sudoc_record["pubPlace"],
+            sudoc_record["scale"],
+            sudoc_record["ark"], sudoc_record["frbnf"],
+            sudoc_record["isbn"], sudoc_record["issn"],
+            sudoc_record["ean"],
+            sudoc_record["id_commercial_aud"]) = marc2tables.metas_from_unimarc(record)
+"""    tempfile_name = "".join([choice(string.ascii_lowercase) for _ in range(10)]) + ".xml"
     urllib.request.urlretrieve(url_sudoc_record, tempfile_name)
     collection = mc.marcxml.parse_xml_to_array(
         tempfile_name, strict=False)
@@ -1673,7 +1684,7 @@ def controle_keywords2ppn(input_record, ppn):
             sudoc_record["ark"], sudoc_record["frbnf"],
             sudoc_record["isbn"], sudoc_record["issn"],
             sudoc_record["ean"],
-            sudoc_record["id_commercial_aud"]) = marc2tables.metas_from_unimarc(sudoc_marc_record)
+            sudoc_record["id_commercial_aud"]) = marc2tables.metas_from_unimarc(sudoc_marc_record)"""
         controle_titre = controle_titres(input_record, sudoc_record)
         controle_auteur = controle_auteurs(input_record, sudoc_record)
         controle_date = controle_dates(input_record, sudoc_record)

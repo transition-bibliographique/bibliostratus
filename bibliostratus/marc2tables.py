@@ -518,9 +518,15 @@ def metas_from_unimarc(record):
             )
 
 
-def bibrecord2metas(numNot, doc_record, record):
-
-    if (prefs["marc2tables_input_format"]["value"] == "marc21"):
+def bibrecord2metas(numNot, doc_record, record, pref_format_file = True):
+    """
+    Le record est une notice pymarc.Record ou en XML
+    Le paramètre pref_format_file permet de préciser
+    que le format de préférence est à chercher dans
+    le fichier preferences.json
+    Sinon, Unimarc"""
+    if (pref_format_file == True
+        and prefs["marc2tables_input_format"]["value"] == "marc21"):
         (title, keyTitle, authors, authors2keywords,
          date, numeroTome, publisher, pubPlace, scale,
          ark, frbnf, isbn, issn, ean,
