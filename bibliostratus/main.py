@@ -190,8 +190,8 @@ def RepresentsInt(s):
 
 
 def extract_subfield(record, field, subfield, nb_occ="all", sep="~"):
-    path = ".//mxc:datafield[@tag='" + field + \
-        "']/mxc:subfield[@code='" + subfield + "']"
+    path = ".//*[@tag='" + field + \
+        "']/*[@code='" + subfield + "']"
     listeValues = []
     if (nb_occ == "first" or nb_occ == 1):
         if (record.find(path, namespaces=ns) is not None and
