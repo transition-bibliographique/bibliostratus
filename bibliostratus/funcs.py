@@ -123,6 +123,7 @@ def nettoyageIssnPourControle(issn):
 
 def nettoyage_no_commercial(no_commercial_propre):
     no_commercial_propre = unidecode_local(no_commercial_propre.lower())
+    no_commercial_propre = no_commercial_propre.strip(" ")
     return no_commercial_propre
 
 
