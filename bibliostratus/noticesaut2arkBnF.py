@@ -937,7 +937,7 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
 
     form, zone_alert_explications, zone_access2programs, zone_actions, \
         zone_ok_help_cancel, zone_notes = main.form_generic_frames(
-            master, "Aligner ses données d'autorité avec les notices BnF",
+            master, "Aligner ses données d'autorité avec la BnF ou IdRef",
             couleur_fond, couleur_bouton, access_to_network
         )
 
@@ -1095,7 +1095,7 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
     outputID = tk.Entry(frame_output_file, bg=couleur_fond, width=30)
     outputID.pack(anchor="w")
 
-    tk.Label(frame_output_file, text="\n",
+    tk.Label(frame_output_file, text="\n"*10,
              bg=couleur_fond).pack(anchor="w")
 
     # file_format.focus_set()
