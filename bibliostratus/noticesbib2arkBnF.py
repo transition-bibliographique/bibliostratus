@@ -1655,83 +1655,41 @@ def controle_keywords2ppn(input_record, ppn):
     titre, auteur et date sont bien présents dans ces zones
     respectives, car la recherche est effectuée
     dans toute la notice """
-    resultat = ""
+    ppn_final = ""
     sudoc_record = defaultdict(dict)
     url_sudoc_record = "https://www.sudoc.fr/" + ppn.replace("PPN", "") + ".xml"
-    (test, record) = funcs.testURLetreeParse(url_sudoc_record)
+    (test, record_sudoc) = funcs.testURLetreeParse(url_sudoc_record)
     if (test):
-        leader = record.find(".//leader").text
-        doctype, recordtype, doc_record = marc2tables.record2doc_recordtype(leader, 2)
-        (sudoc_record["title"], sudoc_record["keyTitle"],
-            sudoc_record["authors"], sudoc_record["authors2keywords"],
-            sudoc_record["date"], sudoc_record["numeroTome"],
-            sudoc_record["publisher"], sudoc_record["pubPlace"],
-            sudoc_record["scale"],
-            sudoc_record["ark"], sudoc_record["frbnf"],
-            sudoc_record["isbn"], sudoc_record["issn"],
-            sudoc_record["ean"],
-            sudoc_record["id_commercial_aud"]) = marc2tables.metas_from_unimarc(record)
-"""    tempfile_name = "".join([choice(string.ascii_lowercase) for _ in range(10)]) + ".xml"
-    urllib.request.urlretrieve(url_sudoc_record, tempfile_name)
-    collection = mc.marcxml.parse_xml_to_array(
-        tempfile_name, strict=False)
-    for sudoc_marc_record in collection:
-        (sudoc_record["title"], sudoc_record["keyTitle"],
-            sudoc_record["authors"], sudoc_record["authors2keywords"],
-            sudoc_record["date"], sudoc_record["numeroTome"],
-            sudoc_record["publisher"], sudoc_record["pubPlace"],
-            sudoc_record["scale"],
-            sudoc_record["ark"], sudoc_record["frbnf"],
-            sudoc_record["isbn"], sudoc_record["issn"],
-            sudoc_record["ean"],
-            sudoc_record["id_commercial_aud"]) = marc2tables.metas_from_unimarc(sudoc_marc_record)"""
-        controle_titre = controle_titres(input_record, sudoc_record)
-        controle_auteur = controle_auteurs(input_record, sudoc_record)
-        controle_date = controle_dates(input_record, sudoc_record)
-        if (controle_titre and controle_auteur and controle_date):
-            resultat = ppn
-    os.remove(tempfile_name)
-    return resultat
+        ppn_final = comparaisonTitres(input_record.NumNot,
+                            ppn,
+                            "",
+                            "",
+                            input_record.titre.controles,
+                            input_record.auteur,
+                            input_record.date_nett,
+                            input_record.tome_nett,
+                            record_sudoc,
+                            "Titre-Auteur-Date DoMyBiblio",
+                            )
+        if (ppn_final and input_record.date_nett):
+            ppn_final = checkDate(ark, input_record.date_nett, record_sudoc)
+        if (ppn_final and input_record.auteur_nett):
+            ppn_final = controle_auteurs(input_record, record_sudoc)
+    return ppn_final
 
 
-def controle_titres(input_record, sudoc_record):
+def controle_auteurs(ppn, input_record, sudoc_record):
     """Contrôle zones de titre entre une input_record (class Bib_record)
     et une sudoc_record(dictionnaire, généré comme pour marc2tables) """
-    check = True
-    sudoc_titles = funcs.nettoyage(
-        " ".join([sudoc_record["title"], sudoc_record["keyTitle"]]),
-        False,
-        True)
-    for word in input_record.titre.recherche.split(" "):
-        if (word not in sudoc_titles):
-            check = False
-    if not check:
-        check = True
-        for word in sudoc_titles.split(" "):
-            if (word not in sudoc_titles):
-                check = False
-    return check
-
-
-def controle_auteurs(input_record, sudoc_record):
-    """Contrôle zones de titre entre une input_record (class Bib_record)
-    et une sudoc_record(dictionnaire, généré comme pour marc2tables) """
+    ppn_final = ""
     check = True
     for word in input_record.auteur_nett.split(" "):
         if (funcs.nettoyage(word) not in funcs.nettoyage(sudoc_record["authors"])):
             check = False
     # print("checkAuteurs", check, sudoc_record["authors"], "|", input_record.auteur_nett)
-    return check
-
-
-def controle_dates(input_record, sudoc_record):
-    """Contrôle zones de titre entre une input_record (class Bib_record)
-    et une sudoc_record(dictionnaire, généré comme pour marc2tables) """
-    check = True
-    if (input_record.date_debut not in sudoc_record["date"]):
-        check = False
-    # print("checkDates", check, sudoc_record["date"], "|", input_record.date_debut)
-    return check
+    if check:
+        ppn_final = ppn
+    return ppnn_final
 
 
 def checkTypeRecord(ark, typeRecord_attendu):
