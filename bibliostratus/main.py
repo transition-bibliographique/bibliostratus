@@ -524,13 +524,13 @@ def formulaire_main(access_to_network, last_version):
     # =============================================================================
     #   Module blanc : aligner ses données bibliographiques ou AUT
     # =============================================================================
-    tk.Label(frame1, text="Aligner ses données avec la BnF",
+    tk.Label(frame1, text="Aligner des données bibliographiques",
              bg=couleur_fond, fg="#365B43", font="Arial 11 bold").pack(anchor="w")
     tk.Label(frame1, text="\n", bg=couleur_fond).pack()
 
     bib2arkButton = tk.Button(
         frame1,
-        text="Aligner ses données  BIB\n avec le catalogue BnF\nà partir de fichiers tableaux",
+        text="Aligner ses données  BIB\n avec la BnF ou le Sudoc\nà partir de fichiers tableaux",
         command=lambda: bib2ark.formulaire_noticesbib2arkBnF(
             master, access_to_network, [0, False]
         ),

@@ -1672,24 +1672,10 @@ def controle_keywords2ppn(input_record, ppn):
                             "Titre-Auteur-Date DoMyBiblio",
                             )
         if (ppn_final and input_record.date_nett):
-            ppn_final = checkDate(ark, input_record.date_nett, record_sudoc)
-        if (ppn_final and input_record.auteur_nett):
-            ppn_final = controle_auteurs(input_record, record_sudoc)
+            ppn_final = checkDate(ppn, input_record.date_nett, record_sudoc)
+    #    if (ppn_final and input_record.auteur_nett):
+    #        ppn_final = controle_auteurs(ppn, input_record, record_sudoc)
     return ppn_final
-
-
-def controle_auteurs(ppn, input_record, sudoc_record):
-    """Contrôle zones de titre entre une input_record (class Bib_record)
-    et une sudoc_record(dictionnaire, généré comme pour marc2tables) """
-    ppn_final = ""
-    check = True
-    for word in input_record.auteur_nett.split(" "):
-        if (funcs.nettoyage(word) not in funcs.nettoyage(sudoc_record["authors"])):
-            check = False
-    # print("checkAuteurs", check, sudoc_record["authors"], "|", input_record.auteur_nett)
-    if check:
-        ppn_final = ppn
-    return ppnn_final
 
 
 def checkTypeRecord(ark, typeRecord_attendu):
@@ -2497,7 +2483,7 @@ def formulaire_noticesbib2arkBnF(
         zone_notes,
     ] = main.form_generic_frames(
         master,
-        "Programme d'alignement de données bibliographiques avec la BnF",
+        "Programme d'alignement de données bibliographiques avec la BnF et le Sudoc",
         couleur_fond,
         couleur_bouton,
         access_to_network,
