@@ -265,6 +265,16 @@ def accesspoint2isniorg(input_record, parametres):
                 isnis[i] = ark
                 NumNotices2methode[input_record.NumNot].append("ISNI > ARK")
             i += 1
+    if (parametres["preferences_alignement"] == 2):
+        for isni in isnis:
+            NumNotices2methode[input_record.NumNot][-1]
+            isni_id = isni.split("/")[-1]
+            ppn = aut_align_idref.isni2ppn(input_record.NumNot, isni_id, origine="accesspoint")
+            if (ppn != ""):
+                isnis[i] = ppn
+                NumNotices2methode[input_record.NumNot].append("ISNI > PPN")
+            i += 1
+
     isnis = ",".join(isnis)
     return isnis
 
@@ -302,7 +312,8 @@ def align_from_aut_item(row, n, form_aut2ark, parametres, liste_reports):
                     input_record.lastname.propre,
                     input_record.firstname.propre,
                     input_record.firstdate.propre,
-                    input_record.lastdate.propre
+                    input_record.lastdate.propre,
+                    parametres
                     )
     else:
         ark = aut_align_idref.aut2ppn_by_id(input_record, parametres)
@@ -691,18 +702,24 @@ def relancerNNA_nomAuteur(NumNot, systemid, nom):
     return listeArk
 
 
-def aut2ark_by_accesspoint(NumNot, nom_nett, prenom_nett, date_debut, date_fin):
+def aut2ark_by_accesspoint(NumNot, nom_nett, prenom_nett, 
+                           date_debut, date_fin, parametres):
+    # Conversion du type d'autorité des codes Unimarc
+    # en codes Intermarc pour le SRU BnF
+    type_aut_dict = {"a" : "PEP",
+                     "b" : "ORG"}
+
     listeArk = []
     url = funcs.url_requete_sru(
         'aut.accesspoint adj "' + " ".join([nom_nett, prenom_nett, date_debut]) 
         + '" and aut.status any "sparse validated"'
-        + ' and aut.type any "PEP ORG"')
+        + ' and aut.type all "' + type_aut_dict[parametres["type_aut"]] + '"')
     testdatefin = False
     if (date_debut == "" and date_fin != ""):
         url = funcs.url_requete_sru('aut.accesspoint adj "' + " ".join(
             [nom_nett, prenom_nett]) + '" and aut.accesspoint all "' + date_fin 
         + '" and aut.status any "sparse validated"'
-        + ' and aut.type any "PEP ORG"')
+        + ' and aut.type any "' + type_aut_dict[parametres["type_aut"]] + '"')
         testdatefin = True
     (test, results) = funcs.testURLetreeParse(url)
     if (test):
@@ -889,19 +906,25 @@ def launch(form, entry_filename, headers, input_data_type, preferences_alignemen
     """
     # main.check_file_name(entry_filename)
     # results2file(nb_fichiers_a_produire)
+    # Si la valeur input_data_type en entrée est 1 => PEP (code Unimarc IdRef "a")
+    # Si cette valeur est 2 => ORG (code Unimarc IdRef "b")
+    type_aut_dict = {
+        1 : "a",
+        2 : "b"
+    }
     parametres = {"headers": headers,
                   "input_data_type": input_data_type,
                   "isni_option": isni_option,
                   "file_nb": file_nb,
                   "meta_bnf": meta_bnf,
                   "id_traitement": id_traitement,
-                  "type_aut": "a",
+                  "type_aut": type_aut_dict[input_data_type],
                   "preferences_alignement": preferences_alignement}
     liste_reports = create_reports(id_traitement, file_nb)
 
-    if (input_data_type == 1):
+    if (input_data_type == 1 or input_data_type == 2):
         align_from_aut(form, entry_filename, liste_reports, parametres)
-    elif (input_data_type == 2):
+    elif (input_data_type == 3):
         align_from_bib(form, entry_filename, liste_reports, parametres)
     else:
         main.popup_errors("Format en entrée non défini")
@@ -979,12 +1002,18 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
     input_data_type = tk.IntVar()
     bib2ark.radioButton_lienExample(
         frame_input_aut, input_data_type, 1, couleur_fond,
-        "Liste de notices d'autorité",
+        "Liste de notices d'autorité Personnes",
         "(" + " | ".join(header_columns_init_aut2aut) + ")",
         "main/examples/aut_align_aut.tsv"  # noqa
     )
     bib2ark.radioButton_lienExample(
         frame_input_aut, input_data_type, 2, couleur_fond,
+        "Liste de notices d'autorité Organisations",
+        "(" + " | ".join(header_columns_init_aut2aut) + ")",
+        ""  # noqa
+    )
+    bib2ark.radioButton_lienExample(
+        frame_input_aut, input_data_type, 3, couleur_fond,
         "Liste de notices bibliographiques",
         "(" + " | ".join(header_columns_init_bib2aut) + ")",
         "main/examples/aut_align_bib.tsv"  # noqa

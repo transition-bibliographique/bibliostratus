@@ -50,16 +50,8 @@ def autArk2ppn(NumNot, ark_nett):
         for ppn in result.xpath("//ppn"):
             Liste_ppn.append(ppn.text)    
     Liste_ppn = ",".join(["PPN" + el for el in Liste_ppn if el])
-    return Liste_ppn
-
-
-def isni2ppn(NumNot, isni):
-    """
-    Le jour où il existera une API permettant d'interroger
-    IdRef par son ISNI, ce sera utilisé là...
-    """
-    Liste_ppn = []
-    Liste_ppn = ",".join(["PPN"+el for el in Liste_ppn if el])
+    if Liste_ppn:
+        aut2ark.NumNotices2methode[NumNot].append("ARK > PPN")
     return Liste_ppn
 
 
@@ -70,13 +62,19 @@ def aut2ppn_by_accesspoint(input_record, parametres):
     https://www.idref.fr/Sru/Solr?q=persname_t:%22Hugo%20Victor%201802%22%20AND%20recordtype_z:a&sort=score%20desc&version=2.2&start=0&rows=30&indent=on
 
     """
+    # Conversion du code (1 lettre) de type d'entité
+    # en nom d'index pour la recherche par point d'accès
+    aut_type_dict = {
+        "a" : "persname",
+        "b" : "corpname"
+    }
     Liste_ppn = []
     query = [input_record.lastname.propre, input_record.firstname.propre]
     if (input_record.firstdate.propre):
         query.append(input_record.firstdate.propre)
     elif (input_record.lastdate.propre):
         query.append(input_record.lastdate.propre)
-    url = "".join(["https://www.idref.fr/Sru/Solr?q=persname_t:%22",
+    url = "".join(["https://www.idref.fr/Sru/Solr?q=" + aut_type_dict[parametres["type_aut"]] + "_t:%22",
                    urllib.parse.quote(" ".join(query)),
                    "%22%20AND%20recordtype_z:a&sort=score%20desc&version=2.2&start=0&rows=1000"])
     (test, results) = funcs.testURLetreeParse(url)
@@ -133,3 +131,16 @@ def ppn2metasAut(ppn, parametres={"type_aut":"a"}):
         doctype, recordtype, doc_record = marc2tables.record2doc_recordtype(leader, 2)
         line = marc2tables.autrecord2metas(ppn, doc_record, record)
     return line
+
+
+def isni2ppn(NumNot, isni, origine="isni"):
+    Liste_ppn = []
+    url = "https://www.idref.fr/services/isni2idref/" + isni
+    (test, page) = funcs.testURLetreeParse(url, display=False)
+    if test:
+        for ppn in page.xpath("//ppn", namespaces=main.ns):
+            Liste_ppn.append(ppn.text)
+    Liste_ppn = ",".join(["PPN"+el for el in Liste_ppn if el])
+    if Liste_ppn:
+        aut2ark.NumNotices2methode[NumNot].append(origine)
+    return Liste_ppn

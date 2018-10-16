@@ -378,56 +378,64 @@ def elargirDatesPerios(n):
     return " ".join([str(el) for el in liste])
 
 
-def testURLetreeParse(url):
+def testURLetreeParse(url, display=True):
     test = True
     resultat = ""
     try:
         resultat = etree.parse(request.urlopen(url))
     except etree.XMLSyntaxError as err:
-        print(url)
-        print(err)
-        url_access_pbs.append([url, "etree.XMLSyntaxError"])
         test = False
+        if (display):
+            print(url)
+            print(err)
+            url_access_pbs.append([url, "etree.XMLSyntaxError"])
     except etree.ParseError as err:
-        print(url)
-        print(err)
         test = False
-        url_access_pbs.append([url, "etree.ParseError"])
+        if (display):
+            print(url)
+            print(err)
+            url_access_pbs.append([url, "etree.ParseError"])
     except error.URLError as err:
-        print(url)
-        print(err)
         test = False
-        url_access_pbs.append([url, "urllib.error.URLError"])
+        if (display):
+            print(url)
+            print(err)
+            url_access_pbs.append([url, "urllib.error.URLError"])
     except ConnectionResetError as err:
-        print(url)
-        print(err)
         test = False
-        url_access_pbs.append([url, "ConnectionResetError"])
+        if (display):
+            print(url)
+            print(err)
+            url_access_pbs.append([url, "ConnectionResetError"])
     except TimeoutError as err:
         print(url)
         print(err)
         test = False
         url_access_pbs.append([url, "TimeoutError"])
     except http.client.RemoteDisconnected as err:
-        print(url)
-        print(err)
         test = False
-        url_access_pbs.append([url, "http.client.RemoteDisconnected"])
+        if (display):
+            print(url)
+            print(err)
+            url_access_pbs.append([url, "http.client.RemoteDisconnected"])
     except http.client.BadStatusLine as err:
-        print(url)
-        print(err)
         test = False
-        url_access_pbs.append([url, "http.client.BadStatusLine"])
+        if (display):
+            print(url)
+            print(err)
+            url_access_pbs.append([url, "http.client.BadStatusLine"])
     except ConnectionAbortedError as err:
-        print(url)
-        print(err)
         test = False
-        url_access_pbs.append([url, "ConnectionAbortedError"])
+        if (display):
+            print(url)
+            print(err)
+            url_access_pbs.append([url, "ConnectionAbortedError"])
     except error.HTTPError as err:
-        print(url)
-        print(err)
         test = False
-        url_access_pbs.append([url, "urllib.error.HTTPError"])
+        if (display):
+            print(url)
+            print(err)
+            url_access_pbs.append([url, "urllib.error.HTTPError"])
     return (test, resultat)
 
 
