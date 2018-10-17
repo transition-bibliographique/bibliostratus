@@ -720,13 +720,17 @@ def write_reports(id_traitement, doc_record, rec_format):
             filename = "VID-" + filename
         elif (doc_record == "im" or doc_record == "jm"):
             header_columns = bib2ark.header_columns_init_cddvd
-            filename = "AUD-" + filename
+            filename = "AUD-" + filename2
         elif (len(doc_record) > 1 and doc_record[1] == "s"):
             header_columns = bib2ark.header_columns_init_perimpr
             filename = "PER-" + filename
     if (rec_format == 2):
         if (doc_record == "ca"):
             header_columns = aut2ark.header_columns_init_aut2aut
+            filename = "PERS-" + filename
+        if (doc_record == "cb"):
+            header_columns = aut2ark.header_columns_init_aut2aut
+            filename = "ORG-" + filename
     if (rec_format == 3):
         if (doc_record == "ca"):
             header_columns = aut2ark.header_columns_init_bib2aut
@@ -1004,7 +1008,7 @@ def formulaire_marc2tables(
     tk.Radiobutton(
         cadre_input_type_rec,
         bg=couleur_fond,
-        text="autorités (personnes)",
+        text="autorités",
         variable=rec_format,
         value=2,
         anchor="w",

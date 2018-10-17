@@ -37,7 +37,7 @@ entry_file_list = []
 
 header_columns_init_aut2aut = [
     'N° Notice AUT', 'FRBNF', 'ARK', 'ISNI', 'Nom', 'Prénom',
-    'Date de naissance', 'Date de mort'
+    'Date de début', 'Date de fin'
 ]
 header_columns_init_bib2aut = [
     "N° Notice AUT", "N° notice BIB", "ARK Bib", "FRBNF Bib", "Titre",
@@ -1002,13 +1002,13 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
     input_data_type = tk.IntVar()
     bib2ark.radioButton_lienExample(
         frame_input_aut, input_data_type, 1, couleur_fond,
-        "Liste de notices d'autorité Personnes",
+        "[PËRS] Liste de notices Personnes",
         "(" + " | ".join(header_columns_init_aut2aut) + ")",
         "main/examples/aut_align_aut.tsv"  # noqa
     )
     bib2ark.radioButton_lienExample(
         frame_input_aut, input_data_type, 2, couleur_fond,
-        "Liste de notices d'autorité Organisations",
+        "[ORG] Liste de notices Organisations",
         "(" + " | ".join(header_columns_init_aut2aut) + ")",
         ""  # noqa
     )
