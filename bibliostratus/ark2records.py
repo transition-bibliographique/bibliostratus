@@ -10,6 +10,7 @@ notices complètes (en XML)
 """
 
 import csv
+import random, string
 import os
 import re
 import tkinter as tk
@@ -96,13 +97,13 @@ def ark2record(ark, type_record, format_BIB, renvoyerNotice=False):
 
 
 def XMLrecord2string(record):
-    record_str = str(etree.tostring(record))
+    record_str = etree.tostring(record).decode(encoding="utf-8")
     record_str = record_str.replace("<mxc:", "<").replace("</mxc:", "</")
-    record_str = re.sub(r"<record[^>]+>", r"<record>", record_str)
-    record_str = record_str.replace("b'", "").replace("      '", "\n").replace(
+    record_str = re.sub("<record[^>]+>", "<record>", record_str)
+    """record_str = record_str.replace("b'", "").replace("      '", "\n").replace(
         "\\n", "\n").replace("\\t", "\t").replace("\\r", "\n").replace(
-            "</record>'", "</record>")
-    return (record_str)
+            "</record>'", "</record>")"""
+    return record_str
 
 
 def extract_nna_from_bib_record(record, field, source):
@@ -163,10 +164,7 @@ def file_create(record_type, parametres):
         filename = id_filename + ".xml"
         file = open(filename, "w", encoding="utf-8")
         file.write("<?xml version='1.0'?>\n")
-        file.write("<mxc:collection ")
-        for key in main.ns:
-            file.write(' xmlns:' + key + '="' + main.ns[key] + '"')
-        file.write(">\n")
+        file.write("<collection>")
     else:
         filename = id_filename + ".iso2709"
         file = mc.MARCWriter(open(filename, "wb"))
@@ -175,7 +173,7 @@ def file_create(record_type, parametres):
 
 def file_fin(file, format_file):
     if (format_file == 2):
-        file.write("</mxc:collection>")
+        file.write("</collection>")
     file.close()
 
 
@@ -183,33 +181,11 @@ def XMLrec2isorecord(XMLrec):
     XMLrec = XMLrec.replace("<mxc:", "<").replace("</mxc:", "</")
     XMLrec = "<collection>" + XMLrec + "</collection>"
     XMLrec = re.sub(r"<record[^>]+>", r"<record>", XMLrec)
-    filename_temp = "temp.xml"
+    filename_temp = ''.join([random.choice(string.ascii_lowercase) for i in range(5)]) + ".xml"
     file_temp = open(filename_temp, "w", encoding="utf-8")
     file_temp.write(XMLrec)
+    file_temp.close()
     return filename_temp
-
-def record_correct(pymarc_record):
-    """Corrections des chaînes de caractères des valeurs fournies par Pymarc 
-    La librairie transforme notamment les apostrophes en antislash + apostrophe """
-    corrected_record = mc.Record()
-    corrected_record.force_utf8 = True
-    corrected_record.leader = pymarc_record.leader
-    for field in pymarc_record:
-        field_tag = field.tag
-        if (field_tag[0:2] == "00"):
-            corrected_record.add_field(field)
-        else:
-            field_indicators = field.indicators
-            subfields_corrected = []
-            for subfield in field.subfields:
-                subfields_corrected.append(subfield.replace("\\'", "'"))
-            corrected_record.add_field(
-                mc.Field(
-                    tag=field_tag,
-                    indicators=field_indicators,
-                    subfields=subfields_corrected)
-                    )
-    return corrected_record
 
 
 def record2file(file, XMLrec, format_file):
@@ -218,13 +194,17 @@ def record2file(file, XMLrec, format_file):
         XMLrec_str = XMLrecord2string(XMLrec)
         filename_temp = XMLrec2isorecord(XMLrec_str)
         collection = mc.marcxml.parse_xml_to_array(filename_temp, strict=False)
+        # collection.force_utf8 = True
         for record in collection:
             record.force_utf8 = True
-            record = record_correct(record)
             try:
                 file.write(record)
             except UnicodeEncodeError as err:
                 errors_list.append([XMLrec_str, str(err)])
+        try:
+            os.remove(filename_temp)
+        except FileNotFoundError:
+            pass
     # si sortie en XML
     if (format_file == 2):
         record = XMLrecord2string(XMLrec)
@@ -325,8 +305,6 @@ def errors_file(outputID):
 def fin_traitements(window, outputID):
     if (errors_list != []):
         errors_file(outputID)
-    if (os.path.isfile("temp.xml") is True):
-        os.remove("temp.xml")
     print("Programme d'extraction de notices terminé")
     window.destroy()
 
