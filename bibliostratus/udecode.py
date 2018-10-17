@@ -105,4 +105,3 @@ def udecode(string):
         except ValueError:
             pass
     return string
-
