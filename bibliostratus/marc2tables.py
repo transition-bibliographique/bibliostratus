@@ -595,7 +595,7 @@ def autrecord2metas(numNot, doc_record, record):
     ark = record2ark(record2meta(record, ["033$a"]))
     frbnf = record2frbnf(record2meta(record, ["035$a"]))
     isni = record2isniAUT(record2meta(record, ["010$a"]))
-    firstname = record2lastnameAUT(record2meta(record, ["200$b"], ["210$b"]))
+    firstname = record2lastnameAUT(record2meta(record, ["200$b"], ["210$b", "210$c"]))
     lastname = record2firstnameAUT(record2meta(record, ["200$a"], ["210$a"]))
     firstdate = record2firstdateAUT(record2meta(
         record, ["103$a"]), record2meta(record, ["200$f"]))
@@ -720,7 +720,7 @@ def write_reports(id_traitement, doc_record, rec_format):
             filename = "VID-" + filename
         elif (doc_record == "im" or doc_record == "jm"):
             header_columns = bib2ark.header_columns_init_cddvd
-            filename = "AUD-" + filename2
+            filename = "AUD-" + filename
         elif (len(doc_record) > 1 and doc_record[1] == "s"):
             header_columns = bib2ark.header_columns_init_perimpr
             filename = "PER-" + filename
