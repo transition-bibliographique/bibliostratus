@@ -24,8 +24,8 @@ import marc2tables
 import noticesaut2arkBnF as aut2ark
 import noticesbib2arkBnF as bib2ark
 
-version = 1.23
-lastupdate = "24/09/2018"
+version = 1.24
+lastupdate = "18/10/2018"
 programID = "bibliostratus"
 
 ns = {

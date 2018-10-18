@@ -1,5 +1,18 @@
+### version 1.24
+Octobre 2018
+- Menu principal : remplacement "outil d'alignement BnF" par "outil d'alignement BnF/Abes"
+- Module bleu (marc2tables) :
+	- Le numéro FBRNF peut être trouvé en 035$a, ou à défaut en 801$h
+- Modules blancs :
+	- les contrôles sur les notices trouvées se font de la même manière pour idRef, le Sudoc et la BnF
+- Module blanc (Alignement AUT) :
+	- option d'alignement sur les personnes / organisations
+	- option d'alignement sur BnF / IdRef
+- Module rouge (ark2records) :
+	- meilleure préservation des chaînes de caractères (pas d'ajout de caractère d'échappement pour les apostrophes)
+
 ### version 1.23
-Septembre 2018
+30 septembre 2018
 - Module bleu (marc2tables) : ajout du type "cartes", avec récupération de l'échelle en dernière colonne
 - Module blanc (alignement notices bib) :
 	- Si alignement par ISBN, contrôle sur le numéro de volume (si renseigné)
