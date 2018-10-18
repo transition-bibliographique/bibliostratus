@@ -166,8 +166,8 @@ def path2value(record, field_subfield):
         field = field_subfield.split("$")[0]
         subfield = field_subfield.split("$")[1]
         if (type(record) is etree._ElementTree):
-            for f in record.xpath(f".//*[@tag='{field}']"):
-                for subf in f.xpath(f".//*[@code='{subfield}']"):
+            for f in record.xpath(".//*[@tag='%s']" % field):
+                for subf in f.xpath(".//*[@code='%s']" % subfield):
                     val_list.append(subf.text)
         else:
             for f in record.get_fields(field):
@@ -177,8 +177,8 @@ def path2value(record, field_subfield):
             value = ";".join(val_list)
     else:
         if (type(record) is etree._ElementTree):
-            if record.find(f".//*[@tag='{field_subfield}']"):
-                value = record.find(f".//*[@tag='{field_subfield}']").text
+            if record.find(".//*[@tag='%s']" % field_subfield):
+                value = record.find(".//*[@tag='']" % field_subfield).text
         else:
             if (record[field_subfield] is not None 
                 and int(field_subfield) < 10):
