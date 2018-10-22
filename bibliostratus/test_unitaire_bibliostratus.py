@@ -83,6 +83,17 @@ def test_cleaning_string():
     assert funcs.nettoyagePubPlace("Paris : Gallimard, 1930") == "paris gallimard"
 
 
+def test_clean_stop_words():
+    list_stop_words = ['bon', 'mal', 'p.', 's.e.', 's. exc.', 'r.m.', 'r.p.',
+                       'vte', 'melle', 'mlle', 'gal', 'dr', 'cte', 'mis', 'mgr',
+                       'm.', 'mr', 'mme', 'mm.', 'mise', 'gl', 'ct', 'rev.p.',
+                       'vve ', 've', 'n°', 'sainct', 'st', 'saincte', 'ste ',
+                       'csse', 'ctesse']
+    title = "Le Cte et la Ctesse de Valcourt à la chasse"
+    title_stop = funcs.clean_stop_words(title, list_stop_words, " ")
+    assert title_stop == "Le et la de Valcourt à la chasse"
+
+
 # =============================================================================
 # Contrôles des mécanismes de fonctionnement global du logiciel
 # =============================================================================

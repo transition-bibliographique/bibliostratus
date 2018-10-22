@@ -518,7 +518,7 @@ def metas_from_unimarc(record):
             )
 
 
-def bibrecord2metas(numNot, doc_record, record, pref_format_file = True):
+def bibrecord2metas(numNot, doc_record, record, pref_format_file=True):
     """
     Le record est une notice pymarc.Record ou en XML
     Le paramètre pref_format_file permet de préciser
@@ -542,7 +542,7 @@ def bibrecord2metas(numNot, doc_record, record, pref_format_file = True):
     if (doc_record == "am" or doc_record == "lm"):
         meta = [numNot, frbnf, ark, isbn, ean, title,
                 authors2keywords, date, numeroTome, publisher]
-    if (doc_record == "em"):
+    elif (doc_record == "em"):
         meta = [numNot, frbnf, ark, isbn, ean, title,
                 authors2keywords, date, publisher, scale]
     elif (doc_record == "im" or doc_record == "jm" or doc_record == "gm"):

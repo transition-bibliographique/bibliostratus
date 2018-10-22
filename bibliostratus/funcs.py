@@ -8,7 +8,7 @@ Fonctions et classes génériques pour Bibliostratus
 
 import http.client
 import urllib.parse
-import os
+import os, sys, subprocess
 from urllib import error, request
 import string
 import json
@@ -101,7 +101,7 @@ def nettoyage(string, remplacerEspaces=True, remplacerTirets=True, remplacerApos
     return string
 
 
-def clean_stop_words(string, list_stop_words, sep):
+def clean_stop_words(string, list_stop_words, sep=" "):
     """Dans une chaîne de caractères 'string', on isole chaque mot 
     et s'il s'agit d'un des stop words de la list_stop_words, on le supprime"""
     string_list = string.split(sep)
@@ -551,14 +551,17 @@ def url_requete_sru(query, recordSchema="unimarcxchange",
 def open_local_file(path):
     """Construit le chemin absolu vers un fichier en local
     Permet d'être correct à la fois en mode "code source"
-    et en version précompilée"""
+    et en version précompilée """
+    dirname = os.path.dirname(__file__)
+    filepath = os.path.join(dirname, path)
     try:
-        dirname = os.path.dirname(__file__)
-        filepath = os.path.join(dirname, path)
         os.startfile(filepath)
     except FileNotFoundError:
         filepath = filepath.replace("main/examples", "examples").replace("/", "\\")
         os.startfile(filepath)
+    except AttributeError:
+        opener ="open" if sys.platform == "darwin" else "xdg-open"
+        subprocess.call([opener, filepath])
 
 
 class International_id:
