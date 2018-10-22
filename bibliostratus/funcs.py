@@ -11,6 +11,7 @@ import urllib.parse
 import os
 from urllib import error, request
 import string
+import json
 import random
 
 from lxml import etree
@@ -20,6 +21,25 @@ import pymarc as mc
 
 import main
 from udecode import udecode
+
+
+# Ajout du fichier preferences.json, pour le cas où on souhaite
+# injecter une liste de mots vides
+prefs = {}
+stop_words = []
+with open('main/files/preferences.json', encoding="utf-8") as prefs_file:
+    prefs = json.load(prefs_file)
+
+if (prefs["stop_words"]["value"]):
+    try:
+        stop_words_file = open(prefs["stop_words"]["value"], "r", encoding="utf-8")
+        for row in stop_words_file:
+            word = row.replace("\r", "").replace("\n", "").split("\t")[0]
+            word = udecode(word.lower())
+            stop_words.append(word)
+        stop_words_file.close()
+    except FileNotFoundError:
+        pass
 
 # Quelques listes de signes à nettoyer
 listeChiffres = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
@@ -79,6 +99,19 @@ def nettoyage(string, remplacerEspaces=True, remplacerTirets=True, remplacerApos
         string = string.replace(" ", "")
     string = string.strip()
     return string
+
+
+def clean_stop_words(string, list_stop_words, sep):
+    """Dans une chaîne de caractères 'string', on isole chaque mot 
+    et s'il s'agit d'un des stop words de la list_stop_words, on le supprime"""
+    string_list = string.split(sep)
+    string_list_corr = []
+    for word in string_list:
+        w = unidecode_local(word.lower())
+        if w not in list_stop_words:
+            string_list_corr.append(word)
+    string_corr = sep.join(string_list_corr)
+    return string_corr
 
 
 def nettoyage_lettresISBN(isbn):
@@ -157,6 +190,11 @@ def nettoyageTitrePourRecherche(string):
     string = string.split(" ")
     string = [mot for mot in string if len(mot) > 1]
     string = " ".join(string)
+
+    if (stop_words):
+        string = clean_stop_words(string, stop_words, " ")
+        string = clean_stop_words(string, stop_words, "-")
+
     return string
 
 

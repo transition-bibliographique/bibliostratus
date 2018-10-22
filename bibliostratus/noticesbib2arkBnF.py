@@ -22,14 +22,10 @@ import pymarc as mc
 from lxml import etree
 from lxml.html import parse
 from urllib import request
-import marc2tables
 
+import marc2tables
 import funcs
 import main
-
-# from funcs import Bib_record
-
-# import matplotlib.pyplot as plt
 
 url_access_pbs = []
 
