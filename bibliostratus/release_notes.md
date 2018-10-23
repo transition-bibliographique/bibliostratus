@@ -5,6 +5,8 @@ Octobre 2018
 	- Le numéro FBRNF peut être trouvé en 035$a, ou à défaut en 801$h
 - Modules blancs :
 	- les contrôles sur les notices trouvées se font de la même manière pour idRef, le Sudoc et la BnF
+- Module blanc (Alignement BIB) :
+	- mise à jour du parsing HTML de DoMyBiblio, pour récupérer correctement le PPN
 - Module blanc (Alignement AUT) :
 	- option d'alignement sur les personnes / organisations
 	- option d'alignement sur BnF / IdRef
