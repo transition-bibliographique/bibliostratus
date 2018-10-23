@@ -11,6 +11,7 @@ A lancer avec pytest
 import funcs
 import main
 import aut_align_idref
+import noticesbib2arkBnF as bib2ark
 
 # =============================================================================
 # Tests des fonctions de nettoyage de chaînes de caractères
@@ -153,3 +154,24 @@ def test_ppnidref_to_row():
     assert metas_row[5] == "Jacques"
     assert metas_row[6] == "1924"
     assert metas_row[7] == "2014"
+
+
+def test_domybiblio_1_answer():
+    """
+    Si une seule réponse de DoMyBiblio, l'API plante 
+    et Bibliostratus parse alors la version HTML
+    On vérifie que le PPN est correctement récupéré
+    """
+    record = funcs.Bib_record(
+                                [
+                                 "15108805", "", "",
+                                 "", "",
+                                 "Législation industrielle Licence 3ème année 1941/42",
+                                 "amiaud andre",
+                                 "1941", "", "Cours de droit"
+                                ],
+                                1
+                              )
+    param = {"preferences_alignement": 2}
+    ppn = bib2ark.tad2ppn(record, param)
+    assert ppn == "PPN015108805"

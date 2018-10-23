@@ -1580,12 +1580,13 @@ def tad2ppn(input_record, parametres):
     except http.client.RemoteDisconnected:
         type_page = ""
         print("erreur connexion DoMyBiblio", url1)
-
     if (type_page == "html"):
         liste_resultats = page.xpath("//li[@class='list-group-item']/a")
         for lien in liste_resultats:
             href = lien.get("href")
-            ppn = "PPN" + href[href.find("id=") + 3:href.find("id=") + 12]
+            ppn = "PPN" + href.split("/")[-1].split("&")[0].strip()
+            if ("id=" in ppn):
+                ppn = ppn[ppn.find("id="):].replace("id=", "").split("&")[0].strip()
             ppn = controle_keywords2ppn(input_record, ppn)
             Listeppn.append(ppn)
     elif (type_page == "xml"):
