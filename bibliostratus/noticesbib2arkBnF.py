@@ -13,7 +13,7 @@ Puis modifier le formulaire pour proposer l'option "Périodiques"
 """
 
 import csv
-import os
+import os, ssl
 import tkinter as tk
 import http.client
 import urllib.parse
@@ -26,6 +26,15 @@ from urllib import request
 import marc2tables
 import funcs
 import main
+
+
+# Ajout exception SSL pour éviter
+# plantages en interrogeant les API IdRef
+# (HTTPS sans certificat)
+if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
+    getattr(ssl, '_create_unverified_context', None)): 
+    ssl._create_default_https_context = ssl._create_unverified_context
+
 
 url_access_pbs = []
 
@@ -2723,7 +2732,7 @@ def formulaire_noticesbib2arkBnF(
         justify="left",
     )
     meta_bib_check.pack(anchor="w")
-    tk.Label(cadre_output_nb_fichier, text="\n" * 14, bg=couleur_fond).pack()
+    tk.Label(cadre_output_nb_fichier, text="\n" * 17, bg=couleur_fond).pack()
 
     # Ajout (optionnel) d'un identifiant de traitement
     tk.Label(cadre_output_id_traitement, bg=couleur_fond, text="\n\n\n").pack()
@@ -2732,7 +2741,7 @@ def formulaire_noticesbib2arkBnF(
     ).pack()
     id_traitement = tk.Entry(cadre_output_id_traitement, width=20, bd=2)
     id_traitement.pack()
-    tk.Label(cadre_output_id_traitement, bg=couleur_fond, text="\n\n\n").pack()
+    tk.Label(cadre_output_id_traitement, bg=couleur_fond, text="\n"*3).pack()
 
     # Bouton de validation
 

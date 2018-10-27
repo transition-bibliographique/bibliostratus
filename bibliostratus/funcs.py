@@ -8,7 +8,7 @@ Fonctions et classes génériques pour Bibliostratus
 
 import http.client
 import urllib.parse
-import os, sys, subprocess
+import os, sys, subprocess, ssl
 from urllib import error, request
 import string
 import json
@@ -21,6 +21,13 @@ import pymarc as mc
 
 import main
 from udecode import udecode
+
+# Ajout exception SSL pour éviter
+# plantages en interrogeant les API IdRef
+# (HTTPS sans certificat)
+if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
+    getattr(ssl, '_create_unverified_context', None)): 
+    ssl._create_default_https_context = ssl._create_unverified_context
 
 
 # Ajout du fichier preferences.json, pour le cas où on souhaite
