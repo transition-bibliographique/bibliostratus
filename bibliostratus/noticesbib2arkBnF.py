@@ -1723,7 +1723,7 @@ def extract_meta(recordBNF, field_subfield, occ="all", anl=False):
     subfield = field_subfield.split("$")[1]
     value = []
     path = (
-        "//srw:recordData/mxc:record/mxc:datafield[@tag='"
+        ".//srw:recordData/mxc:record/mxc:datafield[@tag='"
         + field
         + "']/mxc:subfield[@code='"
         + subfield
@@ -1795,7 +1795,8 @@ def no_commercial2ark(
     NumNot, no_commercial, titre, auteur, date, anywhere=False, publisher=""
 ):
     no_commercial = no_commercial.strip(" ")
-    url = funcs.url_requete_sru('bib.comref  all "' + no_commercial + '"')
+    url = funcs.url_requete_sru('bib.comref  all "' + no_commercial + '" \
+or bib.ean all "' + no_commercial + '"')
     if " " in no_commercial:
         no_commercial_source = " ".join([mot for mot in no_commercial.split(" ")[0:-1]])
         no_commercial_id = no_commercial.split(" ")[-1]
@@ -1813,22 +1814,19 @@ def no_commercial2ark(
     if test:
         for record in results.xpath("//srw:records/srw:record", namespaces=main.ns):
             ark_current = record.find("srw:recordIdentifier", namespaces=main.ns).text
-            (test2, recordBNF) = ark2recordBNF(ark_current)
-            if test2:
-                ark = controleNoCommercial(
-                    NumNot, ark_current, no_commercial, titre, auteur, date, recordBNF
-                )
+            ark = controleNoCommercial(NumNot, ark_current, no_commercial,
+                                       titre, auteur, date, record)
     return ark
 
 
-def controleNoCommercial(
-    NumNot, ark_current, no_commercial, titre, auteur, date, recordBNF
-):
+def controleNoCommercial(NumNot, ark_current, no_commercial,
+                         titre, auteur, date, recordBNF):
     ark = ""
     no_commercialBNF = " ".join(
         [
             nettoyage_no_commercial(extract_meta(recordBNF, "071$b")),
             nettoyage_no_commercial(extract_meta(recordBNF, "071$a")),
+            nettoyage_no_commercial(extract_meta(recordBNF, "073$a")),
         ]
     )
     if no_commercial != "" and no_commercialBNF != "":

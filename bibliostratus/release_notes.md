@@ -7,6 +7,9 @@ Octobre 2018
 	- les contrôles sur les notices trouvées se font de la même manière pour idRef, le Sudoc et la BnF
 - Module blanc (Alignement BIB) :
 	- mise à jour du parsing HTML de DoMyBiblio, pour récupérer correctement le PPN
+	- alignement par numéro commercial:
+		- alignement sur bib.comref OR bib.ean
+		- contrôle simplifié sur les ARK trouvés
 - Module blanc (Alignement AUT) :
 	- option d'alignement sur les personnes / organisations
 	- option d'alignement sur BnF / IdRef
