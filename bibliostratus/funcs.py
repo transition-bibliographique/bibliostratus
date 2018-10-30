@@ -499,49 +499,57 @@ def testURLretrieve(url):
     return test
 
 
-def testURLurlopen(url):
+def testURLurlopen(url, display=True):
     test = True
     resultat = ""
     try:
         resultat = request.urlopen(url)
     except etree.XMLSyntaxError as err:
-        print(url)
-        print(err)
+        if display:
+            print(url)
+            print(err)
         url_access_pbs.append([url, "etree.XMLSyntaxError"])
         test = False
     except etree.ParseError as err:
-        print(url)
-        print(err)
+        if display:
+            print(url)
+            print(err)
         test = False
         url_access_pbs.append([url, "etree.ParseError"])
     except error.URLError as err:
-        print(url)
-        print(err)
+        if display:
+            print(url)
+            print(err)
         test = False
         url_access_pbs.append([url, "urllib.error.URLError"])
     except ConnectionResetError as err:
-        print(url)
-        print(err)
+        if display:
+            print(url)
+            print(err)
         test = False
         url_access_pbs.append([url, "ConnectionResetError"])
     except TimeoutError as err:
-        print(url)
-        print(err)
+        if display:
+            print(url)
+            print(err)
         test = False
         url_access_pbs.append([url, "TimeoutError"])
     except http.client.RemoteDisconnected as err:
-        print(url)
-        print(err)
+        if display:
+            print(url)
+            print(err)
         test = False
         url_access_pbs.append([url, "http.client.RemoteDisconnected"])
     except http.client.BadStatusLine as err:
-        print(url)
-        print(err)
+        if display:
+            print(url)
+            print(err)
         test = False
         url_access_pbs.append([url, "http.client.BadStatusLine"])
     except ConnectionAbortedError as err:
-        print(url)
-        print(err)
+        if display:
+            print(url)
+            print(err)
         test = False
         url_access_pbs.append([url, "ConnectionAbortedError"])
     return (test, resultat)

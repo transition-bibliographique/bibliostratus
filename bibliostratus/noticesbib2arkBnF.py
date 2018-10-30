@@ -1575,7 +1575,7 @@ def tad2ppn(input_record, parametres):
         page = etree.parse(request.urlopen(url1))
     except urllib.error.HTTPError:
         type_page = "html"
-        test, result = funcs.testURLurlopen(url2)
+        test, result = funcs.testURLurlopen(url2, display=False)
         if (test):
             page = parse(result)
         else:
@@ -1588,7 +1588,7 @@ def tad2ppn(input_record, parametres):
         print("erreur XML", url1)
     except http.client.RemoteDisconnected:
         type_page = ""
-        print("erreur connexion DoMyBiblio", url1)
+        # print("erreur connexion DoMyBiblio", url1)
     if (type_page == "html"):
         liste_resultats = page.xpath("//li[@class='list-group-item']/a")
         for lien in liste_resultats:
