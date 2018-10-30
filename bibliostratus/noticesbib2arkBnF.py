@@ -17,6 +17,7 @@ import os, ssl
 import tkinter as tk
 import http.client
 import urllib.parse
+import re
 from collections import defaultdict
 import pymarc as mc
 from lxml import etree
@@ -1795,8 +1796,10 @@ def no_commercial2ark(
     NumNot, no_commercial, titre, auteur, date, anywhere=False, publisher=""
 ):
     no_commercial = no_commercial.strip(" ")
-    url = funcs.url_requete_sru('bib.comref  all "' + no_commercial + '" \
-or bib.ean all "' + no_commercial + '"')
+    query = 'bib.comref  all "' + no_commercial + '"'
+    if (re.fullmatch("\d{13}", no_commercial) is not None):
+        query += ' or bib.ean all "' + no_commercial + '"'
+    url = funcs.url_requete_sru(query)
     if " " in no_commercial:
         no_commercial_source = " ".join([mot for mot in no_commercial.split(" ")[0:-1]])
         no_commercial_id = no_commercial.split(" ")[-1]
