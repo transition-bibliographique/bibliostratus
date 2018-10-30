@@ -1568,7 +1568,7 @@ def tad2ppn(input_record, parametres):
             typeRecord4DoMyBiblio,
             "&period=",
             input_record.date_debut,
-            "&pageID=1&wp=true&idref=true&loc=true",
+            "&pageID=1&wp=false&idref=false&loc=false",
         ]
     )
     try:
@@ -1586,7 +1586,7 @@ def tad2ppn(input_record, parametres):
         # type_page = "html"
         # page = parse(request.urlopen(url2))
         type_page = ""
-        print("erreur XML", url1)
+        # print("erreur XML", url1)
     except http.client.RemoteDisconnected:
         type_page = ""
         # print("erreur connexion DoMyBiblio", url1)
@@ -1682,6 +1682,8 @@ def controle_keywords2ppn(input_record, ppn):
             ppn_final = checkDate(ppn, input_record.date_nett, record_sudoc)
     #    if (ppn_final and input_record.auteur_nett):
     #        ppn_final = controle_auteurs(ppn, input_record, record_sudoc)
+    if ppn_final:
+        ppn_final = "PPN" + ppn_final
     return ppn_final
 
 
