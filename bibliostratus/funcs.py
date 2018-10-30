@@ -8,7 +8,10 @@ Fonctions et classes génériques pour Bibliostratus
 
 import http.client
 import urllib.parse
-import os, sys, subprocess, ssl
+import os
+import sys
+import subprocess
+import ssl
 from urllib import error, request
 import string
 import json
@@ -25,8 +28,8 @@ from udecode import udecode
 # Ajout exception SSL pour éviter
 # plantages en interrogeant les API IdRef
 # (HTTPS sans certificat)
-if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
-    getattr(ssl, '_create_unverified_context', None)): 
+if (not os.environ.get('PYTHONHTTPSVERIFY', '')
+   and getattr(ssl, '_create_unverified_context', None)):
     ssl._create_default_https_context = ssl._create_unverified_context
 
 
@@ -109,7 +112,7 @@ def nettoyage(string, remplacerEspaces=True, remplacerTirets=True, remplacerApos
 
 
 def clean_stop_words(string, list_stop_words, sep=" "):
-    """Dans une chaîne de caractères 'string', on isole chaque mot 
+    """Dans une chaîne de caractères 'string', on isole chaque mot
     et s'il s'agit d'un des stop words de la list_stop_words, on le supprime"""
     string_list = string.split(sep)
     string_list_corr = []
@@ -575,7 +578,7 @@ def open_local_file(path):
         filepath = filepath.replace("main/examples", "examples").replace("/", "\\")
         os.startfile(filepath)
     except AttributeError:
-        opener ="open" if sys.platform == "darwin" else "xdg-open"
+        opener = "open" if sys.platform == "darwin" else "xdg-open"
         subprocess.call([opener, filepath])
 
 
@@ -779,7 +782,6 @@ def xml2pymarcrecord(xml_record):
     pymarc_record = mc.marcxml.parse_xml_to_array(temp_name, strict=False)[0]
     os.remove(temp_name)
     return pymarc_record
-
 
 
 if __name__ == '__main__':

@@ -13,18 +13,17 @@ Puis modifier le formulaire pour proposer l'option "Périodiques"
 """
 
 import csv
-import os, ssl
+import os
+import ssl
 import tkinter as tk
 import http.client
 import urllib.parse
 import re
 from collections import defaultdict
-import pymarc as mc
 from lxml import etree
 from lxml.html import parse
 from urllib import request
 
-import marc2tables
 import funcs
 import main
 
@@ -33,7 +32,7 @@ import main
 # plantages en interrogeant les API IdRef
 # (HTTPS sans certificat)
 if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
-    getattr(ssl, '_create_unverified_context', None)): 
+   getattr(ssl, '_create_unverified_context', None)):
     ssl._create_default_https_context = ssl._create_unverified_context
 
 
@@ -1396,10 +1395,10 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
                                     '" and bib.doctype any "',
                                     input_record.intermarc_type_doc,
                                     '"'])
-        
-        #Ajout du critère Echelle pour les cartes
+
+        # Ajout du critère Echelle pour les cartes
         if (input_record.type == "CP"
-            and input_record.scale):
+           and input_record.scale):
             search_query += f' and bib.anywhere all "{input_record.scale}"'
         url = funcs.url_requete_sru(search_query)
         # print(url)
@@ -1663,21 +1662,20 @@ def controle_keywords2ppn(input_record, ppn):
     respectives, car la recherche est effectuée
     dans toute la notice """
     ppn_final = ""
-    sudoc_record = defaultdict(dict)
     url_sudoc_record = "https://www.sudoc.fr/" + ppn.replace("PPN", "") + ".xml"
     (test, record_sudoc) = funcs.testURLetreeParse(url_sudoc_record)
     if (test):
         ppn_final = comparaisonTitres(input_record.NumNot,
-                            ppn,
-                            "",
-                            "",
-                            input_record.titre.controles,
-                            input_record.auteur,
-                            input_record.date_nett,
-                            input_record.tome_nett,
-                            record_sudoc,
-                            "Titre-Auteur-Date DoMyBiblio",
-                            )
+                                      ppn,
+                                      "",
+                                      "",
+                                      input_record.titre.controles,
+                                      input_record.auteur,
+                                      input_record.date_nett,
+                                      input_record.tome_nett,
+                                      record_sudoc,
+                                      "Titre-Auteur-Date DoMyBiblio",
+                                      )
         if (ppn_final and input_record.date_nett):
             ppn_final = checkDate(ppn, input_record.date_nett, record_sudoc)
     #    if (ppn_final and input_record.auteur_nett):
