@@ -10,6 +10,7 @@ Octobre 2018
 	- alignement par numéro commercial:
 		- alignement sur bib.comref OR bib.ean
 		- contrôle simplifié sur les ARK trouvés
+	- mise en place d'un timeout de 5 secondes pour interroger DoMyBiblio
 - Module blanc (Alignement AUT) :
 	- option d'alignement sur les personnes / organisations
 	- option d'alignement sur BnF / IdRef

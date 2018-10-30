@@ -557,6 +557,7 @@ def testURLurlopen(url, display=True):
         test = False
         url_access_pbs.append([url, "ConnectionAbortedError"])
     except socket.timeout as err:
+        test = False
         if display:
             print(err)    
         url_access_pbs.append([url, "timeout > 5 secondes"])
