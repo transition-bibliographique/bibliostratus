@@ -10,6 +10,7 @@ import http.client
 import urllib.parse
 import os
 import sys
+import socket
 import subprocess
 import ssl
 from urllib import error, request
@@ -506,7 +507,7 @@ def testURLurlopen(url, display=True):
     test = True
     resultat = ""
     try:
-        resultat = request.urlopen(url)
+        resultat = request.urlopen(url, timeout=5)
     except etree.XMLSyntaxError as err:
         if display:
             print(url)
@@ -555,6 +556,10 @@ def testURLurlopen(url, display=True):
             print(err)
         test = False
         url_access_pbs.append([url, "ConnectionAbortedError"])
+    except socket.timeout as err:
+        if display:
+            print(err)    
+        url_access_pbs.append([url, "timeout > 5 secondes"])
     return (test, resultat)
 
 

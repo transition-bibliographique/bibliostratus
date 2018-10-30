@@ -15,6 +15,7 @@ Puis modifier le formulaire pour proposer l'option "Périodiques"
 import csv
 import os
 import ssl
+import socket
 import tkinter as tk
 import http.client
 import urllib.parse
@@ -1572,7 +1573,9 @@ def tad2ppn(input_record, parametres):
     )
     try:
         type_page = "xml"
-        page = etree.parse(request.urlopen(url1))
+        page = etree.parse(request.urlopen(url1, timeout=5))
+    except socket.timeout:
+        type_page = ""
     except urllib.error.HTTPError:
         type_page = "html"
         test, result = funcs.testURLurlopen(url2, display=False)
