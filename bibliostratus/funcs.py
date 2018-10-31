@@ -559,7 +559,7 @@ def testURLurlopen(url, display=True):
     except socket.timeout as err:
         test = False
         if display:
-            print(err)    
+            print(err)
         url_access_pbs.append([url, "timeout > 5 secondes"])
     return (test, resultat)
 
