@@ -1055,7 +1055,7 @@ def ppn2ark(input_record, ppn, parametres):
                     [
                      input_record.NumNot, frbnf_val,
                      "", input_record.isbn.init, "",
-                     input_record.titre,
+                     input_record.titre.init,
                      input_record.auteur,
                      input_record.date, "", ""
                     ],
