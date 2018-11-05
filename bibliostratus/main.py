@@ -585,10 +585,10 @@ def formulaire_main(access_to_network, last_version):
     # =============================================================================
     tk.Label(frame3, text="Après alignement", bg=couleur_fond,
              fg="#99182D", font="Arial 10 bold").pack(anchor="w")
-    tk.Label(frame3, text="Exporter les données BnF après alignement",
+    tk.Label(frame3, text="Exporter les notices après alignement",
              bg=couleur_fond, fg="#365B43", font="Arial 9 bold").pack(anchor="w")
 
-    ark2recordsButton = tk.Button(frame3, text="Exporter une liste d'ARK BnF\n en notices",
+    ark2recordsButton = tk.Button(frame3, text="Exporter des notices BnF / Abes\nà partir d'une liste d'identifiants\n(ARK / PPN)",
                                   command=lambda: ark2records.formulaire_ark2records(
                                       master, access_to_network, [0, False]),
                                   padx=10, pady=10, bg="#99182D", fg="white")

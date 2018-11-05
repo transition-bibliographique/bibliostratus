@@ -32,13 +32,15 @@ Novembre 2018
 - Module rouge (ark2records): Correction problèmes à l'export :
 	- apostrophes converties en backslash-apostrophe par pymarc
 	- apostrophe en fin de record Sudoc dans le format XML
+	- possibilité de mettre une liste de PPN (n° notices Sudoc) : fichier dont les PPN sont préfixés "PPN" ou "http://www.sudoc.fr/" ou "http://www.idref.fr" (ou "https" dans les 2 cas)
 - Module blanc (Alignements BIB):
 	- Alignement par mots-clés (titre-auteur-date) dans le Sudoc :
 		- recherche dans DoMyBiblio (par API, ou par HTML si un seul résultat) en mode "anywhere"
 		(pas d'autre option de recherche)
 		- puis analyse des notices trouvées : comparaison Mots du titre, mots Auteur, date
 	- Améliorations sur les notices dont la date à moins de 4 chiffres
-
+	
+	
 ### version 1.21
 juillet 2018
 - Enrichissement des classes Bib_record et Aut_record

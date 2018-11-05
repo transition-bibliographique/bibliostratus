@@ -325,7 +325,7 @@ def formulaire_ark2records(
      zone_ok_help_cancel,
      zone_notes] = main.form_generic_frames(
          master,
-         "Bibliostratus : Récupérer les notices complètes de la BnF à partir d'une liste d'ARK",
+         "Bibliostratus : Récupérer les notices complètes BnF / Sudoc / IdRef à partir d'une liste de n° de notices",
          couleur_fond, couleur_bouton,
          access_to_network)
 
@@ -371,7 +371,7 @@ def formulaire_ark2records(
     entry_filename.focus_set()"""
     main.download_zone(
         frame_input_file,
-        "Sélectionner un fichier contenant\nune liste d'ARK (un ARK par ligne)",
+        "Sélectionner un fichier contenant\nune liste de n° de notices\nARK BnF ou PPN Abes\n(un numéro par ligne)",
         entry_file_list, couleur_fond, zone_notes_message_en_cours
     )
 
@@ -380,12 +380,12 @@ def formulaire_ark2records(
     # ARK de BIB ou d'AUT ?
     type_records = tk.IntVar()
     bib2ark.radioButton_lienExample(
-        frame_input_aut, type_records, 1, couleur_fond, "ARK de notices BIB",
+        frame_input_aut, type_records, 1, couleur_fond, "N° de notices bibliographiques",
         "",
         "main/examples/listeARKbib.tsv"  # noqa
     )
     bib2ark.radioButton_lienExample(
-        frame_input_aut, type_records, 2, couleur_fond, "ARK de notices AUT",
+        frame_input_aut, type_records, 2, couleur_fond, "N° de notices d'autorités",
         "",
         "main/examples/listeARKaut.tsv"  # noqa
     )
@@ -429,7 +429,7 @@ def formulaire_ark2records(
                    variable=format_records_choice, value=3, bg=couleur_fond).pack(anchor="nw")
     tk.Radiobutton(
         frame_output_options_marc,
-        text="Unimarc avec notices analytiques",
+        text="[ARK BnF] Unimarc avec notices analytiques",
         justify="left",
         variable=format_records_choice,
         value=2,
@@ -437,7 +437,7 @@ def formulaire_ark2records(
     ).pack(anchor="nw")
     tk.Radiobutton(
         frame_output_options_marc,
-        text="Intermarc avec notices analytiques",
+        text="[ARK BnF] Intermarc avec notices analytiques",
         justify="left",
         variable=format_records_choice,
         value=4,
