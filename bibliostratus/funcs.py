@@ -592,11 +592,13 @@ class International_id:
     """Classe définissant les propriétés d'un identifiant bibliographique :
         ISBN, ISSN, EAN """
 
-    def __init__(self, string):  # Notre méthode constructeur
+    def __init__(self, string, conversion_option=True):  # Notre méthode constructeur
         self.init = string
         self.nett = nettoyageIsbnPourControle(self.init)
         self.propre = nettoyage_isbn(self.init)
-        self.converti = conversionIsbn(self.propre)
+        self.converti = ""
+        if (conversion_option):
+            self.converti = conversionIsbn(self.propre)
 
     def __str__(self):
         """Méthode permettant d'afficher plus joliment notre objet"""
@@ -703,7 +705,7 @@ class Bib_record:
         if (option_record == 2 or option_record == 3):
             self.intermarc_type_record = "m"
             self.ean = International_id(input_row[3])
-            self.no_commercial = International_id(input_row[4])
+            self.no_commercial = International_id(input_row[4], False)
             self.titre = Titre(input_row[5])
             self.auteur = input_row[6]
             self.date = input_row[7]
@@ -712,7 +714,7 @@ class Bib_record:
             self.type = "PER"
             self.intermarc_type_record = "s"
             self.intermarc_type_doc = "a"
-            self.issn = International_id(input_row[3])
+            self.issn = International_id(input_row[3], False)
             self.titre = Titre(input_row[4])
             self.auteur = input_row[5]
             self.date = input_row[6]
