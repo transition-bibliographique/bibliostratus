@@ -155,7 +155,7 @@ xml_entities2chars = {
 "&#89;": "Y",
 "&#90;": "Z",
 "&#91;": "[",
-"&#92;": "\",
+"&#92;": "\\",
 "&#93;": "]",
 "&#94;": "^",
 "&#95;": "_",
@@ -415,4 +415,13 @@ def udecode(string):
             string = string.replace(el, convert_diacritics[1][i])
         except ValueError:
             pass
+    return string
+
+
+def replace_xml_entities(string):
+    """
+    Remplacement des entités XML en caractères UTF-8
+    """
+    for entity in xml_entities2chars:
+        string = string.replace(entity, xml_entities2chars[entity])
     return string

@@ -16,6 +16,7 @@ Novembre 2018
 	- option d'alignement sur BnF / IdRef
 - Module rouge (ark2records) :
 	- meilleure préservation des chaînes de caractères (pas d'ajout de caractère d'échappement pour les apostrophes)
+	- encodage UTF-8 : restitution correcte dans le XML des caractères diacritiques pour la plupart des entités XML échappées en Unicode (caractères non latins ne sont pas concernés, sauf l'alphabet grec)
 
 ### version 1.23
 30 septembre 2018

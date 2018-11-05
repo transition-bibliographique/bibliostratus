@@ -23,6 +23,7 @@ from lxml import etree
 import funcs
 import main
 import noticesbib2arkBnF as bib2ark
+import udecode
 
 
 
@@ -100,6 +101,7 @@ def XMLrecord2string(record):
     record_str = etree.tostring(record).decode(encoding="utf-8")
     record_str = record_str.replace("<mxc:", "<").replace("</mxc:", "</")
     record_str = re.sub("<record[^>]+>", "<record>", record_str)
+    record_str = udecode.replace_xml_entities(record_str)
     """record_str = record_str.replace("b'", "").replace("      '", "\n").replace(
         "\\n", "\n").replace("\\t", "\t").replace("\\r", "\n").replace(
             "</record>'", "</record>")"""
