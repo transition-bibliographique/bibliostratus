@@ -459,7 +459,7 @@ def metas_from_marc21(record):
     pubPlace = record2pubPlace(record2meta(record, ["260$a"]))
     scale = record2scale(record2meta(record, ["034$b"], ["255$a"]))
     ark = record2ark(record2meta(record, ["033$a"]))
-    frbnf = record2frbnf(record2meta(record, ["035$a", ["801$h"]]))
+    frbnf = record2frbnf(record2meta(record, ["035$a"], ["801$h"]))
     isbn = record2isbn(record2meta(record, ["020$a"]))
     issn = record2isbn(record2meta(record, ["022$a"]))
     ean = record2ean(record2meta(record, ["024$a"]))
