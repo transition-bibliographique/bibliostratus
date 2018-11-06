@@ -25,7 +25,7 @@ import noticesaut2arkBnF as aut2ark
 import noticesbib2arkBnF as bib2ark
 
 version = 1.24
-lastupdate = "18/10/2018"
+lastupdate = "06/11/2018"
 programID = "bibliostratus"
 
 ns = {
