@@ -1,5 +1,5 @@
 ### version 1.24
-Novembre 2018
+6 novembre 2018
 - Menu principal : remplacement "outil d'alignement BnF" par "outil d'alignement BnF/Abes"
 - Module bleu (marc2tables) :
 	- Le numéro FBRNF peut être trouvé en 035$a, ou à défaut en 801$h
