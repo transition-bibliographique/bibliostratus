@@ -20,6 +20,7 @@ import random
 
 from lxml import etree
 from collections import defaultdict
+from unidecode import unidecode
 
 import pymarc as mc
 
@@ -210,7 +211,8 @@ def nettoyageTitrePourRecherche(string):
 
 
 def nettoyageDate(date):
-    date = unidecode_local(date.lower())
+    # Suppression de tout ce qui n'est pas chiffre romain
+    date = unidecode(unidecode_local(date.lower()))
     for lettre in lettres:
         date = date.replace(lettre, "")
     for signe in ponctuation:

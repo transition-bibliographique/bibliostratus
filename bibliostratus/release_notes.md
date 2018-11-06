@@ -20,7 +20,8 @@ Novembre 2018
 
 ### version 1.23
 30 septembre 2018
-- Module bleu (marc2tables) : ajout du type "cartes", avec récupération de l'échelle en dernière colonne
+- Modules bleu et blanc : prise en compte du type de document "Carte", encore en cours de développement
+- Module bleu (marc2tables) : ajout du type "cartes" (préfixé "CAR"), avec récupération de l'échelle en dernière colonne
 - Module blanc (alignement notices bib) :
 	- Si alignement par ISBN, contrôle sur le numéro de volume (si renseigné)
 	- Modification dans la manière d'ignorer les caractères accentués : 

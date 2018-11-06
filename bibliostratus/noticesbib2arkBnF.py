@@ -1556,7 +1556,7 @@ def tad2ppn(input_record, parametres):
             typeRecord4DoMyBiblio,
             "&period=",
             input_record.date_debut,
-            "&pageID=1&wp=true&idref=true&loc=true",
+            "&pageID=1&wp=false&idref=false&loc=false",
         ]
     )
 
@@ -1575,7 +1575,13 @@ def tad2ppn(input_record, parametres):
         type_page = "xml"
         page = etree.parse(request.urlopen(url1, timeout=5))
     except socket.timeout:
-        type_page = ""
+        type_page = "html"
+        test, result = funcs.testURLurlopen(url2, display=False)
+        if (test):
+            page = parse(result)
+        else:
+        #    print("erreur XML timeout, puis erreur HTML")
+            type_page = ""
     except urllib.error.HTTPError:
         type_page = "html"
         test, result = funcs.testURLurlopen(url2, display=False)
@@ -1583,11 +1589,17 @@ def tad2ppn(input_record, parametres):
             page = parse(result)
         else:
             type_page = ""
+        #    print("erreur XML HTTPerror, puis erreur HTML")
     except etree.XMLSyntaxError:
         # problème de conformité XML du résultat
         # type_page = "html"
         # page = parse(request.urlopen(url2))
-        type_page = ""
+        test, result = funcs.testURLurlopen(url2, display=False)
+        if (test):
+            page = parse(result)
+        else:
+            type_page = ""
+        #    print("erreur XML SyntaxError, puis erreur HTML")
         # print("erreur XML", url1)
     except http.client.RemoteDisconnected:
         type_page = ""

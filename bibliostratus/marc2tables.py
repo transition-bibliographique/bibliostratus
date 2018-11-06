@@ -504,7 +504,7 @@ def metas_from_unimarc(record):
     pubPlace = record2pubPlace(record2meta(record, ["210$a"]))
     scale = record2scale(record2meta(record, ["123$b"], ["206$b"]))
     ark = record2ark(record2meta(record, ["033$a"]))
-    frbnf = record2frbnf(record2meta(record, ["035$a"]))
+    frbnf = record2frbnf(record2meta(record, ["035$a"], ["801$h"]))
     isbn = record2isbn(record2meta(record, ["010$a"]))
     issn = record2isbn(record2meta(record, ["011$a"]))
     ean = record2ean(record2meta(record, ["073$a"]))
