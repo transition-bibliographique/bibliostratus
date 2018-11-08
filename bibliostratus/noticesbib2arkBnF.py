@@ -24,6 +24,7 @@ from collections import defaultdict
 from lxml import etree
 from lxml.html import parse
 from urllib import request
+import json
 
 import funcs
 import main
@@ -38,6 +39,11 @@ if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
 
 
 url_access_pbs = []
+
+
+prefs = {}
+with open('main/files/preferences.json', encoding="utf-8") as prefs_file:
+    prefs = json.load(prefs_file)
 
 
 # Permet d'écrire dans une liste accessible au niveau général depuis le
@@ -759,6 +765,9 @@ def frbnf2ark(input_record):
 
 def row2file(liste_metadonnees, liste_reports):
     liste_metadonnees_to_report = [str(el) for el in liste_metadonnees]
+    if (prefs["timestamp"]["value"] == "True"):
+        timest = funcs.timestamp()
+        liste_metadonnees_to_report.append(timest)
     liste_reports[0].write("\t".join(liste_metadonnees_to_report) + "\n")
 
 

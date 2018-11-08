@@ -17,6 +17,8 @@ from urllib import error, request
 import string
 import json
 import random
+import datetime
+import time
 
 from lxml import etree
 from collections import defaultdict
@@ -793,6 +795,13 @@ def xml2pymarcrecord(xml_record):
     os.remove(temp_name)
     return pymarc_record
 
+
+def timestamp():
+    """Renvoie l'horodatage sous la forme 
+    2018-11-08 12:07:09.552751
+    """
+    timest = datetime.datetime.fromtimestamp(time.time()).strftime("%Y-%m-%d %H-%M-%S")
+    return timest
 
 if __name__ == '__main__':
     access_to_network = main.check_access_to_network()

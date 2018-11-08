@@ -10,5 +10,9 @@
 	"stop_words":
 		{"description": "Si renseigné, nom du fichier où se trouve une liste de mots vides, à ignorer pour l'alignement. Par exemple, si la liste contient le mot 'Ste', le titre 'Notice historique sur Marizy-Ste-Geneviève' cherchera en réalité 'Notice historique sur Marizy Geneviève'",
 			"value": ""
-		}
+		},
+	"timestamp":
+		{"description": "Option (booléen True/False) pour injecter en dernière colonne des rapports d'alignement l'horodatage. Ceci pour évaluer la performance d'un alignement volumineux au fur et à mesure du traitement.",
+		 "value": "False"
+		 }
 }
