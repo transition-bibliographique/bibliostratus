@@ -387,7 +387,7 @@ def comparaisonIsbn(
         if isbn in isbnBNF:
             ark = ark_current
             NumNotices2methode[NumNot].append("N° sys FRBNF \
-            + contrôle " + sourceID)
++ contrôle " + sourceID)
     return ark
 
 
@@ -569,13 +569,13 @@ def comparaisonTitres_sous_zone(
         elif titreBNF in titre:
             NumNotices2methode[NumNot].append(
                 origineComparaison + " + contrôle Titre BNF \
-                contenu dans titre initial"
+contenu dans titre initial"
             )
             ark = ark_current
         elif titre in titreBNF:
             NumNotices2methode[NumNot].append(
                 origineComparaison + " + contrôle Titre initial \
-                contenu dans titre BNF"
+contenu dans titre BNF"
             )
             ark = ark_current
     elif titre == "":
