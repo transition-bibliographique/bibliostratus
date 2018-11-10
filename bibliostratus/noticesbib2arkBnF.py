@@ -1574,6 +1574,14 @@ def tad2ppn(input_record, parametres):
     try:
         type_page = "xml"
         page = etree.parse(request.urlopen(url1, timeout=5))
+    except ConnectionResetError:
+        type_page = "html"
+        test, result = funcs.testURLurlopen(url2, display=False)
+        if (test):
+            page = parse(result)
+        else:
+        #    print("erreur XML timeout, puis erreur HTML")
+            type_page = ""
     except socket.timeout:
         type_page = "html"
         test, result = funcs.testURLurlopen(url2, display=False)
