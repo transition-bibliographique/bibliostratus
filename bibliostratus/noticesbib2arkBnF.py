@@ -1412,7 +1412,7 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
             search_query += f' and bib.anywhere all "{input_record.scale}"'
         url = funcs.url_requete_sru(search_query)
         # print(url)
-        (test, results) = funcs.testURLetreeParse(url)
+        (test, results) = funcs.testURLetreeParse(url, param_timeout=10)
         index = ""
         if (
             results != ""
@@ -1457,9 +1457,10 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
             total_rec = int(
                 results.find("//srw:numberOfRecords", namespaces=main.ns).text
             )
-            for record in results.xpath("//srw:recordIdentifier",
+            for srw_record in results.xpath("//srw:record",
                                         namespaces=main.ns):
-                ark_current = record.text
+                ark_current = srw_record.find("srw:recordIdentifier", 
+                                          namespaces=main.ns).text
                 if (
                     int(results.find("//srw:numberOfRecords",
                                      namespaces=main.ns).text)
@@ -1474,58 +1475,48 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
                                 " (limite max 1000)"]),
                     )
                     i += 1
-                # print(NumNot + " : " + ark_current)
-                recordBNF_url = funcs.url_requete_sru(
-                    'bib.persistentid all "' + ark_current + '"'
-                )
-                (test, recordBNF) = funcs.testURLetreeParse(recordBNF_url)
-                if test:
-                    if (
-                        recordBNF.find("//mxc:record/mxc:leader",
-                                       namespaces=main.ns)
-                        is not None
-                        and recordBNF.find(
-                            "//mxc:record/mxc:leader", namespaces=main.ns
-                        ).text
-                        is not None
+                recordBNF = srw_record.xpath("srw:recordData/mxc:record", namespaces=main.ns)[0]
+                if (
+                    recordBNF.find("mxc:leader", namespaces=main.ns) is not None
+                    and recordBNF.find("mxc:leader", namespaces=main.ns).text is not None
                     ):
-                        typeRecord_current = recordBNF.find(
-                            "//mxc:record/mxc:leader", namespaces=main.ns
-                        ).text[7]
-                        if typeRecord_current == input_record.intermarc_type_record:
-                            ark = comparaisonTitres(
-                                input_record.NumNot,
-                                ark_current,
-                                "",
-                                "",
-                                input_record.titre.controles,
-                                auteur,
-                                date_nett,
-                                input_record.tome_nett,
-                                recordBNF,
-                                "Titre-Auteur-Date" + index,
-                            )
-                            if (date_nett != "-"):
-                                ark = checkDate(ark, input_record.date_nett,
-                                                recordBNF)
-                            if ark != "":
-                                listeArk.append(ark)
-                                methode = "Titre-Auteur-Date"
-                                if auteur == "-" and date_nett == "-":
-                                    methode = "Titre"
-                                elif auteur == "-":
-                                    methode = "Titre-Date"
-                                elif date_nett == "-":
-                                    methode = "Titre-Auteur"
-                                NumNotices2methode[input_record.NumNot].append(methode)
-                                if "*" in date_nett:
-                                    NumNotices2methode[input_record.NumNot].append(
-                                        "Date début tronquée"
-                                    )
-                                if annee_plus_trois:
-                                    NumNotices2methode[input_record.NumNot].append(
-                                        "Date début +/- 3 ans"
-                                    )
+                    typeRecord_current = recordBNF.find(
+                        "mxc:leader", namespaces=main.ns
+                    ).text[7]
+                    if typeRecord_current == input_record.intermarc_type_record:
+                        ark = comparaisonTitres(
+                            input_record.NumNot,
+                            ark_current,
+                            "",
+                            "",
+                            input_record.titre.controles,
+                            auteur,
+                            date_nett,
+                            input_record.tome_nett,
+                            recordBNF,
+                            "Titre-Auteur-Date" + index,
+                        )
+                        if (date_nett != "-"):
+                            ark = checkDate(ark, input_record.date_nett,
+                                            recordBNF)
+                        if ark != "":
+                            listeArk.append(ark)
+                            methode = "Titre-Auteur-Date"
+                            if auteur == "-" and date_nett == "-":
+                                methode = "Titre"
+                            elif auteur == "-":
+                                methode = "Titre-Date"
+                            elif date_nett == "-":
+                                methode = "Titre-Auteur"
+                            NumNotices2methode[input_record.NumNot].append(methode)
+                            if "*" in date_nett:
+                                NumNotices2methode[input_record.NumNot].append(
+                                    "Date début tronquée"
+                                )
+                            if annee_plus_trois:
+                                NumNotices2methode[input_record.NumNot].append(
+                                    "Date début +/- 3 ans"
+                                )
     listeArk = ",".join(ark for ark in listeArk if ark != "")
     # Si la liste retournée est vide, et qu'on est sur des périodiques
     # et que la date

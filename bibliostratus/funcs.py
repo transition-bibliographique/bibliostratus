@@ -431,11 +431,16 @@ def elargirDatesPerios(n):
     return " ".join([str(el) for el in liste])
 
 
-def testURLetreeParse(url, display=True):
+def testURLetreeParse(url, display=True, param_timeout=None):
     test = True
     resultat = ""
     try:
-        resultat = etree.parse(request.urlopen(url))
+        resultat = etree.parse(request.urlopen(url, timeout=param_timeout))
+    except socket.timeout as err:
+        test = False
+        if (display):
+            print(url)
+            print(err, param_timeout, "sec")
     except etree.XMLSyntaxError as err:
         test = False
         if (display):
