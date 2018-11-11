@@ -1475,7 +1475,10 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
                                 " (limite max 1000)"]),
                     )
                     i += 1
-                recordBNF = srw_record.xpath("srw:recordData/mxc:record", namespaces=main.ns)[0]
+                try:
+                    recordBNF = srw_record.xpath("srw:recordData/mxc:record", namespaces=main.ns)[0]
+                except IndexError:
+                    pass
                 if (
                     recordBNF.find("mxc:leader", namespaces=main.ns) is not None
                     and recordBNF.find("mxc:leader", namespaces=main.ns).text is not None
