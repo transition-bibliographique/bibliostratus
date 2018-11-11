@@ -792,11 +792,14 @@ class Alignment_result:
     le ou les identifiants trouvés, la méthode utilisée
     les données en entrée (dont le numéro de notice)
     """
-    def __init__(self, input_record):  # Notre méthode constructeur
-        self.ids_list = []
-        self.ids_str = ",".join(self.ids_list)
+    def __init__(self, input_record, ark):  # Notre méthode constructeur
+        self.NumNot = input_record.NumNot
+        self.ids_str = ark
+        self.ids_list = self.ids_str.split(",")
         self.nb_ids = len(self.ids_list)
-        self.alignment_method_list = []
+        self.alignment_method_list = input_record.alignment_method
+        if (len(list(set(input_record.alignment_method))) == 1):
+            self.alignment_method_list = [input_record.alignment_method[0]]
         self.alignment_method_str = ",".join(self.alignment_method_list)
         self.liste_metadonnees = [
                                     input_record.NumNot,

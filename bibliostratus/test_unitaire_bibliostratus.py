@@ -157,19 +157,19 @@ def test_1alignement_bib():
                               )
     record2 = funcs.Bib_record(
                                 [
-                                 "1/104953", "", 
-                                 "", "978-2-7436-2583-2", "9782743625832", 
+                                 "1/104953", "", "",
+                                 "978-2-7436-2583-2", "9782743625832", 
                                  "Faillir être flingué roman", "celine minard", 
                                  "2013(©)", "", "Payot   Rivages"
                                 ],
                                 1
                                )
     parametres = {"preferences_alignement":  1}
-    alignment_result, metas = bib2ark.item_alignement(record, parametres)
+    alignment_result = bib2ark.item_alignement(record, parametres)
 
     assert record.alignment_method == ["ISBN + contrôle Titre 200$a"]
-    assert type(record.alignment_method) == list
     assert alignment_result.alignment_method_str == "ISBN + contrôle Titre 200$a"
+    assert alignment_result.ids_str == "ark:/12148/cb43536110d"
 
 
 

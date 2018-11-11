@@ -2190,7 +2190,6 @@ def item_alignement(input_record, parametres):
     En entrée, une Bib_record (générée à partir d'une ligne du fichier
     en sortie, la liste des métadonnées attendues par le rapport)
     """
-    alignment_result = funcs.Alignment_result(input_record)
     ark = ""
     # Si option 1 : on aligne sur les ID en commençant par la BnF, puis par le Sudoc
     # Si aucun résultat -> recherche Titre-Auteur-Date à la BnF
@@ -2211,28 +2210,12 @@ def item_alignement(input_record, parametres):
             ark = item2ark_by_id(input_record, parametres)
         if ark == "":
             ark = item2ark_by_keywords(input_record, parametres)
-
-    # print(input_record.alignment_method)
-    alignment_result.ids_list = ark.split(",")
+    alignment_result = funcs.Alignment_result(input_record, ark)
     if ark == "Pb FRBNF":
         nb_notices_nb_ARK["Pb FRBNF"] += 1
     else:
         nb_notices_nb_ARK[alignment_result.nb_ids] += 1
-    if input_record.alignment_method:
-        # typeConversionNumNot = ",".join(NumNotices2methode[input_record.NumNot])
-        """if len(set(NumNotices2methode[input_record.NumNot])) == 1:
-            typeConversionNumNot = list(set(NumNotices2methode[input_record.NumNot]))[0]"""
-        if len(set(input_record.alignment_method)) == 1:
-            input_record.alignment_method = [input_record.alignment_method[0]]
-        alignment_result.alignment_method_list = input_record.alignment_method
-    liste_metadonnees = [
-        input_record.NumNot,
-        alignment_result.nb_ids,
-        alignment_result.ids_str,
-        alignment_result.alignment_method_str
-    ] + input_record.metas_init
-    print(alignment_result.ids_str, alignment_result.alignment_method_str)
-    return alignment_result, liste_metadonnees
+    return alignment_result
 
 
 def item2id(row, n, form_bib2ark, parametres, liste_reports):
@@ -2245,58 +2228,27 @@ def item2id(row, n, form_bib2ark, parametres, liste_reports):
     if n % 100 == 0:
         main.check_access2apis(n, dict_check_apis)
     # print(row)
-
     input_record = funcs.Bib_record(row, parametres["type_doc_bib"])
-    ark = ""
-    # Si option 1 : on aligne sur les ID en commençant par la BnF, puis par le Sudoc
-    # Si aucun résultat -> recherche Titre-Auteur-Date à la BnF
-    # Si option 2 : on commence par le Sudoc, puis par la BnF
-    if parametres["preferences_alignement"] == 1:
-        ark = item2ark_by_id(input_record, parametres)
-        if ark == "":
-            ark = item2ark_by_keywords(input_record, parametres)
-        if ark == "":
-            ark = item2ppn_by_id(input_record, parametres)
-        if ark == "":
-            ark = item2ppn_by_keywords(input_record, parametres)
-    else:
-        ark = item2ppn_by_id(input_record, parametres)
-        if ark == "":
-            ark = item2ppn_by_keywords(input_record, parametres)
-        if ark == "":
-            ark = item2ark_by_id(input_record, parametres)
-        if ark == "":
-            ark = item2ark_by_keywords(input_record, parametres)
+    alignment_result = item_alignement(input_record, parametres)
 
-    print(str(n) + ". " + input_record.NumNot + " : " + ark)
-    # print(input_record.alignment_method)
-    nbARK = len(ark.split(","))
-    if ark == "":
-        nbARK = 0
-    if ark == "Pb FRBNF":
-        nb_notices_nb_ARK["Pb FRBNF"] += 1
-    else:
-        nb_notices_nb_ARK[nbARK] += 1
-    typeConversionNumNot = ""
-    if input_record.alignment_method:
-        # typeConversionNumNot = ",".join(NumNotices2methode[input_record.NumNot])
-        typeConversionNumNot = ",".join(input_record.alignment_method)
-        """if len(set(NumNotices2methode[input_record.NumNot])) == 1:
-            typeConversionNumNot = list(set(NumNotices2methode[input_record.NumNot]))[0]"""
-        if len(set(input_record.alignment_method)) == 1:
-            typeConversionNumNot = list(set(input_record.alignment_method))[0]
-    liste_metadonnees = [
-        input_record.NumNot,
-        nbARK,
-        ark,
-        typeConversionNumNot,
-    ] + input_record.metas_init
+    alignment_result2output(alignment_result, input_record, 
+                            parametres, liste_reports, n)
+
+    return alignment_result
+
+
+def alignment_result2output(alignment_result, input_record, parametres, liste_reports, n):
+    """
+    Format de sortie de l'alignement
+    """
+    print(str(n) + ". " + input_record.NumNot + " : " + alignment_result.ids_str)
+    
     if parametres["meta_bib"] == 1:
-        liste_metadonnees.extend(ark2metadc(ark))
+        alignment_result.liste_metadonnees.extend(ark2metadc(ark))
     if parametres["file_nb"] == 1:
-        row2file(liste_metadonnees, liste_reports)
+        row2file(alignment_result.liste_metadonnees, liste_reports)
     elif parametres["file_nb"] == 2:
-        row2files(liste_metadonnees, liste_reports)
+        row2files(alignment_result.liste_metadonnees, liste_reports)
 
 
 def file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres):
