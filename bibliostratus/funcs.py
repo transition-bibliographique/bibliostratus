@@ -754,6 +754,10 @@ class Bib_record:
             self.dates_elargies_perios = elargirDatesPerios(
                 int(self.date_debut))
 
+        # 11/11/2018 Nouvelle méthode (inscriptible) :
+        # méthode d'alignement
+        # (objectif : se passer du dictionnaire)
+        self.alignment_method = []
 
 class Aut_record:
     """Classe définissant les propriétés d'une notice d'autorité mise en entrée
@@ -781,6 +785,25 @@ class Aut_bib_record:
         self.NumNot = input_row[0]
         self.frbnf = input_row[1]
 
+
+class Alignment_result:
+    """
+    Gère les résultats d'un alignement : 
+    le ou les identifiants trouvés, la méthode utilisée
+    les données en entrée (dont le numéro de notice)
+    """
+    def __init__(self, input_record):  # Notre méthode constructeur
+        self.ids_list = []
+        self.ids_str = ",".join(self.ids_list)
+        self.nb_ids = len(self.ids_list)
+        self.alignment_method_list = []
+        self.alignment_method_str = ",".join(self.alignment_method_list)
+        self.liste_metadonnees = [
+                                    input_record.NumNot,
+                                    self.nb_ids,
+                                    self.ids_str,
+                                    self.alignment_method_str
+                                ] + input_record.metas_init
 
 def xml2pymarcrecord(xml_record):
     """

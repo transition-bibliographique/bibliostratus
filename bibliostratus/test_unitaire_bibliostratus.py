@@ -143,6 +143,36 @@ def test_row_bib():
     assert record.publisher_nett == "fayard"
     assert record2.frbnf.propre == "frbnf43632681"
 
+
+def test_1alignement_bib():
+    # Teste un alignement
+    record = funcs.Bib_record(
+                                [
+                                 "315756", "", "",
+                                 "978-2-213-67203-8", "",
+                                 "Mon Paris, ma mémoire", "Morin Edgar",
+                                 "DL 2013", "", "Fayard"
+                                ],
+                                1
+                              )
+    record2 = funcs.Bib_record(
+                                [
+                                 "1/104953", "", 
+                                 "", "978-2-7436-2583-2", "9782743625832", 
+                                 "Faillir être flingué roman", "celine minard", 
+                                 "2013(©)", "", "Payot   Rivages"
+                                ],
+                                1
+                               )
+    parametres = {"preferences_alignement":  1}
+    alignment_result, metas = bib2ark.item_alignement(record, parametres)
+
+    assert record.alignment_method == ["ISBN + contrôle Titre 200$a"]
+    assert type(record.alignment_method) == list
+    assert alignement_result.alignment_method_str == "ISBN + contrôle Titre 200$a"
+
+
+
 def test_ppnidref_to_row():
     """Vérifie la fonction ppn2metasAut :
     à partir d'un PPN, on récupère des données en
