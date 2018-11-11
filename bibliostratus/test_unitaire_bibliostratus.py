@@ -169,7 +169,7 @@ def test_1alignement_bib():
 
     assert record.alignment_method == ["ISBN + contrôle Titre 200$a"]
     assert type(record.alignment_method) == list
-    assert alignement_result.alignment_method_str == "ISBN + contrôle Titre 200$a"
+    assert alignment_result.alignment_method_str == "ISBN + contrôle Titre 200$a"
 
 
 

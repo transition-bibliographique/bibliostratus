@@ -2220,13 +2220,11 @@ def item_alignement(input_record, parametres):
         nb_notices_nb_ARK[alignment_result.nb_ids] += 1
     if input_record.alignment_method:
         # typeConversionNumNot = ",".join(NumNotices2methode[input_record.NumNot])
-        
         """if len(set(NumNotices2methode[input_record.NumNot])) == 1:
             typeConversionNumNot = list(set(NumNotices2methode[input_record.NumNot]))[0]"""
         if len(set(input_record.alignment_method)) == 1:
-            input_record.alignment_method = list(set(input_record.alignment_method))[0]
+            input_record.alignment_method = [input_record.alignment_method[0]]
         alignment_result.alignment_method_list = input_record.alignment_method
-
     liste_metadonnees = [
         input_record.NumNot,
         alignment_result.nb_ids,
