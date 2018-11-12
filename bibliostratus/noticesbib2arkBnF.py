@@ -1456,7 +1456,7 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
             search_query += f' and bib.anywhere all "{input_record.scale}"'
         url = funcs.url_requete_sru(search_query)
         # print(url)
-        (test, results) = funcs.testURLetreeParse(url, param_timeout=10)
+        (test, results) = funcs.testURLetreeParse(url, param_timeout=20)
         index = ""
         if (
             results != ""
