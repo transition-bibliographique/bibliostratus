@@ -1094,7 +1094,7 @@ def ppn2ark(input_record, ppn, parametres):
             if resource.find("ark:/12148/") > 0:
                 ark = resource[24:46]
                 # NumNotices2methode[input_record.NumNot].append("PPN > ARK")
-                input_record.alignmen_method.append("PPN > ARK")
+                input_record.alignment_method.append("PPN > ARK")
         if ark == "":
             for frbnf in record.xpath("//bnf-onto:FRBNF",
                                       namespaces=main.nsSudoc):
@@ -1387,7 +1387,6 @@ def ppn2metas(ppn):
 
 def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
     """Fonction d'alignement par Titre-Auteur-Date
-
     (et contrôles sur type Notice, sur n° de volume si nécessaire)
     """
     # En entrée : le numéro de notice, le titre (qu'il faut nettoyer pour la recherche)
@@ -1522,55 +1521,11 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
                     i += 1
                 try:
                     recordBNF = srw_record.xpath("srw:recordData/mxc:record", namespaces=main.ns)[0]
+                    ark = tad2ark_controle_record(input_record, ark_current, 
+                                                  auteur, date_nett, annee_plus_trois, index,
+                                                  recordBNF, listeArk)
                 except IndexError:
                     pass
-                if (
-                    recordBNF.find("mxc:leader", namespaces=main.ns) is not None
-                    and recordBNF.find("mxc:leader", namespaces=main.ns).text is not None
-                    ):
-                    typeRecord_current = recordBNF.find(
-                        "mxc:leader", namespaces=main.ns
-                    ).text[7]
-                    if typeRecord_current == input_record.intermarc_type_record:
-                        ark = comparaisonTitres(
-                            input_record,
-                            input_record.NumNot,
-                            ark_current,
-                            "",
-                            "",
-                            input_record.titre.controles,
-                            auteur,
-                            date_nett,
-                            input_record.tome_nett,
-                            recordBNF,
-                            "Titre-Auteur-Date" + index,
-                        )
-                        if (date_nett != "-"):
-                            ark = checkDate(ark, input_record.date_nett,
-                                            recordBNF)
-                        if ark != "":
-                            listeArk.append(ark)
-                            methode = "Titre-Auteur-Date"
-                            if auteur == "-" and date_nett == "-":
-                                methode = "Titre"
-                            elif auteur == "-":
-                                methode = "Titre-Date"
-                            elif date_nett == "-":
-                                methode = "Titre-Auteur"
-                            # NumNotices2methode[input_record.NumNot].append(methode)
-                            input_record.alignment_method.append(methode)
-                            if "*" in date_nett:
-                                """NumNotices2methode[input_record.NumNot].append(
-                                    "Date début tronquée"
-                                )"""
-                                input_record.alignment_method.append("Date début tronquée")
-                            if annee_plus_trois:
-                                """NumNotices2methode[input_record.NumNot].append(
-                                    "Date début +/- 3 ans"
-                                )"""
-                                input_record.alignment_method.append(
-                                    "Date début +/- 3 ans"
-                                )
     listeArk = ",".join(ark for ark in listeArk if ark != "")
     # Si la liste retournée est vide, et qu'on est sur des périodiques
     # et que la date
@@ -1580,6 +1535,60 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
         and not annee_plus_trois
     ):
         listeArk = tad2ark(input_record, anywhere=False, annee_plus_trois=True)
+    return listeArk
+
+
+def tad2ark_controle_record(input_record, ark_current, 
+                            auteur, date_nett, annee_plus_trois, index, 
+                            recordBNF, listeArk):
+    """
+    Ensemble de contrôles sur une notice BnF trouvée par une recherche 
+    Titre-Auteur-Date
+    """
+    typeRecord_current = ""
+    if (recordBNF.find("mxc:leader", namespaces=main.ns) is not None
+       and recordBNF.find("mxc:leader", namespaces=main.ns).text is not None):
+        typeRecord_current = recordBNF.find(
+            "mxc:leader", namespaces=main.ns
+        ).text[7]
+    if typeRecord_current == input_record.intermarc_type_record:
+        ark = comparaisonTitres(input_record,
+                                input_record.NumNot,
+                                ark_current,
+                                "",
+                                "",
+                                input_record.titre.controles,
+                                auteur,
+                                date_nett,
+                                input_record.tome_nett,
+                                recordBNF,
+                                "Titre-Auteur-Date" + index)
+        if (date_nett != "-"):
+            ark = checkDate(ark, input_record.date_nett,
+                            recordBNF)
+        if ark != "":
+            listeArk.append(ark)
+            methode = "Titre-Auteur-Date"
+            if auteur == "-" and date_nett == "-":
+                methode = "Titre"
+            elif auteur == "-":
+                methode = "Titre-Date"
+            elif date_nett == "-":
+                methode = "Titre-Auteur"
+            # NumNotices2methode[input_record.NumNot].append(methode)
+            input_record.alignment_method.append(methode)
+            if "*" in date_nett:
+                """NumNotices2methode[input_record.NumNot].append(
+                    "Date début tronquée"
+                )"""
+                input_record.alignment_method.append("Date début tronquée")
+            if annee_plus_trois:
+                """NumNotices2methode[input_record.NumNot].append(
+                    "Date début +/- 3 ans"
+                )"""
+                input_record.alignment_method.append(
+                    "Date début +/- 3 ans"
+                )
     return listeArk
 
 
@@ -1645,6 +1654,14 @@ def tad2ppn(input_record, parametres):
         #    print("erreur XML timeout, puis erreur HTML")
             type_page = ""
     except urllib.error.HTTPError:
+        type_page = "html"
+        test, result = funcs.testURLurlopen(url2, display=False)
+        if (test):
+            page = parse(result)
+        else:
+            type_page = ""
+        #    print("erreur XML HTTPerror, puis erreur HTML")
+    except urllib.error.URLError:
         type_page = "html"
         test, result = funcs.testURLurlopen(url2, display=False)
         if (test):
@@ -2083,7 +2100,7 @@ def item2ark_by_id(input_record, parametres):
                     ark = verificationTomaison(ark, numeroTome, recordBNF)
 
     # A défaut, recherche sur no_commercial
-    if ark == "" and input_record.no_commercial != "":
+    if ark == "" and input_record.no_commercial != "" and input_record.no_commercial_propre != "":
         ark = no_commercial2ark(
             input_record,
             input_record.NumNot,

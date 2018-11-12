@@ -1,3 +1,10 @@
+### version 1.25
+novembre 2018
+- Module blanc (alignement BIB) :
+	- performance : simplification des requêtes sur l'alignement tad2ark (alignement par mots-clés sur le SRU BnF)
+	- création d'une classe Alignment_result, 1 fonction spécifique pour l'alignement d'une notice (distincte du code qui envoie l'info dans le fichier de résultats)
+	- ajout d'un test automatique de vérification du résultat d'un alignement
+
 ### version 1.24
 6 novembre 2018
 - Menu principal : remplacement "outil d'alignement BnF" par "outil d'alignement BnF/Abes"
