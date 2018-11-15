@@ -773,6 +773,29 @@ class Aut_record:
         self.firstname = Name(input_row[5])
         self.firstdate = Date(input_row[6])
         self.lastdate = Date(input_row[7])
+        self.alignment_method = []
+
+class Bib_Aut_record:
+    """Classe définissant les propriétés d'une notice bibliographique
+    avec métadonnées AUT pour un alignement de la notice d'autorité
+    grâce à la combinaison Titre + Auteur"""
+
+    def __init__(self, input_row, parametres):  # Notre méthode constructeur
+        self.metas_init = input_row[1:]
+        self.NumNot = input_row[0]
+        self.NumNot_bib = input_row[1]
+        self.ark_bib_init = input_row[2]
+        self.frbnf_bib = FRBNF(input_row[3])
+        self.titre = Titre(input_row[4])
+        self.pubdate = input_row[5]
+        self.pubdate_nett = nettoyageDate(self.pubdate)
+        self.isni = Isni(input_row[6])
+        self.lastname = Name(input_row[7])
+        self.firstname = Name(input_row[8])
+        self.author_dates = input_row[9]
+        self.alignment_method = []
+
+
 
 
 class Aut_bib_record:

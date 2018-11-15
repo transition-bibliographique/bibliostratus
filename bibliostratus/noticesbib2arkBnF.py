@@ -985,7 +985,7 @@ def isbn2sudoc(input_record, parametres):
     ark = []
     if isbnTrouve:
         (test, resultats) = funcs.testURLetreeParse(url)
-        if test and resultats.find("//ppn") is not None:
+        if test and resultats.find(".//ppn") is not None:
                 # NumNotices2methode[input_record.NumNot].append("ISBN > PPN")
             for ppn in resultats.xpath("//ppn"):
                 ppn_val = ppn.text
@@ -1037,15 +1037,14 @@ def isbn2sudoc(input_record, parametres):
         return Listeppn
 
 
-def ean2sudoc(input_record, NumNot, ean_propre, titre_nett,
-              auteur_nett, date_nett, parametres):
+def ean2sudoc(input_record, parametres, controle_titre=True):
     """A partir d'un EAN, recherche dans le Sudoc.
 
     Pour chaque notice trouvée, on regarde sur la notice Sudoc a un ARK BnF ou
     un FRBNF, auquel cas on convertit le PPN en ARK. Sinon, on garde le(s)
     PPN
     """
-    url = "https://www.sudoc.fr/services/ean2ppn/" + ean_propre
+    url = "https://www.sudoc.fr/services/ean2ppn/" + input_record.ean.propre
     Listeppn = []
     eanTrouve = funcs.testURLretrieve(url)
     ark = []
@@ -1062,9 +1061,9 @@ def ean2sudoc(input_record, NumNot, ean_propre, titre_nett,
                 if parametres["preferences_alignement"] == 1:
                     temp_record = funcs.Bib_record(
                         [
-                         NumNot, "", "", "", ean_propre,
-                         titre_nett, auteur_nett, date_nett,
-                         "", ""
+                         NumNot, "", "", "", input_record.ean.propre,
+                         input_record.titre_nett, input_record.auteur_nett,
+                         input_record.date_nett, "", ""
                         ],
                         parametres["meta_bib"]
                         )
@@ -2133,23 +2132,12 @@ def item2ppn_by_id(input_record, parametres):
 
     # Si pas de résultats : on relance une recherche dans le Sudoc
     if ppn == "":
-        ppn = ean2sudoc(
-            input_record,
-            input_record.NumNot,
-            input_record.ean.propre,
-            input_record.titre_nett,
-            input_record.auteur_nett,
-            input_record.date_nett,
-            parametres,
-        )
+        ppn = ean2sudoc(input_record, parametres, True)
 
     # Si pas de résultats : on relance une recherche dans le Sudoc avec l'EAN
     # seul
     if ppn == "":
-        ppn = ean2sudoc(
-            input_record, input_record.NumNot, input_record.ean.propre, 
-            "", "", "", parametres
-        )
+        ppn = ean2sudoc(input_record, parametres, False)
     if ppn == "":
         ppn = isbn2sudoc(input_record, parametres)
 
