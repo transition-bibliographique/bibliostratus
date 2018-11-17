@@ -7,6 +7,8 @@ Created on Tue Jun 19 13:05:22 2018
 Ensemble des tests unitaires sur un ensemble de fonctions utilisées par Bibliostratus
 A lancer avec pytest
 """
+from collections import defaultdict
+
 
 import funcs
 import main
@@ -164,7 +166,10 @@ def test_1alignement_bib():
                                 ],
                                 1
                                )
-    parametres = {"preferences_alignement":  1}
+    parametres = {"preferences_alignement":  1,
+                  "meta_bib": 0,
+                  "meta_bnf": 0,
+                  "stats": defaultdict(int)}
     alignment_result = bib2ark.item_alignement(record, parametres)
 
     assert record.alignment_method == ["ISBN + contrôle Titre 200$a"]

@@ -655,6 +655,7 @@ class Name:
     def __init__(self, string):  # Notre méthode constructeur
         self.init = string
         self.propre = nettoyage(self.init, remplacerEspaces=False, remplacerTirets=False)
+        self.nett = nettoyage(self.init, remplacerEspaces=True, remplacerTirets=True)
 
     def __str__(self):
         """Méthode permettant d'afficher plus joliment notre objet"""
@@ -782,7 +783,7 @@ class Bib_Aut_record:
     avec métadonnées AUT pour un alignement de la notice d'autorité
     grâce à la combinaison Titre + Auteur"""
 
-    def __init__(self, input_row):  # Notre méthode constructeur
+    def __init__(self, input_row, parametres):  # Notre méthode constructeur
         self.metas_init = input_row[1:]
         self.NumNot = input_row[0]
         self.NumNot_bib = input_row[1]
@@ -811,7 +812,7 @@ class Alignment_result:
     le ou les identifiants trouvés, la méthode utilisée
     les données en entrée (dont le numéro de notice)
     """
-    def __init__(self, input_record, ark):  # Notre méthode constructeur
+    def __init__(self, input_record, ark, parametres):  # Notre méthode constructeur
         self.NumNot = input_record.NumNot
         self.ids_str = ark
         self.ids_list = self.ids_str.split(",")
@@ -826,8 +827,6 @@ class Alignment_result:
                                     self.ids_str,
                                     self.alignment_method_str
                                 ] + input_record.metas_init
-        if (parametres["meta_bnf"] == 1):
-            self.liste_metadonnees.extend(aut2ark.ark2metadc(ark))
 
 
 def xml2pymarcrecord(xml_record):

@@ -204,6 +204,19 @@ def field2subfield(field, subfield, nb_occ="all", sep="~"):
     return listeValues
 
 
+def extract_leader(record, pos=None):
+    path = './/*[local-name()="leader"]'
+    leader_val = ""
+    for leader in record.xpath(path):
+        leader_val = leader.text
+    if (pos is not None
+       and RepresentsInt(pos)
+       and len(leader_val)+2 > pos):
+        return leader_val[pos]
+    else:
+        return leader_val
+
+
 def extract_subfield(record, field, subfield, nb_occ="all", sep="~"):
     path = ".//*[@tag='" + field + \
         "']/*[@code='" + subfield + "']"

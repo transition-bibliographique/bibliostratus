@@ -101,7 +101,7 @@ def create_reports_files(id_traitement_code):
 
 
 # Rapport statistique final
-nb_notices_nb_ARK = defaultdict(int)
+
 
 
 def row2file(liste_metadonnees, liste_reports):
@@ -280,11 +280,11 @@ def align_from_aut_alignment(input_record, parametres):
             ark = aut_align_idref.aut2ppn_by_accesspoint(input_record, parametres)
     if (ark == "" and parametres["isni_option"] == 1):
         ark = accesspoint2isniorg(input_record, parametres)
-    alignement_result = funcs.Alignement_result(input_record, ark)
+    alignment_result = funcs.Alignment_result(input_record, ark, parametres)
     if ark == "Pb FRBNF":
-        nb_notices_nb_ARK["Pb FRBNF"] += 1
+        parametres["stats"]["Pb FRBNF"] += 1
     else:
-        nb_notices_nb_ARK[alignment_result.nb_ids] += 1
+        parametres["stats"][alignment_result.nb_ids] += 1
     return alignment_result
 
 
@@ -294,7 +294,7 @@ def alignment_result2output(alignment_result, input_record, parametres, liste_re
     Format de sortie de l'alignement
     """
     print(str(n) + ". " + input_record.NumNot + " : " + alignment_result.ids_str)
-    if parametres["meta_bib"] == 1:
+    if parametres["meta_bnf"] == 1:
         alignment_result.liste_metadonnees.extend(ark2metadc(ark))
     if parametres["file_nb"] == 1:
         row2file(alignment_result.liste_metadonnees, liste_reports)
@@ -312,7 +312,7 @@ def align_from_aut_item(row, n, form_aut2ark, parametres, liste_reports):
         main.check_access2apis(n, dict_check_apis)
 
     input_record = funcs.Aut_record(row,parametres)
-    alignement_result = align_from_aut_alignment(input_record, parametres)
+    alignment_result = align_from_aut_alignment(input_record, parametres)
     alignment_result2output(alignment_result, input_record, parametres, 
                             liste_reports, n)
 
@@ -359,17 +359,18 @@ def align_from_bib_alignment(input_record, parametres):
     ark_trouve = ""
     if (ark_trouve == "" and input_record.isni.propre != ""):
         ark_trouve = isni2ark(input_record)
-    if (ark_trouve == "" and ark_bib_init != ""):
+    if (ark_trouve == "" and input_record.ark_bib_init != ""):
         ark_trouve = arkBib2arkAut(input_record)
-    if (ark_trouve == "" and frbnf_bib_init != ""):
+    if (ark_trouve == "" and input_record.frbnf_bib.init != ""):
         ark_trouve = frbnfBib2arkAut(input_record)
-    if (ark_trouve == "" and nom != ""):
+    if (ark_trouve == "" and input_record.lastname != ""):
         ark_trouve = bib2arkAUT(input_record)
-    alignment_result = funcs.Alignment_result(input_record, ark_trouve)
+    alignment_result = funcs.Alignment_result(input_record, ark_trouve,
+                                              parametres)
     if (ark_trouve == "Pb FRBNF"):
-        nb_notices_nb_ARK["Pb FRBNF"] += 1
+        parametres["stats"]["Pb FRBNF"] += 1
     else:
-        nb_notices_nb_ARK[alignment_result.nb_ids] += 1
+        parametres["stats"][alignment_result.nb_ids] += 1
     return alignment_result
 
 
@@ -380,8 +381,8 @@ def align_from_bib_item(row, n, form_aut2ark, parametres, liste_reports):
     n += 1
     if (n % 100 == 0):
         main.check_access2apis(n, dict_check_apis)
-    input_record = funcs.Bib_Aut_record(row)
-    alignement_result = align_from_bib_alignment(input_record, parametres)
+    input_record = funcs.Bib_Aut_record(row, parametres)
+    alignment_result = align_from_bib_alignment(input_record, parametres)
     alignment_result2output(alignment_result, input_record, parametres, 
                             liste_reports, n)
 
@@ -577,7 +578,7 @@ def systemid2ark(input_record, NumNot, systemid, tronque, nom):
                     tag = zone9XX.get("tag")
                     if (tag[0] == "9"):
                         local_value = main.field2subfield(zone9XX, "a")
-                        if local_value == systemid):
+                        if local_value == systemid:
                             listeARK.append(comparerAutBnf(input_record,
                                                            NumNot, ark_current,
                                                            systemid, nom,
@@ -661,12 +662,13 @@ def aut2ark_by_accesspoint(input_record, NumNot, nom_nett, prenom_nett,
 
 def bib2arkAUT(input_record):
     listeArk = []
-    if (pubDate == ""):
+    pubDate = input_record.pubdate_nett
+    if (input_record.pubdate_nett == ""):
         pubDate = "-"
-    url = funcs.url_requete_sru("".join(['bib.title all "', input_record.titre.propre,
+    url = funcs.url_requete_sru("".join(['bib.title all "', input_record.titre.recherche,
                                          '" and bib.author all "', input_record.lastname.propre,
                                          " ", input_record.firstname.propre,
-                                         '" and bib.publicationdate all "', input_record.pubdate_nett, '"'
+                                         '" and bib.publicationdate all "', pubDate, '"'
                                          ])).replace(
                                              "%20and%20bib.publicationdate%20all%20%22-%22",
                                              ""
@@ -675,7 +677,7 @@ def bib2arkAUT(input_record):
     if (test):
         for record in results.xpath(
                 "//srw:recordData", namespaces=main.ns):
-            listeArk.extend(extractARKautfromBIB(input_record, xml_record))
+            listeArk.extend(extractARKautfromBIB(input_record, record))
     listeArk = ",".join(set(listeArk))
     if (listeArk != ""):
         input_record.alignment_method.append("Titre-Auteur-Date")
@@ -769,24 +771,24 @@ def extractARKautfromBIB(input_record, xml_record):
         i += 1
         if (field.get("tag")[0] == "7"):
             listeFieldsAuteur[i]["tag"] = field.get("tag")
-            for subfield in field.xpath("*[@code]"):
+            for subfield in field.xpath("*"):
                 if (subfield.get("code") == "3"):
                     listeFieldsAuteur[i]["nna"] = subfield.text
                 if (subfield.get("code") == "a"):
                     listeFieldsAuteur[i]["nom"] = main.clean_string(
-                        subfield.text, False, True)
+                        subfield.text, True, True)
                 if (subfield.get("code") == "b"):
                     listeFieldsAuteur[i]["prenom"] = main.clean_string(
-                        subfield.text, False, True)
+                        subfield.text, True, True)
                 if (subfield.get("code") == "f"):
                     listeFieldsAuteur[i]["dates"] = main.clean_string(
-                        subfield.text, False, True)
+                        subfield.text, True, True)
     for auteur in listeFieldsAuteur:
-        if (input_record.lastname.propre in listeFieldsAuteur[auteur]["nom"] or
-            listeFieldsAuteur[auteur]["nom"] in input_record.lastname.propre):
-            if (input_record.firstname.propre != "" and "prenom" in listeFieldsAuteur[auteur]):
-                if (input_record.firstname.propre in listeFieldsAuteur[auteur]["prenom"] 
-                    or listeFieldsAuteur[auteur]["prenom"] in input_record.firstname.propre):
+        if (input_record.lastname.nett in listeFieldsAuteur[auteur]["nom"] or
+            listeFieldsAuteur[auteur]["nom"] in input_record.lastname.nett):
+            if (input_record.firstname.nett != "" and "prenom" in listeFieldsAuteur[auteur]):
+                if (input_record.firstname.nett in listeFieldsAuteur[auteur]["prenom"] 
+                    or listeFieldsAuteur[auteur]["prenom"] in input_record.firstname.nett):
                     if (input_record.date_debut != "" and
                             "dates" in listeFieldsAuteur[auteur]):
                         if (input_record.date_debut in listeFieldsAuteur[auteur]["dates"] 
@@ -821,7 +823,8 @@ def launch(form, entry_filename, headers, input_data_type, preferences_alignemen
     # Si cette valeur est 2 => ORG (code Unimarc IdRef "b")
     type_aut_dict = {
         1 : "a",
-        2 : "b"
+        2 : "b",
+        3 : "a b"
     }
     parametres = {"headers": headers,
                   "input_data_type": input_data_type,
@@ -830,7 +833,8 @@ def launch(form, entry_filename, headers, input_data_type, preferences_alignemen
                   "meta_bnf": meta_bnf,
                   "id_traitement": id_traitement,
                   "type_aut": type_aut_dict[input_data_type],
-                  "preferences_alignement": preferences_alignement}
+                  "preferences_alignement": preferences_alignement,
+                  "stats":  defaultdict(int)}
     liste_reports = create_reports(id_traitement, file_nb)
 
     if (input_data_type == 1 or input_data_type == 2):
@@ -839,7 +843,7 @@ def launch(form, entry_filename, headers, input_data_type, preferences_alignemen
         align_from_bib(form, entry_filename, liste_reports, parametres)
     else:
         main.popup_errors("Format en entrée non défini")
-    bib2ark.fin_traitements(form, liste_reports, nb_notices_nb_ARK)
+    bib2ark.fin_traitements(form, liste_reports, parametres["stats"])
 
 
 def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0, False]):

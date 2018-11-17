@@ -259,10 +259,6 @@ def create_reports_files(id_traitement_code):
         multiple_files_plusieurs_ark_name,
     ]
 
-
-# Rapport statistique final
-nb_notices_nb_ARK = defaultdict(int)
-
 ns = {
     "srw": "http://www.loc.gov/zing/srw/",
     "mxc": "info:lc/xmlns/marcxchange-v2",
@@ -1166,7 +1162,7 @@ def issn2sru(input_record, NumNot, issn):
         for record in pageSRU.xpath("//srw:records/srw:record",
                                     namespaces=main.ns):
             ark = record.find("srw:recordIdentifier", namespaces=main.ns).text
-            typeNotice = record.find(".//*[local-name()='leader']").text[7]
+            typeNotice = main.extract_leader(record, 7)
             if typeNotice == "s":
                 ## NumNotices2methode[NumNot].append("ISSN")
                 input_record.alignment_method.append("ISSN")
@@ -1426,7 +1422,7 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
                     )
                     i += 1
                 try:
-                    recordBNF = srw_record.xpath("srw:recordData/mxc:record", namespaces=main.ns)[0]
+                    recordBNF = srw_record.xpath("srw:recordData/*", namespaces=main.ns)[0]
                     ark = tad2ark_controle_record(input_record, ark_current, 
                                                   auteur, date_nett, annee_plus_trois, index,
                                                   recordBNF, listeArk)
@@ -1451,12 +1447,7 @@ def tad2ark_controle_record(input_record, ark_current,
     Ensemble de contrôles sur une notice BnF trouvée par une recherche 
     Titre-Auteur-Date
     """
-    typeRecord_current = ""
-    if (recordBNF.find("mxc:leader", namespaces=main.ns) is not None
-       and recordBNF.find("mxc:leader", namespaces=main.ns).text is not None):
-        typeRecord_current = recordBNF.find(
-            "mxc:leader", namespaces=main.ns
-        ).text[7]
+    typeRecord_current = main.extract_leader(recordBNF, 7)
     if typeRecord_current == input_record.intermarc_type_record:
         ark = comparaisonTitres(input_record,
                                 input_record.NumNot,
@@ -1694,9 +1685,7 @@ def checkTypeRecord(ark, typeRecord_attendu):
     ark_checked = ""
     (test, record) = funcs.testURLetreeParse(url)
     if test:
-        typeRecord = record.find(
-            "//srw:recordData/mxc:record/mxc:leader", namespaces=main.ns
-        ).text[7]
+        typeRecord = main.extract_leader(record, 7)
         if typeRecord == typeRecord_attendu:
             ark_checked = ark
     return ark_checked
@@ -1726,13 +1715,7 @@ def extract_meta(recordBNF, field_subfield, occ="all", anl=False):
     field = field_subfield.split("$")[0]
     subfield = field_subfield.split("$")[1]
     value = []
-    path = (
-        ".//srw:recordData/mxc:record/mxc:datafield[@tag='"
-        + field
-        + "']/mxc:subfield[@code='"
-        + subfield
-        + "']"
-    )
+    path = (".//*[@tag='" + field + "/*[@code='" + subfield + "']")
     for elem in recordBNF.xpath(path, namespaces=main.ns):
         if elem.text is not None:
             value.append(elem.text)
@@ -2122,11 +2105,11 @@ def item_alignement(input_record, parametres):
             ark = item2ark_by_id(input_record, parametres)
         if ark == "":
             ark = item2ark_by_keywords(input_record, parametres)
-    alignment_result = funcs.Alignment_result(input_record, ark)
+    alignment_result = funcs.Alignment_result(input_record, ark, parametres)
     if ark == "Pb FRBNF":
-        nb_notices_nb_ARK["Pb FRBNF"] += 1
+        parametres["stats"]["Pb FRBNF"] += 1
     else:
-        nb_notices_nb_ARK[alignment_result.nb_ids] += 1
+        parametres["stats"][alignment_result.nb_ids] += 1
     return alignment_result
 
 
@@ -2298,12 +2281,13 @@ def launch(
         "id_traitement": id_traitement,
         "header_columns_init": header_columns_init_dic[type_doc_bib],
         "preferences_alignement": preferences_alignement,
+        "stats": defaultdict(int)
     }
     main.check_file_name(form_bib2ark, entry_filename)
     liste_reports = create_reports(id_traitement, file_nb)
     file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres)
 
-    fin_traitements(form_bib2ark, liste_reports, nb_notices_nb_ARK)
+    fin_traitements(form_bib2ark, liste_reports, parametres["stats"])
 
 #
 # ==============================================================================
@@ -2324,10 +2308,6 @@ def stats_extraction(liste_reports, nb_notices_nb_ARK):
     """Ecriture des rapports de statistiques générales d'alignements"""
     for key in nb_notices_nb_ARK:
         liste_reports[-1].write(str(key) + "\t" + str(nb_notices_nb_ARK[key]) + "\n")
-    """if ("Pb FRBNF" in sorted(nb_notices_nb_ARK)):
-        nb_notices_nb_ARK[-2] = nb_notices_nb_ARK.pop('Pb FRBNF')"""
-    """plt.bar(list(nb_notices_nb_ARK.keys()), nb_notices_nb_ARK.values(), color='skyblue')
-    plt.show()"""
 
 
 def url_access_pbs_report(liste_reports):
