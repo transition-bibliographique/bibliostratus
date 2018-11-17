@@ -27,6 +27,7 @@ from unidecode import unidecode
 import pymarc as mc
 
 import main
+import noticesaut2arkBnF as aut2ark
 from udecode import udecode
 
 # Ajout exception SSL pour éviter
@@ -825,6 +826,9 @@ class Alignment_result:
                                     self.ids_str,
                                     self.alignment_method_str
                                 ] + input_record.metas_init
+        if (parametres["meta_bnf"] == 1):
+            self.liste_metadonnees.extend(aut2ark.ark2metadc(ark))
+
 
 def xml2pymarcrecord(xml_record):
     """

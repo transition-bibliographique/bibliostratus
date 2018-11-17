@@ -46,7 +46,6 @@ header_columns_init_bib2aut = [
 
 # Pour chaque notice, on recense la méthode qui a permis de récupérer le
 # ou les ARK
-NumNotices2methode = defaultdict(list)
 
 # Toutes les 100 notices, on vérifie que les API BnF et Abes répondent correctement.
 # Résultats (True/False) enregistrés dans ce dictionnaire
@@ -150,48 +149,17 @@ def ark2metadc(ark):
 def ark2metas(ark, unidec=True):
     recordBNF_url = funcs.url_requete_sru('bib.persistentid any "' + ark + '"')
     (test, record) = funcs.testURLetreeParse(recordBNF_url)
-    accesspoint = ""
-    accesspoint_compl = ""
-    dates = ""
+    accesspoint, accesspoint_compl, dates = ["", "", ""]
     if test:
-        if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='a']",
-                        namespaces=main.ns) is not None):
-            accesspoint = record.find(
-                "//mxc:datafield[@tag='200']/mxc:subfield[@code='a']",
-                namespaces=main.ns
-            ).text
-        if (record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='a']",
-                        namespaces=main.ns) is not None):
-            accesspoint = record.find(
-                "//mxc:datafield[@tag='210']/mxc:subfield[@code='a']",
-                namespaces=main.ns
-            ).text
-        if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='b']",
-                        namespaces=main.ns) is not None):
-            accesspoint_compl = record.find(
-                "//mxc:datafield[@tag='200']/mxc:subfield[@code='b']",
-                namespaces=main.ns
-            ).text
-        if (record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='b']",
-                        namespaces=main.ns) is not None):
-            accesspoint_compl = record.find(
-                "//mxc:datafield[@tag='210']/mxc:subfield[@code='b']",
-                namespaces=main.ns
-            ).text
-
-        if (record.find("//mxc:datafield[@tag='200']/mxc:subfield[@code='f']",
-                        namespaces=main.ns) is not None):
-            dates = record.find(
-                "//mxc:datafield[@tag='200']/mxc:subfield[@code='f']",
-                namespaces=main.ns
-            ).text
-        if (record.find("//mxc:datafield[@tag='210']/mxc:subfield[@code='f']",
-                        namespaces=main.ns) is not None):
-            dates = record.find(
-                "//mxc:datafield[@tag='210']/mxc:subfield[@code='f']",
-                namespaces=main.ns
-            ).text
-
+        acccesspoint = main.extract_subfield(record, "200", "a")
+        if not accesspoint:
+            accesspoint = main.extract_subfield(record, "210", "a")
+        accesspoint_compl = main.extract_subfield(record, "200", "b")
+        if not accesspoint_compl:
+            accesspoint_compl = main.extract_subfield(record, "210", "b")
+        dates = main.extract_subfield(record, "200", "f")
+        if not dates:
+            dates = main.extract_subfield(record, "210", "f")
     metas = [accesspoint, accesspoint_compl, dates]
     if unidec:
         metas = [unidecode(meta) for meta in metas]
@@ -208,7 +176,6 @@ def isni2ark(input_record, origine="isni"):
             nv_ark = page.find("//srw:recordIdentifier",
                                namespaces=main.ns).text
             if (origine == "isni"):
-                NumNotices2methode[NumNot].append("ISNI")
                 input_record.alignment_method.append("ISNI")
     return nv_ark
 
@@ -255,25 +222,23 @@ def accesspoint2isniorg(input_record, parametres):
                         or dates in input_record.firstdate.propre):
                         isnis.append(isni)
     if (isnis != []):
-        NumNotices2methode[input_record.NumNot].append("Point d'accès > ISNI")
+        input_record.alignment_method.append("Point d'accès > ISNI")
     i = 0
     if (parametres["preferences_alignement"] == 1):
         for isni in isnis:
-            NumNotices2methode[input_record.NumNot][-1]
             # isni_id = isni.split("/")[-1]
             ark = isni2ark(input_record, origine="accesspoint")
             if (ark != ""):
                 isnis[i] = ark
-                NumNotices2methode[input_record.NumNot].append("ISNI > ARK")
+                input_record.alignment_method.append("ISNI > ARK")
             i += 1
     if (parametres["preferences_alignement"] == 2):
         for isni in isnis:
-            NumNotices2methode[input_record.NumNot][-1]
             isni_id = isni.split("/")[-1]
             ppn = aut_align_idref.isni2ppn(input_record.NumNot, isni_id, origine="accesspoint")
             if (ppn != ""):
                 isnis[i] = ppn
-                NumNotices2methode[input_record.NumNot].append("ISNI > PPN")
+                input_record.alignment_method.append("ISNI > PPN")
             i += 1
 
     isnis = ",".join(isnis)
@@ -284,31 +249,24 @@ def aut2ppn_by_id(input_record, parametres):
     ppn = ""
     return ppn
 
-def aut2ark_by_id(input_record,parametres):
-    """Fonction d'alignement sur un identifiant ARK"""
+def aut2ark_by_id(input_record, parametres):
+    """Alignement sur un identifiant ARK (actualisation)"""
     ark = ""
     if (ark == "" and input_record.ark_init != ""):
-        ark = arkAut2arkAut(input_record.NumNot, nettoyageArk(input_record.ark_init))
+        ark = arkAut2arkAut(input_record, input_record.NumNot,
+                            nettoyageArk(input_record.ark_init))
     if (ark == "" and input_record.isni.propre != ""):
         ark = isni2ark(input_record)
     if (ark == "" and input_record.frbnf.propre != ""):
         ark = frbnfAut2arkAut(input_record)
     return ark
 
-def align_from_aut_item(row, n, form_aut2ark, parametres, liste_reports):
-    if (n == 0):
-        assert main.control_columns_number(
-            form_aut2ark, row, header_columns_init_aut2aut)
-    n += 1
-    if (n % 100 == 0):
-        main.check_access2apis(n, dict_check_apis)
-
-    input_record = funcs.Aut_record(row,parametres)
-    ark = ""
+def align_from_aut_alignment(input_record, parametres):
     if (parametres["preferences_alignement"] == 1):
         ark = aut2ark_by_id(input_record,parametres)
         if (ark == ""):
             ark = aut2ark_by_accesspoint(
+                    input_record,
                     input_record.NumNot, 
                     input_record.lastname.propre,
                     input_record.firstname.propre,
@@ -322,27 +280,42 @@ def align_from_aut_item(row, n, form_aut2ark, parametres, liste_reports):
             ark = aut_align_idref.aut2ppn_by_accesspoint(input_record, parametres)
     if (ark == "" and parametres["isni_option"] == 1):
         ark = accesspoint2isniorg(input_record, parametres)
-    print(str(n) + ". " + input_record.NumNot + " : " + ark)
-    nbARK = len(ark.split(","))
-    if (ark == ""):
-        nbARK = 0
-    if (ark == "Pb FRBNF"):
+    alignement_result = funcs.Alignement_result(input_record, ark)
+    if ark == "Pb FRBNF":
         nb_notices_nb_ARK["Pb FRBNF"] += 1
     else:
-        nb_notices_nb_ARK[nbARK] += 1
-    typeConversionNumNot = ""
-    if (input_record.NumNot in NumNotices2methode):
-        typeConversionNumNot = ",".join(NumNotices2methode[input_record.NumNot])
-        if (len(set(NumNotices2methode[input_record.NumNot])) == 1):
-            typeConversionNumNot = list(set(NumNotices2methode[input_record.NumNot]))[0]
-    liste_metadonnees = [input_record.NumNot, nbARK, ark, typeConversionNumNot]
-    liste_metadonnees.extend(input_record.metas_init)
-    if (parametres["meta_bnf"] == 1):
-        liste_metadonnees.extend(ark2metadc(ark))
-    if (parametres["file_nb"] == 1):
-        row2file(liste_metadonnees, liste_reports)
-    elif(parametres["file_nb"] == 2):
-        row2files(liste_metadonnees, liste_reports)
+        nb_notices_nb_ARK[alignment_result.nb_ids] += 1
+    return alignment_result
+
+
+
+def alignment_result2output(alignment_result, input_record, parametres, liste_reports, n):
+    """
+    Format de sortie de l'alignement
+    """
+    print(str(n) + ". " + input_record.NumNot + " : " + alignment_result.ids_str)
+    if parametres["meta_bib"] == 1:
+        alignment_result.liste_metadonnees.extend(ark2metadc(ark))
+    if parametres["file_nb"] == 1:
+        row2file(alignment_result.liste_metadonnees, liste_reports)
+    elif parametres["file_nb"] == 2:
+        row2files(alignment_result.liste_metadonnees, liste_reports)
+
+
+
+def align_from_aut_item(row, n, form_aut2ark, parametres, liste_reports):
+    if (n == 0):
+        assert main.control_columns_number(
+            form_aut2ark, row, header_columns_init_aut2aut)
+    n += 1
+    if (n % 100 == 0):
+        main.check_access2apis(n, dict_check_apis)
+
+    input_record = funcs.Aut_record(row,parametres)
+    alignement_result = align_from_aut_alignment(input_record, parametres)
+    alignment_result2output(alignment_result, input_record, parametres, 
+                            liste_reports, n)
+
 
 
 def align_from_aut(form, entry_filename, liste_reports, parametres):
@@ -377,44 +350,13 @@ def align_from_aut(form, entry_filename, liste_reports, parametres):
             n += 1
 
 
-def align_from_bib_item(row, n, form_aut2ark, parametres, liste_reports):
-    if (n == 0):
-        assert main.control_columns_number(
-            form_aut2ark, row, header_columns_init_bib2aut)
-    n += 1
-    if (n % 100 == 0):
-        main.check_access2apis(n, dict_check_apis)
-    (NumNot, NumNotBib, ark_bib_init, frbnf_bib_init, titre, pubDate,
-     isni, nom, prenom, dates_auteur) = bib2ark.extract_cols_from_row(row,
-                                                                      header_columns_init_bib2aut)
-    input_record = funcs.Bib_Aut_record(row)
-    # ==============================================================================
-    #             NumNot = row[0]
-    #             NumNotBib = row[1]
-    #             ark_bib_init = row[2]
-    #             frbnf_bib_init = row[3]
-    #             titre = row[4]
-    # ==============================================================================
-    titre_nett = main.clean_string(titre, False, True)
-    pubDate_nett = funcs.nettoyageDate(pubDate)
-    # ==============================================================================
-    #             isni = row[5]
-    #             nom = row[6]
-    # ==============================================================================
-    isni_nett = nettoyage_isni(isni)
-    nom_nett = main.clean_string(nom, False, True)
-    # 'prenom = row[7]
-    prenom_nett = main.clean_string(prenom, False, True)
-    # $1ates_auteur = row[8]
-    date_debut = dates_auteur
-    if (dates_auteur.find("av") > 0):
-        date_debut = dates_auteur[:dates_auteur.find("av")]
-    elif (dates_auteur.find("-") > 0):
-        date_debut = dates_auteur[:dates_auteur.find("-")]
-    date_debut = main.clean_string(date_debut, False, True)
+def align_from_bib_alignment(input_record, parametres):
+    """
+    Alignement sur 1 notice de type Bib_Aut_record
+    Renvoie le résultat de l'alignement sous
+    la forme d'un objet de class Alignment_result
+    """
     ark_trouve = ""
-
-    # Si option "d'abord BnF"
     if (ark_trouve == "" and input_record.isni.propre != ""):
         ark_trouve = isni2ark(input_record)
     if (ark_trouve == "" and ark_bib_init != ""):
@@ -423,32 +365,25 @@ def align_from_bib_item(row, n, form_aut2ark, parametres, liste_reports):
         ark_trouve = frbnfBib2arkAut(input_record)
     if (ark_trouve == "" and nom != ""):
         ark_trouve = bib2arkAUT(input_record)
-
-
-
-    print(str(n) + ". " + NumNot + " : " + ark_trouve)
-    nbARK = len(ark_trouve.split(","))
-    if (ark_trouve == ""):
-        nbARK = 0
+    alignment_result = funcs.Alignment_result(input_record, ark_trouve)
     if (ark_trouve == "Pb FRBNF"):
         nb_notices_nb_ARK["Pb FRBNF"] += 1
     else:
-        nb_notices_nb_ARK[nbARK] += 1
-    typeConversionNumNot = ""
-    if (NumNot in NumNotices2methode):
-        typeConversionNumNot = ",".join(NumNotices2methode[NumNot])
-        if (len(set(NumNotices2methode[NumNot])) == 1):
-            typeConversionNumNot = list(set(NumNotices2methode[NumNot]))[0]
-    liste_metadonnees = [NumNot, nbARK, ark_trouve, typeConversionNumNot, NumNotBib,
-                         ark_bib_init, frbnf_bib_init, titre, isni, nom, prenom, dates_auteur]
+        nb_notices_nb_ARK[alignment_result.nb_ids] += 1
+    return alignment_result
 
-    if (parametres['meta_bnf'] == 1):
-        liste_metadonnees.extend(ark2metadc(ark_trouve))
-    if (parametres['file_nb'] == 1):
-        row2file(liste_metadonnees, liste_reports)
-    elif(parametres['file_nb'] == 2):
-        row2files(liste_metadonnees, liste_reports)
 
+def align_from_bib_item(row, n, form_aut2ark, parametres, liste_reports):
+    if (n == 0):
+        assert main.control_columns_number(
+            form_aut2ark, row, header_columns_init_bib2aut)
+    n += 1
+    if (n % 100 == 0):
+        main.check_access2apis(n, dict_check_apis)
+    input_record = funcs.Bib_Aut_record(row)
+    alignement_result = align_from_bib_alignment(input_record, parametres)
+    alignment_result2output(alignment_result, input_record, parametres, 
+                            liste_reports, n)
 
 def align_from_bib(form, entry_filename, liste_reports, parametres):
     """Alignement de ses données d'autorité avec les autorités BnF
@@ -495,7 +430,7 @@ def nettoyageArk(ark):
 # ==============================================================================
 # Fonctions d'alignement : recherche sur identifiants, points d'accès ou titre-auteur
 # ==============================================================================
-def arkAut2arkAut(NumNot, ark):
+def arkAut2arkAut(input_record, NumNot, ark):
     """Actualisation d'un ARK de notice d'autorité"""
 
     url = funcs.url_requete_sru('aut.persistentid all "' + ark + '"')
@@ -505,7 +440,7 @@ def arkAut2arkAut(NumNot, ark):
         if (page.find("//srw:recordIdentifier", namespaces=main.ns) is not None):
             nv_ark = page.find("//srw:recordIdentifier",
                                namespaces=main.ns).text
-            NumNotices2methode[NumNot].append("Actualisation ARK")
+            input_record.alignment_method.append("Actualisation ARK")
     return nv_ark
 
 
@@ -517,12 +452,9 @@ def arkBib2arkAut(input_record):
     (test, page) = funcs.testURLetreeParse(url)
     listeArk = ""
     if test:
-        for xml_record in page.xpath(
-                "//srw:recordData/mxc:record", namespaces=main.ns):
+        for xml_record in page.xpath("//srw:recordData/*"):
             listeArk.extend(extractARKautfromBIB(input_record,
                 xml_record))
-            NumNotices2methode[NumNot].append(
-                "ARK notice BIB + contrôle accesspoint")
             input_record.alignment_method.append("ARK notice BIB + contrôle accesspoint")
     return listeArk
 
@@ -597,7 +529,9 @@ def oldfrbnf2ark(input_record):
                     systemid[0:8], 
                     input_record.lastname.propre)
     if (ark == ""):
-        ark = systemid2ark(input_record.NumNot, systemid, False, input_record.lastname.propre)
+        ark = systemid2ark(input_record, input_record.NumNot,
+                           systemid, False, 
+                           input_record.lastname.propre)
     return ark
 
 
@@ -619,7 +553,11 @@ def rechercheNNA(input_record, NumNot, nna, nom):
     return ark
 
 
-def systemid2ark(NumNot, systemid, tronque, nom):
+def systemid2ark(input_record, NumNot, systemid, tronque, nom):
+    """
+    Recherche par ancien numéro de notice
+    Si présence d'un nom d'auteur, on contrôle sur le nom
+    """
     url = funcs.url_requete_sru('aut.otherid all "' + systemid + '"')
     # $1rl = (
     #     "http://catalogueservice.bnf.fr/SRU?version=1.2&operation=searchRetrieve&query=NumNotice%20any%20%22"
@@ -634,31 +572,24 @@ def systemid2ark(NumNot, systemid, tronque, nom):
             ark_current = record.find(
                 "srw:recordIdentifier", namespaces=main.ns).text
             if (nom != ""):
-                for zone9XX in record.xpath(
-                        "srw:recordData/mxc:record/mxc:datafield", namespaces=main.ns):
+                for zone9XX in record.xpath(".//*[@tag]"):
                     # print(ark_current)
                     tag = zone9XX.get("tag")
-                    if (tag[0:1] == "9"):
-                        if (zone9XX.find("mxc:subfield[@code='a']",
-                                         namespaces=main.ns) is not None):
-                            if (zone9XX.find("mxc:subfield[@code='a']",
-                                             namespaces=main.ns).text is not None):
-                                if (zone9XX.find(
-                                        "mxc:subfield[@code='a']",
-                                        namespaces=main.ns).text == systemid):
-                                    # print(zone9XX.get("tag"))
-                                    listeARK.append(
-                                        comparerAutBnf(input_record
-                                            NumNot, ark_current, systemid, nom,
-                                            "Ancien n° notice")
-                                    )
+                    if (tag[0] == "9"):
+                        local_value = main.field2subfield(zone9XX, "a")
+                        if local_value == systemid):
+                            listeARK.append(comparerAutBnf(input_record,
+                                                           NumNot, ark_current,
+                                                           systemid, nom,
+                                                           "Ancien n° notice")
+                                           )
             else:
                 listeARK.append(ark_current)
-    listeARK = ",".join([ark1 for ark1 in listeARK if ark1 != ''])
+    listeARK = ",".join([ark for ark in listeARK if ark != ''])
 
     # Si pas de réponse, on fait la recherche SystemID + Nom auteur
     if (listeARK == ""):
-        listeARK = relancerNNA_nomAuteur(NumNot, systemid, nom)
+        listeARK = relancerNNA_nomAuteur(input_record, NumNot, systemid, nom)
     listeARK = ",".join([ark1 for ark1 in listeARK.split(",") if ark1 != ''])
 
     # Si à l'issue d'une première requête sur le numéro système dont on a
@@ -666,12 +597,12 @@ def systemid2ark(NumNot, systemid, tronque, nom):
     # comme numéro système
     if (listeARK == "" and not tronque):
         systemid_tronque = systemid[0:len(systemid) - 1]
-        systemid2ark(NumNot, systemid_tronque, True, nom)
+        systemid2ark(input_record, NumNot, systemid_tronque, True, nom)
     listeARK = ",".join([ark1 for ark1 in listeARK.split(",") if ark1 != ''])
     return listeARK
 
 
-def relancerNNA_nomAuteur(NumNot, systemid, nom):
+def relancerNNA_nomAuteur(input_record, NumNot, systemid, nom):
     listeArk = []
     if (nom != "" and nom is not None):
         urlSRU = funcs.url_requete_sru(
@@ -682,13 +613,13 @@ def relancerNNA_nomAuteur(NumNot, systemid, nom):
                     "//srw:records/srw:record", namespaces=main.ns):
                 ark = record.find("srw:recordIdentifier",
                                   namespaces=main.ns).text
-                NumNotices2methode[NumNot].append("N° sys FRBNF + Nom")
+                input_record.alignment_result.append("N° sys FRBNF + Nom")
                 listeArk.append(ark)
     listeArk = ",".join(listeArk)
     return listeArk
 
 
-def aut2ark_by_accesspoint(NumNot, nom_nett, prenom_nett, 
+def aut2ark_by_accesspoint(input_record, NumNot, nom_nett, prenom_nett, 
                            date_debut, date_fin, parametres):
     # Conversion du type d'autorité des codes Unimarc
     # en codes Intermarc pour le SRU BnF
@@ -712,24 +643,18 @@ def aut2ark_by_accesspoint(NumNot, nom_nett, prenom_nett,
         for record in results.xpath("//srw:records/srw:record", namespaces=main.ns):
             ark = record.find("srw:recordIdentifier", namespaces=main.ns).text
             if testdatefin:
-                if (record.find(
-                        "srw:recordData/mxc:record/mxc:datafield[@tag='103']/mxc:subfield[@code='a']",  # noqa
-                        namespaces=main.ns) is not None):
-                    f103a_datefin = record.find(
-                        "srw:recordData/mxc:record/mxc:datafield[@tag='103']/mxc:subfield[@code='a']",  # noqa
-                        namespaces=main.ns
-                    ).text[11:15]
+                f103a_datefin = main.extract_subfield(record, "103", "a")
+                if (len(f103a_datefin) > 15):
+                    f103a_datefin = f103a_datefin[11:15]
                     if (date_fin == f103a_datefin):
                         listeArk.append(ark)
-                        NumNotices2methode[NumNot].append(
-                            "Point d'accès avec date de fin")
+                        input_record.alignment_method.append("Point d'accès avec date de fin")
             elif (date_debut != ""):
                 listeArk.append(ark)
-                NumNotices2methode[NumNot].append(
-                    "Point d'accès avec date de début")
+                input_record.alignment_method.append("Point d'accès avec date de début")
             else:
                 listeArk.append(ark)
-                NumNotices2methode[NumNot].append("Point d'accès")
+                input_record.alignment_method.append("Point d'accès")
     listeArk = ",".join(listeArk)
     return listeArk
 
@@ -753,7 +678,6 @@ def bib2arkAUT(input_record):
             listeArk.extend(extractARKautfromBIB(input_record, xml_record))
     listeArk = ",".join(set(listeArk))
     if (listeArk != ""):
-        NumNotices2methode[NumNot].append("Titre-Auteur-Date")
         input_record.alignment_method.append("Titre-Auteur-Date")
     return listeArk
 
@@ -799,11 +723,9 @@ def compareAccessPoint(input_record, NumNot, ark_current, nna, nom, recordBNF):
     if (nom != "" and accessPointBNF != ""):
         if (nom in accessPointBNF):
             ark = ark_current
-            NumNotices2methode[NumNot].append("N° sys FRBNF + contrôle Nom")
             input_record.alignment_method.append("N° sys FRBNF + contrôle Nom")
         if (accessPointBNF in nom):
             ark = ark_current
-            NumNotices2methode[NumNot].append("N° sys FRBNF + contrôle Nom")
             input_record.alignment_method.append("N° sys FRBNF + contrôle Nom")
     return ark
 
@@ -843,11 +765,11 @@ def extractARKautfromBIB(input_record, xml_record):
     listeArk = []
     listeFieldsAuteur = defaultdict(dict)
     i = 0
-    for field in xml_record.xpath(".//*[local-name()='datafield']", namespaces=main.ns):
+    for field in xml_record.xpath(".//*[@tag]"):
         i += 1
         if (field.get("tag")[0] == "7"):
             listeFieldsAuteur[i]["tag"] = field.get("tag")
-            for subfield in field.xpath("*", namespaces=main.ns):
+            for subfield in field.xpath("*[@code]"):
                 if (subfield.get("code") == "3"):
                     listeFieldsAuteur[i]["nna"] = subfield.text
                 if (subfield.get("code") == "a"):

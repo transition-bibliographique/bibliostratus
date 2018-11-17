@@ -636,44 +636,25 @@ def systemid2ark(input_record, NumNot, systemid, tronque, isbn, titre, auteur, d
                                  namespaces=main.ns):
             ark_current = record.find("srw:recordIdentifier",
                                       namespaces=main.ns).text
-            for zone9XX in record.xpath(
-                "srw:recordData/mxc:record/mxc:datafield", namespaces=main.ns
-            ):
+            for zone9XX in record.xpath("//*[@tag]"):
                 # print(ark_current)
                 tag = zone9XX.get("tag")
                 if tag[0:1] == "9":
-                    if (
-                        zone9XX.find("mxc:subfield[@code='a']",
-                                     namespaces=main.ns)
-                        is not None
-                    ):
-                        if (
-                            zone9XX.find(
-                                "mxc:subfield[@code='a']", namespaces=main.ns
-                            ).text
-                            is not None
-                        ):
-                            if (
-                                zone9XX.find(
-                                    "mxc:subfield[@code='a']",
-                                    namespaces=main.ns
-                                ).text
-                                == systemid
-                            ):
-                                # print(zone9XX.get("tag"))
-                                listeARK.append(
-                                    comparerBibBnf(
-                                        input_record,
-                                        NumNot,
-                                        ark_current,
-                                        systemid,
-                                        isbn,
-                                        titre,
-                                        auteur,
-                                        date,
-                                        "Ancien n° notice",
-                                    )
-                                )
+                    local_val = main.field2subfield(zone9XX, "a")
+                    if local_val == systemid:
+                        # print(zone9XX.get("tag"))
+                        listeARK.append(
+                            comparerBibBnf(input_record,
+                                           NumNot,
+                                           ark_current,
+                                           systemid,
+                                           isbn,
+                                           titre,
+                                           auteur,
+                                           date,
+                                           "Ancien n° notice"
+                                          )
+                                        )
     listeARK = ",".join([ark1 for ark1 in listeARK if ark1 != ""])
 
     # Si pas de réponse, on fait la recherche SystemID + Auteur
@@ -689,7 +670,6 @@ def systemid2ark(input_record, NumNot, systemid, tronque, isbn, titre, auteur, d
         systemid_tronque = systemid[0: len(systemid) - 1]
         systemid2ark(input_record, NumNot, systemid_tronque, True, isbn, titre, auteur, date)
     listeARK = ",".join([ark1 for ark1 in listeARK.split(",") if ark1 != ""])
-
     return listeARK
 
 
@@ -1186,9 +1166,7 @@ def issn2sru(input_record, NumNot, issn):
         for record in pageSRU.xpath("//srw:records/srw:record",
                                     namespaces=main.ns):
             ark = record.find("srw:recordIdentifier", namespaces=main.ns).text
-            typeNotice = record.find(
-                "srw:recordData/mxc:record/mxc:leader", namespaces=main.ns
-            ).text[7]
+            typeNotice = record.find(".//*[local-name()='leader']").text[7]
             if typeNotice == "s":
                 ## NumNotices2methode[NumNot].append("ISSN")
                 input_record.alignment_method.append("ISSN")
@@ -1250,88 +1228,17 @@ def ark2metas(ark, unidec=True):
     tousauteurs = ""
     date = ""
     if test:
-        if (
-            record.find(
-                "//mxc:datafield[@tag='200']/mxc:subfield[@code='a']",
-                namespaces=main.ns,
-            )
-            is not None
-        ):
-            titre = record.find(
-                "//mxc:datafield[@tag='200']/mxc:subfield[@code='a']",
-                namespaces=main.ns,
-            ).text
-        if (
-            record.find(
-                "//mxc:datafield[@tag='200']/mxc:subfield[@code='e']",
-                namespaces=main.ns,
-            )
-            is not None
-        ):
-            titre = (
-                titre
-                + ", "
-                + record.find(
-                    "//mxc:datafield[@tag='200']/mxc:subfield[@code='e']",
-                    namespaces=main.ns,
-                ).text
-            )
-        if (
-            record.find(
-                "//mxc:datafield[@tag='700']/mxc:subfield[@code='a']",
-                namespaces=main.ns,
-            )
-            is not None
-        ):
-            premierauteurNom = record.find(
-                "//mxc:datafield[@tag='700']/mxc:subfield[@code='a']",
-                namespaces=main.ns,
-            ).text
-        if (
-            record.find(
-                "//mxc:datafield[@tag='700']/mxc:subfield[@code='b']",
-                namespaces=main.ns,
-            )
-            is not None
-        ):
-            premierauteurPrenom = record.find(
-                "//mxc:datafield[@tag='700']/mxc:subfield[@code='b']",
-                namespaces=main.ns,
-            ).text
-        if premierauteurNom == "":
-            if (
-                record.find(
-                    "//mxc:datafield[@tag='710']/mxc:subfield[@code='a']",
-                    namespaces=main.ns,
-                )
-                is not None
-            ):
-                premierauteurNom = record.find(
-                    "//mxc:datafield[@tag='710']/mxc:subfield[@code='a']",
-                    namespaces=main.ns,
-                ).text
-        if (
-            record.find(
-                "//mxc:datafield[@tag='200']/mxc:subfield[@code='f']",
-                namespaces=main.ns,
-            )
-            is not None
-        ):
-            tousauteurs = record.find(
-                "//mxc:datafield[@tag='200']/mxc:subfield[@code='f']",
-                namespaces=main.ns,
-            ).text
-        if (
-            record.find(
-                "//mxc:datafield[@tag='210']/mxc:subfield[@code='d']",
-                namespaces=main.ns,
-            )
-            is not None
-        ):
-            date = record.find(
-                "//mxc:datafield[@tag='210']/mxc:subfield[@code='d']",
-                namespaces=main.ns,
-            ).text
+        titre = main.extract_subfield(record, "200", "a")
+        titre_compl = main.extract_subfield(record, "200", "e")
+        if (titre_compl):
+            titre += titre_compl
+        premierauteurNom = main.extract_subfield(record, "700", "a")
+        premierauteurPrenom = main.extract_subfield(record, "700", "b")
+        if not premierauteurNom:
+            premierauteurNom = main.extract_subfield(record, "710", "a")
+            premierauteurPrenom = main.extract_subfield(record, "710", "b")
+        tousauteurs = main.extract_subfield(record, "200", "f")
+        date = main.extract_subfield(record, "210", "d")
     metas = [titre, premierauteurPrenom, premierauteurNom, tousauteurs, date]
     if unidec:
         metas = [funcs.unidecode_local(meta) for meta in metas]

@@ -188,6 +188,21 @@ def RepresentsInt(s):
     except ValueError:
         return False
 
+def field2subfield(field, subfield, nb_occ="all", sep="~"):
+    path = "*[@code='" + subfield + "']"
+    listeValues = []
+    if (nb_occ == "first" or nb_occ == 1):
+        if (field.find(path, namespaces=ns) is not None and
+                field.find(path, namespaces=ns).text is not None):
+            val = field.find(path, namespaces=ns).text
+            listeValues.append(val)
+    else:
+        for occ in field.xpath(path, namespaces=ns):
+            if (occ.text is not None):
+                listeValues.append(occ.text)
+    listeValues = sep.join(listeValues)
+    return listeValues
+
 
 def extract_subfield(record, field, subfield, nb_occ="all", sep="~"):
     path = ".//*[@tag='" + field + \
