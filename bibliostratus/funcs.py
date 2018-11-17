@@ -282,6 +282,7 @@ def nettoyage_isbn(isbn):
 
 
 def nettoyage_isni(isni):
+    isni = isni.split("/")[-1]
     if (isni[0:20] == "http://www.isni.org"):
         isni = isni[20:36]
     else:
@@ -780,7 +781,7 @@ class Bib_Aut_record:
     avec métadonnées AUT pour un alignement de la notice d'autorité
     grâce à la combinaison Titre + Auteur"""
 
-    def __init__(self, input_row, parametres):  # Notre méthode constructeur
+    def __init__(self, input_row):  # Notre méthode constructeur
         self.metas_init = input_row[1:]
         self.NumNot = input_row[0]
         self.NumNot_bib = input_row[1]
@@ -794,19 +795,13 @@ class Bib_Aut_record:
         self.firstname = Name(input_row[8])
         self.author_dates = input_row[9]
         self.alignment_method = []
-
-
-
-
-class Aut_bib_record:
-    """Classe définissant les propriétés d'une combinaison de métadonnées
-    AUT + BIB, à partir d'une notice bibliographique, pour permettre
-    un alignement sur la notice d'autorité"""
-
-    def __init__(self, input_row, parametres):  # Notre méthode constructeur
-        self.metas_init = input_row[1:]
-        self.NumNot = input_row[0]
-        self.frbnf = input_row[1]
+    
+        self.date_debut = self.author_dates
+        if (self.date_debut.find("av") > 0):
+            self.date_debut = self.date_debut[:self.date_debut.find("av")]
+        elif (self.date_debut.find("-") > 0):
+            date_debutdate_debut = self.date_debut[:self.date_debut.find("-")]
+        self.date_debut = main.clean_string(self.date_debut, False, True)
 
 
 class Alignment_result:
