@@ -111,6 +111,7 @@ def unicode_table2entities():
             if len(row)>1:
                 xml_entity = "&#" + str(row[1]) + ";"
                 xml_entities2chars[xml_entity] = row[-1]
+    
 
 
 def udecode(string):
