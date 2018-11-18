@@ -7,7 +7,8 @@
 *.swf
 *.mrc
 *.iso2709
-
+!unicode_table.csv
+!unicode_table_full.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

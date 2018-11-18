@@ -31,8 +31,6 @@ import udecode
 # formulaire, et d'y accéder ensuite
 entry_file_list = []
 
-listeARK_BIB = []
-listeNNA_AUT = []
 errors_list = []
 
 dict_format_records = {
@@ -102,9 +100,6 @@ def XMLrecord2string(record):
     record_str = record_str.replace("<mxc:", "<").replace("</mxc:", "</")
     record_str = re.sub("<record[^>]+>", "<record>", record_str)
     record_str = udecode.replace_xml_entities(record_str)
-    """record_str = record_str.replace("b'", "").replace("      '", "\n").replace(
-        "\\n", "\n").replace("\\t", "\t").replace("\\r", "\n").replace(
-            "</record>'", "</record>")"""
     return record_str
 
 
@@ -118,8 +113,8 @@ def extract_nna_from_bib_record(record, field, source):
         path = '//datafield[@tag="' + field + '"]/subfield[@code="3"]'
     for datafield in record.xpath(path, namespaces=main.ns):
         nna = datafield.text
-        if (nna not in listeNNA_AUT):
-            listeNNA_AUT.append(nna)
+        if (nna not in parametres["listeNNA_AUT"]):
+            parametres["listeNNA_AUT"].append(nna)
             liste_nna.append(nna)
     return liste_nna
 
@@ -165,7 +160,7 @@ def file_create(record_type, parametres):
     if (parametres["format_file"] == 2):
         filename = id_filename + ".xml"
         file = open(filename, "w", encoding="utf-8")
-        file.write("<?xml version='1.0'?>\n")
+        file.write("<?xml version='1.0' encoding='utf-8'?>\n")
         file.write("<collection>")
     else:
         filename = id_filename + ".iso2709"
@@ -231,9 +226,9 @@ def extract1record(row, j, form, headers, parametres):
                       "ppn").replace("https://www.idref.fr/", "ppn")
     if ("ark:/12148" in ark):
         ark = ark[ark.find("ark:/12148"):]
-    if (len(ark) > 1 and ark not in listeARK_BIB):
+    if (len(ark) > 1 and ark not in parametres["listeARK_BIB"]):
         print(str(j) + ". " + ark)
-        listeARK_BIB.append(ark)
+        parametres["listeARK_BIB"].append(ark)
         (test, page) = funcs.testURLetreeParse(ark2url(ark, parametres))
         if(test):
             nbResults = page2nbresults(page, ark)
@@ -274,9 +269,16 @@ def callback(master, form, filename, type_records_form, headers, AUTlieesAUT,
         "outputID": outputID,
         "format_records": format_records,
         "format_file": format_file,
-        "format_BIB": format_BIB
+        "format_BIB": format_BIB,
+        "listeARK_BIB" : [],
+        "listeNNA_AUT" : []
     }
     main.generic_input_controls(master, filename)
+
+    # Si format XML en sortie : alimentation de la 
+    # table de conversion des caractères spéciaux
+    if (format_file == 2):
+        udecode.unicode_table2entities()
 
     bib_file = file_create(type_records, parametres)
     parametres["bib_file"] = bib_file
