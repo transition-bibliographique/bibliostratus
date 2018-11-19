@@ -4,7 +4,7 @@ Ensemble de fonctions ou variables concernant le traitement de l'UTF-8
 et les diacritiques, caractères spéciaux, caractères non latins, etc.
 """
 
-import csv
+# from unidecode_table_full import unidecode_table_full
 
 convert_diacritics = [
     ['ª', 'Á', 'á', 'À', 'à', 'Ă', 'ă', 'Ắ', 'ắ', 'Ằ', 'ằ',
@@ -333,10 +333,10 @@ def udecode(string):
     return string
 
 
-def replace_xml_entities(string):
+def replace_xml_entities(string, mapping_table=xml_entities2chars):
     """
     Remplacement des entités XML en caractères UTF-8
     """
-    for entity in xml_entities2chars:
-        string = string.replace(entity, xml_entities2chars[entity])
+    for entity in mapping_table:
+        string = string.replace(entity, mapping_table[entity])
     return string
