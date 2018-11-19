@@ -359,14 +359,25 @@ def align_from_bib_alignment(input_record, parametres):
     la forme d'un objet de class Alignment_result
     """
     ark_trouve = ""
-    if (ark_trouve == "" and input_record.isni.propre != ""):
-        ark_trouve = isni2ark(input_record)
-    if (ark_trouve == "" and input_record.ark_bib_init != ""):
-        ark_trouve = arkBib2arkAut(input_record)
-    if (ark_trouve == "" and input_record.frbnf_bib.init != ""):
-        ark_trouve = frbnfBib2arkAut(input_record)
-    if (ark_trouve == "" and input_record.lastname != ""):
-        ark_trouve = bib2arkAUT(input_record)
+    if (parametres["preferences_alignement"] == 2):
+        if (ark_trouve == "" and input_record.isni.propre != ""):
+            ark_trouve = isni2ark(input_record)
+        if (ark_trouve == "" and input_record.ark_bib_init != ""):
+            ark_trouve = arkBib2arkAut(input_record)
+        if (ark_trouve == "" and input_record.frbnf_bib.init != ""):
+            ark_trouve = frbnfBib2arkAut(input_record)
+        if (ark_trouve == "" and input_record.lastname != ""):
+            ark_trouve = bib2arkAUT(input_record)
+    else:
+        if (ark_trouve == "" and input_record.isni.propre != ""):
+            ark_trouve = isni2ark(input_record)
+        if (ark_trouve == "" and input_record.ark_bib_init != ""):
+            ark_trouve = arkBib2arkAut(input_record)
+        if (ark_trouve == "" and input_record.frbnf_bib.init != ""):
+            ark_trouve = frbnfBib2arkAut(input_record)
+        if (ark_trouve == "" and input_record.lastname != ""):
+            ark_trouve = bib2arkAUT(input_record)
+    
     alignment_result = funcs.Alignment_result(input_record, ark_trouve,
                                               parametres)
     if (ark_trouve == "Pb FRBNF"):
