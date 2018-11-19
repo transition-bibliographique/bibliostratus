@@ -95,11 +95,14 @@ def ark2record(ark, type_record, format_BIB, renvoyerNotice=False):
         return record"""
 
 
-def XMLrecord2string(record):
+def XMLrecord2string(record, parametres):
     record_str = etree.tostring(record).decode(encoding="utf-8")
     record_str = record_str.replace("<mxc:", "<").replace("</mxc:", "</")
     record_str = re.sub("<record[^>]+>", "<record>", record_str)
     record_str = udecode.replace_xml_entities(record_str)
+    if (parametres["xml_entities_option"]):
+        from unicode_table_full import unicode_table_full
+        record_str = udecode.replace_xml_entities(record_str, unicode_table_full)
     return record_str
 
 
@@ -147,11 +150,13 @@ def bib2aut(XMLrecord, ark, parametres):
                 ".//srw:recordData/mxc:record", namespaces=main.ns
             )[0]
             record2file(parametres["aut_file"], XMLrec,
-                        parametres["format_file"])
+                        parametres["format_file"],
+                        parametres)
         elif (test and source == "idref" and record.find("//record") is not None):
             XMLrec = record.xpath(".//record")[0]
             record2file(parametres["aut_file"], XMLrec,
-                        parametres["format_file"])
+                        parametres["format_file"],
+                        parametres)
 
 
 def file_create(record_type, parametres):
@@ -185,10 +190,10 @@ def XMLrec2isorecord(XMLrec):
     return filename_temp
 
 
-def record2file(file, XMLrec, format_file):
+def record2file(file, XMLrec, format_file, parametres):
     # Si sortie en iso2709
     if (format_file == 1):
-        XMLrec_str = XMLrecord2string(XMLrec)
+        XMLrec_str = XMLrecord2string(XMLrec, parametres)
         filename_temp = XMLrec2isorecord(XMLrec_str)
         collection = mc.marcxml.parse_xml_to_array(filename_temp, strict=False)
         # collection.force_utf8 = True
@@ -204,7 +209,7 @@ def record2file(file, XMLrec, format_file):
             pass
     # si sortie en XML
     if (format_file == 2):
-        record = XMLrecord2string(XMLrec)
+        record = XMLrecord2string(XMLrec, parametres)
         file.write(record)
 
 
@@ -239,7 +244,8 @@ def extract1record(row, j, form, headers, parametres):
                         namespaces=main.ns):
                     record2file(
                         parametres["bib_file"], XMLrec,
-                        parametres["format_file"]
+                        parametres["format_file"],
+                        parametres
                     )
                     if (parametres["AUTliees"] > 0):
                         bib2aut(XMLrec, ark, parametres)
@@ -247,13 +253,15 @@ def extract1record(row, j, form, headers, parametres):
             elif (nbResults == "1" and "ppn" in ark.lower()):
                 for XMLrec in page.xpath("//record"):
                     record2file(parametres["bib_file"],
-                                XMLrec, parametres["format_file"])
+                                XMLrec, parametres["format_file"],
+                                parametres)
                     if (parametres["AUTliees"] > 0):
                         bib2aut(XMLrec, ark, parametres)
 
 
-def callback(master, form, filename, type_records_form, headers, AUTlieesAUT,
-             AUTlieesSUB, AUTlieesWORK, outputID, format_records=1, format_file=1):
+def callback(master, form, filename, type_records_form, 
+             headers, AUTlieesAUT, AUTlieesSUB, AUTlieesWORK, 
+             outputID, format_records=1, format_file=1, xml_entities_option=1):
     AUTliees = AUTlieesAUT + AUTlieesSUB + AUTlieesWORK
     format_BIB = dict_format_records[format_records]
     type_records = "bib"
@@ -270,6 +278,7 @@ def callback(master, form, filename, type_records_form, headers, AUTlieesAUT,
         "format_records": format_records,
         "format_file": format_file,
         "format_BIB": format_BIB,
+        "xml_entities_option": xml_entities_option,
         "listeARK_BIB" : [],
         "listeNNA_AUT" : []
     }
@@ -277,8 +286,8 @@ def callback(master, form, filename, type_records_form, headers, AUTlieesAUT,
 
     # Si format XML en sortie : alimentation de la 
     # table de conversion des caractères spéciaux
-    if (format_file == 2):
-        udecode.unicode_table2entities()
+    # if (format_file == 2):
+    #     udecode.unicode_table2entities()
 
     bib_file = file_create(type_records, parametres)
     parametres["bib_file"] = bib_file
@@ -360,9 +369,18 @@ def formulaire_ark2records(
     frame_output_options_inter = tk.Frame(
         frame_output_options, bg=couleur_fond)
     frame_output_options_inter.pack(side="left")
-    frame_output_options_format = tk.Frame(
+    frame_output_options_iso_xml = tk.Frame(
         frame_output_options, bg=couleur_fond)
-    frame_output_options_format.pack(side="left", anchor="nw")
+    frame_output_options_iso_xml.pack(side="left", anchor="nw")
+
+    frame_output_options_format = tk.Frame(
+        frame_output_options_iso_xml, bg=couleur_fond)
+    frame_output_options_format.pack()
+
+    frame_output_options_format_xml_entities = tk.Frame(
+        frame_output_options_iso_xml, bg=couleur_fond)
+    frame_output_options_format_xml_entities.pack()
+    
 
     zone_notes_message_en_cours = tk.Frame(
         zone_notes, padx=20, bg=couleur_fond)
@@ -433,7 +451,7 @@ def formulaire_ark2records(
                    variable=format_records_choice, value=3, bg=couleur_fond).pack(anchor="nw")
     tk.Radiobutton(
         frame_output_options_marc,
-        text="[ARK BnF] Unimarc avec notices analytiques",
+        text="[ARK BnF] Unimarc\navec notices analytiques",
         justify="left",
         variable=format_records_choice,
         value=2,
@@ -441,7 +459,7 @@ def formulaire_ark2records(
     ).pack(anchor="nw")
     tk.Radiobutton(
         frame_output_options_marc,
-        text="[ARK BnF] Intermarc avec notices analytiques",
+        text="[ARK BnF] Intermarc\navec notices analytiques",
         justify="left",
         variable=format_records_choice,
         value=4,
@@ -477,6 +495,14 @@ def formulaire_ark2records(
                    text="Marc XML", variable=format_file, value=2, justify="left").pack(anchor="nw")
     format_file.set(1)
 
+    xml_entities_option = tk.IntVar()
+    tk.Checkbutton(frame_output_options_format_xml_entities, 
+                   text="[XML] Convertir \nles caractères \nnon latins",
+                   variable=xml_entities_option,
+                   bg=couleur_fond, justify="left", font="Arial 7 normal").pack(anchor="w")
+    xml_entities_option.set(1)
+ 
+
     # file_format.focus_set()
     b = tk.Button(
         zone_ok_help_cancel,
@@ -493,6 +519,7 @@ def formulaire_ark2records(
             outputID.get(),
             format_records_choice.get(),
             format_file.get(),
+            xml_entities_option.get()
         ),
         width=15,
         borderwidth=1,
