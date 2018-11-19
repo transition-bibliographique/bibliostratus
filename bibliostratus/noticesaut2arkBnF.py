@@ -125,7 +125,7 @@ def row2files(liste_metadonnees, liste_reports):
 
 # Si on a coché "Récupérer les données bibliographiques" : ouverture de la
 # notice BIB de l'ARK et renvoie d'une liste de métadonnées
-def ark2metadc(ark):
+def ark2meta_aut(ark):
     # Attention : la variable 'ark' peut contenir plusieurs ark séparés par
     # des virgules
     listeARK = ark.split(",")
@@ -135,7 +135,7 @@ def ark2metadc(ark):
     accesspoint_complList = []
     datesList = []
     for ark in listeARK:
-        metas_ark = ark2metas(ark, False)
+        metas_ark = ark2metas_aut(ark, False)
         accesspointList.append(metas_ark[0])
         accesspoint_complList.append(metas_ark[1])
         datesList.append(metas_ark[2])
@@ -146,12 +146,14 @@ def ark2metadc(ark):
     return metas
 
 
-def ark2metas(ark, unidec=True):
-    recordBNF_url = funcs.url_requete_sru('bib.persistentid any "' + ark + '"')
-    (test, record) = funcs.testURLetreeParse(recordBNF_url)
+def ark2metas_aut(ark, unidec=True):
+    url = funcs.url_requete_sru('aut.persistentid any "' + ark + '"')
+    if ("ppn" in ark.lower()):
+        url = "https://www.idref.fr/" + ark[3:] + ".xml"
+    (test, record) = funcs.testURLetreeParse(url)
     accesspoint, accesspoint_compl, dates = ["", "", ""]
     if test:
-        acccesspoint = main.extract_subfield(record, "200", "a")
+        accesspoint = main.extract_subfield(record, "200", "a")
         if not accesspoint:
             accesspoint = main.extract_subfield(record, "210", "a")
         accesspoint_compl = main.extract_subfield(record, "200", "b")
@@ -295,7 +297,7 @@ def alignment_result2output(alignment_result, input_record, parametres, liste_re
     """
     print(str(n) + ". " + input_record.NumNot + " : " + alignment_result.ids_str)
     if parametres["meta_bnf"] == 1:
-        alignment_result.liste_metadonnees.extend(ark2metadc(ark))
+        alignment_result.liste_metadonnees.extend(ark2meta_aut(alignment_result.ids_str))
     if parametres["file_nb"] == 1:
         row2file(alignment_result.liste_metadonnees, liste_reports)
     elif parametres["file_nb"] == 2:
@@ -678,7 +680,7 @@ def bib2arkAUT(input_record):
         for record in results.xpath(
                 "//srw:recordData", namespaces=main.ns):
             listeArk.extend(extractARKautfromBIB(input_record, record))
-    listeArk = ",".join(set(listeArk))
+    listeArk = ",".join(set([el for el in listeArk if el]))
     if (listeArk != ""):
         input_record.alignment_method.append("Titre-Auteur-Date")
     return listeArk

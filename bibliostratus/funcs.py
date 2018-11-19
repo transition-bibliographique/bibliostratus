@@ -816,6 +816,7 @@ class Alignment_result:
         self.NumNot = input_record.NumNot
         self.ids_str = ark
         self.ids_list = self.ids_str.split(",")
+        self.ids_list = [el for el in self.ids_list if el]
         self.nb_ids = len(self.ids_list)
         self.alignment_method_list = input_record.alignment_method
         if (len(list(set(input_record.alignment_method))) == 1):
@@ -827,6 +828,9 @@ class Alignment_result:
                                     self.ids_str,
                                     self.alignment_method_str
                                 ] + input_record.metas_init
+    def __str__(self):
+        """Méthode permettant d'afficher plus joliment notre objet"""
+        return "{} : {}\nNombre d'ID trouvés : {}".format(self.NumNot, self.ids_str, self.nb_ids)
 
 
 def xml2pymarcrecord(xml_record):

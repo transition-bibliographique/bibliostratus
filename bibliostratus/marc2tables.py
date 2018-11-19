@@ -732,7 +732,7 @@ def write_reports(id_traitement, doc_record, rec_format):
             header_columns = aut2ark.header_columns_init_aut2aut
             filename = "ORG-" + filename
     if (rec_format == 3):
-        if (doc_record == "ca"):
+        if (doc_record == "ca" or doc_record == "cb"):
             header_columns = aut2ark.header_columns_init_bib2aut
 
     file = create_file_doc_record(filename, id_traitement)
@@ -904,38 +904,6 @@ def formulaire_marc2tables(
         entry_file_list, couleur_fond, cadre_output_message_en_cours
     )
 
-    # tk.Button(
-    #     cadre_input_file_browse,
-    #     text="Sélectionner le fichier\ncontenant les notices",
-    #     command=lambda: main.openfile(cadre_input_file_name, popup_filename),
-    #     width=20
-    # ).pack()
-
-    # tk.Label(
-    #     cadre_input_infos_format,
-    #     bg=couleur_fond,
-    #     text="Format MARC",
-    #     anchor="w",
-    #     justify="left"
-    # ).pack(anchor="w")
-    # marc_format = tk.IntVar()
-
-    # bib2ark.radioButton_lienExample(
-    #     cadre_input_infos_format, marc_format, 1, couleur_fond, "Unimarc", "",
-    #     ""
-    # )
-
-    # tk.Radiobutton(
-    #     cadre_input_infos_format,
-    #     bg=couleur_fond,
-    #     text="Marc21",
-    #     variable=marc_format,
-    #     value=2,
-    #     anchor="w",
-    #     justify="left"
-    # ).pack(anchor="w")
-    # marc_format.set(1)
-
     tk.Label(cadre_input_type_docs_interstice1, bg=couleur_fond,
              text="\t\t", justify="left").pack()
 
@@ -983,15 +951,6 @@ def formulaire_marc2tables(
     )
     lien_help_encodage.pack()
     tk.Label(cadre_input_type_docs, bg=couleur_fond, text="\n\n\n").pack()
-
-    #    info_utf8 = tk.Label(cadre_input_type_docs,
-    #                         bg=couleur_fond,justify="left", font="Arial 7 italic",
-    #                         text="""Le fichier iso2709 doit être
-    # en UTF-8 sans BOM.
-    # En cas de problème,
-    # convertissez-le en XML
-    # avant de le passer dans ce module""")
-    #    info_utf8.pack()
 
     tk.Label(cadre_input_type_docs_interstice2,
              bg=couleur_fond, text="\t", justify="left").pack()
