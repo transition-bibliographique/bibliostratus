@@ -840,6 +840,46 @@ class Alignment_result:
         return "{} : {}\nNombre d'ID trouvés : {}".format(self.NumNot, self.ids_str, self.nb_ids)
 
 
+class Id4record:
+    """
+    Objet à partir d'une ligne en entrée du module rouge (ark2record)
+    """
+    def __init__(self, row, parametres={}): 
+        self.NumNot = ""
+        self.aligned_id = ""
+        if ("correct_record_option" in parametres
+            and parametres["correct_record_option"] == 2):
+            self.NumNot = row[0]
+            self.aligned_id = Aligned_id(row[1])
+        else:
+            self.aligned_id = Aligned_id(row[1])
+
+    def __str__(self):
+        """Méthode permettant d'afficher plus joliment notre objet"""
+        return "NumNot : {}, ID : {}".format(self.NumNot, self.aligned_id.clean)
+
+class Aligned_id:
+    """
+    Objet "identifiant BnF ou Sudoc/Idref"
+    """
+    def __init__(self, init): 
+        self.init = init
+        self.type = "ark"
+        self.clean = init
+        self.agency = "BNF"
+        if ("ppn" in init.lower()):
+            self.type = "ppn"
+            self.agency = "Abes"
+            self.clean = init[3:]
+        elif ("idref" in init.lower()
+            or "sudoc" in init.lower()):
+            self.agency = "abes"
+            self.type = "ppn"
+            self.clean = init.split("/")[-1]
+        if ("ark" in init):
+            self.clean = init[init.find("ark"):]
+
+
 def xml2pymarcrecord(xml_record):
     """
     Sert à récupérer un fichier en ligne, contenant

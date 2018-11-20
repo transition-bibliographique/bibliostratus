@@ -16,6 +16,7 @@ import re
 import tkinter as tk
 import urllib.parse
 from urllib import error, request
+from copy import deepcopy
 
 import pymarc as mc
 from lxml import etree
@@ -95,13 +96,84 @@ def ark2record(ark, type_record, format_BIB, renvoyerNotice=False):
         return record"""
 
 
-def XMLrecord2string(record):
+def XMLrecord2string(identifier, record, parametres):
     record_str = etree.tostring(record, encoding="utf-8").decode(encoding="utf-8")
     record_str = record_str.replace("<mxc:", "<").replace("</mxc:", "</")
     record_str = re.sub("<record[^>]+>", "<record>", record_str)
+    if (parametres["correct_record_option"] == 2):
+        record_str = correct_record(identifier, record_str, parametres)
     # record_str = udecode.replace_xml_entities(record_str)
     return record_str
 
+
+def correct_record(identifier, record_str, parametres):
+    """
+    Réécriture de la notice de l'agence Abes ou BnF
+    Zone 001 -> 035
+    Zone 003 -> 033
+    Numéro de notice initial --> 001
+
+    Le record_str est la notice en MarcXML, en chaîne de caractères
+    """
+    rewrited_record = record_str
+    xml_record = etree.fromstring(record_str)
+    new_xml_record = etree.Element("record")
+    agency_no = ""
+    agency_uri = ""
+    for field in xml_record.xpath(".//controlfield[@tag='001']"):
+        agency_no = field.text
+    for field in xml_record.xpath(".//controlfield[@tag='003']"):
+        agency_uri = field.text
+    add_033 = 0
+    add_035 = 0
+    for field in xml_record:
+        if (field.tag == "leader"):
+            new_xml_record.append(etree.fromstring(deepcopy(etree.tostring(field))))
+        elif (field.tag == "controlfield" or field.tag == "datafield"):
+            marc_tag = field.get("tag")
+            if (marc_tag == "001"):
+                new_001 = etree.Element("controlfield")
+                new_001.set("tag", "001")
+                new_001.text = identifier.NumNot
+                new_xml_record.append(new_001)
+            elif (int(marc_tag) > 33):
+                if (int(marc_tag) > 35):
+                    if (add_033 == 0):
+                        add_033 = 1
+                        if agency_uri:
+                            new_033_str = """<datafield tag="033" ind1=" " ind2=" ">
+        <subfield code="a">""" + agency_uri + """</subfield>
+        </datafield>"""
+                            new_xml_record.append(etree.fromstring(new_033_str))
+
+                    if (add_035 == 0):
+                        print("test1 > 35", marc_tag)
+                        add_035 = 1
+                        new_035_str = """<datafield tag="035" ind1=" " ind2=" ">
+                    <subfield code="a">""" + agency_no + """</subfield>
+                    </datafield>"""
+                        new_xml_record.append(etree.fromstring(new_035_str))
+                        new_xml_record.append(etree.fromstring(deepcopy(etree.tostring(field))))
+                    elif (add_035):
+                        new_xml_record.append(etree.fromstring(deepcopy(etree.tostring(field))))
+                elif (add_033 == 0):
+                    print("test1 > 33", marc_tag)
+                    add_033 = 1
+                    if agency_uri:
+                        new_033_str = """<datafield tag="033" ind1=" " ind2=" ">
+    <subfield code="a">""" + agence_uri + """</subfield>
+    </datafield>"""
+                        new_xml_record.append(etree.fromstring(new_035_str))
+                        new_xml_record.append(etree.fromstring(deepcopy(etree.tostring(field))))
+                else:
+                    new_xml_record.append(etree.fromstring(deepcopy(etree.tostring(field))))
+            elif (marc_tag != "003"):
+                new_xml_record.append(etree.fromstring(deepcopy(etree.tostring(field))))
+    
+    rewrited_record = etree.tostring(
+        new_xml_record,encoding="utf-8").decode(encoding="utf-8")
+
+    return rewrited_record
 
 def extract_nna_from_bib_record(record, field, source):
     """Extraction de la liste des identifiants d'auteurs à partir
@@ -119,11 +191,11 @@ def extract_nna_from_bib_record(record, field, source):
     return liste_nna
 
 
-def bib2aut(XMLrecord, ark, parametres):
+def bib2aut(identifier, XMLrecord, parametres):
     """Si une des option "Récupérer les notices d'autorité liées" est cochée
     récupération des identifiants de ces AUT pour les récupérer"""
     source = "bnf"
-    if ("ppn" in ark.lower()):
+    if (identifier.aligned_id.type == "ppn"):
         source = "sudoc"
     liste_nna = []
     listefields = []
@@ -146,12 +218,13 @@ def bib2aut(XMLrecord, ark, parametres):
             XMLrec = record.xpath(
                 ".//srw:recordData/mxc:record", namespaces=main.ns
             )[0]
-            record2file(parametres["aut_file"], XMLrec,
-                        parametres["format_file"])
+            linked_identifier = funcs.Id4record([record.find("//srw:recordIdentifier").text])
+            record2file(linked_identifier, XMLrec, parametres["aut_file"],
+                        parametres["format_file"], parametres)
         elif (test and source == "idref" and record.find("//record") is not None):
             XMLrec = record.xpath(".//record")[0]
-            record2file(parametres["aut_file"], XMLrec,
-                        parametres["format_file"])
+            record2file(linked_identifier, XMLrec, parametres["aut_file"],
+                        parametres["format_file"], parametres)
 
 
 def file_create(record_type, parametres):
@@ -185,10 +258,16 @@ def XMLrec2isorecord(XMLrec):
     return filename_temp
 
 
-def record2file(file, XMLrec, format_file):
+def record2file(identifier, XMLrec, file, format_file, parametres):
+    """
+    Conversion de la notice XML trouvée en ligne 
+    -> incrémentation dans le fichier en sortie
+    Si option cochée, réécriture de la notice
+    "identifier" est une instance de la classe Id4record
+    """
     # Si sortie en iso2709
     if (format_file == 1):
-        XMLrec_str = XMLrecord2string(XMLrec)
+        XMLrec_str = XMLrecord2string(XMLrec, parametres)
         filename_temp = XMLrec2isorecord(XMLrec_str)
         collection = mc.marcxml.parse_xml_to_array(filename_temp, strict=False)
         # collection.force_utf8 = True
@@ -204,7 +283,7 @@ def record2file(file, XMLrec, format_file):
             pass
     # si sortie en XML
     if (format_file == 2):
-        record = XMLrecord2string(XMLrec)
+        record = XMLrecord2string(identifier, XMLrec, parametres)
         file.write(record)
 
 
@@ -219,37 +298,35 @@ def page2nbresults(page, ark):
 
 
 def extract1record(row, j, form, headers, parametres):
-    ark = row[0]
-    ark = ark.replace("http://www.sudoc.fr/",
-                      "ppn").replace("https://www.sudoc.fr/", "ppn")
-    ark = ark.replace("http://www.idref.fr/",
-                      "ppn").replace("https://www.idref.fr/", "ppn")
-    if ("ark:/12148" in ark):
-        ark = ark[ark.find("ark:/12148"):]
-    if (len(ark) > 1 and ark not in parametres["listeARK_BIB"]):
-        print(str(j) + ". " + ark)
-        parametres["listeARK_BIB"].append(ark)
-        (test, page) = funcs.testURLetreeParse(ark2url(ark, parametres))
+    identifier = funcs.Id4record(row, parametres)
+    print(identifier)
+    if (len(identifier.aligned_id.clean) > 1 and identifier.aligned_id.clean not in parametres["listeARK_BIB"]):
+        print(str(j) + ". " + identifier.aligned_id.clean)
+        parametres["listeARK_BIB"].append(identifier.aligned_id.clean)
+        (test, page) = funcs.testURLetreeParse(ark2url(identifier.aligned_id.clean, parametres))
         if(test):
-            nbResults = page2nbresults(page, ark)
+            nbResults = page2nbresults(page, identifier.aligned_id.clean)
             # Si on part d'un ARK
-            if (nbResults == "1" and "ark" in ark):
+            if (nbResults == "1" and identifier.aligned_id.type == "ark"):
                 for XMLrec in page.xpath(
                         "//srw:record/srw:recordData/mxc:record",
                         namespaces=main.ns):
-                    record2file(
-                        parametres["bib_file"], XMLrec,
-                        parametres["format_file"]
+                    record2file(identifier, XMLrec,
+                        parametres["bib_file"], 
+                        parametres["format_file"],
+                        parametres
                     )
                     if (parametres["AUTliees"] > 0):
-                        bib2aut(XMLrec, ark, parametres)
+                        bib2aut(identifier, XMLrec, parametres)
             # Si on part d'un PPN
-            elif (nbResults == "1" and "ppn" in ark.lower()):
+            elif (nbResults == "1" and identifier.aligned_id.type == "ppn"):
                 for XMLrec in page.xpath("//record"):
-                    record2file(parametres["bib_file"],
-                                XMLrec, parametres["format_file"])
+                    record2file(identifier, XMLrec,
+                                parametres["bib_file"],
+                                parametres["format_file"],
+                                parametres)
                     if (parametres["AUTliees"] > 0):
-                        bib2aut(XMLrec, ark, parametres)
+                        bib2aut(identifier, XMLrec, parametres)
 
 
 def callback(master, form, filename, type_records_form, 
@@ -404,14 +481,11 @@ def formulaire_ark2records(
     bib2ark.radioButton_lienExample(
         frame_input_aut, correct_record_option, 2, couleur_fond, "Fichier à 2 colonnes (N° notice local | ARK ou PPN)\n\
 pour réécrire les notices récupérées",
-        "", "")
+        "", "main/examples/listeARKaut_2cols.tsv")
     correct_record_option.set(1)
 
     tk.Label(frame_input_aut, text="-------------------",
              bg=couleur_fond).pack()
-
-    
-
 
     # Fichier avec en-têtes ?
     headers = tk.IntVar()
