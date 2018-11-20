@@ -13,6 +13,6 @@
 		},
 	"timestamp":
 		{"description": "Option (booléen True/False) pour injecter en dernière colonne des rapports d'alignement l'horodatage. Ceci pour évaluer la performance d'un alignement volumineux au fur et à mesure du traitement.",
-		 "value": "True"
+		 "value": "False"
 		 }
 }
