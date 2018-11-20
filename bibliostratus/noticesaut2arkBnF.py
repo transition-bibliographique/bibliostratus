@@ -168,18 +168,45 @@ def ark2metas_aut(ark, unidec=True):
     return metas
 
 
-def isni2ark(input_record, origine="isni"):
+def isni2id(input_record, parametres, origine="isni"):
+    """
+    Recherche d'un identifiant ARK ou PPN à partir d'un ISNI
+    """
+    Liste_ids = []
+    
+    if (parametres["preferences_alignement"] == 2):
+        Liste_ids = aut_align_idref.isni2ppn(input_record, input_record.isni.propre,
+                                             parametres,
+                                             origine="accesspoint")
+        if Liste_ids == []:
+            liste_ark = isni2ark(input_record, parametres)
+            for ark in liste_ark:
+                ppn = aut_align_idref.autArk2ppn(input_record.NumNot, ark)
+                if (ppn):
+                    Liste_ids.append(ppn)
+                    input_record.alignment_result.append("ISNI > ARK > PPN")
+                else:
+                    Liste_ids.append(ark)
+    else:
+        Liste_ids = isni2ark(input_record, parametres)
+    if (Liste_ids):
+        if (origine == "isni"):
+            input_record.alignment_method.append("ISNI")
+    Liste_ids = ",".join([el for el in Liste_ids if el])
+    return Liste_ids
+
+
+def isni2ark(input_record, parametres):
+    liste_ark = []
     url = funcs.url_requete_sru(
-        'aut.isni all "' + input_record.isni.propre + '" and aut.status any "sparse validated"')
+            'aut.isni all "' + input_record.isni.propre + '" and aut.status any "sparse validated"')
     (test, page) = funcs.testURLetreeParse(url)
-    nv_ark = ""
     if test:
-        if (page.find("//srw:recordIdentifier", namespaces=main.ns) is not None):
-            nv_ark = page.find("//srw:recordIdentifier",
-                               namespaces=main.ns).text
-            if (origine == "isni"):
-                input_record.alignment_method.append("ISNI")
-    return nv_ark
+        for ark in page.xpath("//srw:recordIdentifier", namespaces=main.ns):
+            liste_ark.append(ark.text)
+    return liste_ark
+
+
 
 
 #==============================================================================
@@ -229,7 +256,7 @@ def accesspoint2isniorg(input_record, parametres):
     if (parametres["preferences_alignement"] == 1):
         for isni in isnis:
             # isni_id = isni.split("/")[-1]
-            ark = isni2ark(input_record, origine="accesspoint")
+            ark = isni2id(input_record, parametres, origine="accesspoint")
             if (ark != ""):
                 isnis[i] = ark
                 input_record.alignment_method.append("ISNI > ARK")
@@ -237,7 +264,9 @@ def accesspoint2isniorg(input_record, parametres):
     if (parametres["preferences_alignement"] == 2):
         for isni in isnis:
             isni_id = isni.split("/")[-1]
-            ppn = aut_align_idref.isni2ppn(input_record.NumNot, isni_id, origine="accesspoint")
+            ppn = aut_align_idref.isni2ppn(input_record, isni_id,
+                                           parametres,
+                                           origine="accesspoint")
             if (ppn != ""):
                 isnis[i] = ppn
                 input_record.alignment_method.append("ISNI > PPN")
@@ -258,7 +287,7 @@ def aut2ark_by_id(input_record, parametres):
         ark = arkAut2arkAut(input_record, input_record.NumNot,
                             nettoyageArk(input_record.ark_init))
     if (ark == "" and input_record.isni.propre != ""):
-        ark = isni2ark(input_record)
+        ark = isni2id(input_record, parametres)
     if (ark == "" and input_record.frbnf.propre != ""):
         ark = frbnfAut2arkAut(input_record)
     return ark
@@ -359,25 +388,23 @@ def align_from_bib_alignment(input_record, parametres):
     la forme d'un objet de class Alignment_result
     """
     ark_trouve = ""
-    if (parametres["preferences_alignement"] == 2):
-        if (ark_trouve == "" and input_record.isni.propre != ""):
-            ark_trouve = isni2ark(input_record)
-        if (ark_trouve == "" and input_record.ark_bib_init != ""):
-            ark_trouve = arkBib2arkAut(input_record)
-        if (ark_trouve == "" and input_record.frbnf_bib.init != ""):
-            ark_trouve = frbnfBib2arkAut(input_record)
-        if (ark_trouve == "" and input_record.lastname != ""):
-            ark_trouve = bib2arkAUT(input_record)
-    else:
-        if (ark_trouve == "" and input_record.isni.propre != ""):
-            ark_trouve = isni2ark(input_record)
-        if (ark_trouve == "" and input_record.ark_bib_init != ""):
-            ark_trouve = arkBib2arkAut(input_record)
-        if (ark_trouve == "" and input_record.frbnf_bib.init != ""):
-            ark_trouve = frbnfBib2arkAut(input_record)
-        if (ark_trouve == "" and input_record.lastname != ""):
-            ark_trouve = bib2arkAUT(input_record)
+    if (ark_trouve == "" and input_record.isni.propre != ""):
+        ark_trouve = isni2id(input_record, parametres)
     
+    if (parametres["preferences_alignement"] == 1):
+        if (ark_trouve == "" and input_record.ark_bib_init != ""):
+            ark_trouve = arkBib2arkAut(input_record, parametres)
+        if (ark_trouve == "" and input_record.frbnf_bib.init != ""):
+            ark_trouve = frbnfBib2arkAut(input_record, parametres)
+        if (ark_trouve == "" and input_record.lastname != ""):
+            ark_trouve = bib2arkAUT(input_record, parametres)
+    else:
+        if (ark_trouve == "" and input_record.lastname != ""):
+            ark_trouve = bib2ppnAUT(input_record, parametres)
+        if (ark_trouve == "" and input_record.ark_bib_init != ""):
+            ark_trouve = arkBib2arkAut(input_record, parametres)
+        if (ark_trouve == "" and input_record.frbnf_bib.init != ""):
+            ark_trouve = frbnfBib2arkAut(input_record, parametres)
     alignment_result = funcs.Alignment_result(input_record, ark_trouve,
                                               parametres)
     if (ark_trouve == "Pb FRBNF"):
@@ -458,7 +485,7 @@ def arkAut2arkAut(input_record, NumNot, ark):
     return nv_ark
 
 
-def arkBib2arkAut(input_record):
+def arkBib2arkAut(input_record, parametres):
     """Identifier un ARK de notice d'autorité
     à partir d'un ARK de notice BIB + contrôle sur le nom
     """
@@ -510,7 +537,7 @@ def frbnfAut2arkAut(input_record):
     return ark
 
 
-def frbnfBib2arkAut(input_record):
+def frbnfBib2arkAut(input_record, parametres):
     """Recherche de l'identifiant d'auteur à partir d'une recherche N° BIB + nom d'auteur :
         on cherche le n° BIB comme NNB, comme FRBNF ou comme ancien numéro"""
     listeArk = []
@@ -673,7 +700,7 @@ def aut2ark_by_accesspoint(input_record, NumNot, nom_nett, prenom_nett,
     return listeArk
 
 
-def bib2arkAUT(input_record):
+def bib2arkAUT(input_record, parametres):
     listeArk = []
     pubDate = input_record.pubdate_nett
     if (input_record.pubdate_nett == ""):
@@ -695,6 +722,33 @@ def bib2arkAUT(input_record):
     if (listeArk != ""):
         input_record.alignment_method.append("Titre-Auteur-Date")
     return listeArk
+
+
+def bib2ppnAUT(input_record, parametres):
+    """
+    Récupération du PPN à partir d'une recherche Titre-Auteur dans DoMyBiblio
+    input_record en entrée est une instance de la classe Bib_Aut_record
+    Pour chaque PPN trouvé dans DoMyBiblio, on ouvre la notice Unimarc
+    --> contrôles sur le nom, prénom, date de naissance de l'auteur
+    """
+    listePPNaut = []
+    listePPNbib = funcs.domybiblio2ppn([input_record.titre.recherche,
+                                        input_record.lastname,
+                                        input_record.firstname],
+                                       input_record.pubdate_nett,
+                                       "",
+                                       parametres)
+    for ppn in listePPNbib:
+        url = "https://www.sudoc.fr/" + ppn + ".xml"
+    (test, results) = funcs.testURLetreeParse(url)
+    if (test):
+            for record in results.xpath(
+                    "//record", namespaces=main.ns):
+                listePPNaut.extend(extractARKautfromBIB(input_record, record))
+    listePPNaut = ",".join(set([el for el in listePPNaut if el]))
+    if (listePPNaut != ""):
+        input_record.alignment_method.append("Titre-Auteur-Date")
+    return listePPNaut
 
 
 def nna2ark(nna):
@@ -797,8 +851,9 @@ def extractARKautfromBIB(input_record, xml_record):
                     listeFieldsAuteur[i]["dates"] = main.clean_string(
                         subfield.text, True, True)
     for auteur in listeFieldsAuteur:
-        if (input_record.lastname.nett in listeFieldsAuteur[auteur]["nom"] or
-            listeFieldsAuteur[auteur]["nom"] in input_record.lastname.nett):
+        if (("nom" in listeFieldsAuteur[auteur])
+            and (input_record.lastname.nett in listeFieldsAuteur[auteur]["nom"] or
+            listeFieldsAuteur[auteur]["nom"] in input_record.lastname.nett)):
             if (input_record.firstname.nett != "" and "prenom" in listeFieldsAuteur[auteur]):
                 if (input_record.firstname.nett in listeFieldsAuteur[auteur]["prenom"] 
                     or listeFieldsAuteur[auteur]["prenom"] in input_record.firstname.nett):

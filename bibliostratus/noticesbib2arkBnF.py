@@ -42,8 +42,11 @@ url_access_pbs = []
 
 
 prefs = {}
-with open('main/files/preferences.json', encoding="utf-8") as prefs_file:
-    prefs = json.load(prefs_file)
+try:
+    with open('main/files/preferences.json', encoding="utf-8") as prefs_file:
+        prefs = json.load(prefs_file)
+except FileNotFoundError:
+    pass
 
 
 # Permet d'écrire dans une liste accessible au niveau général depuis le
@@ -1621,144 +1624,6 @@ def tad2ppn(input_record, parametres):
         return ark
     else:
         return Listeppn
-
-
-def domybiblio2ppn(keywords, date="", type_doc="", parametres={}):
-    """
-    Récupération d'une liste de PPN à partir de 
-        - mots clés de la recherche (titre-auteur) : liste
-        - date
-        - type de documents (peut être vide)
-        - paramètres
-    """
-    typeRecord4DoMyBiblio = "all"
-    """all (pour tous les types de document),
-           B (pour les livres),
-           T (pour les périodiques),
-           Y (pour les thèses version de soutenance),
-           V (pour le matériel audio-visuel)"""
-    typeRecordDic = {"TEX": "B", "VID": "V", "AUD": "V", "PER": "T"}
-    if type_doc in typeRecordDic:
-        typeRecord4DoMyBiblio = typeRecordDic[type_doc]
-    kw = " ".join(keywords)
-    Listeppn = []
-    # On prévoit 2 URL : par défaut, requête sur l'API DoMyBiblio (XML)
-    # Si plante > screenscraping de DoMyBiblio version HTML
-    url1 = "".join(
-        [
-            "http://domybiblio.net/search/search_api.php?type_search=all&q=",
-            urllib.parse.quote(kw),
-            "&type_doc=",
-            typeRecord4DoMyBiblio,
-            "&period=",
-            date,
-            "&pageID=1&wp=false&idref=false&loc=false",
-        ]
-    )
-
-    url2 = "".join(
-        [
-            "http://domybiblio.net/search/search.php?type_search=all&q=",
-            urllib.parse.quote(kw),
-            "&type_doc=",
-            typeRecord4DoMyBiblio,
-            "&period=",
-            date,
-            "&pageID=1&wp=false&idref=false&loc=false",
-        ]
-    )
-    try:
-        type_page = "xml"
-        page = etree.parse(request.urlopen(url1, timeout=20))
-    except ConnectionResetError:
-        type_page = "html"
-        test, result = funcs.testURLurlopen(url2, display=False)
-        if (test):
-            page = parse(result)
-        else:
-        #    print("erreur XML timeout, puis erreur HTML")
-            type_page = ""
-    except socket.timeout:
-        type_page = "html"
-        test, result = funcs.testURLurlopen(url2, display=False)
-        if (test):
-            page = parse(result)
-        else:
-        #    print("erreur XML timeout, puis erreur HTML")
-            type_page = ""
-    except urllib.error.HTTPError:
-        type_page = "html"
-        test, result = funcs.testURLurlopen(url2, display=False)
-        if (test):
-            page = parse(result)
-        else:
-            type_page = ""
-        #    print("erreur XML HTTPerror, puis erreur HTML")
-    except urllib.error.URLError:
-        type_page = "html"
-        test, result = funcs.testURLurlopen(url2, display=False)
-        if (test):
-            page = parse(result)
-        else:
-            type_page = ""
-        #    print("erreur XML HTTPerror, puis erreur HTML")
-    except etree.XMLSyntaxError:
-        # problème de conformité XML du résultat
-        type_page = "html"
-        test, result = funcs.testURLurlopen(url2, display=False)
-        if (test):
-            page = parse(result)
-        else:
-            type_page = ""
-    except http.client.RemoteDisconnected:
-        type_page = ""
-    if (type_page == "html"):
-        liste_resultats = page.xpath("//li[@class='list-group-item']/a")
-        for lien in liste_resultats:
-            href = lien.get("href")
-            ppn = "PPN" + href.split("/")[-1].split("&")[0].strip()
-            if ("id=" in ppn):
-                ppn = ppn[ppn.find("id="):].replace("id=", "").split("&")[0].strip()
-            Listeppn.append(ppn)
-    elif (type_page == "xml"):
-        liste_resultats = page.xpath("//records/record")
-        nb_results = int(page.find(".//results").text)
-        for record in liste_resultats:
-            ppn = record.find("identifier").text
-            Listeppn.append(ppn)
-        if nb_results > 10:
-            domybiblio2ppn_pages_suivantes(
-                kw, Listeppn, nb_results, 2,
-                date, type_doc, parametres
-            )
-    # Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK
-    # déclaré comme équivalent --> dans ce cas on récupère l'ARK
-    Listeppn = ",".join([ppn for ppn in Listeppn if ppn != ""])
-    return Listeppn
-
-
-def domybiblio2ppn_pages_suivantes(keywords, Listeppn, 
-                                   nb_results, i,
-                                   date, type_doc, parametres):
-    """
-    Récupération des résultats des pages suivantes de DoMyBiblio
-    (au-delà du 10e résultat)
-    """
-    while (nb_results >= i*10):
-        url = "".join([
-            "http://domybiblio.net/search/search_api.php?type_search=all&q=",
-            urllib.parse.quote(keywords),
-            "&type_doc=", type_doc,
-            "&period=", date,
-            "&pageID=" + str(i) + "&wp=false&idref=false&loc=false"]
-            )
-        (test, results) = funcs.testURLetreeParse(url)
-        if test:
-            for record in results.xpath("//records/record"):
-                ppn = "PPN" + record.find("identifier").text
-                Listeppn.append(ppn)
-        i += 1
-    return Listeppn
 
 
 

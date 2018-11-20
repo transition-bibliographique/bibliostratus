@@ -50,8 +50,6 @@ def autArk2ppn(NumNot, ark_nett):
         for ppn in result.xpath("//ppn"):
             Liste_ppn.append(ppn.text)    
     Liste_ppn = ",".join(["PPN" + el for el in Liste_ppn if el])
-    if Liste_ppn:
-        aut2ark.NumNotices2methode[NumNot].append("ARK > PPN")
     return Liste_ppn
 
 
@@ -133,14 +131,14 @@ def ppn2metasAut(ppn, parametres={"type_aut":"a"}):
     return line
 
 
-def isni2ppn(NumNot, isni, origine="isni"):
+def isni2ppn(input_record, isni_id, parametres, origine="isni"):
     Liste_ppn = []
-    url = "https://www.idref.fr/services/isni2idref/" + isni
+    url = "https://www.idref.fr/services/isni2idref/" + isni_id
     (test, page) = funcs.testURLetreeParse(url, display=False)
     if test:
-        for ppn in page.xpath("//ppn", namespaces=main.ns):
+        for ppn in page.xpath("//ppn"):
             Liste_ppn.append(ppn.text)
     Liste_ppn = ",".join(["PPN"+el for el in Liste_ppn if el])
     if Liste_ppn:
-        aut2ark.NumNotices2methode[NumNot].append(origine)
+        input_record.alignement_method.append(origine)
     return Liste_ppn

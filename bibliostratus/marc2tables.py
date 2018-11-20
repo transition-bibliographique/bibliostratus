@@ -39,8 +39,11 @@ output_files_dict = defaultdict()
 stats = defaultdict(int)
 
 prefs = {}
-with open('main/files/preferences.json', encoding="utf-8") as prefs_file:
-    prefs = json.load(prefs_file)
+try:
+    with open('main/files/preferences.json', encoding="utf-8") as prefs_file:
+        prefs = json.load(prefs_file)
+except FileNotFoundError:
+    pass
 
 # =============================================================================
 # Creation des fichiers résultats
