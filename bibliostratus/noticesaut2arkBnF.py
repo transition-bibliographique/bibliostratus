@@ -733,18 +733,19 @@ def bib2ppnAUT(input_record, parametres):
     """
     listePPNaut = []
     listePPNbib = funcs.domybiblio2ppn([input_record.titre.recherche,
-                                        input_record.lastname,
-                                        input_record.firstname],
+                                        input_record.lastname.propre,
+                                        input_record.firstname.propre],
                                        input_record.pubdate_nett,
                                        "",
-                                       parametres)
+                                       parametres).split(",")
+    listePPNbib = [el.replace("PPN", "") for el in listePPNbib if el]                        
     for ppn in listePPNbib:
         url = "https://www.sudoc.fr/" + ppn + ".xml"
-    (test, results) = funcs.testURLetreeParse(url)
-    if (test):
-            for record in results.xpath(
-                    "//record", namespaces=main.ns):
-                listePPNaut.extend(extractARKautfromBIB(input_record, record))
+        (test, results) = funcs.testURLetreeParse(url)
+        if (test):
+                for record in results.xpath(
+                        "//record", namespaces=main.ns):
+                    listePPNaut.extend(extractARKautfromBIB(input_record, record))
     listePPNaut = ",".join(set([el for el in listePPNaut if el]))
     if (listePPNaut != ""):
         input_record.alignment_method.append("Titre-Auteur-Date")
@@ -861,9 +862,15 @@ def extractARKautfromBIB(input_record, xml_record):
                             "dates" in listeFieldsAuteur[auteur]):
                         if (input_record.date_debut in listeFieldsAuteur[auteur]["dates"] 
                             or listeFieldsAuteur[auteur]["dates"] in input_record.date_debut):
-                            listeNNA.append(listeFieldsAuteur[auteur]["nna"])
+                            try:
+                                listeNNA.append(listeFieldsAuteur[auteur]["nna"])
+                            except KeyError:
+                                pass
                     else:
-                        listeNNA.append(listeFieldsAuteur[auteur]["nna"])
+                        try:
+                            listeNNA.append(listeFieldsAuteur[auteur]["nna"])
+                        except KeyError:
+                            pass
             elif (input_record.date_debut != "" and "dates" in listeFieldsAuteur[auteur]):
                 if (input_record.date_debut in listeFieldsAuteur[auteur]["dates"] or
                         listeFieldsAuteur[auteur]["dates"] in input_record.date_debut):
@@ -1026,7 +1033,7 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
         preferences_alignement,
         2,
         couleur_fond,
-        "Avec IdRef (et à défaut avec la BnF) - uniquement à partir d'AUT",
+        "Avec IdRef (et à défaut avec la BnF)",
         "",
         "",
     )
