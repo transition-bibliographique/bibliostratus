@@ -56,7 +56,7 @@ def ark2url(identifier, parametres):
     "identifier" est une instance de classe Id4record
     """
     url = ""
-    if (identifier.aligned_id.type == "ark":)
+    if (identifier.aligned_id.type == "ark"):
         query = parametres["type_records"] + '.persistentid any "' + identifier.aligned_id.clean + '"'
         if (parametres["type_records"] == "aut"):
             query += ' and aut.status any "sparse validated"'
@@ -169,7 +169,7 @@ def correct_record(identifier, record_str, parametres):
 
     return rewrited_record
 
-def extract_nna_from_bib_record(record, field, source):
+def extract_nna_from_bib_record(record, field, source, parametres):
     """Extraction de la liste des identifiants d'auteurs à partir
     d'une zone de notice bib"""
     liste_nna = []
@@ -201,7 +201,8 @@ def bib2aut(identifier, XMLrecord, parametres):
     if (parametres["AUTlieesWORK"] == 1):
         listefields.extend(listefieldsLiensWORK[format_marc])
     for field in listefields:
-        liste_nna.extend(extract_nna_from_bib_record(XMLrecord, field, source))
+        liste_nna.extend(extract_nna_from_bib_record(XMLrecord, field, 
+                                                     source, parametres))
     for nna in liste_nna:
         if (source == "sudoc"):
             source = "idref"
@@ -212,7 +213,7 @@ def bib2aut(identifier, XMLrecord, parametres):
             XMLrec = record.xpath(
                 ".//srw:recordData/mxc:record", namespaces=main.ns
             )[0]
-            linked_identifier = funcs.Id4record([record.find("//srw:recordIdentifier").text])
+            linked_identifier = funcs.Id4record([record.find("//srw:recordIdentifier", namespaces=main.ns).text])
             record2file(linked_identifier, XMLrec, parametres["aut_file"],
                         parametres["format_file"], parametres)
         elif (test and source == "idref" and record.find("//record") is not None):
@@ -261,7 +262,7 @@ def record2file(identifier, XMLrec, file, format_file, parametres):
     """
     # Si sortie en iso2709
     if (format_file == 1):
-        XMLrec_str = XMLrecord2string(XMLrec, parametres)
+        XMLrec_str = XMLrecord2string(identifier, XMLrec, parametres)
         filename_temp = XMLrec2isorecord(XMLrec_str)
         collection = mc.marcxml.parse_xml_to_array(filename_temp, strict=False)
         # collection.force_utf8 = True

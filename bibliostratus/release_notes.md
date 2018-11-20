@@ -6,6 +6,7 @@ novembre 2018
 	- [gestion du code] ajout d'un test automatique de vérification du résultat d'un alignement
 - Module rouge
 	- Export correct des diacritiques dans le format XML
+	- Option de réécriture des notices exportées : injection en 001 du numéro de notice locale (si fichier en entrée a 2 colonnes)
 
 ### version 1.24
 6 novembre 2018
