@@ -4,6 +4,8 @@ novembre 2018
 	- performance : simplification des requêtes sur l'alignement tad2ark (alignement par mots-clés sur le SRU BnF)
 	- création d'une classe Alignment_result, 1 fonction spécifique pour l'alignement d'une notice (distincte du code qui envoie l'info dans le fichier de résultats)
 	- [gestion du code] ajout d'un test automatique de vérification du résultat d'un alignement
+- Module rouge
+	- Export correct des diacritiques dans le format XML
 
 ### version 1.24
 6 novembre 2018

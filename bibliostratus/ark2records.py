@@ -252,8 +252,10 @@ def extract1record(row, j, form, headers, parametres):
                         bib2aut(XMLrec, ark, parametres)
 
 
-def callback(master, form, filename, type_records_form, headers, AUTlieesAUT,
-             AUTlieesSUB, AUTlieesWORK, outputID, format_records=1, format_file=1):
+def callback(master, form, filename, type_records_form, 
+             correct_record_option, headers, AUTlieesAUT,
+             AUTlieesSUB, AUTlieesWORK, outputID, 
+             format_records=1, format_file=1):
     AUTliees = AUTlieesAUT + AUTlieesSUB + AUTlieesWORK
     format_BIB = dict_format_records[format_records]
     type_records = "bib"
@@ -261,6 +263,7 @@ def callback(master, form, filename, type_records_form, headers, AUTlieesAUT,
         type_records = "aut"
     parametres = {
         "type_records": type_records,
+        "correct_record_option": correct_record_option,
         "type_records_form": type_records_form,
         "AUTliees": AUTliees,
         "AUTlieesAUT": AUTlieesAUT,
@@ -393,6 +396,23 @@ def formulaire_ark2records(
     tk.Label(frame_input_aut, text="-------------------",
              bg=couleur_fond).pack()
 
+
+    # 1 ou 2 colonnes ?
+    correct_record_option = tk.IntVar()
+    bib2ark.radioButton_lienExample(
+        frame_input_aut, correct_record_option, 1, couleur_fond, "Fichier d'1 colonne (1 ARK ou PPN par ligne)", "", "")
+    bib2ark.radioButton_lienExample(
+        frame_input_aut, correct_record_option, 2, couleur_fond, "Fichier à 2 colonnes (N° notice local | ARK ou PPN)\n\
+pour réécrire les notices récupérées",
+        "", "")
+    correct_record_option.set(1)
+
+    tk.Label(frame_input_aut, text="-------------------",
+             bg=couleur_fond).pack()
+
+    
+
+
     # Fichier avec en-têtes ?
     headers = tk.IntVar()
     tk.Checkbutton(frame_input_aut, text="Mon fichier a des en-têtes de colonne",
@@ -460,7 +480,7 @@ def formulaire_ark2records(
              bg=couleur_fond).pack(side="left", anchor="w")
     outputID = tk.Entry(frame_output_file, bg=couleur_fond)
     outputID.pack(side="left", anchor="w")
-    tk.Label(frame_output_file, text="\n\n\n\n\n\n\n",
+    tk.Label(frame_output_file, text="\n"*14,
              bg=couleur_fond).pack(side="left")
 
     tk.Label(frame_output_options_format,
@@ -481,6 +501,7 @@ def formulaire_ark2records(
             form,
             entry_file_list[0],
             type_records.get(),
+            correct_record_option.get(),
             headers.get(),
             AUTlieesAUT.get(),
             AUTlieesSUB.get(),
