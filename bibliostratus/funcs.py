@@ -845,14 +845,8 @@ class Id4record:
     Objet à partir d'une ligne en entrée du module rouge (ark2record)
     """
     def __init__(self, row, parametres={}): 
-        self.NumNot = ""
-        self.aligned_id = ""
-        if ("correct_record_option" in parametres
-            and parametres["correct_record_option"] == 2):
-            self.NumNot = row[0]
-            self.aligned_id = Aligned_id(row[1])
-        else:
-            self.aligned_id = Aligned_id(row[1])
+        self.NumNot = row[0]
+        self.aligned_id = Aligned_id(row[-1])
 
     def __str__(self):
         """Méthode permettant d'afficher plus joliment notre objet"""
@@ -864,19 +858,21 @@ class Aligned_id:
     """
     def __init__(self, init): 
         self.init = init
-        self.type = "ark"
+        self.type = ""
         self.clean = init
-        self.agency = "BNF"
+        self.agency = ""
         if ("ppn" in init.lower()):
             self.type = "ppn"
             self.agency = "Abes"
             self.clean = init[3:]
         elif ("idref" in init.lower()
             or "sudoc" in init.lower()):
-            self.agency = "abes"
+            self.agency = "Abes"
             self.type = "ppn"
             self.clean = init.split("/")[-1]
         if ("ark" in init):
+            self.agency = "BNF"
+            self.type = "ark"
             self.clean = init[init.find("ark"):]
 
 

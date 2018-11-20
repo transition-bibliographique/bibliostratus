@@ -50,17 +50,23 @@ listefieldsLiensWORK = {
     "intermarc": ["141", "144", "145"]}
 
 
-def ark2url(ark, parametres):
-    query = parametres["type_records"] + '.persistentid any "' + ark + '"'
-    if (parametres["type_records"] == "aut"):
-        query += ' and aut.status any "sparse validated"'
-    query = urllib.parse.quote(query)
-    url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + \
-        "&recordSchema=" + parametres["format_BIB"] + \
-        "&maximumRecords=20&startRecord=1&origin=bibliostratus"
-    if (ark[0:3].lower() == "ppn" and parametres["type_records"] == "bib"):
+def ark2url(identifier, parametres):
+    """
+    URL à partir d'un identifiant BnF ou Abes
+    "identifier" est une instance de classe Id4record
+    """
+    url = ""
+    if (identifier.aligned_id.type == "ark":)
+        query = parametres["type_records"] + '.persistentid any "' + identifier.aligned_id.clean + '"'
+        if (parametres["type_records"] == "aut"):
+            query += ' and aut.status any "sparse validated"'
+        query = urllib.parse.quote(query)
+        url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + \
+            "&recordSchema=" + parametres["format_BIB"] + \
+            "&maximumRecords=20&startRecord=1&origin=bibliostratus"
+    elif (identifier.aligned_id.type == "ppn" and parametres["type_records"] == "bib"):
         url = "https://www.sudoc.fr/" + ark[3:] + ".xml"
-    elif (ark[0:3].lower() == "ppn" and parametres["type_records"] == "aut"):
+    elif (identifier.aligned_id.type == "ppn" and parametres["type_records"] == "aut"):
         url = "https://www.idref.fr/" + ark[3:] + ".xml"
     return url
 
@@ -80,23 +86,13 @@ def nn2url(nn, type_record, parametres, source="bnf"):
         url = "http://www.idref.fr/" + nn + ".xml"
     return url
 
-"""
-def ark2record(ark, type_record, format_BIB, renvoyerNotice=False):
-    url = ark2url(ark, type_record, format_BIB)
-    test = True
-    try:
-        page = etree.parse(request.urlopen(url))
-    except error.URLError:
-        test = False
-        print("Pb d'accès à la notice " + ark)
-    if test:
-        record = page.xpath(".//srw:recordData/mxc:record",
-                            namespaces=main.ns)[0]
-    if renvoyerNotice:
-        return record"""
-
 
 def XMLrecord2string(identifier, record, parametres):
+    """
+    Conversion de la notice XML (BnF ou Abes) en chaîne de caractère
+    pour l'envoyer dans le fichier rapport
+    Au passage, si pertinent, réécriture de la notice pour le contexte local
+    """
     record_str = etree.tostring(record, encoding="utf-8").decode(encoding="utf-8")
     record_str = record_str.replace("<mxc:", "<").replace("</mxc:", "</")
     record_str = re.sub("<record[^>]+>", "<record>", record_str)
@@ -300,7 +296,7 @@ def extract1record(row, j, form, headers, parametres):
     if (len(identifier.aligned_id.clean) > 1 and identifier.aligned_id.clean not in parametres["listeARK_BIB"]):
         print(str(j) + ". " + identifier.aligned_id.clean)
         parametres["listeARK_BIB"].append(identifier.aligned_id.clean)
-        (test, page) = funcs.testURLetreeParse(ark2url(identifier.aligned_id.clean, parametres))
+        (test, page) = funcs.testURLetreeParse(ark2url(identifier, parametres))
         if(test):
             nbResults = page2nbresults(page, identifier.aligned_id.clean)
             # Si on part d'un ARK
