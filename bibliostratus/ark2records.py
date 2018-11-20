@@ -147,7 +147,6 @@ def correct_record(identifier, record_str, parametres):
                             new_xml_record.append(etree.fromstring(new_033_str))
 
                     if (add_035 == 0):
-                        print("test1 > 35", marc_tag)
                         add_035 = 1
                         new_035_str = """<datafield tag="035" ind1=" " ind2=" ">
                     <subfield code="a">""" + agency_no + """</subfield>
@@ -157,7 +156,6 @@ def correct_record(identifier, record_str, parametres):
                     elif (add_035):
                         new_xml_record.append(etree.fromstring(deepcopy(etree.tostring(field))))
                 elif (add_033 == 0):
-                    print("test1 > 33", marc_tag)
                     add_033 = 1
                     if agency_uri:
                         new_033_str = """<datafield tag="033" ind1=" " ind2=" ">
@@ -299,7 +297,6 @@ def page2nbresults(page, ark):
 
 def extract1record(row, j, form, headers, parametres):
     identifier = funcs.Id4record(row, parametres)
-    print(identifier)
     if (len(identifier.aligned_id.clean) > 1 and identifier.aligned_id.clean not in parametres["listeARK_BIB"]):
         print(str(j) + ". " + identifier.aligned_id.clean)
         parametres["listeARK_BIB"].append(identifier.aligned_id.clean)
