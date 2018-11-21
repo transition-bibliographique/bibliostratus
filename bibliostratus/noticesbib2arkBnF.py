@@ -1153,7 +1153,7 @@ def isbn2ark(input_record,
 def issn2ark(input_record, NumNot, issn_init, issn, titre, auteur, date):
     listeArk = issn2sru(input_record, NumNot, issn_init)
     if listeArk == "":
-        listeArk = issn2sru(input_recod, NumNot, issn)
+        listeArk = issn2sru(input_record, NumNot, issn)
     return listeArk
 
 
@@ -1171,13 +1171,15 @@ def issn2sru(input_record, NumNot, issn):
                 if test_issn:
                     input_record.alignment_method.append("ISSN")
                     listeArk.append(ark)
+                else:
+                    input_record.alignment_method.append("ISSN de lien ou erroné")
+                    listeArk.append(ark)
     listeArk = ",".join([ark for ark in listeArk if ark != ""])
     return listeArk
 
 def check_issn_in_011a(record, issn):
-    f011 = " ".join([main.extract_subfield(record, "011", "a"),
-                     main.extract_subfield(record, "011", "z")])
-    if (issn[0:4] in f011):
+    f011a = main.extract_subfield(record, "011", "a")
+    if (issn[0:4] in f011a):
         return True
     else:
         return False

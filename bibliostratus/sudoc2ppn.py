@@ -75,11 +75,3 @@ def extractPPNfromsudocpage(html_page):
             ppn = inp.get("value")
             listePPN.append(ppn)
     return listePPN
-
-if __name__ == "__main__":
-    # ppn1 = urlsudoc2ppn("http://www.sudoc.abes.fr/DB=2.1/SET=3/TTL=1/CMD?ACT=SRCHA&IKT=1016&SRT=YOP&TRM=genre+humain+2015")
-    # print("genre humain 2015 : 51 résultats\n", ppn1)
-    ppn2 = urlsudoc2ppn("http://www.sudoc.abes.fr//DB=2.1/SET=7/TTL=1/CMD?ACT=SRCHA&IKT=1016&SRT=YOP&TRM=ppn+228859158")
-    print("PPN : 1 résultat\n", ppn2)
-    ppn3 = urlsudoc2ppn("http://www.sudoc.abes.fr//DB=2.1/SET=8/TTL=1/CMD?ACT=SRCHA&IKT=1016&SRT=YOP&TRM=978215432")
-    print("faux ISBN : liste de numéros \n", ppn3)
