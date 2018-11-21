@@ -398,6 +398,8 @@ def align_from_bib_alignment(input_record, parametres):
             ark_trouve = frbnfBib2arkAut(input_record, parametres)
         if (ark_trouve == "" and input_record.lastname != ""):
             ark_trouve = bib2arkAUT(input_record, parametres)
+        if (ark_trouve == "" and input_record.lastname != ""):
+            ark_trouve = bib2ppnAUT(input_record, parametres)
     else:
         if (ark_trouve == "" and input_record.lastname != ""):
             ark_trouve = bib2ppnAUT(input_record, parametres)
@@ -405,6 +407,9 @@ def align_from_bib_alignment(input_record, parametres):
             ark_trouve = arkBib2arkAut(input_record, parametres)
         if (ark_trouve == "" and input_record.frbnf_bib.init != ""):
             ark_trouve = frbnfBib2arkAut(input_record, parametres)
+        if (ark_trouve == "" and input_record.lastname != ""):
+            ark_trouve = bib2arkAUT(input_record, parametres)
+
     alignment_result = funcs.Alignment_result(input_record, ark_trouve,
                                               parametres)
     if (ark_trouve == "Pb FRBNF"):
@@ -491,12 +496,20 @@ def arkBib2arkAut(input_record, parametres):
     """
     url = funcs.url_requete_sru('bib.persistentid all "' + input_record.ark_bib_init + '"')
     (test, page) = funcs.testURLetreeParse(url)
-    listeArk = ""
+    listeArk = []
     if test:
         for xml_record in page.xpath("//srw:recordData/*"):
-            listeArk.extend(extractARKautfromBIB(input_record,
-                xml_record))
+            arks = extractARKautfromBIB(input_record, xml_record)
             input_record.alignment_method.append("ARK notice BIB + contrôle accesspoint")
+            if (parametres["preferences_alignement"] == 2):
+                for ark in arks:
+                    ppn = aut_align_idref.autArk2ppn(input_record.NumNot, ark)
+                if (ppn):
+                    listeArk.append(ppn)
+                else:
+                    listeArk.append(ark)
+            else:
+                listeArk.extend(arks)
     return listeArk
 
 
@@ -717,8 +730,22 @@ def bib2arkAUT(input_record, parametres):
     if (test):
         for record in results.xpath(
                 "//srw:recordData", namespaces=main.ns):
-            listeArk.extend(extractARKautfromBIB(input_record, record))
+            arks = extractARKautfromBIB(input_record, record)
+            if arks:
+                input_record.alignement_method.append("Référence biblio > ARK")
+            if (parametres["preferences_alignement"] == 2):
+                for ark in arks:
+                    ppn = aut_align_idref.autArk2ppn(input_record.NumNot, ark)
+                    if (ppn):
+                        listeArk.append(ppn)
+                        input_record.alignement_method.append("ARK > PPN")
+                    else:
+                        listeArk.append(ark)
+            else:
+                listeArk.extend(arks)
+
     listeArk = ",".join(set([el for el in listeArk if el]))
+    
     if (listeArk != ""):
         input_record.alignment_method.append("Titre-Auteur-Date")
     return listeArk

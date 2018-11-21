@@ -985,9 +985,6 @@ def domybiblio2ppn(keywords, date="", type_doc="", parametres={}):
             type_page = ""
     except http.client.RemoteDisconnected:
         type_page = ""
-    print(url1)
-    print(url2)
-    print(type_page)
     if (type_page == "html"):
         liste_resultats = page.xpath("//li[@class='list-group-item']/a")
         for lien in liste_resultats:

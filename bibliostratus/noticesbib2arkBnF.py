@@ -1034,7 +1034,7 @@ def ean2sudoc(input_record, parametres, controle_titre=True):
                 ppn_val = ppn.text
                 Listeppn.append("PPN" + ppn_val)
                 # NumNotices2methode[NumNot].append("EAN > PPN")
-                input_record.aligment_method.append("EAN > PPN")
+                input_record.alignment_method.append("EAN > PPN")
                 # Si BnF > Sudoc : on cherche l'ARK
                 # dans la notice Sudoc trouvée
                 if parametres["preferences_alignement"] == 1:
@@ -1167,12 +1167,20 @@ def issn2sru(input_record, NumNot, issn):
             ark = record.find("srw:recordIdentifier", namespaces=main.ns).text
             typeNotice = main.extract_leader(record, 7)
             if typeNotice == "s":
-                ## NumNotices2methode[NumNot].append("ISSN")
-                input_record.alignment_method.append("ISSN")
-                listeArk.append(ark)
+                test_issn = check_issn_in_011a(record, issn)
+                if test_issn:
+                    input_record.alignment_method.append("ISSN")
+                    listeArk.append(ark)
     listeArk = ",".join([ark for ark in listeArk if ark != ""])
     return listeArk
 
+def check_issn_in_011a(record, issn):
+    f011 = " ".join([main.extract_subfield(record, "011", "a"),
+                     main.extract_subfield(record, "011", "z")])
+    if (issn[0:4] in f011):
+        return True
+    else:
+        return False
 
 def issn2sudoc(input_record, NumNot, issn_init, issn_nett, 
                titre, auteur, date, parametres):
@@ -1219,8 +1227,10 @@ def issn2sudoc(input_record, NumNot, issn_init, issn_nett,
 
 
 def ark2metas(ark, unidec=True):
-    recordBNF_url = funcs.url_requete_sru('bib.persistentid any "' + ark + '"')
-    (test, record) = funcs.testURLetreeParse(recordBNF_url)
+    url = funcs.url_requete_sru('bib.persistentid any "' + ark + '"')
+    if (ark.lower().startswith("ppn")):
+        url = "https://www.sudoc.fr/" + ark[3:] + ".xml"
+    (test, record) = funcs.testURLetreeParse(url)
     titre = ""
     premierauteurPrenom = ""
     premierauteurNom = ""
@@ -1428,7 +1438,7 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
                     recordBNF = srw_record.xpath("srw:recordData/*", namespaces=main.ns)[0]
                     ark = tad2ark_controle_record(input_record, ark_current, 
                                                   auteur, date_nett, annee_plus_trois, index,
-                                                  recordBNF, listeArk)
+                                                  recordBNF)
                 except IndexError:
                     pass
     listeArk = ",".join(ark for ark in listeArk if ark != "")
@@ -1445,11 +1455,12 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
 
 def tad2ark_controle_record(input_record, ark_current, 
                             auteur, date_nett, annee_plus_trois, index, 
-                            recordBNF, listeArk):
+                            recordBNF):
     """
     Ensemble de contrôles sur une notice BnF trouvée par une recherche 
     Titre-Auteur-Date
     """
+    listeArk = []
     typeRecord_current = main.extract_leader(recordBNF, 7)
     if typeRecord_current == input_record.intermarc_type_record:
         ark = comparaisonTitres(input_record,
@@ -1478,21 +1489,15 @@ def tad2ark_controle_record(input_record, ark_current,
             # NumNotices2methode[input_record.NumNot].append(methode)
             input_record.alignment_method.append(methode)
             if "*" in date_nett:
-                """NumNotices2methode[input_record.NumNot].append(
-                    "Date début tronquée"
-                )"""
                 input_record.alignment_method.append("Date début tronquée")
             if annee_plus_trois:
-                """NumNotices2methode[input_record.NumNot].append(
-                    "Date début +/- 3 ans"
-                )"""
                 input_record.alignment_method.append(
                     "Date début +/- 3 ans"
                 )
     return listeArk
 
 
-def tad2ppn(input_record, parametres):
+def tad2ppn_from_domybiblio(input_record, parametres):
     # Recherche dans DoMyBiblio : Titre & Auteur dans tous champs, Date dans
     # un champ spécifique
     Listeppn = []
@@ -1652,6 +1657,112 @@ def tad2ppn_pages_suivantes(
     return Listeppn
 
 
+def tad2ppn(input_record, parametres):
+    """
+    Recherche par mots clés dans le Sudoc en parsant les pages HTML
+    """    
+    typeRecord4Sudoc = ""
+    """vide (pour tous les types de document),
+           B (pour les livres),
+           T (pour les périodiques),
+           Y (pour les thèses version de soutenance),
+           V (pour le matériel audio-visuel)"""
+    typeRecordDic = {"TEX": "B", "VID": "V", "AUD": "V", "PER": "T",
+                     "CP": "K"}
+    url = "http://www.sudoc.abes.fr//DB=2.1/SET=18/TTL=1/CMD?ACT=SRCHM\
+&MATCFILTER=Y&MATCSET=Y&NOSCAN=Y&PARSE_MNEMONICS=N&PARSE_OPWORDS=N&PARSE_OLDSETS=N\
+&IMPLAND=Y&ACT0=SRCHA&screen_mode=Recherche\
+&IKT0=1004&TRM0=" + urllib.parse.quote(input_record.auteur_nett) + "\
+&ACT1=*&IKT1=4&TRM1=" + urllib.parse.quote(input_record.titre.recherche) + "\
+&ACT2=*&IKT2=1016&TRM2=&ACT3=*&IKT3=1016&TRM3=&SRT=YOP" + "\
+&ADI_TAA=&ADI_LND=&ADI_JVU=" + urllib.parse.quote(input_record.date_nett) + "\
+&ADI_MAT=" + typeRecordDic[input_record.type]
+    listePPN = urlsudoc2ppn(url)
+    listePPN_checked = []
+    for ppn in listePPN:
+        ppn_checked = ""
+        test, xml_record = ppn2recordSudoc(ppn)
+        if test:
+            ppn_checked = tad2ark_controle_record(input_record, ppn, input_record.auteur_nett,
+                                      input_record.date_nett, False, "",
+                                      xml_record)
+        if (ppn_checked):
+            listePPN_checked.append(ppn_checked)
+    listePPN_checked = ["PPN"+el for el in listePPN_checked if el]
+    listePPN_checked = ",".join(listePPN_checked)
+    return listePPN_checked
+
+def urlsudoc2ppn(url):
+    """
+    Extrait l'ensemble des PPN (avec pagination des résultats)
+    à partir d'une URL de requête dans le Sudoc
+    """
+    listePPN = []
+    (test, page) = funcs.testURLurlopen(url)
+    if test:
+        page = parse(page)
+        nb_results = extract_nb_results_from_sudoc_page(page)
+        if nb_results > 1000:
+            nb_results = 1000
+        if nb_results == 1:
+            listePPN = [extractPPNfromrecord(page)]
+        else:
+            listePPN = extractPPNfromsudocpage(page)
+        i = 11
+        while nb_results > i:
+            url_f = url + "&FRST=" + str(i)
+            test, following_page = funcs.testURLurlopen(url_f)
+            if test:
+                following_page = parse(following_page)
+                listePPN.extend(extractPPNfromsudocpage(following_page))
+            i += 10
+    return listePPN
+
+
+def extractPPNfromrecord(page):
+    """
+    Si un seul résultat : l'URL Sudoc ouvre la notice détaillée
+    --> on récupère le PPN dans le permalien
+    """
+    link = page.find("//link[@rel='canonical']").get("href")
+    ppn = link.split("/")[-1]
+    return ppn
+
+
+
+def extract_nb_results_from_sudoc_page(html_page):
+    """
+    Renvoie le nombre de résultats affiché sur une page de résultats Sudoc
+    html_page est le contenu parsé (avec lxml.html.parse()) d'une page HTML
+    """
+    nb_results = 0
+    ligne_info = ""
+    try:
+        ligne_info = etree.tostring(html_page.find("//table[@summary='query info']/tr")).decode(encoding="utf-8")
+    except ValueError:
+        pass
+    if ("<span>" in ligne_info):
+        nb_results = ligne_info.split("<span>")[-1].split("&")[0]
+        nb_results = int(nb_results)
+    return nb_results
+
+
+def extractPPNfromsudocpage(html_page):
+    """
+    Renvoie une liste de PPN 
+    à partir du code HTML d'une liste de résultats Sudoc
+    html_page est le contenu parsé (avec lxml.html.parse()) d'une page HTML
+    """
+    listePPN = []
+    for inp in html_page.xpath("//input[@name]"):
+        if inp.get("name").startswith("ppn"):
+            ppn = inp.get("value")
+            listePPN.append(ppn)
+    return listePPN
+
+
+
+
 def controle_keywords2ppn(input_record, ppn):
     """Pour les notices obtenues en recherche par mot-clé
     via DoMyBiblio, il faut vérifier que les mots cherchés comme
@@ -1737,7 +1848,7 @@ def ark2recordBNF(ark, typeRecord="bib"):
 
 
 def ppn2recordSudoc(ppn):
-    ppn = ppn.replace("PPN").split("/")[-1].split(".")[0]
+    ppn = ppn.replace("PPN", "").split("/")[-1].split(".")[0]
     url = "https://www.sudoc.fr/" + ppn + ".xml"
     (test, recordSudoc) = funcs.testURLetreeParse(url)
     return (test, recordSudoc)
@@ -2143,7 +2254,7 @@ def alignment_result2output(alignment_result, input_record, parametres, liste_re
     print(str(n) + ". " + input_record.NumNot + " : " + alignment_result.ids_str)
     
     if parametres["meta_bib"] == 1:
-        alignment_result.liste_metadonnees.extend(ark2metadc(ark))
+        alignment_result.liste_metadonnees.extend(ark2metadc(alignment_result.ids_str))
     if parametres["file_nb"] == 1:
         row2file(alignment_result.liste_metadonnees, liste_reports)
     elif parametres["file_nb"] == 2:
@@ -2230,11 +2341,11 @@ def file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parame
     if parametres["meta_bib"] == 1:
         header_columns.extend(
             [
-                "[BnF] Titre",
-                "[BnF] 1er auteur Prénom",
-                "[BnF] 1er auteur Nom",
-                "[BnF] Tous auteurs",
-                "[BnF] Date"
+                "[BnF/Abes] Titre",
+                "[BnF/Abes] 1er auteur Prénom",
+                "[BnF/Abes] 1er auteur Nom",
+                "[BnF/Abes] Tous auteurs",
+                "[BnF/Abes] Date"
             ]
         )
     # Ajout des en-têtes de colonne dans les fichiers
@@ -2726,7 +2837,7 @@ def formulaire_noticesbib2arkBnF(
     meta_bib_check = tk.Checkbutton(
         cadre_output_nb_fichier,
         bg=couleur_fond,
-        text="Récupérer les métadonnées\nbibliographiques BnF [Dublin Core]",
+        text="Récupérer les métadonnées\nbibliographiques Dublin Core",
         variable=meta_bib,
         justify="left",
     )
