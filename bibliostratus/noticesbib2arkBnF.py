@@ -1441,6 +1441,7 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
                     ark = tad2ark_controle_record(input_record, ark_current, 
                                                   auteur, date_nett, annee_plus_trois, index,
                                                   recordBNF)
+                    ark = ",".join([a for a in ark if a])
                 except IndexError:
                     pass
     listeArk = ",".join(ark for ark in listeArk if ark != "")
@@ -1457,14 +1458,40 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
 
 def tad2ark_controle_record(input_record, ark_current, 
                             auteur, date_nett, annee_plus_trois, index, 
-                            recordBNF):
+                            xml_record):
     """
     Ensemble de contrôles sur une notice BnF trouvée par une recherche 
     Titre-Auteur-Date
     """
     listeArk = []
-    typeRecord_current = main.extract_leader(recordBNF, 7)
-    if typeRecord_current == input_record.intermarc_type_record:
+    typeRecord_current = main.extract_leader(xml_record, 7)
+    if (type(input_record) == funcs.Bib_record):
+        if typeRecord_current == input_record.intermarc_type_record:
+            ark = comparaisonTitres(input_record,
+                                    input_record.NumNot,
+                                    ark_current,
+                                    "",
+                                    "",
+                                    input_record.titre.controles,
+                                    auteur,
+                                    date_nett,
+                                    input_record.tome_nett,
+                                    xml_record,
+                                    "Titre-Auteur-Date" + index)
+            if (ark != "" and date_nett != "-"):
+                ark = checkDate(ark, input_record.date_nett,
+                                xml_record)
+            if ark != "":
+                listeArk.append(ark)
+                methode = "Titre-Auteur-Date"
+                input_record.alignment_method.append(methode)
+                if "*" in date_nett:
+                    input_record.alignment_method.append("Date début tronquée")
+                if annee_plus_trois:
+                    input_record.alignment_method.append(
+                        "Date début +/- 3 ans"
+                    )
+    elif (type(input_record) == funcs.Bib_Aut_record):
         ark = comparaisonTitres(input_record,
                                 input_record.NumNot,
                                 ark_current,
@@ -1473,29 +1500,13 @@ def tad2ark_controle_record(input_record, ark_current,
                                 input_record.titre.controles,
                                 auteur,
                                 date_nett,
-                                input_record.tome_nett,
-                                recordBNF,
+                                "",
+                                xml_record,
                                 "Titre-Auteur-Date" + index)
-        if (date_nett != "-"):
-            ark = checkDate(ark, input_record.date_nett,
-                            recordBNF)
         if ark != "":
             listeArk.append(ark)
             methode = "Titre-Auteur-Date"
-            if auteur == "-" and date_nett == "-":
-                methode = "Titre"
-            elif auteur == "-":
-                methode = "Titre-Date"
-            elif date_nett == "-":
-                methode = "Titre-Auteur"
-            # NumNotices2methode[input_record.NumNot].append(methode)
             input_record.alignment_method.append(methode)
-            if "*" in date_nett:
-                input_record.alignment_method.append("Date début tronquée")
-            if annee_plus_trois:
-                input_record.alignment_method.append(
-                    "Date début +/- 3 ans"
-                )
     return listeArk
 
 
@@ -1668,7 +1679,8 @@ def tad2ppn(input_record, parametres):
            B (pour les livres),
            T (pour les périodiques),
            Y (pour les thèses version de soutenance),
-           V (pour le matériel audio-visuel)"""
+           V (pour le matériel audio-visuel)
+           K (pour les cartes"""
     typeRecordDic = {"TEX": "B", "VID": "V", "AUD": "V", "PER": "T",
                      "CP": "K"}
     url = "http://www.sudoc.abes.fr//DB=2.1/SET=18/TTL=1/CMD?ACT=SRCHM\
@@ -1680,19 +1692,42 @@ def tad2ppn(input_record, parametres):
 &ADI_TAA=&ADI_LND=&ADI_JVU=" + urllib.parse.quote(input_record.date_nett) + "\
 &ADI_MAT=" + typeRecordDic[input_record.type]
     listePPN = urlsudoc2ppn(url)
+    listePPN = check_sudoc_results(input_record, listePPN)
+    return listePPN
+
+
+def check_sudoc_results(input_record, listePPN):
+    """
+    Pour une liste de PPN trouvée, vérifier ceux qui correspondent bien à la notice initiale
+    """
     listePPN_checked = []
     for ppn in listePPN:
-        ppn_checked = ""
-        test, xml_record = ppn2recordSudoc(ppn)
-        if test:
-            ppn_checked = tad2ark_controle_record(input_record, ppn, input_record.auteur_nett,
-                                      input_record.date_nett, False, "",
-                                      xml_record)
+        ppn_checked = check_sudoc_result(input_record, ppn)
         if (ppn_checked):
             listePPN_checked.append(ppn_checked)
-    listePPN_checked = ["PPN"+el for el in listePPN_checked if el]
-    listePPN_checked = ",".join(listePPN_checked)
+    listePPN_checked = ",".join(["PPN"+el for el in listePPN_checked if el])
     return listePPN_checked
+
+def check_sudoc_result(input_record, ppn):
+    """
+    Vérification de l'adéquation entre un PPN et une notice en entrée
+    """
+    ppn_checked = ""
+    test, xml_record = ppn2recordSudoc(ppn)
+    if test:
+        if (type(input_record) == funcs.Bib_record):
+            ppn_checked = tad2ark_controle_record(input_record, ppn, 
+                                    input_record.auteur_nett,
+                                    input_record.date_nett, False, "",
+                                    xml_record)
+        elif (type(input_record) == funcs.Bib_Aut_record):
+            ppn_checked = tad2ark_controle_record(input_record, ppn, 
+                                    input_record.lastname.propre,
+                                    input_record.pubdate_nett, False, "",
+                                    xml_record)
+    ppn_checked = ",".join([ppn for ppn in ppn_checked if ppn])            
+    return ppn_checked
+
 
 def urlsudoc2ppn(url):
     """
@@ -1716,7 +1751,7 @@ def urlsudoc2ppn(url):
             test, following_page = funcs.testURLurlopen(url_f)
             if test:
                 following_page = parse(following_page)
-                listePPN.extend(extractPPNfromsudocpage(following_page))
+                listePPN.extend(extractPPNfromsudocpage(following_page, nb_results, i))
             i += 10
     return listePPN
 
@@ -1749,7 +1784,7 @@ def extract_nb_results_from_sudoc_page(html_page):
     return nb_results
 
 
-def extractPPNfromsudocpage(html_page):
+def extractPPNfromsudocpage(html_page, nb_results=0, i=0):
     """
     Renvoie une liste de PPN 
     à partir du code HTML d'une liste de résultats Sudoc
@@ -2839,7 +2874,7 @@ def formulaire_noticesbib2arkBnF(
     meta_bib_check = tk.Checkbutton(
         cadre_output_nb_fichier,
         bg=couleur_fond,
-        text="Récupérer les métadonnées\nbibliographiques Dublin Core",
+        text="Récupérer les métadonnées simples",
         variable=meta_bib,
         justify="left",
     )

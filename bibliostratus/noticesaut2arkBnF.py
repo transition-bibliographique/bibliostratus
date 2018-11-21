@@ -732,13 +732,13 @@ def bib2arkAUT(input_record, parametres):
                 "//srw:recordData", namespaces=main.ns):
             arks = extractARKautfromBIB(input_record, record)
             if arks:
-                input_record.alignement_method.append("Référence biblio > ARK")
+                input_record.alignment_method.append("Référence biblio > ARK")
             if (parametres["preferences_alignement"] == 2):
                 for ark in arks:
                     ppn = aut_align_idref.autArk2ppn(input_record.NumNot, ark)
                     if (ppn):
                         listeArk.append(ppn)
-                        input_record.alignement_method.append("ARK > PPN")
+                        input_record.alignment_method.append("ARK > PPN")
                     else:
                         listeArk.append(ark)
             else:
@@ -759,12 +759,7 @@ def bib2ppnAUT(input_record, parametres):
     --> contrôles sur le nom, prénom, date de naissance de l'auteur
     """
     listePPNaut = []
-    listePPNbib = funcs.domybiblio2ppn([input_record.titre.recherche,
-                                        input_record.lastname.propre,
-                                        input_record.firstname.propre],
-                                       input_record.pubdate_nett,
-                                       "",
-                                       parametres).split(",")
+    listePPNbib = bib2ppnAUT_from_sudoc(input_record, parametres).split(",")
     listePPNbib = [el.replace("PPN", "") for el in listePPNbib if el]                        
     for ppn in listePPNbib:
         url = "https://www.sudoc.fr/" + ppn + ".xml"
@@ -777,6 +772,25 @@ def bib2ppnAUT(input_record, parametres):
     if (listePPNaut != ""):
         input_record.alignment_method.append("Titre-Auteur-Date")
     return listePPNaut
+
+
+def bib2ppnAUT_from_sudoc(input_record, parametres):
+    """
+    Recherche dans le sudoc (interface web parsée)
+    à partir d'un input_record d'instance Bib_Aut_record
+    """
+    url = "http://www.sudoc.abes.fr//DB=2.1/SET=18/TTL=1/CMD?ACT=SRCHM\
+&MATCFILTER=Y&MATCSET=Y&NOSCAN=Y&PARSE_MNEMONICS=N&PARSE_OPWORDS=N&PARSE_OLDSETS=N\
+&IMPLAND=Y&ACT0=SRCHA&screen_mode=Recherche\
+&IKT0=1004&TRM0=" + urllib.parse.quote(input_record.lastname.propre + " " + input_record.firstname.propre) + "\
+&ACT1=*&IKT1=4&TRM1=" + urllib.parse.quote(input_record.titre.recherche) + "\
+&ACT2=*&IKT2=1016&TRM2=&ACT3=*&IKT3=1016&TRM3=&SRT=YOP" + "\
+&ADI_TAA=&ADI_LND=&ADI_JVU=" + urllib.parse.quote(input_record.pubdate_nett) + "\
+&ADI_MAT="
+    listePPN = bib2ark.urlsudoc2ppn(url)
+    listePPN = bib2ark.check_sudoc_results(input_record, listePPN)
+    return listePPN
+
 
 
 def nna2ark(nna):
@@ -1102,7 +1116,7 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
 
     # Récupérer les métadonnées BnF au passage ?
     meta_bnf = tk.IntVar()
-    tk.Checkbutton(frame_output_file, text="Récupérer les métadonnées BnF",
+    tk.Checkbutton(frame_output_file, text="Récupérer les métadonnées simple",
                    variable=meta_bnf,
                    bg=couleur_fond, justify="left").pack(anchor="w")
     tk.Label(frame_output_file, text="\n", bg=couleur_fond,

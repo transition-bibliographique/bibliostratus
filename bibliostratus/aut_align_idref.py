@@ -45,7 +45,7 @@ def aut2ppn_by_id(input_record, parametres):
 def autArk2ppn(NumNot, ark_nett):
     Liste_ppn = []
     url = f"https://www.idref.fr/services/ark2idref/http://catalogue.bnf.fr/{ark_nett}"
-    (test, result) = funcs.testURLetreeParse(url)
+    (test, result) = funcs.testURLetreeParse(url, display=False)
     if test:
         for ppn in result.xpath("//ppn"):
             Liste_ppn.append(ppn.text)    
