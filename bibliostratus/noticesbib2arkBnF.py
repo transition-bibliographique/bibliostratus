@@ -1867,7 +1867,7 @@ def extract_meta(recordBNF, field_subfield, occ="all", anl=False):
     field = field_subfield.split("$")[0]
     subfield = field_subfield.split("$")[1]
     value = []
-    path = (".//*[@tag='" + field + "/*[@code='" + subfield + "']")
+    path = (".//*[@tag='" + field + "']/*[@code='" + subfield + "']")
     for elem in recordBNF.xpath(path, namespaces=main.ns):
         if elem.text is not None:
             value.append(elem.text)
