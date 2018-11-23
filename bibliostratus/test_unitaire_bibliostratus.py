@@ -9,12 +9,13 @@ A lancer avec pytest
 """
 from collections import defaultdict
 
-
 import funcs
 import main
 import aut_align_idref
 import noticesbib2arkBnF as bib2ark
 import noticesaut2arkBnF as aut2ark
+
+
 
 # =============================================================================
 # Tests des fonctions de nettoyage de chaînes de caractères
@@ -220,18 +221,6 @@ def test_alignement_bib():
 def test_alignement_aut():
     # Teste sur des notices bibliographiques
     # avec divers types de notices et d'options
-    aut_records = {"PEP1": {"input_record":funcs.Aut_record(
-                              ["26859041", "frbn00161413x;frbn000752960;frbnf119023327", 
-                               "", "", "Faulkner", "", "1897", "1962"], 1)
-                           },
-                   "PEP2": {"input_record":funcs.Aut_record(
-                              ["26829762", "", "http://catalogue.bnf.fr/ark:/12148/cb11900005k", 
-                              "", "Devos", "", "1922", "2006"], 1)
-                           },
-                   "PEP3": {"input_record":funcs.Aut_record(
-                              ["26842548", "", "", "", "Duleu", "", "1909", "    "], 1)
-                           }
-                  }
     param_alignBnF = {"preferences_alignement":  1,
                   "type_aut": "a",
                   "input_data_type": 1,
@@ -244,15 +233,73 @@ def test_alignement_aut():
                   "meta_bnf": 1,
                   "isni_option": 1,
                   "stats": defaultdict(int)}
-    for record in aut_records:
-      aut_records[record]["alignment_resultBnF"] = aut2ark.align_from_aut_alignment(aut_records[record]["input_record"], param_alignBnF)
-      # aut_records[record]["alignment_resultIdRef"] = aut2ark.align_from_aut_alignment(aut_records[record]["input_record"], param_alignIdRef)
-    assert aut_records["PEP1"]["input_record"].alignment_method == ["N° sys FRBNF + Nom"]
-    assert aut_records["PEP1"]["alignment_resultBnF"].alignment_method_str == "N° sys FRBNF + Nom"
-    assert aut_records["PEP1"]["alignment_resultBnF"].ids_str == "ark:/12148/cb11902332s"
-    # assert aut_records["PEP1"]["alignment_resultIdRef"].ids_str == "PPN026859041"
+
+    aut_records_bnf = {"PEP1": {"input_record":funcs.Aut_record(
+                              ["26859041", "frbn00161413x;frbn000752960;frbnf119023327", 
+                               "ark:/12148/cb11902332s", "", "Faulkner", "", "1897", "1962"], param_alignBnF)
+                           },
+                   "PEP2": {"input_record":funcs.Aut_record(
+                              ["26829762", "", "http://catalogue.bnf.fr/ark:/12148/cb11900005k", 
+                              "", "Devos", "", "1922", "2006"], param_alignBnF)
+                           },
+                   "PEP3": {"input_record":funcs.Aut_record(
+                              ["26842548", "", "", "", "Duleu", "", 
+                              "1909", "    "], param_alignBnF)
+                           }
+                  }
+    aut_records_idref = {"PEP1": {"input_record":funcs.Aut_record(
+                              ["26859041", "frbn00161413x", 
+                               "", "", "Faulkner", "", "1897", "1962"], param_alignIdRef)
+                           },
+                         "PEP2": {"input_record":funcs.Aut_record(
+                              ["26829762", "", "http://catalogue.bnf.fr/ark:/12148/cb11900005k", 
+                              "", "Devos", "", "1922", "2006"], param_alignIdRef)
+                           }
+                        }
+    for record in aut_records_bnf:
+        aut_records_bnf[record]["alignment_result"] = aut2ark.align_from_aut_alignment(aut_records_bnf[record]["input_record"], param_alignBnF)
+    for record in aut_records_idref:
+        aut_records_idref[record]["alignment_result"] = aut2ark.align_from_aut_alignment(aut_records_idref[record]["input_record"], param_alignIdRef)
+    # assert aut_records["PEP1"]["input_record"].alignment_method == ["N° sys FRBNF + Nom"]
+    # assert aut_records["PEP1"]["alignment_resultBnF"].alignment_method_str == "N° sys FRBNF + Nom"
+    assert aut_records_bnf["PEP1"]["alignment_result"].ids_str == "ark:/12148/cb11902332s"
+    assert aut_records_idref["PEP1"]["alignment_result"].ids_str == "PPN026859041"
 
 
+def test_alignement_bib2aut():
+    param_alignBnF = {"preferences_alignement":  1,
+                  "type_aut": "a",
+                  "input_data_type": 2,
+                  "meta_bnf": 1,
+                  "isni_option": 0,
+                  "stats": defaultdict(int)}
+    param_alignIdRef = {"preferences_alignement":  2,
+                  "type_aut": "a",
+                  "input_data_type": 2,
+                  "meta_bnf": 1,
+                  "isni_option": 0,
+                  "stats": defaultdict(int)}
+    listePEP = [["11907286", "cb34633458q", "", "34633458", "Les Révélations des couleurs éthériques de nos auras", "", "", "Henry", "Judith", ""],
+              ["11918746", "cb37713742b", "", "", "Bleu", "", "0000 0001 1470 4939", "Pastoureau", "Michel", "1947-...."],
+              ["11897572", "cb451711140", "", "", "Marseille", "", "", "Contrucci", "Jean", "1939-...."],
+              ["14413819", "cb45108648x", "", "45108648", "La route de l'or bleu", "", "", "Bernard", "Daniel", "1948-...."]
+             ]
+    i = 1
+    bib2aut_recordsBnF = defaultdict(dict)
+    bib2aut_recordsIdRef = defaultdict(dict)
+    for pep in listePEP:
+        key = "PEP"+str(i)
+        bib2aut_recordsBnF[key] = {"input_record":funcs.Bib_Aut_record(pep, param_alignBnF)}
+        bib2aut_recordsIdRef[key] = {"input_record":funcs.Bib_Aut_record(pep, param_alignIdRef)}
+        i += 1
+
+  
+    for record in bib2aut_recordsBnF:
+        bib2aut_recordsBnF[record]["alignment_result"] = aut2ark.align_from_bib_alignment(bib2aut_recordsBnF[record]["input_record"], param_alignBnF)
+    for record in bib2aut_recordsIdRef:
+        bib2aut_recordsIdRef[record]["alignment_result"] = aut2ark.align_from_bib_alignment(bib2aut_recordsIdRef[record]["input_record"], param_alignIdRef)
+    assert bib2aut_recordsBnF["PEP1"]["alignment_result"].ids_str == "ark:/12148/cb11907286n"
+    assert bib2aut_recordsIdRef["PEP2"]["alignment_result"].ids_str == "PPN027059952"
 
 def test_ppnidref_to_row():
     """Vérifie la fonction ppn2metasAut :
@@ -288,16 +335,19 @@ def test_domybiblio_1_answer():
     assert ppn == "PPN015108805" or ppn == ""
 
 def check_controle_011():
-  """
-  Recherche de périodique par ISSN dans le catalogue BnF
-  Vérifie que le test sur la 011 est correct (True si 011$a, False sinon)
-  Permet de vérifier au passage la conversion d'ARK en XMLrecord, 
-  et l'extraction de sous-zones
-  """
-  issn = "1254-728X"
-  recordTrue = bib2ark.ark2recordBNF("ark:/12148/cb345079588")
-  recordFalse = bib2ark.ark2recordBNF("ark:/12148/cb40172844d")
-  testTrue = bib2ark.check_issn_in_011a(recordTrue, issn)
-  testFalse = bib2ark.check_issn_in_011a(recordFalse, issn)
-  assert testTrue is True
-  assert testFalse is False
+    """
+    Recherche de périodique par ISSN dans le catalogue BnF
+    Vérifie que le test sur la 011 est correct (True si 011$a, False sinon)
+    Permet de vérifier au passage la conversion d'ARK en XMLrecord, 
+    et l'extraction de sous-zones
+    """
+    issn = "1254-728X"
+    recordTrue = bib2ark.ark2recordBNF("ark:/12148/cb345079588")
+    recordFalse = bib2ark.ark2recordBNF("ark:/12148/cb40172844d")
+    testTrue = bib2ark.check_issn_in_011a(recordTrue, issn)
+    testFalse = bib2ark.check_issn_in_011a(recordFalse, issn)
+    assert testTrue is True
+    assert testFalse is False
+
+if __name__ == "__main__":
+  test_alignement_aut()

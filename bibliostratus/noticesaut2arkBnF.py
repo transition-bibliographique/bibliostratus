@@ -342,7 +342,7 @@ def align_from_aut_item(row, n, form_aut2ark, parametres, liste_reports):
     if (n % 100 == 0):
         main.check_access2apis(n, dict_check_apis)
 
-    input_record = funcs.Aut_record(row,parametres)
+    input_record = funcs.Aut_record(row, parametres)
     alignment_result = align_from_aut_alignment(input_record, parametres)
     alignment_result2output(alignment_result, input_record, parametres, 
                             liste_reports, n)

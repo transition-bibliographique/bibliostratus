@@ -67,14 +67,16 @@ def aut2ppn_by_accesspoint(input_record, parametres):
         "b" : "corpname"
     }
     Liste_ppn = []
-    query = [input_record.lastname.propre, input_record.firstname.propre]
+    query = ['"',input_record.lastname.propre, input_record.firstname.propre,'"']
+    query_date = ""
     if (input_record.firstdate.propre and len(input_record.firstdate.propre) > 3):
-        query.append(input_record.firstdate.propre)
+        query_date = urllib.parse.quote(" AND " + aut_type_dict[parametres["type_aut"]] + '_t:"' + input_record.firstdate.propre + '"')
     elif (input_record.lastdate.propre and len(input_record.lastdate.propre) > 3):
-        query.append(input_record.lastdate.propre)
-    url = "".join(["https://www.idref.fr/Sru/Solr?q=" + aut_type_dict[parametres["type_aut"]] + "_t:%22",
+        query_date = urllib.parse.quote(" AND " + aut_type_dict[parametres["type_aut"]] + '_t:"' + input_record.lastdate.propre + '"')
+    url = "".join(["https://www.idref.fr/Sru/Solr?q=" + aut_type_dict[parametres["type_aut"]] + "_t:",
                    urllib.parse.quote(" ".join(query)),
-                   "%22%20AND%20recordtype_z:" + parametres["type_aut"] + "&sort=score%20desc&version=2.2&start=0&rows=1000"])
+                   query_date,
+                   "20AND%20recordtype_z:" + parametres["type_aut"] + "&sort=score%20desc&version=2.2&start=0&rows=1000"])
     (test, results) = funcs.testURLetreeParse(url)
     if test:
         for record in results.xpath("//doc"):

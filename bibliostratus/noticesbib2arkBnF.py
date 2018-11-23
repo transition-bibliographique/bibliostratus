@@ -1040,7 +1040,7 @@ def ean2sudoc(input_record, parametres, controle_titre=True):
                 if parametres["preferences_alignement"] == 1:
                     temp_record = funcs.Bib_record(
                         [
-                         NumNot, "", "", "", input_record.ean.propre,
+                         input_record.NumNot, "", "", "", input_record.ean.propre,
                          input_record.titre_nett, input_record.auteur_nett,
                          input_record.date_nett, "", ""
                         ],
