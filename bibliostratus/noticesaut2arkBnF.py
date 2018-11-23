@@ -184,7 +184,7 @@ def isni2id(input_record, parametres, origine="isni"):
                 ppn = aut_align_idref.autArk2ppn(input_record.NumNot, ark)
                 if (ppn):
                     Liste_ids.append(ppn)
-                    input_record.alignment_result.append("ISNI > ARK > PPN")
+                    input_record.alignment_method.append("ISNI > ARK > PPN")
                 else:
                     Liste_ids.append(ark)
     else:
@@ -667,7 +667,7 @@ def relancerNNA_nomAuteur(input_record, NumNot, systemid, nom):
                     "//srw:records/srw:record", namespaces=main.ns):
                 ark = record.find("srw:recordIdentifier",
                                   namespaces=main.ns).text
-                input_record.alignment_result.append("N° sys FRBNF + Nom")
+                input_record.alignment_method.append("N° sys FRBNF + Nom")
                 listeArk.append(ark)
     listeArk = ",".join(listeArk)
     return listeArk

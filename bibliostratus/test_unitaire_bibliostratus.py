@@ -14,6 +14,7 @@ import funcs
 import main
 import aut_align_idref
 import noticesbib2arkBnF as bib2ark
+import noticesaut2arkBnF as aut2ark
 
 # =============================================================================
 # Tests des fonctions de nettoyage de chaînes de caractères
@@ -146,9 +147,10 @@ def test_row_bib():
     assert record2.frbnf.propre == "frbnf43632681"
 
 
-def test_1alignement_bib():
-    # Teste un alignement
-    record = funcs.Bib_record(
+def test_alignement_bib():
+    # Teste sur des notices bibliographiques
+    # avec divers types de notices et d'options
+    bib_records = {"TEX1": {"input_record": funcs.Bib_record(
                                 [
                                  "315756", "", "",
                                  "978-2-213-67203-8", "",
@@ -156,8 +158,8 @@ def test_1alignement_bib():
                                  "DL 2013", "", "Fayard"
                                 ],
                                 1
-                              )
-    record2 = funcs.Bib_record(
+                              )},
+                   "TEX2": {"input_record": funcs.Bib_record(
                                 [
                                  "1/104953", "", "",
                                  "978-2-7436-2583-2", "9782743625832", 
@@ -165,16 +167,90 @@ def test_1alignement_bib():
                                  "2013(©)", "", "Payot   Rivages"
                                 ],
                                 1
-                               )
-    parametres = {"preferences_alignement":  1,
+                               )},
+                   "AUD1": {"input_record": funcs.Bib_record(
+                                [
+                                 "754134", "", "", "", 
+                                 "3329184688321", "La grande nuit de l 'Opéra  1958", 
+                                 "maria georges mars callas jean-pierre paris lance choeur orchestre albert de national opera sebastian hurteau jacques", 
+                                 "2010", "Institut national de l'audiovisuel"
+                                ],
+                                3
+                               )},
+                   "PER1": {"input_record": funcs.Bib_record(
+                                ["616", "", "", "2267-8417", 
+                                "Fisheye le magazine lifestyle de la photographie", "", 
+                                "2013-", "Paris"],
+                                4
+                               )},
+                   "PER2": {"input_record": funcs.Bib_record(
+                                ["629", "FRBNF391212190000007", 
+                                 "", "", "Arts magazine", "", 
+                                 "2005-2016 2006-2016", ""],
+                                4
+                               )}
+                  }
+    param_alignBnF = {"preferences_alignement":  1,
                   "meta_bib": 0,
                   "meta_bnf": 0,
                   "stats": defaultdict(int)}
-    alignment_result = bib2ark.item_alignement(record, parametres)
+    param_alignSudoc = {"preferences_alignement":  2,
+                  "meta_bib": 1,
+                  "meta_bnf": 0,
+                  "stats": defaultdict(int)}
+    for record in bib_records:
+      bib_records[record]["alignment_resultBnF"] = bib2ark.item_alignement(bib_records[record]["input_record"], param_alignBnF)
+      bib_records[record]["alignment_resultSudoc"] = bib2ark.item_alignement(bib_records[record]["input_record"], param_alignSudoc)
+    assert bib_records["TEX1"]["input_record"].alignment_method == ["ISBN + contrôle Titre 200$a"]
+    assert bib_records["TEX1"]["alignment_resultBnF"].alignment_method_str == "ISBN + contrôle Titre 200$a"
+    assert bib_records["TEX1"]["alignment_resultBnF"].ids_str == "ark:/12148/cb43536110d"
+    assert bib_records["TEX1"]["alignment_resultSudoc"].ids_str == "PPN168081768"
+    assert bib_records["AUD1"]["alignment_resultBnF"].ids_str == "ark:/12148/cb423235808"
+    assert bib_records["AUD1"]["alignment_resultSudoc"].ids_str == "ark:/12148/cb423235808"
+    assert bib_records["PER1"]["alignment_resultBnF"].alignment_method_str == "ISSN"
+    assert bib_records["PER1"]["alignment_resultBnF"].ids_str == "ark:/12148/cb43619642w"
+    assert bib_records["PER1"]["alignment_resultSudoc"].ids_str == "PPN174256019"
+    assert bib_records["PER1"]["alignment_resultBnF"].ids_str == "ark:/12148/cb43619642w"
+    assert bib_records["PER1"]["alignment_resultSudoc"].ids_str == "PPN174256019"
+    assert bib_records["PER2"]["alignment_resultBnF"].ids_str == "ark:/12148/cb39121219d"
+    assert bib_records["PER2"]["alignment_resultBnF"].alignment_method_str == "Numéro de notice + contrôle Titre 200$a"
+    assert bib_records["PER2"]["alignment_resultSudoc"].ids_str == "ark:/12148/cb39121219d"
 
-    assert record.alignment_method == ["ISBN + contrôle Titre 200$a"]
-    assert alignment_result.alignment_method_str == "ISBN + contrôle Titre 200$a"
-    assert alignment_result.ids_str == "ark:/12148/cb43536110d"
+
+def test_alignement_aut():
+    # Teste sur des notices bibliographiques
+    # avec divers types de notices et d'options
+    aut_records = {"PEP1": {"input_record":funcs.Aut_record(
+                              ["26859041", "frbn00161413x;frbn000752960;frbnf119023327", 
+                               "", "", "Faulkner", "", "1897", "1962"], 1)
+                           },
+                   "PEP2": {"input_record":funcs.Aut_record(
+                              ["26829762", "", "http://catalogue.bnf.fr/ark:/12148/cb11900005k", 
+                              "", "Devos", "", "1922", "2006"], 1)
+                           },
+                   "PEP3": {"input_record":funcs.Aut_record(
+                              ["26842548", "", "", "", "Duleu", "", "1909", "    "], 1)
+                           }
+                  }
+    param_alignBnF = {"preferences_alignement":  1,
+                  "type_aut": "a",
+                  "input_data_type": 1,
+                  "meta_bnf": 1,
+                  "isni_option": 1,
+                  "stats": defaultdict(int)}
+    param_alignIdRef = {"preferences_alignement":  2,
+                  "type_aut": "a",
+                  "input_data_type": 1,
+                  "meta_bnf": 1,
+                  "isni_option": 1,
+                  "stats": defaultdict(int)}
+    for record in aut_records:
+      aut_records[record]["alignment_resultBnF"] = aut2ark.align_from_aut_alignment(aut_records[record]["input_record"], param_alignBnF)
+      # aut_records[record]["alignment_resultIdRef"] = aut2ark.align_from_aut_alignment(aut_records[record]["input_record"], param_alignIdRef)
+    assert aut_records["PEP1"]["input_record"].alignment_method == ["N° sys FRBNF + Nom"]
+    assert aut_records["PEP1"]["alignment_resultBnF"].alignment_method_str == "N° sys FRBNF + Nom"
+    assert aut_records["PEP1"]["alignment_resultBnF"].ids_str == "ark:/12148/cb11902332s"
+    # assert aut_records["PEP1"]["alignment_resultIdRef"].ids_str == "PPN026859041"
 
 
 
@@ -210,3 +286,18 @@ def test_domybiblio_1_answer():
     param = {"preferences_alignement": 2}
     ppn = bib2ark.tad2ppn(record, param)
     assert ppn == "PPN015108805" or ppn == ""
+
+def check_controle_011():
+  """
+  Recherche de périodique par ISSN dans le catalogue BnF
+  Vérifie que le test sur la 011 est correct (True si 011$a, False sinon)
+  Permet de vérifier au passage la conversion d'ARK en XMLrecord, 
+  et l'extraction de sous-zones
+  """
+  issn = "1254-728X"
+  recordTrue = bib2ark.ark2recordBNF("ark:/12148/cb345079588")
+  recordFalse = bib2ark.ark2recordBNF("ark:/12148/cb40172844d")
+  testTrue = bib2ark.check_issn_in_011a(recordTrue, issn)
+  testFalse = bib2ark.check_issn_in_011a(recordFalse, issn)
+  assert testTrue is True
+  assert testFalse is False
