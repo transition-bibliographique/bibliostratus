@@ -521,11 +521,11 @@ def testURLretrieve(url):
     return test
 
 
-def testURLurlopen(url, display=True):
+def testURLurlopen(url, display=True, timeout_def=5):
     test = True
     resultat = ""
     try:
-        resultat = request.urlopen(url, timeout=5)
+        resultat = request.urlopen(url, timeout=timeout_def)
     except etree.XMLSyntaxError as err:
         if display:
             print(url)

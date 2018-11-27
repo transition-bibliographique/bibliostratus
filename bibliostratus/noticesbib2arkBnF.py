@@ -1137,13 +1137,11 @@ def isbn2ark(input_record,
     # Si pas de résultats et ISBN 13 : on recherche l'ISBN dans tous les
     # champs (dont les données d'exemplaire)
     if resultatsIsbn2ARK == "":
-        resultatsIsbn2ARK = isbn_anywhere2sru(
-            NumNot, isbn_propre, titre_nett, auteur_nett, date_nett
-        )
+        resultatsIsbn2ARK = isbn_anywhere2sru(input_record, NumNot, isbn_propre,
+                                              titre_nett, auteur_nett, date_nett)
     if resultatsIsbn2ARK == "" and len(isbn_converti) == 13:
-        resultatsIsbn2ARK = isbn_anywhere2sru(
-            NumNot, isbn_converti, titre_nett, auteur_nett, date_nett
-        )
+        resultatsIsbn2ARK = isbn_anywhere2sru(input_record, NumNot, isbn_converti,
+                                              titre_nett, auteur_nett, date_nett)
         if resultatsIsbn2ARK != "":
             add_to_conversionIsbn(NumNot, isbn_init, isbn_converti, False)
 
@@ -1441,7 +1439,9 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
                     ark = tad2ark_controle_record(input_record, ark_current, 
                                                   auteur, date_nett, annee_plus_trois, index,
                                                   recordBNF)
+
                     ark = ",".join([a for a in ark if a])
+                    listeArk.append(ark)
                 except IndexError:
                     pass
     listeArk = ",".join(ark for ark in listeArk if ark != "")
@@ -1735,7 +1735,7 @@ def urlsudoc2ppn(url):
     à partir d'une URL de requête dans le Sudoc
     """
     listePPN = []
-    (test, page) = funcs.testURLurlopen(url)
+    (test, page) = funcs.testURLurlopen(url, display=False, timeout_def=10)
     if test:
         page = parse(page)
         nb_results = extract_nb_results_from_sudoc_page(page)
