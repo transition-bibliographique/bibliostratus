@@ -209,6 +209,7 @@ def nettoyageTitrePourControle(string):
 
 def nettoyageTitrePourRecherche(string):
     string = nettoyage(string, False)
+    string = string.replace("/", " ")
     string = string.split(" ")
     string = [mot for mot in string if len(mot) > 1]
     string = " ".join(string)
