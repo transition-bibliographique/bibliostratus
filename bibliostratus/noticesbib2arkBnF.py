@@ -1078,7 +1078,7 @@ def ppn2ark(input_record, ppn, parametres):
                                       namespaces=main.nsSudoc):
                 frbnf_val = frbnf.text
                 # NumNotices2methode[input_record.NumNot].append("PPN > FRBNF")
-                input_record.alignment_method("PPN > FRBNF")
+                input_record.alignment_method.append("PPN > FRBNF")
                 temp_record = funcs.Bib_record(
                     [
                      input_record.NumNot, frbnf_val,
