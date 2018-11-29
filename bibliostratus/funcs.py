@@ -76,7 +76,7 @@ lettres_sauf_x = [
 ponctuation = [
     ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
     "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<",
-    ">", ")", "}"
+    ">", ")", "}", "̊"
 ]
 
 url_access_pbs = []
@@ -280,7 +280,7 @@ def ltrim(nombre_texte):
 
 def nettoyage_isbn(isbn):
     isbn_nett = isbn.split(";")[0].split(",")[0].split("(")[0].split("[")[0]
-    isbn_nett = isbn_nett.replace("-", "").replace(" ", "")
+    isbn_nett = isbn_nett.replace("-", "").replace(" ", "").replace("°", "")
     isbn_nett = unidecode_local(isbn_nett)
     for signe in ponctuation:
         isbn_nett = isbn_nett.replace(signe, "")
