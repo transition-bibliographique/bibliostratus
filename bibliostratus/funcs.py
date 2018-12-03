@@ -315,9 +315,15 @@ def conversionIsbn(isbn):
     longueur = len(isbn)
     isbnConverti = ""
     if (longueur == 10):
-        isbnConverti = conversionIsbn1013(isbn)
+        try:
+            isbnConverti = conversionIsbn1013(isbn)
+        except ValueError:
+            isbnConverti = ""
     elif (longueur == 13):
-        isbnConverti = conversionIsbn1310(isbn)
+        try:
+            isbnConverti = conversionIsbn1310(isbn)
+        except ValueError:
+            isbnConverti = ""
     return isbnConverti
 
 # conversion isbn13 en isbn10
