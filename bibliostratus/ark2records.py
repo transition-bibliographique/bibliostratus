@@ -65,9 +65,9 @@ def ark2url(identifier, parametres):
             "&recordSchema=" + parametres["format_BIB"] + \
             "&maximumRecords=20&startRecord=1&origin=bibliostratus"
     elif (identifier.aligned_id.type == "ppn" and parametres["type_records"] == "bib"):
-        url = "https://www.sudoc.fr/" + ark[3:] + ".xml"
+        url = "https://www.sudoc.fr/" + identifier.aligned_id.clean + ".xml"
     elif (identifier.aligned_id.type == "ppn" and parametres["type_records"] == "aut"):
-        url = "https://www.idref.fr/" + ark[3:] + ".xml"
+        url = "https://www.idref.fr/" + identifier.aligned_id.clean + ".xml"
     return url
 
 
@@ -282,12 +282,12 @@ def record2file(identifier, XMLrec, file, format_file, parametres):
         file.write(record)
 
 
-def page2nbresults(page, ark):
-    if (ark[0:3].lower() == "ppn"):
-        nbresults = 0
+def page2nbresults(page, identifier):
+    nbresults = "0"
+    if (identifier.aligned_id.type == "ppn"):
         if (page.find("//leader") is not None):
             nbresults = "1"
-    else:
+    elif (page.find("//srw:numberOfRecords", namespaces=main.ns) is not None):
         nbresults = page.find("//srw:numberOfRecords", namespaces=main.ns).text
     return nbresults
 
@@ -297,30 +297,32 @@ def extract1record(row, j, form, headers, parametres):
     if (len(identifier.aligned_id.clean) > 1 and identifier.aligned_id.clean not in parametres["listeARK_BIB"]):
         print(str(j) + ". " + identifier.aligned_id.clean)
         parametres["listeARK_BIB"].append(identifier.aligned_id.clean)
-        (test, page) = funcs.testURLetreeParse(ark2url(identifier, parametres))
-        if(test):
-            nbResults = page2nbresults(page, identifier.aligned_id.clean)
-            # Si on part d'un ARK
-            if (nbResults == "1" and identifier.aligned_id.type == "ark"):
-                for XMLrec in page.xpath(
-                        "//srw:record/srw:recordData/mxc:record",
-                        namespaces=main.ns):
-                    record2file(identifier, XMLrec,
-                        parametres["bib_file"], 
-                        parametres["format_file"],
-                        parametres
-                    )
-                    if (parametres["AUTliees"] > 0):
-                        bib2aut(identifier, XMLrec, parametres)
-            # Si on part d'un PPN
-            elif (nbResults == "1" and identifier.aligned_id.type == "ppn"):
-                for XMLrec in page.xpath("//record"):
-                    record2file(identifier, XMLrec,
-                                parametres["bib_file"],
-                                parametres["format_file"],
-                                parametres)
-                    if (parametres["AUTliees"] > 0):
-                        bib2aut(identifier, XMLrec, parametres)
+        url_record = ark2url(identifier, parametres)
+        if url_record:
+            (test, page) = funcs.testURLetreeParse(url_record)
+            if (test):
+                nbResults = page2nbresults(page, identifier)
+                # Si on part d'un ARK
+                if (nbResults == "1" and identifier.aligned_id.type == "ark"):
+                    for XMLrec in page.xpath(
+                            "//srw:record/srw:recordData/mxc:record",
+                            namespaces=main.ns):
+                        record2file(identifier, XMLrec,
+                            parametres["bib_file"], 
+                            parametres["format_file"],
+                            parametres
+                        )
+                        if (parametres["AUTliees"] > 0):
+                            bib2aut(identifier, XMLrec, parametres)
+                # Si on part d'un PPN
+                elif (nbResults == "1" and identifier.aligned_id.type == "ppn"):
+                    for XMLrec in page.xpath("//record"):
+                        record2file(identifier, XMLrec,
+                                    parametres["bib_file"],
+                                    parametres["format_file"],
+                                    parametres)
+                        if (parametres["AUTliees"] > 0):
+                            bib2aut(identifier, XMLrec, parametres)
 
 
 def callback(master, form, filename, type_records_form, 
