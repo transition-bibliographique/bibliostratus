@@ -801,7 +801,7 @@ def row2files(liste_metadonnees, liste_reports):
         liste_reports[1].write("\t".join(liste_metadonnees_to_report) + "\n")
     elif nbARK == 1:
         liste_reports[2].write("\t".join(liste_metadonnees_to_report) + "\n")
-    elif nbARK == "nbARK":
+    elif nbARK == "Nb identifiants trouvés":
         liste_reports[0].write("\t".join(liste_metadonnees_to_report) + "\n")
         liste_reports[1].write("\t".join(liste_metadonnees_to_report) + "\n")
         liste_reports[2].write("\t".join(liste_metadonnees_to_report) + "\n")
@@ -2304,10 +2304,10 @@ def file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parame
     header_columns_dic = {
         1: [
             "NumNot",
-            "nbARK",
-            "ark trouvé",
+            "Nb identifiants trouvés",
+            "Liste identifiants trouvés",
             "Méthode",
-            "ark initial",
+            "ARK BnF initial",
             "FRBNF",
             "ISBN",
             "EAN",
@@ -2319,10 +2319,10 @@ def file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parame
         ],
         2: [
             "NumNot",
-            "nbARK",
-            "ark trouvé",
+            "Nb identifiants trouvés",
+            "Liste identifiants trouvés",
             "Méthode",
-            "ark initial",
+            "ARK BnF initial",
             "FRBNF",
             "EAN",
             "no commercial propre",
@@ -2333,10 +2333,10 @@ def file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parame
         ],
         3: [
             "NumNot",
-            "nbARK",
-            "ark trouvé",
+            "Nb identifiants trouvés",
+            "Liste identifiants trouvés",
             "Méthode",
-            "ark initial",
+            "ARK BnF initial",
             "FRBNF",
             "EAN",
             "no commercial propre",
@@ -2347,10 +2347,10 @@ def file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parame
         ],
         4: [
             "NumNot",
-            "nbARK",
-            "ark trouvé",
+            "Nb identifiants trouvés",
+            "Liste identifiants trouvés",
             "Méthode",
-            "ark initial",
+            "ARK BnF initial",
             "frbnf",
             "ISSN",
             "titre",
@@ -2360,10 +2360,10 @@ def file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parame
         ],
         5: [
             "NumNot",
-            "nbARK",
-            "ark trouvé",
+            "Nb identifiants trouvés",
+            "Liste identifiants trouvés",
             "Méthode",
-            "ark initial",
+            "ARK BnF initial",
             "FRBNF",
             "ISBN",
             "EAN",

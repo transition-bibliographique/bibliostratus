@@ -57,7 +57,7 @@ def create_reports(id_traitement_code, nb_fichiers_a_produire):
     stats_report_file_name = id_traitement_code + \
         "-" + "rapport_stats_noticesbib2ark.txt"
     stats_report_file = open(stats_report_file_name, "w")
-    stats_report_file.write("Nb ARK trouvés\tNb notices concernées\n")
+    stats_report_file.write("Nb identifiants (ARK ou PPN) trouvés\tNb notices concernées\n")
 
     # $1eport_type_convert_file_name = id_traitement_code + "-" + "NumNotices-TypeConversion.txt"
     # $1eport_type_convert_file = open(report_type_convert_file_name,"w")
@@ -353,7 +353,7 @@ def align_from_aut(form, entry_filename, liste_reports, parametres):
     """Aligner ses données d'autorité avec les autorités BnF à partir
     d'une extraction tabulée de la base d'autorités"""
     header_columns = [
-        "NumNot", "nbARK", "ark AUT trouvé", "Méthode", "ARK AUT initial",
+        "NumNot", "Nb identifiants trouvés", "Liste identifiants AUT trouvés", "Méthode", "ARK AUT initial",
         "frbnf AUT initial", "ISNI", "Nom", "Complément nom", "Date début",
         "Date fin"
     ]
@@ -437,7 +437,7 @@ def align_from_bib(form, entry_filename, liste_reports, parametres):
     (métadonnées BIB + Nom, prénom et dates de l'auteur)
     """
     header_columns = [
-        "NumNot", "nbARK", "ark AUT trouvé", "Méthode alignement", "Numéro notice BIB initial", "ark BIB initial",
+        "NumNot", "Nb identifiants trouvés", "Liste identifiants AUT trouvés", "Méthode alignement", "Numéro notice BIB initial", "ark BIB initial",
         "frbnf BIB initial", "Titre", "ISNI", "Nom", "Complément nom",
         "dates Auteur"
     ]
