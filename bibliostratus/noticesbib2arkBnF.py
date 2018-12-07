@@ -2722,9 +2722,6 @@ def formulaire_noticesbib2arkBnF(
     tk.Label(
         cadre_input_file, bg=couleur_fond, text="Fichier contenant les notices :\n\n"
     ).pack(side="left")
-    """entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
-    entry_filename.pack(side="left")
-    entry_filename.focus_set()"""
     main.download_zone(
         cadre_input_file,
         "Sélectionner un fichier\nSéparateur TAB, Encodage UTF-8",
@@ -2732,13 +2729,6 @@ def formulaire_noticesbib2arkBnF(
         couleur_fond,
         zone_notes,
     )
-
-    # tk.Label(
-    #     cadre_input_infos_format,
-    #     bg=couleur_fond,
-    #     text=4 * "\t" + "Séparateur TAB, Encodage UTF-8",
-    #     justify="right"
-    # ).pack(anchor="s")
 
     tk.Label(
         cadre_input_type_docs_zone,
