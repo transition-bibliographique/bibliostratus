@@ -1,14 +1,17 @@
 ### version 1.25
-novembre 2018
+11 décembre 2018
+- Module bleu (conversion de notices en tableaux):
+	- Récupération de la zone 702 et 712 pour l'alignement d'autorités à partir de notices bibliographiques
 - Module blanc (alignement BIB) :
 	- performance : simplification des requêtes sur l'alignement tad2ark (alignement par mots-clés sur le SRU BnF)
 	- création d'une classe Alignment_result, 1 fonction spécifique pour l'alignement d'une notice (distincte du code qui envoie l'info dans le fichier de résultats)
 	- [gestion du code] ajout d'un test automatique de vérification du résultat d'un alignement
 	- alignement Sudoc : directement en parsant le Sudoc et non plus via DoMyBiblio
 	- alignement de périodiques : contrôle sur la recherche par ISSN dans le catalogue BnF : on vérifie que l'ISSN cherché est bien en 011$a (sinon, message d'alerte, mais on garde quand même l'identifiant)
-- Module rouge
+	- modification des en-têtes de colonnes : "Identifiants" (incluant PPN et ARK) à la place de "ARK"
+- Module rouge (export de notices)
 	- Export correct des diacritiques dans le format XML
-	- Option de réécriture des notices exportées : injection en 001 du numéro de notice locale (si fichier en entrée a 2 colonnes)
+	- Option de réécriture des notices exportées : injection en 001 du numéro de notice locale (si fichier en entrée a 2 colonnes), et ajout d'une 003 et 033 pour les identifiants des agences
 
 ### version 1.24
 6 novembre 2018
