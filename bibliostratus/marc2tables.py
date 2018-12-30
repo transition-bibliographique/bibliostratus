@@ -644,10 +644,14 @@ def bibrecord2autmetas(numNot, doc_record, record):
         fields2metas.append(bibfield2autmetas(numNot, "ca", record, f700))
     for f701 in record.get_fields("701"):
         fields2metas.append(bibfield2autmetas(numNot, "ca", record, f701))
+    for f702 in record.get_fields("702"):
+        fields2metas.append(bibfield2autmetas(numNot, "ca", record, f702))
     for f710 in record.get_fields("710"):
         fields2metas.append(bibfield2autmetas(numNot, "cb", record, f710))
     for f711 in record.get_fields("711"):
         fields2metas.append(bibfield2autmetas(numNot, "cb", record, f711))
+    for f712 in record.get_fields("712"):
+        fields2metas.append(bibfield2autmetas(numNot, "cb", record, f712))
     return fields2metas
 
 

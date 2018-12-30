@@ -1522,7 +1522,8 @@ def tad2ppn_from_domybiblio(input_record, parametres):
            T (pour les périodiques),
            Y (pour les thèses version de soutenance),
            V (pour le matériel audio-visuel)"""
-    typeRecordDic = {"TEX": "B", "VID": "V", "AUD": "V", "PER": "T"}
+    typeRecordDic = {"TEX": "B", "VID": "V", "AUD": "V",
+                     "PER": "T", "CP": "K"}
     if input_record.type in typeRecordDic:
         typeRecord4DoMyBiblio = typeRecordDic[input_record.type]
     kw = " ".join([input_record.titre.recherche, input_record.auteur_nett])
@@ -1690,7 +1691,9 @@ def tad2ppn(input_record, parametres):
 &ACT1=*&IKT1=4&TRM1=" + urllib.parse.quote(input_record.titre.recherche) + "\
 &ACT2=*&IKT2=1016&TRM2=&ACT3=*&IKT3=1016&TRM3=&SRT=YOP" + "\
 &ADI_TAA=&ADI_LND=&ADI_JVU=" + urllib.parse.quote(input_record.date_nett) + "\
-&ADI_MAT=" + typeRecordDic[input_record.type]
+& ADI_MAT = " + typeRecordDic[input_record.type]
+    url = url.replace("ADI_MAT=B", "ADI_MAT=B&ADI_MAT=Y")
+    url = url.replace("ADI_MAT=N", "ADI_MAT=N&ADI_MAT=G")
     listePPN = urlsudoc2ppn(url)
     listePPN = check_sudoc_results(input_record, listePPN)
     return listePPN
@@ -1739,8 +1742,8 @@ def urlsudoc2ppn(url):
     if test:
         page = parse(page)
         nb_results = extract_nb_results_from_sudoc_page(page)
-        if nb_results > 1000:
-            nb_results = 1000
+        if nb_results > 100:
+            nb_results = 100
         if nb_results == 1:
             listePPN = [extractPPNfromrecord(page)]
         else:

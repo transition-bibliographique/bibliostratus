@@ -155,9 +155,9 @@ def correct_record(identifier, record_str, parametres):
                     add_033 = 1
                     if agency_uri:
                         new_033_str = """<datafield tag="033" ind1=" " ind2=" ">
-    <subfield code="a">""" + agence_uri + """</subfield>
+    <subfield code="a">""" + agency_uri + """</subfield>
     </datafield>"""
-                        new_xml_record.append(etree.fromstring(new_035_str))
+                        new_xml_record.append(etree.fromstring(new_033_str))
                         new_xml_record.append(etree.fromstring(deepcopy(etree.tostring(field))))
                 else:
                     new_xml_record.append(etree.fromstring(deepcopy(etree.tostring(field))))
