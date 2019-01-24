@@ -1781,6 +1781,8 @@ def extract_nb_results_from_sudoc_page(html_page):
         ligne_info = etree.tostring(html_page.find("//table[@summary='query info']/tr")).decode(encoding="utf-8")
     except ValueError:
         pass
+    except TypeError:
+        pass
     if ("<span>" in ligne_info):
         nb_results = ligne_info.split("<span>")[-1].split("&")[0]
         nb_results = int(nb_results)
