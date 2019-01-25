@@ -2259,11 +2259,11 @@ def item_alignement(input_record, parametres):
             ark = item2ark_by_keywords(input_record, parametres)
         if ark == "":
             ark = item2ppn_by_id(input_record, parametres)
-        if ark == "":
+        if ark == "" and parametres["kwsudoc_option"]:
             ark = item2ppn_by_keywords(input_record, parametres)
     else:
         ark = item2ppn_by_id(input_record, parametres)
-        if ark == "":
+        if ark == "" and parametres["kwsudoc_option"]:
             ark = item2ppn_by_keywords(input_record, parametres)
         if ark == "":
             ark = item2ark_by_id(input_record, parametres)
@@ -2425,6 +2425,7 @@ def launch(
     entry_filename,
     type_doc_bib,
     preferences_alignement,
+    kwsudoc_option,
     file_nb,
     meta_bib,
     id_traitement,
@@ -2445,6 +2446,7 @@ def launch(
         "id_traitement": id_traitement,
         "header_columns_init": header_columns_init_dic[type_doc_bib],
         "preferences_alignement": preferences_alignement,
+        "kwsudoc_option": kwsudoc_option,
         "stats": defaultdict(int)
     }
     main.check_file_name(form_bib2ark, entry_filename)
@@ -2815,6 +2817,7 @@ def formulaire_noticesbib2arkBnF(
         "",
         "",
     )
+
     radioButton_lienExample(
         cadre_input_type_docs,
         preferences_alignement,
@@ -2825,6 +2828,19 @@ def formulaire_noticesbib2arkBnF(
         "",
     )
     preferences_alignement.set(1)
+
+    kwsudoc_option = tk.IntVar()
+    kwsudoc_option_check = tk.Checkbutton(
+        cadre_input_type_docs,
+        bg=couleur_fond,
+        text="+ Utiliser aussi la recherche par mots-clés dans le Sudoc",
+        variable=kwsudoc_option,
+        justify="left",
+    )
+    kwsudoc_option.set(1)
+    kwsudoc_option_check.pack(anchor="w")
+
+
 
     # Choix du format
     tk.Label(
@@ -2906,6 +2922,7 @@ def formulaire_noticesbib2arkBnF(
             entry_file_list[0],
             type_doc_bib.get(),
             preferences_alignement.get(),
+            kwsudoc_option.get(),
             file_nb.get(),
             meta_bib.get(),
             id_traitement.get(),
