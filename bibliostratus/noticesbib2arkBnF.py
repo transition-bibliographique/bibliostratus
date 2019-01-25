@@ -2201,19 +2201,23 @@ def item2ppn_by_id(input_record, parametres):
 
 def check_ppn_by_kw(ppn, input_record, source_alignement):
     url_sudoc_record = "https://www.sudoc.fr/" + ppn.replace("PPN", "") + ".xml"
-    (test, record_sudoc) = funcs.testURLetreeParse(url_sudoc_record)
-    ppn_checked = comparaisonTitres(input_record,
-                                    input_record.NumNot,
-                                    ppn,
-                                    "",
-                                    "",
-                                    input_record.titre.controles,
-                                    input_record.auteur,
-                                    input_record.date_nett,
-                                    input_record.tome_nett,
-                                    record_sudoc,
-                                    source_alignement,
-                                    )
+    (test, record_sudoc) = funcs.testURLetreeParse(url_sudoc_record, display=False)
+    if test:
+        ppn_checked = comparaisonTitres(input_record,
+                                        input_record.NumNot,
+                                        ppn,
+                                        "",
+                                        "",
+                                        input_record.titre.controles,
+                                        input_record.auteur,
+                                        input_record.date_nett,
+                                        input_record.tome_nett,
+                                        record_sudoc,
+                                        source_alignement,
+                                        )
+    else:
+        ppn_checked = ppn
+        input_record.alignment_method.append(f"Problème {ppn} : métadonnées Sudoc non vérifiées")
     return ppn_checked
 
 
