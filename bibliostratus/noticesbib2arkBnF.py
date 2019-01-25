@@ -407,16 +407,17 @@ def comparaisonTitres(
     numeroTome,
     recordBNF,
     origineComparaison,
-):
+    ):
     ark = ""
     subfields_list = ["200$a", "200$e", "200$i",
                       "750$a", "753$a", "500$a",
                       "500$e", "503$e", "540$a",
                       "540$e", "410$a", "225$a",
                       "461$t"]
+    text_method_alignment = ""
     for subfield in subfields_list:
         if (ark == ""):
-            ark = comparaisonTitres_sous_zone(
+            ark, text_method_alignment = comparaisonTitres_sous_zone(
                                             input_record,
                                             NumNot,
                                             ark_current,
@@ -439,6 +440,8 @@ def comparaisonTitres(
             or "commercial" in origineComparaison
         ):
             ark = checkDate(ark, date, recordBNF)
+    if ark:
+        input_record.alignment_method.append(text_method_alignment)
     return ark
 
 
@@ -553,66 +556,39 @@ def comparaisonTitres_sous_zone(
     titreBNF = funcs.nettoyageTitrePourControle(
         main.extract_subfield(recordBNF, field, subfield, 1)
     )
+    text_method_alignment = ""
     # print(titre, titreBNF, sous_zone)
     if titre != "" and titreBNF != "":
         if titre == titreBNF:
             ark = ark_current
-            """NumNotices2methode[NumNot].append(
-                origineComparaison + " + contrôle Titre " + sous_zone
-            )"""
-            input_record.alignment_method.append(
-                origineComparaison + " + contrôle Titre " + sous_zone
-            )
+            text_method_alignment = origineComparaison + " + contrôle Titre " + sous_zone
             if len(titre) < 5:
                 # NumNotices2methode[NumNot].append("[titre court]")
                 input_record.alignment_method.append("[titre court]")
         elif titre[0: round(len(titre) / 2)] == titreBNF[
                                                 0: round(len(titre) / 2)]:
             ark = ark_current
-            """NumNotices2methode[NumNot].append(
-                origineComparaison + " + contrôle Titre " + sous_zone
-            )"""
-            input_record.alignment_method.append(
-                origineComparaison + " + contrôle Titre " + sous_zone 
-            )
+            text_method_alignment = origineComparaison + " + contrôle Titre " + sous_zone
             if round(len(titre) / 2) < 10:
-                """NumNotices2methode[NumNot].append(
-                    "[demi-titre" + "-" + str(round(len(titre) / 2))
-                    + "caractères]"
-                )"""
-                input_record.alignment_method.append(
-                    "[demi-titre" + "-" + str(round(len(titre) / 2))
-                    + "caractères]"
-                )
+                text_method_alignment += "".join(["[demi-titre",
+                                                 "-",
+                                                 str(round(len(titre) / 2)),
+                                                 "caractères]"])
         elif titreBNF in titre:
-            """NumNotices2methode[NumNot].append(
-                origineComparaison + " + contrôle Titre BNF \
+            text_method_alignment = origineComparaison + " + contrôle Titre BNF \
 contenu dans titre initial"
-            )"""
-            input_record.alignment_method.append(
-                origineComparaison + " + contrôle Titre BNF \
-contenu dans titre initial"
-            )
             ark = ark_current
         elif titre in titreBNF:
-            """NumNotices2methode[NumNot].append(
-                origineComparaison + " + contrôle Titre initial \
+            text_method_alignment = origineComparaison + " + contrôle Titre initial \
 contenu dans titre BNF"
-            )"""
-            input_record.alignment_method.append(
-                origineComparaison + " + contrôle Titre initial \
-contenu dans titre BNF"
-            )
             ark = ark_current
-    elif titre == "":
+    elif (titre == "" and input_record.titre.controles == ""):
         ark = ark_current
-        """NumNotices2methode[NumNot].append(
-            origineComparaison + " + pas de titre initial pour comparer"
-        )"""
-        input_record.alignment_method.append(
-            origineComparaison + " + pas de titre initial pour comparer"
-        )
-    return ark
+        text_method_alignment = origineComparaison + " + pas de titre initial pour comparer"
+    elif (titre == "" and input_record.titre.controles != ""):
+        ark = ark_current
+        text_method_alignment = origineComparaison + " | Problèmes dans métadonnées Titre-Auteur-Date-Volume"
+    return ark, text_method_alignment
 
 
 # Recherche par n° système. Si le 3e paramètre est "False", c'est qu'on a pris
@@ -858,10 +834,9 @@ def isbnauteur2sru(input_record, NumNot, isbn, titre, auteur, date):
     listeARK = []
     (test, resultats) = funcs.testURLetreeParse(urlSRU)
     if test:
-        if resultats.find("//srw:records/srw:record",
-                          namespaces=main.ns) is not None:
+        #if resultats.find("//srw:records/srw:record",
+        #                  namespaces=main.ns) is not None:
             # NumNotices2methode[NumNot].append("ISBN + Auteur > ARK")
-            input_record.alignment_method.append("ISBN + Auteur > ARK")
         for recordBNF in resultats.xpath(
             "//srw:records/srw:record", namespaces=main.ns
         ):
@@ -871,6 +846,8 @@ def isbnauteur2sru(input_record, NumNot, isbn, titre, auteur, date):
             ark_current = checkDate(ark_current, date, recordBNF)
             listeARK.append(ark_current)
     listeARK = ",".join([ark for ark in listeARK if ark != ""])
+    if (listeARK):
+        input_record.alignment_method.append("ISBN + Auteur > ARK")
     return listeARK
 
 
@@ -967,18 +944,19 @@ def isbn2sudoc(input_record, parametres):
         if test and resultats.find(".//ppn") is not None:
                 # NumNotices2methode[input_record.NumNot].append("ISBN > PPN")
             for ppn in resultats.xpath("//ppn"):
-                ppn_val = ppn.text
-                Listeppn.append("PPN" + ppn_val)
-                # Si BnF > Sudoc : on cherche l'ARK dans
-                # la notice Sudoc trouvée
-                if parametres["preferences_alignement"] == 1:
-                    ark.append(
-                        ppn2ark(
-                            input_record,
-                            ppn_val,
-                            parametres
+                ppn_val = check_ppn_by_kw(ppn.text, input_record, "isbn2ppn")
+                if (ppn_val):
+                    Listeppn.append("PPN" + ppn_val)
+                    # Si BnF > Sudoc : on cherche l'ARK dans
+                    # la notice Sudoc trouvée
+                    if parametres["preferences_alignement"] == 1:
+                        ark.append(
+                            ppn2ark(
+                                input_record,
+                                ppn_val,
+                                parametres
+                            )
                         )
-                    )
             if Listeppn == "" and ark == []:
                 url = (
                     "https://www.sudoc.fr/services/isbn2ppn/"
@@ -1031,24 +1009,25 @@ def ean2sudoc(input_record, parametres, controle_titre=True):
         (test, resultats) = funcs.testURLetreeParse(url)
         if test:
             for ppn in resultats.xpath("//ppn"):
-                ppn_val = ppn.text
-                Listeppn.append("PPN" + ppn_val)
-                # NumNotices2methode[NumNot].append("EAN > PPN")
-                input_record.alignment_method.append("EAN > PPN")
-                # Si BnF > Sudoc : on cherche l'ARK
-                # dans la notice Sudoc trouvée
-                if parametres["preferences_alignement"] == 1:
-                    temp_record = funcs.Bib_record(
-                        [
-                         input_record.NumNot, "", "", "", input_record.ean.propre,
-                         input_record.titre_nett, input_record.auteur_nett,
-                         input_record.date_nett, "", ""
-                        ],
-                        parametres["meta_bib"]
-                        )
-                    ark.append(
-                               ppn2ark(temp_record, ppn_val, parametres)
-                              )
+                ppn_val = check_ppn_by_kw(ppn.text, input_record, "ean2ppn")
+                if (ppn_val):
+                    Listeppn.append("PPN" + ppn_val)
+                    # NumNotices2methode[NumNot].append("EAN > PPN")
+                    # input_record.alignment_method.append("EAN > PPN")
+                    # Si BnF > Sudoc : on cherche l'ARK
+                    # dans la notice Sudoc trouvée
+                    if parametres["preferences_alignement"] == 1:
+                        temp_record = funcs.Bib_record(
+                            [
+                            input_record.NumNot, "", "", "", input_record.ean.propre,
+                            input_record.titre_nett, input_record.auteur_nett,
+                            input_record.date_nett, "", ""
+                            ],
+                            parametres["meta_bib"]
+                            )
+                        ark.append(
+                                ppn2ark(temp_record, ppn_val, parametres)
+                                )
     # Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK
     # déclaré comme équivalent --> dans ce cas on récupère l'ARK
     Listeppn = ",".join([ppn for ppn in Listeppn if ppn != ""])
@@ -1110,16 +1089,17 @@ def isbn2ark(input_record,
     # Requête sur l'ISBN dans le SRU, avec contrôle sur Titre ou auteur
     if resultatsIsbn2ARK == "" and isbn_init != isbn_propre:
         resultatsIsbn2ARK = isbn2sru(input_record,
-            NumNot, isbn_propre, titre_nett, auteur_nett, date_nett
-        )
+                                     NumNot, isbn_propre, 
+                                     titre_nett, auteur_nett,
+                                     date_nett)
 
     # isbnConverti = conversionIsbn(input_record.isbn.propre)
     # Si pas de résultats : on convertit l'ISBN en 10 ou 13 et on relance une
     # recherche dans le catalogue BnF
     if resultatsIsbn2ARK == "":
-        resultatsIsbn2ARK = isbn2sru(input_record,
-            NumNot, isbn_converti, titre_nett, auteur_nett, date_nett
-        )
+        resultatsIsbn2ARK = isbn2sru(input_record, NumNot, 
+                                     isbn_converti, titre_nett,
+                                     auteur_nett, date_nett)
         if resultatsIsbn2ARK != "":
             add_to_conversionIsbn(NumNot, isbn_init, isbn_converti, False)
     # Si pas de résultats et ISBN 13 : on recherche sur EAN
@@ -1196,26 +1176,27 @@ def issn2sudoc(input_record, NumNot, issn_init, issn_nett,
     if issnTrouve:
         (test, resultats) = funcs.testURLetreeParse(url)
         if test:
-            if resultats.find("//ppn") is not None:
+            # if resultats.find("//ppn") is not None:
                 # NumNotices2methode[NumNot].append("ISSN > PPN")
-                input_record.alignment_method.append("ISSN > PPN")
+                # input_record.alignment_method.append("ISSN > PPN")
             for ppn in resultats.xpath("//ppn"):
-                ppn_val = ppn.text
-                Listeppn.append("PPN" + ppn_val)
-                if (parametres["preferences_alignement"] == 1):
-                    temp_record = funcs.Bib_record(
-                                                   [
-                                                    NumNot,
-                                                    "",
-                                                    "",
-                                                    issn_nett,
-                                                    titre,
-                                                    auteur,
-                                                    date
-                                                   ],
-                                                   parametres["meta_bib"]
-                                                  )
-                    ark.append(ppn2ark(temp_record, ppn_val, parametres))
+                ppn_val = check_ppn_by_kw(ppn.text, input_record, "issn2ppn")
+                if (ppn_val):
+                    Listeppn.append("PPN" + ppn_val)
+                    if (parametres["preferences_alignement"] == 1):
+                        temp_record = funcs.Bib_record(
+                                                        [
+                                                            NumNot,
+                                                            "",
+                                                            "",
+                                                            issn_nett,
+                                                            titre,
+                                                            auteur,
+                                                            date
+                                                        ],
+                                                        parametres["meta_bib"]
+                                                        )
+                        ark.append(ppn2ark(temp_record, ppn_val, parametres))
     # Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK
     # déclaré comme équivalent --> dans ce cas on récupère l'ARK
     Listeppn = ",".join([ppn for ppn in Listeppn if ppn != ""])
@@ -1483,8 +1464,8 @@ def tad2ark_controle_record(input_record, ark_current,
                                 xml_record)
             if ark != "":
                 listeArk.append(ark)
-                methode = "Titre-Auteur-Date"
-                input_record.alignment_method.append(methode)
+                # methode = "Titre-Auteur-Date"
+                # input_record.alignment_method.append(methode)
                 if "*" in date_nett:
                     input_record.alignment_method.append("Date début tronquée")
                 if annee_plus_trois:
@@ -1503,10 +1484,16 @@ def tad2ark_controle_record(input_record, ark_current,
                                 "",
                                 xml_record,
                                 "Titre-Auteur-Date" + index)
-        if ark != "":
+        """if ark != "":
             listeArk.append(ark)
             methode = "Titre-Auteur-Date"
-            input_record.alignment_method.append(methode)
+            input_record.alignment_method.append(methode)"""
+    if (listeArk and input_record.isbn.propre):
+        input_record.alignment_method.append("Problème ISBN non reconnu")
+    if (listeArk and input_record.ean.propre):
+        input_record.alignment_method.append("Problème EAN non reconnu")
+    if (listeArk and input_record.issn.propre):
+        input_record.alignment_method.append("Problème ISSN non reconnu")
     return listeArk
 
 
@@ -2210,8 +2197,24 @@ def item2ppn_by_id(input_record, parametres):
             input_record.date_nett,
             parametres,
         )
-
     return ppn
+
+def check_ppn_by_kw(ppn, input_record, source_alignement):
+    url_sudoc_record = "https://www.sudoc.fr/" + ppn.replace("PPN", "") + ".xml"
+    (test, record_sudoc) = funcs.testURLetreeParse(url_sudoc_record)
+    ppn_checked = comparaisonTitres(input_record,
+                                    input_record.NumNot,
+                                    ppn,
+                                    "",
+                                    "",
+                                    input_record.titre.controles,
+                                    input_record.auteur,
+                                    input_record.date_nett,
+                                    input_record.tome_nett,
+                                    record_sudoc,
+                                    source_alignement,
+                                    )
+    return ppn_checked
 
 
 def item2ark_by_keywords(input_record, parametres):
