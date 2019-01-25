@@ -2259,11 +2259,15 @@ def item_alignement(input_record, parametres):
             ark = item2ark_by_keywords(input_record, parametres)
         if ark == "":
             ark = item2ppn_by_id(input_record, parametres)
-        if ark == "" and parametres["kwsudoc_option"]:
+        if (ark == "" 
+            and "kwsudoc_option" in parametres
+            and parametres["kwsudoc_option"]==1):
             ark = item2ppn_by_keywords(input_record, parametres)
     else:
         ark = item2ppn_by_id(input_record, parametres)
-        if ark == "" and parametres["kwsudoc_option"]:
+        if (ark == "" 
+            and "kwsudoc_option" in parametres
+            and parametres["kwsudoc_option"]==1):
             ark = item2ppn_by_keywords(input_record, parametres)
         if ark == "":
             ark = item2ark_by_id(input_record, parametres)

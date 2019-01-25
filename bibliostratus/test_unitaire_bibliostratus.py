@@ -192,10 +192,12 @@ def test_alignement_bib():
                                )}
                   }
     param_alignBnF = {"preferences_alignement":  1,
+                  "kwsudoc_option": 1,
                   "meta_bib": 0,
                   "meta_bnf": 0,
                   "stats": defaultdict(int)}
     param_alignSudoc = {"preferences_alignement":  2,
+                  "kwsudoc_option": 1,
                   "meta_bib": 1,
                   "meta_bnf": 0,
                   "stats": defaultdict(int)}
@@ -224,6 +226,7 @@ def test_alignement_aut():
                   "type_aut": "a",
                   "input_data_type": 1,
                   "meta_bnf": 1,
+                  "kwsudoc_option": 1,
                   "isni_option": 1,
                   "stats": defaultdict(int)}
     param_alignIdRef = {"preferences_alignement":  2,
