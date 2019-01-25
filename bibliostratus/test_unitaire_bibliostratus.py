@@ -204,7 +204,7 @@ def test_alignement_bib():
       bib_records[record]["alignment_resultSudoc"] = bib2ark.item_alignement(bib_records[record]["input_record"], param_alignSudoc)
     
     assert bib_records["TEX1"]["input_record"].alignment_method == ['ISBN + contrôle Titre 200$a', 'isbn2ppn + contrôle Titre 200$a']
-    assert bib_records["TEX1"]["alignment_resultBnF"].alignment_method_str == "isbn2ppn + contrôle Titre 200$a"
+    assert bib_records["TEX1"]["alignment_resultBnF"].alignment_method_str == "ISBN + contrôle Titre 200$a"
     assert bib_records["TEX1"]["alignment_resultBnF"].ids_str == "ark:/12148/cb43536110d"
     assert bib_records["TEX1"]["alignment_resultSudoc"].ids_str == "PPN168081768"
     assert bib_records["AUD1"]["alignment_resultBnF"].ids_str == "ark:/12148/cb423235808"
