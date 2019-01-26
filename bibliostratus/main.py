@@ -146,6 +146,7 @@ def check_access_to_network():
     return access_to_network
 
 
+
 def check_access2apis(i, dict_report):
     """Vérification de la disponibilité du SRU BnF et des API Abes
     (en supposant que si une requête d'exemple fonctionne, tout fonctionne"""

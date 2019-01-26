@@ -15,7 +15,6 @@ import os
 import re
 import tkinter as tk
 import urllib.parse
-from urllib import error, request
 from copy import deepcopy
 
 import pymarc as mc
