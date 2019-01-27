@@ -202,6 +202,19 @@ header_columns_init_cartes = [
     "Echelle"
 ]
 
+header_columns_init_partitions = [
+    "Num Not",
+    "FRBNF",
+    "ARK",
+    "EAN",
+    "Référence commerciale",  #023$a en Intermarc, 071$a en Unimarc
+    "Titre",
+    "Titre de partie",
+    "Auteur",
+    "Date",
+    "Editeur",
+]
+
 # Noms des fichiers en sortie
 
 
@@ -2441,7 +2454,8 @@ def launch(
         2: header_columns_init_cddvd,
         3: header_columns_init_cddvd,
         4: header_columns_init_perimpr,
-        5: header_columns_init_cartes
+        5: header_columns_init_cartes,
+        6: header_columns_init_partitions
     }
     parametres = {
         "meta_bib": meta_bib,
@@ -2802,6 +2816,15 @@ def formulaire_noticesbib2arkBnF(
         "(" + " | ".join(header_columns_init_cartes) + ")",
         "",  # noqa
     )
+    radioButton_lienExample(
+        cadre_input_type_docs,
+        type_doc_bib,
+        6,
+        couleur_fond,
+        "[PAR] Partitions",
+        "(" + " | ".join(header_columns_init_partitions) + ")",
+        "",  # noqa
+    )
     type_doc_bib.set(1)
 
     tk.Label(
@@ -2837,7 +2860,8 @@ def formulaire_noticesbib2arkBnF(
     kwsudoc_option_check = tk.Checkbutton(
         cadre_input_type_docs,
         bg=couleur_fond,
-        text="+ Utiliser aussi la recherche par mots-clés dans le Sudoc",
+        text="+ Utiliser aussi la recherche par mots-clés dans le Sudoc \
+(peut ralentir le programme)",
         variable=kwsudoc_option,
         justify="left",
     )

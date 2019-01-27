@@ -712,6 +712,7 @@ class Bib_record:
         self.isbn = International_id("")
         self.ean = International_id("")
         self.titre = Titre("")
+        self.soustitre = Titre("")
         self.auteur = ""
         self.date = ""
         self.tome = ""
@@ -768,6 +769,9 @@ class Bib_record:
             self.date = input_row[7]
             self.publisher = input_row[8]
             self.scale = input_row[9]
+        if (option_record == 6):
+            self.type = "PAR"
+            self.intermarc_type_doc = "c"
         self.titre_nett = nettoyageTitrePourControle(self.titre.init)
         self.auteur_nett = nettoyageAuteur(self.auteur, False)
         self.no_commercial_propre = nettoyage_no_commercial(

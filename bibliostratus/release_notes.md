@@ -5,7 +5,8 @@ Février 2019
 	- Correction sur les informations de "méthode d'alignement" :
 		- nettoyage des redondances
 		- ajout d'informations pour identifier les alignements moins fiables
-	- Option "recherche mots-clés dans le Sudoc"
+	- Option "recherche mots-clés dans le Sudoc" désactivable
+	- Nouveau type de document Partitions
 
 
 ### version 1.25

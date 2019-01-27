@@ -472,7 +472,8 @@ def metas_from_marc21(record):
             title, keyTitle, authors,
             authors2keywords, date, numeroTome, publisher,
             pubPlace, scale,
-            ark, frbnf, isbn, issn, ean, id_commercial_aud
+            ark, frbnf, isbn, issn, ean, 
+            id_commercial_aud
             )
 
 
@@ -551,6 +552,9 @@ def bibrecord2metas(numNot, doc_record, record, pref_format_file=True):
     elif (doc_record == "im" or doc_record == "jm" or doc_record == "gm"):
         meta = [numNot, frbnf, ark, ean, id_commercial_aud,
                 title, authors2keywords, date, publisher]
+    elif (doc_record == "cm"):
+        meta = [numNot, frbnf, ark, ean, id_commercial_aud,
+                title, "", authors2keywords, date, publisher]
     elif (len(doc_record) > 1 and doc_record[1] == "s"):
         if (keyTitle == ""):
             meta = [numNot, frbnf, ark, issn, title,
@@ -722,6 +726,9 @@ def write_reports(id_traitement, doc_record, rec_format):
         elif (doc_record == "em"):
             header_columns = bib2ark.header_columns_init_cartes
             filename = "CAR-" + filename
+        elif (doc_record == "cm"):
+            header_columns = bib2ark.header_columns_init_partitions
+            filename = "PAR-" + filename
         elif (doc_record == "gm"):
             header_columns = bib2ark.header_columns_init_cddvd
             filename = "VID-" + filename
@@ -783,7 +790,8 @@ def end_of_treatments(form, id_traitement):
 
 
 def launch(form, entry_filename, file_format, rec_format, output_ID, master):
-
+    """Lancement du programme après validation 
+    du formulaire de conversion d'un fichier MARC en tableaux"""
     main.check_file_name(form, entry_filename)
     # popup_en_cours = main.message_programme_en_cours(form)
 
