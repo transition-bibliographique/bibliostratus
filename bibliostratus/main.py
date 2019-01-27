@@ -24,9 +24,17 @@ import marc2tables
 import noticesaut2arkBnF as aut2ark
 import noticesbib2arkBnF as bib2ark
 
-version = 1.25
-lastupdate = "19/11/2018"
+version = 1.26
+lastupdate = "27/01/2019"
 programID = "bibliostratus"
+
+# Ajout du fichier preferences.json
+prefs = {}
+try:
+    with open('main/files/preferences.json', encoding="utf-8") as prefs_file:
+        prefs = json.load(prefs_file)
+except FileNotFoundError:
+    pass
 
 ns = {
     "srw": "http://www.loc.gov/zing/srw/",
@@ -109,6 +117,22 @@ def click2url(url):
 
 def annuler(master):
     master.destroy()
+
+
+
+def proxy_opener():
+    """
+    Utilisation du proxy pour les requêtes HTTP/HTTPS
+    """
+    proxies = {
+        'http': prefs["http_proxy"]["value"],
+        'https': prefs["https_proxy"]["value"]
+    }
+    proxy_handler = request.ProxyHandler(proxies)
+    # construct a new opener using your proxy settings
+    opener = request.build_opener(proxy_handler)
+    # install the opener on the module-level
+    request.install_opener(opener)
 
 
 def check_last_compilation(programID):
@@ -675,6 +699,8 @@ def formulaire_main(access_to_network, last_version):
 
 
 if __name__ == '__main__':
+    if (prefs["http_proxy"]["value"] or prefs["https_proxy"]["value"]):
+        proxy_opener()
     access_to_network = check_access_to_network()
     last_version = [0, False]
     if(access_to_network):

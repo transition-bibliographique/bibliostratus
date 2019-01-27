@@ -1,10 +1,12 @@
 ### version 1.26
 Février 2019
+- Tous modules : possibilité de déclarer un proxy réseau dans le fichier preferences.json
 - Module blanc (alignements BIB):
 	- Correction sur les informations de "méthode d'alignement" :
 		- nettoyage des redondances
 		- ajout d'informations pour identifier les alignements moins fiables
 	- Option "recherche mots-clés dans le Sudoc"
+
 
 ### version 1.25
 11 décembre 2018

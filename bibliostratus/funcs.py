@@ -447,7 +447,7 @@ def elargirDatesPerios(n):
     return " ".join([str(el) for el in liste])
 
 
-def set_proxy():
+def set_proxy_session():
     import requests
     proxies = {
         'http': prefs["http_proxy"]["value"],
@@ -457,7 +457,6 @@ def set_proxy():
     s.proxies = proxies
     # r = s.get('https://api.ipify.org?format=json').json()
     # print(r['ip'])
-
 
 
 def testURLetreeParse(url, display=True, param_timeout=None):
