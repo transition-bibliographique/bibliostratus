@@ -19,6 +19,7 @@ import json
 import random
 import datetime
 import time
+from tkinter import filedialog
 
 from lxml import etree
 from lxml.html import parse
@@ -676,7 +677,7 @@ class Date:
 
 
 class Name:
-    """Zone de titre"""
+    """Zone de nom d'auteur"""
 
     def __init__(self, string):  # Notre méthode constructeur
         self.init = string
@@ -899,6 +900,8 @@ class Aligned_id:
             self.clean = init[init.find("ark"):]
 
 
+
+
 def xml2pymarcrecord(xml_record):
     """
     Sert à récupérer un fichier en ligne, contenant
@@ -1055,8 +1058,6 @@ def domybiblio2ppn_pages_suivantes(keywords, Listeppn,
                 Listeppn.append(ppn)
         i += 1
     return Listeppn
-
-
 
 
 def timestamp():
