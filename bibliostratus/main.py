@@ -110,6 +110,7 @@ Vérifier les options choisies\npour le format de fichier en entrée
 Si l'erreur persiste, convertissez le fichier dans un autre format avec MarcEdit"""
 }
 
+output_directory = [""]
 
 def click2url(url):
     webbrowser.open(url)
@@ -118,6 +119,14 @@ def click2url(url):
 def annuler(master):
     master.destroy()
 
+def select_output_directory_button():
+    # Allow user to select a directory and store it in global var
+    # called folder_path
+    global output_directory
+    directory_name = []
+    directory_name[0] = filedialog.askdirectory()
+    folder_path.set(directory_name[0])
+    return directory_name
 
 
 def proxy_opener():
@@ -435,7 +444,8 @@ def openfile(frame, liste, background_color="white"):
 
 
 def download_button(frame, text, frame_selected, text_path,
-                    couleur_fond, file_entry_list, zone_message_en_cours=""):
+                    couleur_fond, file_entry_list, 
+                    zone_message_en_cours=""):
     if (file_entry_list != []):
         text_path.delete(0.0, 1000.3)
     filename = filedialog.askopenfilename(
@@ -454,36 +464,55 @@ Cette fenêtre se fermera automatiquement à la fin du programme"""
 
 
 def download_zone(frame, text_bouton, file_entry_list,
-                  couleur_fond, cadre_output_message_en_cours=""):
+                  couleur_fond, cadre_output_message_en_cours="",
+                  type_action="select_file",
+                  widthb=[50, 70]):
     frame_button = tk.Frame(frame)
     frame_button.pack()
     frame_selected = tk.Frame(frame)
     frame_selected.pack()
     display_selected = tk.Text(
-        frame_selected, height=3, width=50, bg=couleur_fond, bd=0, font="Arial 9 bold")
+        frame_selected, height=3, width=widthb[0],
+        bg=couleur_fond, bd=0, font="Arial 9 bold")
     display_selected.pack()
     zone_message_en_cours = ""
     if (cadre_output_message_en_cours != ""):
         zone_message_en_cours = tk.Text(cadre_output_message_en_cours,
-                                        height=5, width=70, fg="red",
-                                        bg=couleur_fond, bd=0, font="Arial 9 bold")
+                                        height=5,
+                                        width=widthb[1], fg="red",
+                                        bg=couleur_fond, bd=0, 
+                                        font="Arial 9 bold")
         zone_message_en_cours.pack()
     # bouton_telecharger = download_button(frame,"Sélectionner un fichier","#ffffff")
-    select_filename_button = tk.Button(
-        frame_button,
-        command=lambda: download_button(
-            frame,
-            text_bouton,
-            frame_selected,
-            display_selected,
-            "#ffffff",
-            file_entry_list,
-            zone_message_en_cours,
-        ),
-        text=text_bouton,
-        padx=10,
-        pady=10,
-    )
+    if (type_action == "askdirectory"):
+        select_filename_button = tk.Button(
+            frame_button,
+            command=lambda:select_directory_button(
+                                frame, text_bouton, 
+                                frame_selected,
+                                display_selected,
+                                "#ffffff",
+                                output_directory),
+            text=text_bouton,
+            padx=10,
+            pady=10,
+        )
+    else:
+        select_filename_button = tk.Button(
+            frame_button,
+            command=lambda: download_button(
+                frame,
+                text_bouton,
+                frame_selected,
+                display_selected,
+                "#ffffff",
+                file_entry_list,
+                zone_message_en_cours
+            ),
+            text=text_bouton,
+            padx=10,
+            pady=10,
+        )
     select_filename_button.pack()
 
 
@@ -492,8 +521,8 @@ def select_directory_button(
     if (directory_list != []):
         text_path.delete(0.0, 1000.3)
     filename = filedialog.askdirectory(
-        parent=frame, title="Sélectionner un fichier")
-    tk.folder_path.set(filename)
+        parent=frame, title="Sélectionner un dossier")
+    #tk.folder_path.set(filename)
     if (directory_list == []):
         directory_list.append(filename)
     else:
@@ -501,7 +530,8 @@ def select_directory_button(
     text_path.insert(0.0, filename)
 
 
-def select_directory(frame, text_bouton, directory_list, couleur_fond):
+def select_directory(frame, text_bouton, directory_list, 
+                     couleur_fond, type_action):
     frame_button = tk.Frame(frame)
     frame_button.pack()
     frame_selected = tk.Frame(frame)
@@ -510,14 +540,30 @@ def select_directory(frame, text_bouton, directory_list, couleur_fond):
         frame_selected, height=3, width=50, bg=couleur_fond, bd=0, font="Arial 9 bold")
     display_selected.pack()
     # bouton_telecharger = download_button(frame,"Sélectionner un fichier","#ffffff")
-    select_filename_button = tk.Button(
+    if (type_action == "askdirectory"):
+        select_filename_button = tk.Button(
         frame_button,
-        command=lambda: download_button(frame,
-                                        text_bouton,
-                                        frame_selected, display_selected,
-                                        "#ffffff", directory_list),
+        command=lambda: download_button(
+            frame,
+            text_bouton,
+            frame_selected,
+            display_selected,
+            "#ffffff",
+            selected_directory,
+        ),
         text=text_bouton,
-        padx=10, pady=10)
+        padx=10,
+        pady=10,
+    )
+    else:
+        select_filename_button = tk.Button(
+                                            frame_button,
+                                            command=lambda: download_button(frame,
+                                                                            text_bouton,
+                                                                            frame_selected, display_selected,
+                                                                            "#ffffff", directory_list),
+                                            text=text_bouton,
+                                            padx=10, pady=10)
     select_filename_button.pack()
 
 

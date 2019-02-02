@@ -1,16 +1,27 @@
 # coding: utf-8
 
 import os
+import tkinter as tk
 from tkinter import filedialog
 
 
-class SelectDirectory(frame, text, bg_color):
-    selected_directory = [""]
+class SelectDirectory:
+    def __init__: (self, frame, text_button, bg_color):
+        self.selected_directory = [""]
+        frame_directory_selection = tk.Frame(frame, 
+                                             bg=bg_color,
+                                             pady=5,
+                                             padx=20)
+        frame_directory_selection.pack()
+        download_zone(
+                      frame_directory_selection,
+                      text_button,
+                      self.selected_directory,
+                      bg_color,
+                     )
 
-    frame_directory_selection = tk.Frame(frame, 
-                      bg=couleur_fond, pady=5, padx=20)
-    frame_directory_selection.pack()
-    output_filepath = os.path.join(selected_directory[0], outputfilename)
+
+
     def download_zone(frame, text, selected_directory,
                   bg_color):
         frame_button = tk.Frame(frame)
@@ -48,3 +59,6 @@ class SelectDirectory(frame, text, bg_color):
             )
         selected_directory[0] = filename
     text_path.insert(0.0, filename)
+
+if __name__ == "__main__":
+    

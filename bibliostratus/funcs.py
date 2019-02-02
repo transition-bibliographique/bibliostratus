@@ -609,6 +609,17 @@ def url_requete_sru(query, recordSchema="unimarcxchange",
         startRecord + "&origin=bibliostratus"
     return url
 
+def id_traitement2path(id_traitement):
+    """
+    Construit le chemin des fichiers en sortie
+    de Bibliostratus
+    """
+    if (main.output_directory != [""]):
+        filepath = os.path.join(main.output_directory[0], id_traitement)
+    else:
+        filepath = id_traitement
+    return filepath
+
 
 def open_local_file(path):
     """Construit le chemin absolu vers un fichier en local

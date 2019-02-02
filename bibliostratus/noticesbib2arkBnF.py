@@ -2468,7 +2468,7 @@ def launch(
         "stats": defaultdict(int)
     }
     main.check_file_name(form_bib2ark, entry_filename)
-    liste_reports = create_reports(id_traitement, file_nb)
+    liste_reports = create_reports(funcs.id_traitement2path(id_traitement), file_nb)
     file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres)
 
     fin_traitements(form_bib2ark, liste_reports, parametres["stats"])
@@ -2486,7 +2486,7 @@ def fin_traitements(form_bib2ark, liste_reports, nb_notices_nb_ARK):
     form_bib2ark.destroy()
     for file in liste_reports:
         file.close()
-
+    output_directory = [""]
 
 def stats_extraction(liste_reports, nb_notices_nb_ARK):
     """Ecriture des rapports de statistiques générales d'alignements"""
@@ -2717,16 +2717,25 @@ def formulaire_noticesbib2arkBnF(
     cadre_output_header = tk.Frame(cadre_output, bg=couleur_fond)
     cadre_output_header.pack(anchor="w")
     cadre_output_nb_fichier = tk.Frame(cadre_output, bg=couleur_fond)
-    cadre_output_nb_fichier.pack(side="left", anchor="w")
+    cadre_output_nb_fichier.pack(anchor="w")
 
-    cadre_output_nb_fichiers_zone = tk.Frame(cadre_output_nb_fichier, bg=couleur_fond)
+    cadre_output_nb_fichiers_zone = tk.Frame(cadre_output_nb_fichier, 
+                                             bg=couleur_fond)
     cadre_output_nb_fichiers_zone.pack(anchor="w")
     cadre_output_nb_fichiers_explications = tk.Frame(
         cadre_output_nb_fichier, bg=couleur_fond
     )
     cadre_output_nb_fichiers_explications.pack(anchor="w")
 
-    cadre_output_id_traitement = tk.Frame(cadre_output, padx=20, bg=couleur_fond)
+    cadre_output_files = tk.Frame(cadre_output, padx=2, 
+                                  bg=couleur_fond)
+    cadre_output_files.pack(anchor="w")
+    
+    cadre_output_directory = tk.Frame(cadre_output_files, 
+                                      padx=1, bg=couleur_fond)
+    cadre_output_directory.pack(side="left", anchor="w")
+
+    cadre_output_id_traitement = tk.Frame(cadre_output_files, padx=1, bg=couleur_fond)
     cadre_output_id_traitement.pack(side="left", anchor="w")
 
     zone_notes_message_en_cours = tk.Frame(zone_notes, padx=20, bg=couleur_fond)
@@ -2752,7 +2761,8 @@ def formulaire_noticesbib2arkBnF(
     ).pack()
 
     tk.Label(
-        cadre_input_file, bg=couleur_fond, text="Fichier contenant les notices :\n\n"
+        cadre_input_file, bg=couleur_fond, 
+        text="Fichier contenant les notices :\n\n"
     ).pack(side="left")
     main.download_zone(
         cadre_input_file,
@@ -2925,16 +2935,29 @@ def formulaire_noticesbib2arkBnF(
         justify="left",
     )
     meta_bib_check.pack(anchor="w")
-    tk.Label(cadre_output_nb_fichier, text="\n" * 17, bg=couleur_fond).pack()
+    tk.Label(cadre_output_directory, text="\n" * 4, bg=couleur_fond).pack()
+
+    
+    # tk.Label(frame_header, text="\n", bg=couleur_fond).pack()
+
+    main.download_zone(
+        cadre_output_directory,
+        "Sélectionner un dossier\nde destination",
+        main.output_directory,
+        couleur_fond,
+        type_action="askdirectory",
+        widthb = [20,10]
+    )
 
     # Ajout (optionnel) d'un identifiant de traitement
-    tk.Label(cadre_output_id_traitement, bg=couleur_fond, text="\n\n\n").pack()
+    #tk.Label(cadre_output_id_traitement,
+    #         bg=couleur_fond, text="\n"*1).pack()
     tk.Label(
-        cadre_output_id_traitement, bg=couleur_fond, text="Préfixe fichiers en sortie"
-    ).pack()
+        cadre_output_id_traitement, bg=couleur_fond, 
+        text="Préfixe fichiers en sortie").pack()
     id_traitement = tk.Entry(cadre_output_id_traitement, width=20, bd=2)
     id_traitement.pack()
-    tk.Label(cadre_output_id_traitement, bg=couleur_fond, text="\n"*3).pack()
+    tk.Label(cadre_output_files, bg=couleur_fond, text="\n"*22).pack()
 
     # Bouton de validation
 
