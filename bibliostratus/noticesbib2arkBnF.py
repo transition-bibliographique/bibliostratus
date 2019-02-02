@@ -2486,7 +2486,7 @@ def fin_traitements(form_bib2ark, liste_reports, nb_notices_nb_ARK):
     form_bib2ark.destroy()
     for file in liste_reports:
         file.close()
-    output_directory = [""]
+    main.output_directory = [""]
 
 def stats_extraction(liste_reports, nb_notices_nb_ARK):
     """Ecriture des rapports de statistiques générales d'alignements"""
@@ -2935,7 +2935,7 @@ def formulaire_noticesbib2arkBnF(
         justify="left",
     )
     meta_bib_check.pack(anchor="w")
-    tk.Label(cadre_output_directory, text="\n" * 4, bg=couleur_fond).pack()
+    tk.Label(cadre_output_directory, text="\n", bg=couleur_fond).pack()
 
     
     # tk.Label(frame_header, text="\n", bg=couleur_fond).pack()
@@ -2946,7 +2946,7 @@ def formulaire_noticesbib2arkBnF(
         main.output_directory,
         couleur_fond,
         type_action="askdirectory",
-        widthb = [20,10]
+        widthb = [70,1]
     )
 
     # Ajout (optionnel) d'un identifiant de traitement

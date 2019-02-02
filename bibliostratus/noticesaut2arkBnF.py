@@ -951,7 +951,7 @@ def launch(form, entry_filename, headers, input_data_type, preferences_alignemen
                   "type_aut": type_aut_dict[input_data_type],
                   "preferences_alignement": preferences_alignement,
                   "stats":  defaultdict(int)}
-    liste_reports = create_reports(id_traitement, file_nb)
+    liste_reports = create_reports(funcs.id_traitement2path(id_traitement), file_nb)
 
     if (input_data_type == 1 or input_data_type == 2):
         align_from_aut(form, entry_filename, liste_reports, parametres)
@@ -1121,12 +1121,24 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
                    bg=couleur_fond, justify="left").pack(anchor="w")
     tk.Label(frame_output_file, text="\n", bg=couleur_fond,
              justify="left").pack(anchor="w")
+    
+    # tk.Label(frame_header, text="\n", bg=couleur_fond).pack()
+
+    main.download_zone(
+        frame_output_file,
+        "Sélectionner un dossier\nde destination",
+        main.output_directory,
+        couleur_fond,
+        type_action="askdirectory",
+        widthb = [70,1]
+    )
+
     tk.Label(frame_output_file, text="Préfixe des fichiers en sortie",
              bg=couleur_fond).pack(anchor="w")
     outputID = tk.Entry(frame_output_file, bg=couleur_fond, width=30)
     outputID.pack(anchor="w")
 
-    tk.Label(frame_output_file, text="\n"*10,
+    tk.Label(frame_output_file, text="\n"*3,
              bg=couleur_fond).pack(anchor="w")
 
     # file_format.focus_set()

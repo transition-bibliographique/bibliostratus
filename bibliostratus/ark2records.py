@@ -381,6 +381,7 @@ def fin_traitements(window, outputID):
         errors_file(outputID)
     print("Programme d'extraction de notices terminé")
     window.destroy()
+    main.output_directory = [""]
 
 
 # ==============================================================================
@@ -545,11 +546,19 @@ pour réécrire les notices récupérées",
     #     bg=couleur_fond
     # ).pack()
 
+    main.download_zone(
+        frame_output_file,
+        "Sélectionner un dossier de destination",
+        main.output_directory,
+        couleur_fond,
+        type_action="askdirectory",
+        widthb = [70,1]
+    )
     tk.Label(frame_output_file, text="Préfixe fichier(s) en sortie",
              bg=couleur_fond).pack(side="left", anchor="w")
     outputID = tk.Entry(frame_output_file, bg=couleur_fond)
     outputID.pack(side="left", anchor="w")
-    tk.Label(frame_output_file, text="\n"*14,
+    tk.Label(frame_output_file, text="\n"*8,
              bg=couleur_fond).pack(side="left")
 
     tk.Label(frame_output_options_format,

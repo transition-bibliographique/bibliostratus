@@ -693,7 +693,7 @@ def record2listemetas(id_traitement, record, rec_format=1):
             else:
                 stats[doc_record_type[doc_record]] = 1
                 output_files_dict[doc_record] = write_reports(
-                    id_traitement, doc_record, rec_format)
+                    funcs.id_traitement2path(id_traitement), doc_record, rec_format)
                 output_files_dict[doc_record].write("\t".join(aut[1:]) + "\n")
                 print(doc_record, ' - ', aut[1])
 
@@ -706,7 +706,7 @@ def record2listemetas(id_traitement, record, rec_format=1):
     else:
         stats[doc_record_type[doc_record]] = 1
         output_files_dict[doc_record] = write_reports(
-            id_traitement, doc_record, rec_format)
+            funcs.id_traitement2path(id_traitement), doc_record, rec_format)
         output_files_dict[doc_record].write("\t".join(meta) + "\n")
         print(doc_record, ' - ', meta[0])
 
@@ -778,6 +778,7 @@ https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr
 def end_of_treatments(form, id_traitement):
     for file in output_files_dict:
         output_files_dict[file].close()
+    main.output_directory = [""]
     encoding_errors(id_traitement)
     print("\n\n------------------------\n\nExtraction terminée\n\n")
     for key in stats:
@@ -882,7 +883,7 @@ def formulaire_marc2tables(
     # =============================================================================
 
     cadre_output = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton,
-                            relief="groove", height=150, padx=10, bg=couleur_fond)
+                            relief="groove", height=120, padx=10, bg=couleur_fond)
     cadre_output.pack(side="left")
     cadre_output_header = tk.Frame(cadre_output, bg=couleur_fond)
     cadre_output_header.pack(anchor="w")
@@ -965,7 +966,7 @@ def formulaire_marc2tables(
         ),
     )
     lien_help_encodage.pack()
-    tk.Label(cadre_input_type_docs, bg=couleur_fond, text="\n\n\n").pack()
+    tk.Label(cadre_input_type_docs, bg=couleur_fond, text="\n"*8).pack()
 
     tk.Label(cadre_input_type_docs_interstice2,
              bg=couleur_fond, text="\t", justify="left").pack()
@@ -1002,7 +1003,7 @@ def formulaire_marc2tables(
     ).pack(anchor="w")
     rec_format.set(1)
 
-    tk.Label(cadre_input_type_rec, text="\n\n\n\n\n\n", bg=couleur_fond).pack()
+    tk.Label(cadre_input_type_rec, text="\n"*11, bg=couleur_fond).pack()
 
     # =============================================================================
     #     Formulaire - Fichiers en sortie
@@ -1010,13 +1011,24 @@ def formulaire_marc2tables(
     #
 
     # Choix du format
+
     tk.Label(cadre_output_header, bg=couleur_fond, fg=couleur_bouton, font="bold",
              text="En sortie",
              justify="left").pack()
+
+
+    main.download_zone(
+        cadre_output_nom_fichiers,
+        "Sélectionner un dossier de destination",
+        main.output_directory,
+        couleur_fond,
+        type_action="askdirectory",
+        widthb = [70,5]
+    )
     tk.Label(cadre_output_nom_fichiers, bg=couleur_fond,
              text="Préfixe des fichiers en sortie : ",
              justify="left").pack(side="left")
-    output_ID = tk.Entry(cadre_output_nom_fichiers, width=40, bd=2)
+    output_ID = tk.Entry(cadre_output_nom_fichiers, width=20, bd=2)
     output_ID.pack(side="left")
 
     # Sélection du répertoire en sortie

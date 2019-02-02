@@ -472,7 +472,7 @@ def download_zone(frame, text_bouton, file_entry_list,
     frame_selected = tk.Frame(frame)
     frame_selected.pack()
     display_selected = tk.Text(
-        frame_selected, height=3, width=widthb[0],
+        frame_selected, height=1, width=widthb[0],
         bg=couleur_fond, bd=0, font="Arial 9 bold")
     display_selected.pack()
     zone_message_en_cours = ""
