@@ -548,7 +548,7 @@ def bibrecord2metas(numNot, doc_record, record, pref_format_file=True):
     le fichier preferences.json
     Sinon, Unimarc"""
     if (pref_format_file == True
-        and prefs["marc2tables_input_format"]["value"] == "marc21"):
+        and main.prefs["marc2tables_input_format"]["value"] == "marc21"):
         (title, keyTitle, global_title, part_title,
          authors, authors2keywords,
          date, numeroTome, publisher, pubPlace, scale,

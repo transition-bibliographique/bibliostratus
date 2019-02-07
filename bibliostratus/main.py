@@ -23,18 +23,30 @@ import funcs
 import marc2tables
 import noticesaut2arkBnF as aut2ark
 import noticesbib2arkBnF as bib2ark
+import edit_preferences as settings
 
 version = 1.26
 lastupdate = "27/01/2019"
 programID = "bibliostratus"
 
 # Ajout du fichier preferences.json
-prefs = {}
-try:
-    with open('main/files/preferences.json', encoding="utf-8") as prefs_file:
-        prefs = json.load(prefs_file)
-except FileNotFoundError:
-    pass
+
+
+def load_preferences():
+    prefs_file_name = 'main/files/preferences.json'
+    try:
+        with open(prefs_file_name, encoding="utf-8") as prefs_file:
+            prefs = json.load(prefs_file)
+    except FileNotFoundError:
+        try:
+            prefs_file_name = 'main/files/preferences.default'
+            with open(prefs_file_name, encoding="utf-8") as prefs_file:
+                prefs = json.load(prefs_file)
+        except FileNotFoundError:
+            prefs = {}
+    return prefs, prefs_file_name
+
+prefs, prefs_file_name = load_preferences()
 
 ns = {
     "srw": "http://www.loc.gov/zing/srw/",
@@ -133,10 +145,15 @@ def proxy_opener():
     """
     Utilisation du proxy pour les requêtes HTTP/HTTPS
     """
-    proxies = {
-        'http': prefs["http_proxy"]["value"],
-        'https': prefs["https_proxy"]["value"]
-    }
+    proxies = {}
+    http_params = ["http_proxy", "https_proxy"]    
+    for param in http_params:
+        protocole = param.split("_")[0]
+        proxies[param] = prefs[param]["URL"]
+        if (prefs[param]["login"]
+           and prefs[param]["mot de passe"]):
+            urlroot = prefs[param]["URL"].replace('http://', '').replace('https://', '')
+            proxies[param] = f'{protocole}//{prefs[param]["login"]}:{prefs[param]["mot de passe"]}@{urlroot}'
     proxy_handler = request.ProxyHandler(proxies)
     # construct a new opener using your proxy settings
     opener = request.build_opener(proxy_handler)
@@ -158,7 +175,7 @@ def check_last_compilation(programID):
         if (programID_last_compilation > version):
             display_update_button = True
     except error.URLError:
-        print("erreur réseau")
+        print("Erreur réseau : échec pour la vérification des mises à jour")
     return [programID_last_compilation, display_update_button]
 
 
@@ -717,6 +734,23 @@ def formulaire_main(access_to_network, last_version):
                        command=lambda: annuler(master), pady=45, padx=5, width=12)
     cancel.pack()
 
+    tk.Label(frame_help_cancel, text="\n\nPréférences",
+             bg=couleur_fond, font="Arial 8 normal").pack()
+    edit_settings_img = tk.PhotoImage(file='main/files/settings.png')
+    edit_settings_button = tk.Button(frame_help_cancel,
+                                     image=edit_settings_img,
+                                     command=lambda: settings.edit_preferences(
+                                                                   master,
+                                                                   prefs_file_name,
+                                                                   access_to_network,
+                                                                   last_version
+                                                                  ),
+                                     padx=0,
+                                     pady=0,
+                                     bg="white",
+                                     font="Arial 9 bold",)
+    edit_settings_button.pack()
+
     tk.Label(zone_notes, text="Bibliostratus - Version " +
              str(version) + " - " + lastupdate, bg=couleur_fond).pack()
 
@@ -745,10 +779,11 @@ def formulaire_main(access_to_network, last_version):
 
 
 if __name__ == '__main__':
-    if (prefs["http_proxy"]["value"] or prefs["https_proxy"]["value"]):
+    if (prefs["http_proxy"]["URL"] or prefs["https_proxy"]["URL"]):
+        print(prefs)
         proxy_opener()
     access_to_network = check_access_to_network()
     last_version = [0, False]
-    if(access_to_network):
+    if (access_to_network):
         last_version = check_last_compilation(programID)
     formulaire_main(access_to_network, last_version)
