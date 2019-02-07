@@ -441,6 +441,12 @@ def metas_from_marc21(record):
     keyTitle = record2title(
         record2meta(record, ["222$a"], ["200$a", "200$e"])
     )
+    global_title = record2title(
+        record2meta(record, ["490$a"], ["245$a", "245$e"])
+    )
+    part_title = ""
+    if (global_title == part_title):
+        part_title = ""
     authors = record2authors(record2meta(record, [
         "100$a",
         "100$m",
@@ -469,21 +475,32 @@ def metas_from_marc21(record):
     id_commercial_aud = record2id_commercial_aud(
         record2meta(record, ["073$a"]))
     return (
-            title, keyTitle, authors,
-            authors2keywords, date, numeroTome, publisher,
-            pubPlace, scale,
+            title, keyTitle, global_title, part_title,
+            authors, authors2keywords, date, numeroTome,
+            publisher, pubPlace, scale,
             ark, frbnf, isbn, issn, ean, 
             id_commercial_aud
             )
 
 
 def metas_from_unimarc(record):
+    """
+    Définition des zones Marc correspondant aux différentes métadonnées
+    """
     title = record2title(
         record2meta(record, ["200$a", "200$e"])
     )
     keyTitle = record2title(
         record2meta(record, ["530$a"], ["200$a", "200$e"])
     )
+    global_title = record2title(
+        record2meta(record, ["225$a"], ["200$a", "200$e"])
+    )
+    part_title = record2title(
+        record2meta(record, ["464$t"], ["200$a", "200$e"])
+    )
+    if (global_title == part_title):
+        part_title = ""
     authors = record2authors(record2meta(record, [
         "700$a",
         "700$b",
@@ -515,10 +532,11 @@ def metas_from_unimarc(record):
     id_commercial_aud = record2id_commercial_aud(
         record2meta(record, ["071$b", "071$a"]))
     return (
-            title, keyTitle, authors,
-            authors2keywords, date,
-            numeroTome, publisher, pubPlace, scale,
-            ark, frbnf, isbn, issn, ean, id_commercial_aud
+            title, keyTitle, global_title, part_title,
+            authors, authors2keywords, date, numeroTome,
+            publisher, pubPlace, scale,
+            ark, frbnf, isbn, issn, ean, 
+            id_commercial_aud
             )
 
 
@@ -531,12 +549,14 @@ def bibrecord2metas(numNot, doc_record, record, pref_format_file=True):
     Sinon, Unimarc"""
     if (pref_format_file == True
         and prefs["marc2tables_input_format"]["value"] == "marc21"):
-        (title, keyTitle, authors, authors2keywords,
+        (title, keyTitle, global_title, part_title,
+         authors, authors2keywords,
          date, numeroTome, publisher, pubPlace, scale,
          ark, frbnf, isbn, issn, ean,
          id_commercial_aud) = metas_from_marc21(record)
     else:
-        (title, keyTitle, authors, authors2keywords,
+        (title, keyTitle, global_title, part_title,
+         authors, authors2keywords,
          date, numeroTome, publisher, pubPlace, scale,
          ark, frbnf, isbn, issn, ean,
          id_commercial_aud) = metas_from_unimarc(record)
@@ -554,7 +574,7 @@ def bibrecord2metas(numNot, doc_record, record, pref_format_file=True):
                 title, authors2keywords, date, publisher]
     elif (doc_record == "cm"):
         meta = [numNot, frbnf, ark, ean, id_commercial_aud,
-                title, "", authors2keywords, date, publisher]
+                global_title, part_title, authors2keywords, date, publisher]
     elif (len(doc_record) > 1 and doc_record[1] == "s"):
         if (keyTitle == ""):
             meta = [numNot, frbnf, ark, issn, title,
@@ -791,7 +811,7 @@ def end_of_treatments(form, id_traitement):
 
 
 def launch(form, entry_filename, file_format, rec_format, output_ID, master):
-    """Lancement du programme après validation 
+    """Lancement du programme après validation
     du formulaire de conversion d'un fichier MARC en tableaux"""
     main.check_file_name(form, entry_filename)
     # popup_en_cours = main.message_programme_en_cours(form)
