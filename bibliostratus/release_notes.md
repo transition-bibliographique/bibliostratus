@@ -1,5 +1,6 @@
 ### version 1.26
 Février 2019
+- Formulaire d'édition des préférences
 - Tous modules : possibilité de déclarer un proxy réseau dans le fichier preferences.json
 - Module blanc (alignements BIB):
 	- Correction sur les informations de "méthode d'alignement" :
