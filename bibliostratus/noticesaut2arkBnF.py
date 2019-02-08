@@ -1130,7 +1130,7 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
         main.output_directory,
         couleur_fond,
         type_action="askdirectory",
-        widthb = [70,1]
+        widthb = [40,1]
     )
 
     tk.Label(frame_output_file, text="Préfixe des fichiers en sortie",

@@ -2941,7 +2941,7 @@ def formulaire_noticesbib2arkBnF(
         main.output_directory,
         couleur_fond,
         type_action="askdirectory",
-        widthb = [70,1]
+        widthb = [40,1]
     )
 
     # Ajout (optionnel) d'un identifiant de traitement

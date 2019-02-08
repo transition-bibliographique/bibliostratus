@@ -16,13 +16,13 @@
         "value": "False"
         },
     "http_proxy": {
-        "description": "URL du proxy HTTP à utiliser dans le contexte d'un réseau professionnel. Exemple de valeur pour la BnF : http://fw_proxy.bnf.fr:8080",
+        "description": "URL du proxy HTTP à utiliser dans le contexte d'un réseau professionnel.",
         "URL": "",
         "login": "",
         "mot de passe": ""
         },
     "https_proxy": {
-        "description": "URL du proxy HTTP à utiliser dans le contexte d'un réseau professionnel. Exemple de valeur pour la BnF : https://fw_proxy.bnf.fr:8080",
+        "description": "URL du proxy HTTPS à utiliser dans le contexte d'un réseau professionnel.",
         "URL": "",
         "login": "",
         "mot de passe": ""

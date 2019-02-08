@@ -1043,7 +1043,7 @@ def formulaire_marc2tables(
         main.output_directory,
         couleur_fond,
         type_action="askdirectory",
-        widthb = [70,5]
+        widthb = [40,1]
     )
     tk.Label(cadre_output_nom_fichiers, bg=couleur_fond,
              text="Préfixe des fichiers en sortie : ",

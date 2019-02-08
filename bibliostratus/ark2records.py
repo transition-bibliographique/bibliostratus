@@ -552,7 +552,7 @@ pour réécrire les notices récupérées",
         main.output_directory,
         couleur_fond,
         type_action="askdirectory",
-        widthb = [70,1]
+        widthb = [40,1]
     )
     tk.Label(frame_output_file, text="Préfixe fichier(s) en sortie",
              bg=couleur_fond).pack(side="left", anchor="w")

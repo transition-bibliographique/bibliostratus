@@ -11,7 +11,7 @@ import main
 
 def edit_preferences(master_frame, prefs_file_name, access_to_network, last_version):
     couleur_fond = "white"
-    couleur_bouton = "#ffffff"
+    couleur_bouton = "#5F7C88"
     [form,
      zone_alert_explications,
      zone_access2programs,
@@ -21,9 +21,9 @@ def edit_preferences(master_frame, prefs_file_name, access_to_network, last_vers
                                             "Editer les préférences",
                                             couleur_fond, couleur_bouton,
                                             True)
-    
-    tk.Label(zone_alert_explications, text="Editer les préférences",
-             font="Arial 12 bold", fg="#242F7F", bg=couleur_fond).pack(side="left")
+    zone_alert_explications.pack(anchor="w")
+    tk.Label(zone_alert_explications, text="Editer les préférences\n",
+             font="Arial 12 bold", fg=couleur_bouton, bg=couleur_fond).pack(side="left")
 
     liste_frame = tk.Frame(zone_actions, bg=couleur_fond)
     liste_frame.pack()
@@ -44,15 +44,15 @@ def edit_preferences(master_frame, prefs_file_name, access_to_network, last_vers
     i = 0
 
     for pref in prefs:
-        dic_frames[i]["value"] = pref2fields(dic_frames[i]["frame"], pref, prefs, couleur_fond)
+        dic_frames[i]["value"] = pref2fields(dic_frames[i]["frame"], pref, prefs, couleur_fond, couleur_bouton)
         i += 1
-    save = tk.Button(zone_notes, bg="black", fg="white", text="Enregistrer mes préférences",
+    save = tk.Button(zone_notes, bg=couleur_bouton, fg="white", text="Enregistrer mes préférences",
                      pady=10, padx=10, font="Arial 10 bold",
                      command=lambda: save_preferences(dic_frames, prefs_file_name, form))
     save.pack(side="left")
     tk.Label(zone_notes, bg=couleur_fond, text=" "*30).pack(side="left")
-    reset_default = tk.Button(zone_notes, bg=couleur_bouton, text="Restaurer les paramètres par défaut",
-                              pady=10,
+    reset_default = tk.Button(zone_notes, text="Restaurer les paramètres par défaut",
+                              pady=12,
                               command=lambda: reset(prefs_file_name, form))
     reset_default.pack(side="left")
     tk.mainloop()
@@ -96,16 +96,18 @@ def save_preferences(dic_frames, prefs_file_name, form):
                 text += ",\n"
             prefs_file.write(text)
         prefs_file.write("}")
+    main.check_proxy()
     form.destroy()
 
-def pref2fields(frame_pref, preference_name, prefs, couleur_fond):
+def pref2fields(frame_pref, preference_name, prefs,
+                couleur_fond, couleur_bouton):
     """
     Pour chaque variable du fichier de préférences, ajout d'une ligne
     dans le formulaire d'édition
     """
     label = preference_name + " "*(35-len(preference_name))
     tk.Label(frame_pref, bg=couleur_fond,
-             text=label,
+             text=label, fg=couleur_bouton,
              justify="left",
              font="Arial 9 bold").pack(side="left",
                                        anchor="n")
@@ -171,7 +173,8 @@ def formulaire_main(prefs_file_name, access_to_network, last_version):
          "Bibliostratus : Stratégie d'alignement d'URIs pour la Transition bibliographique",
          couleur_fond,
          couleur_bouton, access_to_network)
-    frame1 = tk.Frame(master).pack()
+    frame1 = tk.Frame(master)
+    frame1.pack()
     edit_prefs_Button = tk.Button(
                                   frame1,
                                   text="Editer les préférences",

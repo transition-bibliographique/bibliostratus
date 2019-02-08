@@ -149,11 +149,11 @@ def proxy_opener():
     http_params = ["http_proxy", "https_proxy"]    
     for param in http_params:
         protocole = param.split("_")[0]
-        proxies[param] = prefs[param]["URL"]
+        proxies[protocole] = prefs[param]["URL"]
         if (prefs[param]["login"]
            and prefs[param]["mot de passe"]):
             urlroot = prefs[param]["URL"].replace('http://', '').replace('https://', '')
-            proxies[param] = f'{protocole}//{prefs[param]["login"]}:{prefs[param]["mot de passe"]}@{urlroot}'
+            proxies[protocole] = f'{prefs[param]["login"]}:{prefs[param]["mot de passe"]}@{urlroot}'
     proxy_handler = request.ProxyHandler(proxies)
     # construct a new opener using your proxy settings
     opener = request.build_opener(proxy_handler)
@@ -480,6 +480,18 @@ Cette fenêtre se fermera automatiquement à la fin du programme"""
         zone_message_en_cours.insert(0.0, texte)
 
 
+def path_truncator(text, max_length):
+    """
+    Fonction qui restructure un texte (chemin vers un 
+    fichier ou un répertoire) sur plusieurs lignes
+    """
+    if (len(text) > max_length):
+        max_length = max_length-8
+        return text[0:6] + "....." + text[-max_length:]
+    else:
+        return text
+
+
 def download_zone(frame, text_bouton, file_entry_list,
                   couleur_fond, cadre_output_message_en_cours="",
                   type_action="select_file",
@@ -544,7 +556,7 @@ def select_directory_button(
         directory_list.append(filename)
     else:
         directory_list[0] = filename
-    text_path.insert(0.0, filename)
+    text_path.insert(0.0, path_truncator(filename, 40))
 
 
 def select_directory(frame, text_bouton, directory_list, 
@@ -777,11 +789,12 @@ def formulaire_main(access_to_network, last_version):
 
     tk.mainloop()
 
+def check_proxy():
+    if (prefs["http_proxy"]["URL"] or prefs["https_proxy"]["URL"]):
+        proxy_opener()
 
 if __name__ == '__main__':
-    if (prefs["http_proxy"]["URL"] or prefs["https_proxy"]["URL"]):
-        print(prefs)
-        proxy_opener()
+    check_proxy()
     access_to_network = check_access_to_network()
     last_version = [0, False]
     if (access_to_network):
