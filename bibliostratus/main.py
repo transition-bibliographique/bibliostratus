@@ -11,6 +11,7 @@ les bibliothèques françaises
 
 import codecs
 import json
+import re
 import tkinter as tk
 import webbrowser
 from tkinter import filedialog
@@ -183,6 +184,23 @@ def download_last_update(
         url="https://github.com/Transition-bibliographique/bibliostratus/tree/master/bin"):
     webbrowser.open(url)
 
+
+def display_headers_in_form(headers_list):
+    """
+    Génère l'affichage de la liste des en-têtes
+    de colonne dans un formulaire, en gérant le retour à la ligne si besoin
+    """
+    splitter = 75
+    line = " | ".join(headers_list)
+    pos_last_pipe = 0
+    if (len(line) > splitter
+        and "|" in line[splitter:]):
+        line_begin, line_end = line[:splitter], line[splitter:]
+        adjust, line_end = line_end[:line_end.find("|")], line_end[line_end.find("|")+1:].strip()
+        line_begin = line_begin + adjust + "|"
+        line = line_begin + "\n" + " "*45 + line_end
+    line = f"(Colonnes : {line})"
+    return line
 
 def check_access_to_network():
     access_to_network = True
@@ -471,7 +489,7 @@ def download_button(frame, text, frame_selected, text_path,
         file_entry_list.append(filename)
     else:
         file_entry_list[0] = filename
-    text_path.insert(0.0, filename)
+    text_path.insert(0.0, path_truncator(filename, 40))
     texte = """Après avoir lancé le traitement,
 vous pourrez suivre sa progression sur le terminal (fenêtre écran noir).
 

@@ -1033,20 +1033,20 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
     input_data_type = tk.IntVar()
     bib2ark.radioButton_lienExample(
         frame_input_aut, input_data_type, 1, couleur_fond,
-        "[PËRS] Liste de notices Personnes",
-        "(" + " | ".join(header_columns_init_aut2aut) + ")",
+        "[PERS] Liste de notices Personnes",
+        main.display_headers_in_form(header_columns_init_aut2aut),
         "main/examples/aut_align_aut.tsv"  # noqa
     )
     bib2ark.radioButton_lienExample(
         frame_input_aut, input_data_type, 2, couleur_fond,
         "[ORG] Liste de notices Organisations",
-        "(" + " | ".join(header_columns_init_aut2aut) + ")",
+        main.display_headers_in_form(header_columns_init_aut2aut),
         ""  # noqa
     )
     bib2ark.radioButton_lienExample(
         frame_input_aut, input_data_type, 3, couleur_fond,
         "Liste de notices bibliographiques",
-        "(" + " | ".join(header_columns_init_bib2aut) + ")",
+        main.display_headers_in_form(header_columns_init_bib2aut),
         "main/examples/aut_align_bib.tsv"  # noqa
     )
 

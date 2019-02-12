@@ -418,10 +418,10 @@ def comparaisonTitres(
     ):
     ark = ""
     subfields_list = ["200$a", "200$e", "200$i",
-                      "750$a", "753$a", "500$a",
-                      "500$e", "503$e", "540$a",
-                      "540$e", "410$a", "225$a",
-                      "461$t"]
+                    "750$a", "753$a", "500$a",
+                    "500$e", "503$e", "540$a",
+                    "540$e", "410$a", "225$a",
+                    "461$t", "464$t"]
     text_method_alignment = ""
     for subfield in subfields_list:
         if (ark == ""):
@@ -438,7 +438,30 @@ def comparaisonTitres(
                                             origineComparaison,
                                             subfield
                                             )
-
+    if (ark != ""
+       and input_record.type == "PAR"
+       and input_record.soustitre.controles != ""):
+        ark_confirmed = ""
+        subfields_list_2 = ["464$t", "200$a+200$e", "225$e"]
+        for subfield in subfields_list_2:
+            if ark_confirmed == "":
+                ark_confirmed, compl_text_method_alignment = comparaisonTitres_sous_zone(
+                                                        input_record,
+                                                        NumNot,
+                                                        ark_current,
+                                                        systemid,
+                                                        isbn,
+                                                        input_record.soustitre.controles,
+                                                        auteur,
+                                                        date,
+                                                        recordBNF,
+                                                        origineComparaison,
+                                                        subfield
+                                                        )
+        if ark_confirmed == ark:
+            text_method_alignment += compl_text_method_alignment
+        else:
+            ark = ""
     if ark != "" and numeroTome != "":
         ark = verificationTomaison(ark, numeroTome, recordBNF)
     if ark != "" and date != "":
@@ -559,11 +582,21 @@ def comparaisonTitres_sous_zone(
     sous_zone,
 ):
     ark = ""
-    field = sous_zone.split("$")[0]
-    subfield = sous_zone.split("$")[1]
-    titreBNF = funcs.nettoyageTitrePourControle(
-        main.extract_subfield(recordBNF, field, subfield, 1)
-    )
+    if ("+" in sous_zone):
+        titreBNF = ""
+        for f in sous_zone.split("+"):
+            zone = f.split("$")[0]
+            souszone = f.split("$")[1]
+            titreBNF += funcs.nettoyageTitrePourControle(
+                main.extract_subfield(recordBNF, zone, souszone, 1)
+            )
+
+    else:
+        field = sous_zone.split("$")[0]
+        subfield = sous_zone.split("$")[1]
+        titreBNF = funcs.nettoyageTitrePourControle(
+            main.extract_subfield(recordBNF, field, subfield, 1)
+        )
     text_method_alignment = ""
     # print(titre, titreBNF, sous_zone)
     if titre != "" and titreBNF != "":
@@ -1518,7 +1551,7 @@ def tad2ppn_from_domybiblio(input_record, parametres):
            Y (pour les thèses version de soutenance),
            V (pour le matériel audio-visuel)"""
     typeRecordDic = {"TEX": "B", "VID": "V", "AUD": "V",
-                     "PER": "T", "CP": "K"}
+                     "PER": "T", "CP": "K", "PAR": "M"}
     if input_record.type in typeRecordDic:
         typeRecord4DoMyBiblio = typeRecordDic[input_record.type]
     kw = " ".join([input_record.titre.recherche, input_record.auteur_nett])
@@ -1678,7 +1711,7 @@ def tad2ppn(input_record, parametres):
            V (pour le matériel audio-visuel)
            K (pour les cartes"""
     typeRecordDic = {"TEX": "B", "VID": "V", "AUD": "V", "PER": "T",
-                     "CP": "K"}
+                     "CP": "K", "PAR": "M"}
     url = "http://www.sudoc.abes.fr//DB=2.1/SET=18/TTL=1/CMD?ACT=SRCHM\
 &MATCFILTER=Y&MATCSET=Y&NOSCAN=Y&PARSE_MNEMONICS=N&PARSE_OPWORDS=N&PARSE_OLDSETS=N\
 &IMPLAND=Y&ACT0=SRCHA&screen_mode=Recherche\
@@ -1987,9 +2020,6 @@ def controleNoCommercial(input_record, NumNot, ark_current, no_commercial,
                 recordBNF,
                 "No commercial",
             )
-            if ark != "":
-                # NumNotices2methode[NumNot].append("No commercial")
-                input_record.alignment_method.append("No commercial")
         elif no_commercialBNF in no_commercial:
             ark = comparaisonTitres(
                 input_record,
@@ -2004,9 +2034,6 @@ def controleNoCommercial(input_record, NumNot, ark_current, no_commercial,
                 recordBNF,
                 "No commercial",
             )
-            if ark != "":
-                # NumNotices2methode[NumNot].append("No commercial")
-                input_record.alignment_method.append("No commercial")
     return ark
 
 
@@ -2302,7 +2329,7 @@ def item2id(row, n, form_bib2ark, parametres, liste_reports):
     input_record = funcs.Bib_record(row, parametres["type_doc_bib"])
     alignment_result = item_alignement(input_record, parametres)
 
-    alignment_result2output(alignment_result, input_record, 
+    alignment_result2output(alignment_result, input_record,
                             parametres, liste_reports, n)
 
     return alignment_result
@@ -2313,7 +2340,6 @@ def alignment_result2output(alignment_result, input_record, parametres, liste_re
     Format de sortie de l'alignement
     """
     print(str(n) + ". " + input_record.NumNot + " : " + alignment_result.ids_str)
-    
     if parametres["meta_bib"] == 1:
         alignment_result.liste_metadonnees.extend(ark2metadc(alignment_result.ids_str))
     if parametres["file_nb"] == 1:
@@ -2325,80 +2351,10 @@ def alignment_result2output(alignment_result, input_record, parametres, liste_re
 def file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres):
     """Récupération du contenu du fichier et application des règles d'alignement
     ligne à ligne"""
-    header_columns_dic = {
-        1: [
-            "NumNot",
-            "Nb identifiants trouvés",
-            "Liste identifiants trouvés",
-            "Méthode",
-            "ARK BnF initial",
-            "FRBNF",
-            "ISBN",
-            "EAN",
-            "Titre",
-            "auteur",
-            "date",
-            "Tome/Volume",
-            "editeur",
-        ],
-        2: [
-            "NumNot",
-            "Nb identifiants trouvés",
-            "Liste identifiants trouvés",
-            "Méthode",
-            "ARK BnF initial",
-            "FRBNF",
-            "EAN",
-            "no commercial propre",
-            "titre",
-            "auteur",
-            "date",
-            "editeur",
-        ],
-        3: [
-            "NumNot",
-            "Nb identifiants trouvés",
-            "Liste identifiants trouvés",
-            "Méthode",
-            "ARK BnF initial",
-            "FRBNF",
-            "EAN",
-            "no commercial propre",
-            "titre",
-            "auteur",
-            "date",
-            "editeur",
-        ],
-        4: [
-            "NumNot",
-            "Nb identifiants trouvés",
-            "Liste identifiants trouvés",
-            "Méthode",
-            "ARK BnF initial",
-            "frbnf",
-            "ISSN",
-            "titre",
-            "auteur",
-            "date",
-            "lieu",
-        ],
-        5: [
-            "NumNot",
-            "Nb identifiants trouvés",
-            "Liste identifiants trouvés",
-            "Méthode",
-            "ARK BnF initial",
-            "FRBNF",
-            "ISBN",
-            "EAN",
-            "titre",
-            "auteur",
-            "date",
-            "éditeur",
-            "échelle",
-        ]
-    }
-    header_columns = header_columns_dic[parametres["type_doc_bib"]]
+    header_columns = ["NumNot", "Nb identifiants trouvés",
+                      "Liste identifiants trouvés",
+                      "Méthode d'alignement"]
+    header_columns.extend(el for el in parametres["header_columns_init"][1:])
     if parametres["meta_bib"] == 1:
         header_columns.extend(
             [
@@ -2765,6 +2721,7 @@ def formulaire_noticesbib2arkBnF(
         entry_file_list,
         couleur_fond,
         zone_notes,
+        widthb = [40,1]
     )
 
     tk.Label(
@@ -2782,7 +2739,7 @@ def formulaire_noticesbib2arkBnF(
         1,
         couleur_fond,
         "[TEX] Monographies texte",
-        "(Colonnes : " + " | ".join(header_columns_init_monimpr) + ")",
+        main.display_headers_in_form(header_columns_init_monimpr),
         "main/examples/mon_impr.tsv",  # noqa
     )
     radioButton_lienExample(
@@ -2791,7 +2748,7 @@ def formulaire_noticesbib2arkBnF(
         2,
         couleur_fond,
         "[VID] Audiovisuel (DVD)",
-        "(" + " | ".join(header_columns_init_cddvd) + ")",
+        main.display_headers_in_form(header_columns_init_cddvd),
         "",
     )
     radioButton_lienExample(
@@ -2800,7 +2757,7 @@ def formulaire_noticesbib2arkBnF(
         3,
         couleur_fond,
         "[AUD] Enregistrements sonores",
-        "(" + " | ".join(header_columns_init_cddvd) + ")",
+        main.display_headers_in_form(header_columns_init_cddvd),
         "main/examples/audio.tsv",  # noqa
     )
     radioButton_lienExample(
@@ -2809,7 +2766,7 @@ def formulaire_noticesbib2arkBnF(
         4,
         couleur_fond,
         "[PER] Périodiques",
-        "(" + " | ".join(header_columns_init_perimpr) + ")",
+        main.display_headers_in_form(header_columns_init_perimpr),
         "main/examples/per.tsv",  # noqa
     )
     radioButton_lienExample(
@@ -2818,7 +2775,7 @@ def formulaire_noticesbib2arkBnF(
         5,
         couleur_fond,
         "[CAR] Cartes",
-        "(" + " | ".join(header_columns_init_cartes) + ")",
+        main.display_headers_in_form(header_columns_init_cartes),
         "",  # noqa
     )
     radioButton_lienExample(
@@ -2827,7 +2784,7 @@ def formulaire_noticesbib2arkBnF(
         6,
         couleur_fond,
         "[PAR] Partitions",
-        "(" + " | ".join(header_columns_init_partitions) + ")",
+        main.display_headers_in_form(header_columns_init_partitions),
         "",  # noqa
     )
     type_doc_bib.set(1)

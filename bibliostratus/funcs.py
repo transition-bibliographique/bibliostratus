@@ -783,7 +783,15 @@ class Bib_record:
             self.scale = input_row[9]
         if (option_record == 6):
             self.type = "PAR"
+            self.intermarc_type_record = "m"
             self.intermarc_type_doc = "c"
+            self.ean = International_id(input_row[3])
+            self.no_commercial = International_id(input_row[4], False)
+            self.titre = Titre(input_row[5])
+            self.soustitre = Titre(input_row[6])
+            self.auteur = input_row[7]
+            self.date = input_row[8]
+            self.publisher = input_row[9]
         self.titre_nett = nettoyageTitrePourControle(self.titre.init)
         self.auteur_nett = nettoyageAuteur(self.auteur, False)
         self.no_commercial_propre = nettoyage_no_commercial(
@@ -844,7 +852,7 @@ class Bib_Aut_record:
         if (self.date_debut.find("av") > 0):
             self.date_debut = self.date_debut[:self.date_debut.find("av")]
         elif (self.date_debut.find("-") > 0):
-            date_debutdate_debut = self.date_debut[:self.date_debut.find("-")]
+            date_debut = self.date_debut[:self.date_debut.find("-")]
         self.date_debut = main.clean_string(self.date_debut, False, True)
 
 
