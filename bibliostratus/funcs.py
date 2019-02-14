@@ -29,6 +29,7 @@ from unidecode import unidecode
 import pymarc as mc
 
 import main
+import marc2tables
 import noticesaut2arkBnF as aut2ark
 from udecode import udecode
 
@@ -311,6 +312,21 @@ def nettoyageFRBNF(frbnf):
             frbnf_nett = frbnf_nett.split(signe)[0]
     return frbnf_nett
 
+
+def nettoyageIdRef(idref_id):
+    idref_nett = ""
+    idref_id = unidecode_local(idref_id.lower())
+    if ("idref.fr/" in idref_id):
+        idref_nett = idref_id.split("/")[-1]
+        idref_nett = idref_nett.split(".")[0]
+    elif ("ppn" in idref_id):
+        idref_nett = idref_id[idref_id.find("ppn") + 3:]
+        if (len(idref_nett) > 8):
+            idref_nett = idref_id[idref_id.find("ppn") + 3:idref_id.find("ppn") + 12]
+        else:
+            idref_nett = ""
+    return idref_nett
+    
 
 def conversionIsbn(isbn):
     longueur = len(isbn)
@@ -675,6 +691,15 @@ class FRBNF:
         """Méthode permettant d'afficher plus joliment notre objet"""
         return "{}".format(self.init)
 
+class IdRef:
+    """Classe pour les identifiants IdRef (propriété des notices d'AUT)"""
+    def __init__(self, string):  # Notre méthode constructeur
+        self.init = string
+        self.propre = nettoyageIdRef(self.init)
+
+    def __str__(self):
+        """Méthode permettant d'afficher plus joliment notre objet"""
+        return "{}".format(self.init)
 
 class Date:
     """Classe pour les ISNI"""
@@ -820,6 +845,7 @@ class Aut_record:
         self.metas_init = input_row[1:]
         self.NumNot = input_row[0]
         self.frbnf = FRBNF(input_row[1])
+        self.idref = IdRef(input_row[1])
         self.ark_init = input_row[2]
         self.isni = Isni(input_row[3])
         self.lastname = Name(input_row[4])
@@ -836,6 +862,7 @@ class Bib_Aut_record:
     def __init__(self, input_row, parametres):  # Notre méthode constructeur
         self.metas_init = input_row[1:]
         self.NumNot = input_row[0]
+        self.type = None
         self.NumNot_bib = input_row[1]
         self.ark_bib_init = input_row[2]
         self.frbnf_bib = FRBNF(input_row[3])
@@ -854,6 +881,37 @@ class Bib_Aut_record:
         elif (self.date_debut.find("-") > 0):
             date_debut = self.date_debut[:self.date_debut.find("-")]
         self.date_debut = main.clean_string(self.date_debut, False, True)
+
+
+class XML2record:
+    """
+    En entrée, une notice MarcXML
+    En sortie, fournit un objet Bib_record manipulable
+    pour un alignement 
+    record_type: 1 = BIB, 2 = AUT
+
+    """
+    def __init__(self, xml_record, record_type=1):  # Notre méthode constructeur
+        self.init = xml_record
+        if (record_type == 1):
+            self.metadata = marc2tables.record2listemetas(xml_record, 1)
+            self.record = Bib_record(self.metadata, record_type)
+        else:
+            self.metadata = marc2tables.record2listemetas(xml_record, 2)
+            self.record = Aut_record(self.metadata, record_type)
+
+
+class XMLaut2record:
+    """
+    En entrée, une notice MarcXML
+    En sortie, fournit un objet Aut_record manipulable
+    pour un alignement 
+    """
+    def __init__(self, xml_record):  # Notre méthode constructeur
+        self.init = xml_record
+        self.record_type = None
+        self.metadata = marc2tables.record2listemetas(xml_record, 2)
+        self.record = Aut_record(self.metadata, self.record_type)
 
 
 class Alignment_result:
@@ -1053,6 +1111,93 @@ def domybiblio2ppn(keywords, date="", type_doc="", parametres={}):
     # déclaré comme équivalent --> dans ce cas on récupère l'ARK
     Listeppn = ",".join([ppn for ppn in Listeppn if ppn != ""])
     return Listeppn
+
+
+def field2subfield(field, subfield, nb_occ="all", sep="~"):
+    path = "*[@code='" + subfield + "']"
+    listeValues = []
+    if (nb_occ == "first" or nb_occ == 1):
+        if (field.find(path) is not None and
+                field.find(path).text is not None):
+            val = field.find(path).text
+            listeValues.append(val)
+    else:
+        for occ in field.xpath(path):
+            if (occ.text is not None):
+                listeValues.append(occ.text)
+    listeValues = sep.join(listeValues)
+    return listeValues
+
+
+def field2value(field):
+    try:
+        value = " ".join([" ".join(["$" + el.get("code"), el.text]) for el in field.xpath("*")])
+    except ValueError:
+        value = ""
+    return value
+
+
+def record2fieldvalue(record, zone):
+    #Pour chaque zone indiquée dans le formulaire, séparée par un point-virgule, on applique le traitement ci-dessous
+    value = ""
+    field = ""
+    subfields = []
+    if (zone.find("$") > 0):
+        #si la zone contient une précision de sous-zone
+        zone_ss_zones = zone.split("$")
+        field = zone_ss_zones[0]
+        fieldPath = ".//*[@tag='" + field + "']"
+        i = 0
+        for field in record.xpath(fieldPath):
+            i = i+1
+            j = 0
+            for subfield in zone_ss_zones[1:]:
+                sep = ""
+                if (i > 1 and j == 0):
+                    sep = "~"
+                j = j+1
+                subfields.append(subfield)
+                subfieldpath = "*[@code='"+subfield+"']"
+                if (field.find(subfieldpath) is not None):
+                    if (field.find(subfieldpath).text != ""):
+                        valtmp = field.find(subfieldpath).text
+                        #valtmp = field.find(subfieldpath).text.encode("utf-8").decode("utf-8", "ignore")
+                        prefixe = ""
+                        if (len(zone_ss_zones) > 2):
+                            prefixe = " $" + subfield + " "
+                        value = str(value) + str(sep) + str(prefixe) + str(valtmp)
+    else:
+        #si pas de sous-zone précisée
+        field = zone
+        path = ""
+        if (field == "000"):
+            path = ".//*[local-name()='leader']"
+        else:
+            path = ".//*[@tag='" + field + "']"
+        i = 0        
+        for field in record.xpath(path):
+            i = i+1
+            j = 0
+            if (field.find("*", namespaces=ns_bnf) is not None):
+                sep = ""
+                for subfield in field.xpath("*"):
+                    sep = ""
+                    if (i > 1 and j == 0):
+                        sep = "~"
+                    #print (subfield.get("code") + " : " + str(j) + " // sep : " + sep)
+                    j = j+1
+                    valuesubfield = ""
+                    if (subfield.text != ""):
+                        valuesubfield = str(subfield.text)
+                        if (valuesubfield == "None"):
+                            valuesubfield = ""
+                    value = value + sep + " $" + subfield.get("code") + " " + valuesubfield
+            else:
+                value = field.find(".").text
+    if (value != ""):
+        if (value[0] == "~"):
+            value = value[1:]
+    return value.strip()
 
 
 def domybiblio2ppn_pages_suivantes(keywords, Listeppn, 

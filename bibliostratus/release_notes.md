@@ -1,7 +1,10 @@
 ### version 1.26
 Février 2019
 - Formulaire d'édition des préférences
-- Tous modules : possibilité de déclarer un proxy réseau dans le fichier preferences.json
+- Tous modules :
+	- possibilité de déclarer un proxy réseau dans le fichier preferences.json
+	- option "Editer les préférences" depuis le formulaire principal
+	- nouveau type d'objet XMLbib2record qui pour une notice MARC en entrée fournit (méthode Marc_bib2record.record) une instance de la classe Bib_record
 - Module blanc (alignements BIB):
 	- Correction sur les informations de "méthode d'alignement" :
 		- nettoyage des redondances

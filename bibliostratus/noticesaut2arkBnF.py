@@ -290,11 +290,13 @@ def aut2ark_by_id(input_record, parametres):
         ark = isni2id(input_record, parametres)
     if (ark == "" and input_record.frbnf.propre != ""):
         ark = frbnfAut2arkAut(input_record)
+    if (ark == "" and input_record.idref.propre != ""):
+        ark = aut_align_idref.idrefAut2arkAut(input_record)
     return ark
 
 def align_from_aut_alignment(input_record, parametres):
     if (parametres["preferences_alignement"] == 1):
-        ark = aut2ark_by_id(input_record,parametres)
+        ark = aut2ark_by_id(input_record, parametres)
         if (ark == ""):
             ark = aut2ark_by_accesspoint(
                     input_record,
@@ -543,10 +545,11 @@ def frbnfAut2arkAut(input_record):
             ark = oldfrbnf2ark(input_record)
         elif (nb_resultats == 1):
             ark = page.find("//srw:recordIdentifier", namespaces=main.ns).text
-            NumNotices2methode[input_record.NumNot].append("FRBNF")
         else:
             ark = ",".join([ark.text for ark in page.xpath(
                 "//srw:recordIdentifier", namespaces=main.ns)])
+    if (ark):
+        input_record.alignment_method.append("FRBNF")
     return ark
 
 

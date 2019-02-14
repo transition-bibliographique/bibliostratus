@@ -405,7 +405,8 @@ def iso2tables(master, entry_filename, file_format, rec_format, id_traitement):
                 collection.force_utf8 = True
             (test, record) = detect_errors_encoding_iso(collection)
             if (test):
-                record2listemetas(id_traitement, record, rec_format)
+                record_metas = record2listemetas(record, rec_format)
+                record_metas2report(record_metas, rec_format, id_traitement)
     try:
         os.remove("temp_record.txt")
     except FileNotFoundError as err:
@@ -421,7 +422,8 @@ def xml2tables(master, entry_filename, rec_format, id_traitement):
         for record in collection:
             # print(record.leader)
             i += 1
-            record2listemetas(id_traitement, record, rec_format)
+            record_metas = record2listemetas(record, rec_format)
+            record_metas2report(record_metas, rec_format, id_traitement)
         stats["Nombre total de notices traitées"] = i
     except xml.sax._exceptions.SAXParseException:
         message = """Le fichier XML """ + entry_filename + """ n'est pas encodé en UTF-8.
@@ -690,10 +692,10 @@ def record2doc_recordtype(leader, rec_format):
     return doctype, recordtype, doc_record
 
 
-def record2listemetas(id_traitement, record, rec_format=1):
+def record2listemetas(record, rec_format=1):
     numNot = record2meta(record, ["001"])
     doctype, recordtype, doc_record = record2doc_recordtype(record.leader,
-                                                     rec_format)
+                                                            rec_format)
     meta = []
     if (rec_format == 2):
         meta = autrecord2metas(numNot, doc_record, record)
@@ -702,9 +704,18 @@ def record2listemetas(id_traitement, record, rec_format=1):
     else:
         meta = bibrecord2metas(numNot, doc_record, record)
 
-    # print(meta)
+    return meta
+    # liste_resultats[doc_record].append(meta)
+
+
+def record_metas2report(record_metas, rec_format, id_traitement):
+    """
+    une fois récupérées les métadonnées propres à chaque type de notice
+    (grâce à la fonction record2listemetas())
+    on les envoie dans un fichier de résultats, par type de doc
+    """
     if (rec_format == 3):
-        for aut in meta:
+        for aut in record_metas:
             doc_record = aut[0]
             if (doc_record in output_files_dict):
                 stats[doc_record_type[doc_record]] += 1
@@ -718,19 +729,17 @@ def record2listemetas(id_traitement, record, rec_format=1):
                 print(doc_record, ' - ', aut[1])
 
     elif (doc_record in output_files_dict):
-        if (meta[0] not in liste_notices_pb_encodage):
+        if (record_metas[0] not in liste_notices_pb_encodage):
             stats[doc_record_type[doc_record]] += 1
-            output_files_dict[doc_record].write("\t".join(meta) + "\n")
-            print(doc_record, ' - ', meta[0])
+            output_files_dict[doc_record].write("\t".join(record_metas) + "\n")
+            print(doc_record, ' - ', record_metas[0])
 
     else:
         stats[doc_record_type[doc_record]] = 1
         output_files_dict[doc_record] = write_reports(
             funcs.id_traitement2path(id_traitement), doc_record, rec_format)
-        output_files_dict[doc_record].write("\t".join(meta) + "\n")
-        print(doc_record, ' - ', meta[0])
-
-    # liste_resultats[doc_record].append(meta)
+        output_files_dict[doc_record].write("\t".join(record_metas) + "\n")
+        print(doc_record, ' - ', record_metas[0])
 
 
 def write_reports(id_traitement, doc_record, rec_format):
