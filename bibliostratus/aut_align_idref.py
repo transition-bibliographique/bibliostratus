@@ -55,7 +55,8 @@ def autArk2ppn(NumNot, ark_nett):
 
 def idrefAut2arkAut(input_record):
     liste_ark = []
-    url = f"https://www.idref.fr/{input_record.idref.propre}"
+    url = f"https://www.idref.fr/{input_record.idref.propre}.xml"
+    print(url)
     (test, result) = funcs.testURLetreeParse(url, display=False)
     if test:
         for f033 in result.xpath("//*[@tag='033']"):
@@ -68,8 +69,10 @@ def idrefAut2arkAut(input_record):
         if (liste_ark == []
            and result.find("//*[@tag='035']") is not None
            and "frbn" in funcs.record2fieldvalue(result, "035$a").lower()):
-            aut_record = funcs.XML2record(result, 2)
-            liste_ark.extend(aut2ark.frbnfAut2arkAut(aut_record))
+            print("test035")
+            aut_record = funcs.XML2record(result, 2).record
+            #print(aut_record.metadata)
+            liste_ark.extend(aut2ark.frbnfAut2arkAut(aut_record).split(","))
             if (liste_ark):
                 input_record.alignment_method.append("PPN > FBRNF > ARK")
     liste_ark = ",".join(liste_ark)

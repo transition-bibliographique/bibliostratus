@@ -317,12 +317,15 @@ def nettoyageIdRef(idref_id):
     idref_nett = ""
     idref_id = unidecode_local(idref_id.lower())
     if ("idref.fr/" in idref_id):
-        idref_nett = idref_id.split("/")[-1]
-        idref_nett = idref_nett.split(".")[0]
+        idref_nett = idref_id[idref_id.find("idref.fr/") + 9:]
+        if (len(idref_nett) > 8):
+            idref_nett = idref_nett[:9]
+        else:
+            idref_nett = ""
     elif ("ppn" in idref_id):
         idref_nett = idref_id[idref_id.find("ppn") + 3:]
         if (len(idref_nett) > 8):
-            idref_nett = idref_id[idref_id.find("ppn") + 3:idref_id.find("ppn") + 12]
+            idref_nett = idref_nett[:9]
         else:
             idref_nett = ""
     return idref_nett
@@ -893,11 +896,12 @@ class XML2record:
     """
     def __init__(self, xml_record, record_type=1):  # Notre méthode constructeur
         self.init = xml_record
+        self.pymarc_record = xml2pymarcrecord(xml_record)
         if (record_type == 1):
-            self.metadata = marc2tables.record2listemetas(xml_record, 1)
+            self.metadata = marc2tables.record2listemetas(self.pymarc_record, 1)
             self.record = Bib_record(self.metadata, record_type)
         else:
-            self.metadata = marc2tables.record2listemetas(xml_record, 2)
+            self.metadata = marc2tables.record2listemetas(self.pymarc_record, 2)
             self.record = Aut_record(self.metadata, record_type)
 
 
@@ -1230,6 +1234,10 @@ def timestamp():
     """
     timest = datetime.datetime.fromtimestamp(time.time()).strftime("%Y-%m-%d %H-%M-%S")
     return timest
+
+
+
+
 
 if __name__ == '__main__':
     access_to_network = main.check_access_to_network()
