@@ -616,12 +616,12 @@ def comparaisonTitres_sous_zone(
                                                   str(round(len(titre) / 2)),
                                                   "caractères]"])
         elif titreBNF in titre:
-            text_method_alignment = origineComparaison + " + contrôle : Titre BnF\Sudoc \
+            text_method_alignment = origineComparaison + " + contrôle : Titre BnF/Sudoc \
 contenu dans titre initial"
             ark = ark_current
         elif titre in titreBNF:
             text_method_alignment = origineComparaison + " + contrôle Titre initial \
-contenu dans titre BnF\Sudoc"
+contenu dans titre BnF/Sudoc"
             ark = ark_current
     elif (titre == "" and input_record.titre.controles == ""):
         ark = ark_current
