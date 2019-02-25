@@ -39,7 +39,7 @@ dict_format_records = {
     3: "intermarcxchange",
     4: "intermarcxchange-anl"}
 listefieldsLiensAUT = {
-    "unimarc": ["100", "700", "702", "703", "709", "710", "712", "713", "719", "731"],
+    "unimarc": ["700", "701", "702", "703", "709", "710", "711", "712", "713", "719", "731"],
     "intermarc": ["100", "700", "702", "703", "709", "710", "712", "713", "719", "731"]}
 listefieldsLiensSUB = {
     "unimarc": ["600", "603", "606", "607", "609", "610", "616", "617"],
@@ -80,9 +80,9 @@ def nn2url(nn, type_record, parametres, source="bnf"):
             query + "&recordSchema=" + \
             parametres["format_BIB"] + "&maximumRecords=20&startRecord=1"
     elif (source == "sudoc"):
-        url = "http://www.sudoc.fr/" + nn + ".xml"
+        url = "https://www.sudoc.fr/" + nn + ".xml"
     elif (source == "idref"):
-        url = "http://www.idref.fr/" + nn + ".xml"
+        url = "https://www.idref.fr/" + nn + ".xml"
     return url
 
 
@@ -172,11 +172,8 @@ def extract_nna_from_bib_record(record, field, source, parametres):
     """Extraction de la liste des identifiants d'auteurs à partir
     d'une zone de notice bib"""
     liste_nna = []
-    if (source == "bnf"):
-        path = '//mxc:datafield[@tag="' + field + '"]/mxc:subfield[@code="3"]'
-    elif(source == "sudoc" or source == "idref"):
-        path = '//datafield[@tag="' + field + '"]/subfield[@code="3"]'
-    for datafield in record.xpath(path, namespaces=main.ns):
+    path = f'//*[@tag="{field}"]/*[@code="3"]'
+    for datafield in record.xpath(path):
         nna = datafield.text
         if (nna not in parametres["listeNNA_AUT"]):
             parametres["listeNNA_AUT"].append(nna)
@@ -215,10 +212,9 @@ def bib2aut(identifier, XMLrecord, parametres):
             linked_identifier = funcs.Id4record([record.find("//srw:recordIdentifier", namespaces=main.ns).text])
             record2file(linked_identifier, XMLrec, parametres["aut_file"],
                         parametres["format_file"], parametres)
-        elif (test and source == "idref" and record.find("//record") is not None):
-            XMLrec = record.xpath(".//record")[0]
-            record2file(linked_identifier, XMLrec, parametres["aut_file"],
-                        parametres["format_file"], parametres)
+        elif (test and source == "idref" and record.find("leader") is not None):
+                record2file(f"PPN{nna}", record, parametres["aut_file"],
+                            parametres["format_file"], parametres)
 
 
 def file_create(record_type, parametres):
@@ -330,6 +326,7 @@ def callback(master, form, filename, type_records_form,
              format_records=1, format_file=1):
     AUTliees = AUTlieesAUT + AUTlieesSUB + AUTlieesWORK
     format_BIB = dict_format_records[format_records]
+    outputID = funcs.id_traitement2path(outputID)
     type_records = "bib"
     if (type_records_form == 2):
         type_records = "aut"
