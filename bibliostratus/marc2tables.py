@@ -405,8 +405,8 @@ def iso2tables(master, entry_filename, file_format, rec_format, id_traitement):
                 collection.force_utf8 = True
             (test, record) = detect_errors_encoding_iso(collection)
             if (test):
-                record_metas = record2listemetas(record, rec_format)
-                record_metas2report(record_metas, rec_format, id_traitement)
+                record_metas, doc_record = record2listemetas(record, rec_format)
+                record_metas2report(record_metas, doc_record, rec_format, id_traitement)
     try:
         os.remove("temp_record.txt")
     except FileNotFoundError as err:
@@ -422,8 +422,8 @@ def xml2tables(master, entry_filename, rec_format, id_traitement):
         for record in collection:
             # print(record.leader)
             i += 1
-            record_metas = record2listemetas(record, rec_format)
-            record_metas2report(record_metas, rec_format, id_traitement)
+            record_metas, doc_record = record2listemetas(record, rec_format)
+            record_metas2report(record_metas, doc_record, rec_format, id_traitement)
         stats["Nombre total de notices traitées"] = i
     except xml.sax._exceptions.SAXParseException:
         message = """Le fichier XML """ + entry_filename + """ n'est pas encodé en UTF-8.
@@ -704,11 +704,11 @@ def record2listemetas(record, rec_format=1):
     else:
         meta = bibrecord2metas(numNot, doc_record, record)
 
-    return meta
+    return meta, doc_record
     # liste_resultats[doc_record].append(meta)
 
 
-def record_metas2report(record_metas, rec_format, id_traitement):
+def record_metas2report(record_metas, doc_record, rec_format, id_traitement):
     """
     une fois récupérées les métadonnées propres à chaque type de notice
     (grâce à la fonction record2listemetas())

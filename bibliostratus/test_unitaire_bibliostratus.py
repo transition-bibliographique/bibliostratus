@@ -8,13 +8,15 @@ Ensemble des tests unitaires sur un ensemble de fonctions utilisées par Biblios
 A lancer avec pytest
 """
 from collections import defaultdict
+import os
+import csv
 
 import funcs
 import main
 import aut_align_idref
 import noticesbib2arkBnF as bib2ark
 import noticesaut2arkBnF as aut2ark
-
+import marc2tables
 
 
 # =============================================================================
@@ -351,5 +353,31 @@ def check_controle_011():
     assert testTrue is True
     assert testFalse is False
 
+
+def convert_iso2tables():
+    """
+    Ouverture d'un fichier ISO2709 de notices BIB pour le convertir en fichier tabulé
+    """
+    dirpath = os.path.dirname(os.path.realpath(__file__))
+    isofile_name = os.path.join(dirpath, "main", "examples", "noticesbib2.iso")    
+    marc2tables.iso2tables(None, isofile_name, 1, 1, "pytest_iso")
+    os.remove("pytest_iso-.txt")
+    os.remove("pytest_iso-AUD.txt")
+    os.remove("pytest_iso-PER.txt")
+    os.remove("pytest_iso-CAR.txt")
+    os.remove("pytest_iso-PAR.txt")
+    os.remove("pytest_iso-VID.txt")
+    first_line_text = []
+    with open("pytest_iso-TEX.txt", "r", encoding="utf-8") as file:
+        content = csv.reader(file, delimiter="\t")
+        next(content)
+        first_line_text = next(content)
+    assert first_line_text == ["FRBNF427031150000009",
+                              "frbnf427031150000009", "", "", "",
+                              "Plan de Paris 2012",
+                              "et la documentation fonciere service paris de topographie",
+                              "2012", "", "Mairie de Paris"]
+    os.remove("pytest_iso-TEX.txt")
+
 if __name__ == "__main__":
-  test_alignement_aut()
+  convert_iso2tables()
