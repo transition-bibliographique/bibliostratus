@@ -380,7 +380,9 @@ def test_encoding_file(master, entry_filename, encoding, file_format):
     return (test, input_file)
 
 
-def iso2tables(master, entry_filename, file_format, rec_format, id_traitement):
+def iso2tables(master, entry_filename, file_format,
+               rec_format, id_traitement,
+               display=True):
     # input_file_test = open(entry_filename,'rb').read()
     # print(chardet.detect(input_file_test).read())
     encoding = "iso-8859-1"
@@ -406,12 +408,14 @@ def iso2tables(master, entry_filename, file_format, rec_format, id_traitement):
             (test, record) = detect_errors_encoding_iso(collection)
             if (test):
                 record_metas, doc_record = record2listemetas(record, rec_format)
-                record_metas2report(record_metas, doc_record, rec_format, id_traitement)
+                record_metas2report(record_metas, doc_record, rec_format,
+                                    id_traitement, display)
     try:
         os.remove("temp_record.txt")
     except FileNotFoundError as err:
         print(err)
     stats["Nombre total de notices traitées"] = i
+    return output_files_dict
 
 
 def xml2tables(master, entry_filename, rec_format, id_traitement):
@@ -708,7 +712,8 @@ def record2listemetas(record, rec_format=1):
     # liste_resultats[doc_record].append(meta)
 
 
-def record_metas2report(record_metas, doc_record, rec_format, id_traitement):
+def record_metas2report(record_metas, doc_record, rec_format,
+                        id_traitement, display=True):
     """
     une fois récupérées les métadonnées propres à chaque type de notice
     (grâce à la fonction record2listemetas())
@@ -720,26 +725,30 @@ def record_metas2report(record_metas, doc_record, rec_format, id_traitement):
             if (doc_record in output_files_dict):
                 stats[doc_record_type[doc_record]] += 1
                 output_files_dict[doc_record].write("\t".join(aut[1:]) + "\n")
-                print(doc_record, ' - ', aut[1])
+                if (display):
+                    print(doc_record, ' - ', aut[1])
             else:
                 stats[doc_record_type[doc_record]] = 1
                 output_files_dict[doc_record] = write_reports(
                     funcs.id_traitement2path(id_traitement), doc_record, rec_format)
                 output_files_dict[doc_record].write("\t".join(aut[1:]) + "\n")
-                print(doc_record, ' - ', aut[1])
+                if (display):
+                    print(doc_record, ' - ', aut[1])
 
     elif (doc_record in output_files_dict):
         if (record_metas[0] not in liste_notices_pb_encodage):
             stats[doc_record_type[doc_record]] += 1
             output_files_dict[doc_record].write("\t".join(record_metas) + "\n")
-            print(doc_record, ' - ', record_metas[0])
+            if (display):
+                print(doc_record, ' - ', record_metas[0])
 
     else:
         stats[doc_record_type[doc_record]] = 1
         output_files_dict[doc_record] = write_reports(
             funcs.id_traitement2path(id_traitement), doc_record, rec_format)
         output_files_dict[doc_record].write("\t".join(record_metas) + "\n")
-        print(doc_record, ' - ', record_metas[0])
+        if (display):
+            print(doc_record, ' - ', record_metas[0])
 
 
 def write_reports(id_traitement, doc_record, rec_format):
