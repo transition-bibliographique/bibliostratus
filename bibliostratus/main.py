@@ -27,7 +27,7 @@ import noticesbib2arkBnF as bib2ark
 import edit_preferences as settings
 
 version = 1.26
-lastupdate = "27/01/2019"
+lastupdate = "14/03/2019"
 programID = "bibliostratus"
 
 # Ajout du fichier preferences.json

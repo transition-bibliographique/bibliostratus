@@ -2783,7 +2783,7 @@ def formulaire_noticesbib2arkBnF(
         type_doc_bib,
         6,
         couleur_fond,
-        "[PAR] Partitions",
+        "(en test) [PAR] Partitions",
         main.display_headers_in_form(header_columns_init_partitions),
         "",  # noqa
     )

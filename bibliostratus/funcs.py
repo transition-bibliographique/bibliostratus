@@ -935,6 +935,8 @@ class Alignment_result:
         if (len(list(set(input_record.alignment_method))) == 1):
             self.alignment_method_list = [input_record.alignment_method[0]]
         self.alignment_method_str = ",".join(self.alignment_method_list)
+        if (self.nb_ids == 0):
+            self.alignment_method_str = ""
         self.liste_metadonnees = [
                                     input_record.NumNot,
                                     self.nb_ids,
