@@ -11,6 +11,7 @@ les bibliothèques françaises
 
 import codecs
 import json
+import re
 import tkinter as tk
 import webbrowser
 from tkinter import filedialog
@@ -23,10 +24,30 @@ import funcs
 import marc2tables
 import noticesaut2arkBnF as aut2ark
 import noticesbib2arkBnF as bib2ark
+import edit_preferences as settings
 
-version = 1.25
-lastupdate = "19/11/2018"
+version = 1.26
+lastupdate = "14/03/2019"
 programID = "bibliostratus"
+
+# Ajout du fichier preferences.json
+
+
+def load_preferences():
+    prefs_file_name = 'main/files/preferences.json'
+    try:
+        with open(prefs_file_name, encoding="utf-8") as prefs_file:
+            prefs = json.load(prefs_file)
+    except FileNotFoundError:
+        try:
+            prefs_file_name = 'main/files/preferences.default'
+            with open(prefs_file_name, encoding="utf-8") as prefs_file:
+                prefs = json.load(prefs_file)
+        except FileNotFoundError:
+            prefs = {}
+    return prefs, prefs_file_name
+
+prefs, prefs_file_name = load_preferences()
 
 ns = {
     "srw": "http://www.loc.gov/zing/srw/",
@@ -102,6 +123,7 @@ Vérifier les options choisies\npour le format de fichier en entrée
 Si l'erreur persiste, convertissez le fichier dans un autre format avec MarcEdit"""
 }
 
+output_directory = [""]
 
 def click2url(url):
     webbrowser.open(url)
@@ -109,6 +131,35 @@ def click2url(url):
 
 def annuler(master):
     master.destroy()
+
+def select_output_directory_button():
+    # Allow user to select a directory and store it in global var
+    # called folder_path
+    global output_directory
+    directory_name = []
+    directory_name[0] = filedialog.askdirectory()
+    folder_path.set(directory_name[0])
+    return directory_name
+
+
+def proxy_opener():
+    """
+    Utilisation du proxy pour les requêtes HTTP/HTTPS
+    """
+    proxies = {}
+    http_params = ["http_proxy", "https_proxy"]    
+    for param in http_params:
+        protocole = param.split("_")[0]
+        proxies[protocole] = prefs[param]["URL"]
+        if (prefs[param]["login"]
+           and prefs[param]["mot de passe"]):
+            urlroot = prefs[param]["URL"].replace('http://', '').replace('https://', '')
+            proxies[protocole] = f'{prefs[param]["login"]}:{prefs[param]["mot de passe"]}@{urlroot}'
+    proxy_handler = request.ProxyHandler(proxies)
+    # construct a new opener using your proxy settings
+    opener = request.build_opener(proxy_handler)
+    # install the opener on the module-level
+    request.install_opener(opener)
 
 
 def check_last_compilation(programID):
@@ -125,7 +176,7 @@ def check_last_compilation(programID):
         if (programID_last_compilation > version):
             display_update_button = True
     except error.URLError:
-        print("erreur réseau")
+        print("Erreur réseau : échec pour la vérification des mises à jour")
     return [programID_last_compilation, display_update_button]
 
 
@@ -133,6 +184,23 @@ def download_last_update(
         url="https://github.com/Transition-bibliographique/bibliostratus/tree/master/bin"):
     webbrowser.open(url)
 
+
+def display_headers_in_form(headers_list):
+    """
+    Génère l'affichage de la liste des en-têtes
+    de colonne dans un formulaire, en gérant le retour à la ligne si besoin
+    """
+    splitter = 75
+    line = " | ".join(headers_list)
+    pos_last_pipe = 0
+    if (len(line) > splitter
+        and "|" in line[splitter:]):
+        line_begin, line_end = line[:splitter], line[splitter:]
+        adjust, line_end = line_end[:line_end.find("|")], line_end[line_end.find("|")+1:].strip()
+        line_begin = line_begin + adjust + "|"
+        line = line_begin + "\n" + " "*45 + line_end
+    line = f"(Colonnes : {line})"
+    return line
 
 def check_access_to_network():
     access_to_network = True
@@ -144,6 +212,7 @@ def check_access_to_network():
         print("Pas de réseau internet")
         access_to_network = False
     return access_to_network
+
 
 
 def check_access2apis(i, dict_report):
@@ -410,7 +479,8 @@ def openfile(frame, liste, background_color="white"):
 
 
 def download_button(frame, text, frame_selected, text_path,
-                    couleur_fond, file_entry_list, zone_message_en_cours=""):
+                    couleur_fond, file_entry_list, 
+                    zone_message_en_cours=""):
     if (file_entry_list != []):
         text_path.delete(0.0, 1000.3)
     filename = filedialog.askopenfilename(
@@ -419,7 +489,7 @@ def download_button(frame, text, frame_selected, text_path,
         file_entry_list.append(filename)
     else:
         file_entry_list[0] = filename
-    text_path.insert(0.0, filename)
+    text_path.insert(0.0, path_truncator(filename, 40))
     texte = """Après avoir lancé le traitement,
 vous pourrez suivre sa progression sur le terminal (fenêtre écran noir).
 
@@ -428,37 +498,68 @@ Cette fenêtre se fermera automatiquement à la fin du programme"""
         zone_message_en_cours.insert(0.0, texte)
 
 
+def path_truncator(text, max_length):
+    """
+    Fonction qui restructure un texte (chemin vers un 
+    fichier ou un répertoire) sur plusieurs lignes
+    """
+    if (len(text) > max_length):
+        max_length = max_length-8
+        return text[0:6] + "....." + text[-max_length:]
+    else:
+        return text
+
+
 def download_zone(frame, text_bouton, file_entry_list,
-                  couleur_fond, cadre_output_message_en_cours=""):
+                  couleur_fond, cadre_output_message_en_cours="",
+                  type_action="select_file",
+                  widthb=[50, 70]):
     frame_button = tk.Frame(frame)
     frame_button.pack()
     frame_selected = tk.Frame(frame)
     frame_selected.pack()
     display_selected = tk.Text(
-        frame_selected, height=3, width=50, bg=couleur_fond, bd=0, font="Arial 9 bold")
+        frame_selected, height=1, width=widthb[0],
+        bg=couleur_fond, bd=0, font="Arial 9 bold")
     display_selected.pack()
     zone_message_en_cours = ""
     if (cadre_output_message_en_cours != ""):
         zone_message_en_cours = tk.Text(cadre_output_message_en_cours,
-                                        height=5, width=70, fg="red",
-                                        bg=couleur_fond, bd=0, font="Arial 9 bold")
+                                        height=5,
+                                        width=widthb[1], fg="red",
+                                        bg=couleur_fond, bd=0, 
+                                        font="Arial 9 bold")
         zone_message_en_cours.pack()
     # bouton_telecharger = download_button(frame,"Sélectionner un fichier","#ffffff")
-    select_filename_button = tk.Button(
-        frame_button,
-        command=lambda: download_button(
-            frame,
-            text_bouton,
-            frame_selected,
-            display_selected,
-            "#ffffff",
-            file_entry_list,
-            zone_message_en_cours,
-        ),
-        text=text_bouton,
-        padx=10,
-        pady=10,
-    )
+    if (type_action == "askdirectory"):
+        select_filename_button = tk.Button(
+            frame_button,
+            command=lambda:select_directory_button(
+                                frame, text_bouton, 
+                                frame_selected,
+                                display_selected,
+                                "#ffffff",
+                                output_directory),
+            text=text_bouton,
+            padx=10,
+            pady=10,
+        )
+    else:
+        select_filename_button = tk.Button(
+            frame_button,
+            command=lambda: download_button(
+                frame,
+                text_bouton,
+                frame_selected,
+                display_selected,
+                "#ffffff",
+                file_entry_list,
+                zone_message_en_cours
+            ),
+            text=text_bouton,
+            padx=10,
+            pady=10,
+        )
     select_filename_button.pack()
 
 
@@ -467,16 +568,17 @@ def select_directory_button(
     if (directory_list != []):
         text_path.delete(0.0, 1000.3)
     filename = filedialog.askdirectory(
-        parent=frame, title="Sélectionner un fichier")
-    tk.folder_path.set(filename)
+        parent=frame, title="Sélectionner un dossier")
+    #tk.folder_path.set(filename)
     if (directory_list == []):
         directory_list.append(filename)
     else:
         directory_list[0] = filename
-    text_path.insert(0.0, filename)
+    text_path.insert(0.0, path_truncator(filename, 40))
 
 
-def select_directory(frame, text_bouton, directory_list, couleur_fond):
+def select_directory(frame, text_bouton, directory_list, 
+                     couleur_fond, type_action):
     frame_button = tk.Frame(frame)
     frame_button.pack()
     frame_selected = tk.Frame(frame)
@@ -485,14 +587,30 @@ def select_directory(frame, text_bouton, directory_list, couleur_fond):
         frame_selected, height=3, width=50, bg=couleur_fond, bd=0, font="Arial 9 bold")
     display_selected.pack()
     # bouton_telecharger = download_button(frame,"Sélectionner un fichier","#ffffff")
-    select_filename_button = tk.Button(
+    if (type_action == "askdirectory"):
+        select_filename_button = tk.Button(
         frame_button,
-        command=lambda: download_button(frame,
-                                        text_bouton,
-                                        frame_selected, display_selected,
-                                        "#ffffff", directory_list),
+        command=lambda: download_button(
+            frame,
+            text_bouton,
+            frame_selected,
+            display_selected,
+            "#ffffff",
+            selected_directory,
+        ),
         text=text_bouton,
-        padx=10, pady=10)
+        padx=10,
+        pady=10,
+    )
+    else:
+        select_filename_button = tk.Button(
+                                            frame_button,
+                                            command=lambda: download_button(frame,
+                                                                            text_bouton,
+                                                                            frame_selected, display_selected,
+                                                                            "#ffffff", directory_list),
+                                            text=text_bouton,
+                                            padx=10, pady=10)
     select_filename_button.pack()
 
 
@@ -646,6 +764,23 @@ def formulaire_main(access_to_network, last_version):
                        command=lambda: annuler(master), pady=45, padx=5, width=12)
     cancel.pack()
 
+    tk.Label(frame_help_cancel, text="\n\nPréférences",
+             bg=couleur_fond, font="Arial 8 normal").pack()
+    edit_settings_img = tk.PhotoImage(file='main/files/settings.png')
+    edit_settings_button = tk.Button(frame_help_cancel,
+                                     image=edit_settings_img,
+                                     command=lambda: settings.edit_preferences(
+                                                                   master,
+                                                                   prefs_file_name,
+                                                                   access_to_network,
+                                                                   last_version
+                                                                  ),
+                                     padx=0,
+                                     pady=0,
+                                     bg="white",
+                                     font="Arial 9 bold",)
+    edit_settings_button.pack()
+
     tk.Label(zone_notes, text="Bibliostratus - Version " +
              str(version) + " - " + lastupdate, bg=couleur_fond).pack()
 
@@ -672,10 +807,14 @@ def formulaire_main(access_to_network, last_version):
 
     tk.mainloop()
 
+def check_proxy():
+    if (prefs["http_proxy"]["URL"] or prefs["https_proxy"]["URL"]):
+        proxy_opener()
 
 if __name__ == '__main__':
+    check_proxy()
     access_to_network = check_access_to_network()
     last_version = [0, False]
-    if(access_to_network):
+    if (access_to_network):
         last_version = check_last_compilation(programID)
     formulaire_main(access_to_network, last_version)

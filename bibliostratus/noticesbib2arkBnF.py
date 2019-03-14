@@ -41,12 +41,7 @@ if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
 url_access_pbs = []
 
 
-prefs = {}
-try:
-    with open('main/files/preferences.json', encoding="utf-8") as prefs_file:
-        prefs = json.load(prefs_file)
-except FileNotFoundError:
-    pass
+
 
 
 # Permet d'écrire dans une liste accessible au niveau général depuis le
@@ -200,6 +195,19 @@ header_columns_init_cartes = [
     "Date",
     "Editeur",
     "Echelle"
+]
+
+header_columns_init_partitions = [
+    "Num Not",
+    "FRBNF",
+    "ARK",
+    "EAN",
+    "Référence commerciale",  #023$a en Intermarc, 071$a en Unimarc
+    "Titre",
+    "Titre de partie",
+    "Auteur",
+    "Date",
+    "Editeur",
 ]
 
 # Noms des fichiers en sortie
@@ -410,10 +418,10 @@ def comparaisonTitres(
     ):
     ark = ""
     subfields_list = ["200$a", "200$e", "200$i",
-                      "750$a", "753$a", "500$a",
-                      "500$e", "503$e", "540$a",
-                      "540$e", "410$a", "225$a",
-                      "461$t"]
+                    "750$a", "753$a", "500$a",
+                    "500$e", "503$e", "540$a",
+                    "540$e", "410$a", "225$a",
+                    "461$t", "464$t"]
     text_method_alignment = ""
     for subfield in subfields_list:
         if (ark == ""):
@@ -430,7 +438,30 @@ def comparaisonTitres(
                                             origineComparaison,
                                             subfield
                                             )
-
+    if (ark != ""
+       and input_record.type == "PAR"
+       and input_record.soustitre.controles != ""):
+        ark_confirmed = ""
+        subfields_list_2 = ["464$t", "200$a+200$e", "225$e"]
+        for subfield in subfields_list_2:
+            if ark_confirmed == "":
+                ark_confirmed, compl_text_method_alignment = comparaisonTitres_sous_zone(
+                                                        input_record,
+                                                        NumNot,
+                                                        ark_current,
+                                                        systemid,
+                                                        isbn,
+                                                        input_record.soustitre.controles,
+                                                        auteur,
+                                                        date,
+                                                        recordBNF,
+                                                        origineComparaison,
+                                                        subfield
+                                                        )
+        if ark_confirmed == ark:
+            text_method_alignment += compl_text_method_alignment
+        else:
+            ark = ""
     if ark != "" and numeroTome != "":
         ark = verificationTomaison(ark, numeroTome, recordBNF)
     if ark != "" and date != "":
@@ -551,11 +582,21 @@ def comparaisonTitres_sous_zone(
     sous_zone,
 ):
     ark = ""
-    field = sous_zone.split("$")[0]
-    subfield = sous_zone.split("$")[1]
-    titreBNF = funcs.nettoyageTitrePourControle(
-        main.extract_subfield(recordBNF, field, subfield, 1)
-    )
+    if ("+" in sous_zone):
+        titreBNF = ""
+        for f in sous_zone.split("+"):
+            zone = f.split("$")[0]
+            souszone = f.split("$")[1]
+            titreBNF += funcs.nettoyageTitrePourControle(
+                main.extract_subfield(recordBNF, zone, souszone, 1)
+            )
+
+    else:
+        field = sous_zone.split("$")[0]
+        subfield = sous_zone.split("$")[1]
+        titreBNF = funcs.nettoyageTitrePourControle(
+            main.extract_subfield(recordBNF, field, subfield, 1)
+        )
     text_method_alignment = ""
     # print(titre, titreBNF, sous_zone)
     if titre != "" and titreBNF != "":
@@ -571,16 +612,16 @@ def comparaisonTitres_sous_zone(
             text_method_alignment = origineComparaison + " + contrôle Titre " + sous_zone
             if round(len(titre) / 2) < 10:
                 text_method_alignment += "".join(["[demi-titre",
-                                                 "-",
-                                                 str(round(len(titre) / 2)),
-                                                 "caractères]"])
+                                                  "-",
+                                                  str(round(len(titre) / 2)),
+                                                  "caractères]"])
         elif titreBNF in titre:
-            text_method_alignment = origineComparaison + " + contrôle Titre BNF \
+            text_method_alignment = origineComparaison + " + contrôle : Titre BnF/Sudoc \
 contenu dans titre initial"
             ark = ark_current
         elif titre in titreBNF:
             text_method_alignment = origineComparaison + " + contrôle Titre initial \
-contenu dans titre BNF"
+contenu dans titre BnF/Sudoc"
             ark = ark_current
     elif (titre == "" and input_record.titre.controles == ""):
         ark = ark_current
@@ -755,7 +796,7 @@ def frbnf2ark(input_record):
 
 def row2file(liste_metadonnees, liste_reports):
     liste_metadonnees_to_report = [str(el) for el in liste_metadonnees]
-    if (prefs["timestamp"]["value"] == "True"):
+    if (main.prefs["timestamp"]["value"] == "True"):
         timest = funcs.timestamp()
         liste_metadonnees_to_report.append(timest)
     liste_reports[0].write("\t".join(liste_metadonnees_to_report) + "\n")
@@ -1510,7 +1551,7 @@ def tad2ppn_from_domybiblio(input_record, parametres):
            Y (pour les thèses version de soutenance),
            V (pour le matériel audio-visuel)"""
     typeRecordDic = {"TEX": "B", "VID": "V", "AUD": "V",
-                     "PER": "T", "CP": "K"}
+                     "PER": "T", "CP": "K", "PAR": "M"}
     if input_record.type in typeRecordDic:
         typeRecord4DoMyBiblio = typeRecordDic[input_record.type]
     kw = " ".join([input_record.titre.recherche, input_record.auteur_nett])
@@ -1670,7 +1711,7 @@ def tad2ppn(input_record, parametres):
            V (pour le matériel audio-visuel)
            K (pour les cartes"""
     typeRecordDic = {"TEX": "B", "VID": "V", "AUD": "V", "PER": "T",
-                     "CP": "K"}
+                     "CP": "K", "PAR": "M"}
     url = "http://www.sudoc.abes.fr//DB=2.1/SET=18/TTL=1/CMD?ACT=SRCHM\
 &MATCFILTER=Y&MATCSET=Y&NOSCAN=Y&PARSE_MNEMONICS=N&PARSE_OPWORDS=N&PARSE_OLDSETS=N\
 &IMPLAND=Y&ACT0=SRCHA&screen_mode=Recherche\
@@ -1979,9 +2020,6 @@ def controleNoCommercial(input_record, NumNot, ark_current, no_commercial,
                 recordBNF,
                 "No commercial",
             )
-            if ark != "":
-                # NumNotices2methode[NumNot].append("No commercial")
-                input_record.alignment_method.append("No commercial")
         elif no_commercialBNF in no_commercial:
             ark = comparaisonTitres(
                 input_record,
@@ -1996,9 +2034,6 @@ def controleNoCommercial(input_record, NumNot, ark_current, no_commercial,
                 recordBNF,
                 "No commercial",
             )
-            if ark != "":
-                # NumNotices2methode[NumNot].append("No commercial")
-                input_record.alignment_method.append("No commercial")
     return ark
 
 
@@ -2259,11 +2294,15 @@ def item_alignement(input_record, parametres):
             ark = item2ark_by_keywords(input_record, parametres)
         if ark == "":
             ark = item2ppn_by_id(input_record, parametres)
-        if ark == "":
+        if (ark == "" 
+            and "kwsudoc_option" in parametres
+            and parametres["kwsudoc_option"]==1):
             ark = item2ppn_by_keywords(input_record, parametres)
     else:
         ark = item2ppn_by_id(input_record, parametres)
-        if ark == "":
+        if (ark == "" 
+            and "kwsudoc_option" in parametres
+            and parametres["kwsudoc_option"]==1):
             ark = item2ppn_by_keywords(input_record, parametres)
         if ark == "":
             ark = item2ark_by_id(input_record, parametres)
@@ -2290,7 +2329,7 @@ def item2id(row, n, form_bib2ark, parametres, liste_reports):
     input_record = funcs.Bib_record(row, parametres["type_doc_bib"])
     alignment_result = item_alignement(input_record, parametres)
 
-    alignment_result2output(alignment_result, input_record, 
+    alignment_result2output(alignment_result, input_record,
                             parametres, liste_reports, n)
 
     return alignment_result
@@ -2301,7 +2340,6 @@ def alignment_result2output(alignment_result, input_record, parametres, liste_re
     Format de sortie de l'alignement
     """
     print(str(n) + ". " + input_record.NumNot + " : " + alignment_result.ids_str)
-    
     if parametres["meta_bib"] == 1:
         alignment_result.liste_metadonnees.extend(ark2metadc(alignment_result.ids_str))
     if parametres["file_nb"] == 1:
@@ -2313,80 +2351,10 @@ def alignment_result2output(alignment_result, input_record, parametres, liste_re
 def file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres):
     """Récupération du contenu du fichier et application des règles d'alignement
     ligne à ligne"""
-    header_columns_dic = {
-        1: [
-            "NumNot",
-            "Nb identifiants trouvés",
-            "Liste identifiants trouvés",
-            "Méthode",
-            "ARK BnF initial",
-            "FRBNF",
-            "ISBN",
-            "EAN",
-            "Titre",
-            "auteur",
-            "date",
-            "Tome/Volume",
-            "editeur",
-        ],
-        2: [
-            "NumNot",
-            "Nb identifiants trouvés",
-            "Liste identifiants trouvés",
-            "Méthode",
-            "ARK BnF initial",
-            "FRBNF",
-            "EAN",
-            "no commercial propre",
-            "titre",
-            "auteur",
-            "date",
-            "editeur",
-        ],
-        3: [
-            "NumNot",
-            "Nb identifiants trouvés",
-            "Liste identifiants trouvés",
-            "Méthode",
-            "ARK BnF initial",
-            "FRBNF",
-            "EAN",
-            "no commercial propre",
-            "titre",
-            "auteur",
-            "date",
-            "editeur",
-        ],
-        4: [
-            "NumNot",
-            "Nb identifiants trouvés",
-            "Liste identifiants trouvés",
-            "Méthode",
-            "ARK BnF initial",
-            "frbnf",
-            "ISSN",
-            "titre",
-            "auteur",
-            "date",
-            "lieu",
-        ],
-        5: [
-            "NumNot",
-            "Nb identifiants trouvés",
-            "Liste identifiants trouvés",
-            "Méthode",
-            "ARK BnF initial",
-            "FRBNF",
-            "ISBN",
-            "EAN",
-            "titre",
-            "auteur",
-            "date",
-            "éditeur",
-            "échelle",
-        ]
-    }
-    header_columns = header_columns_dic[parametres["type_doc_bib"]]
+    header_columns = ["NumNot", "Nb identifiants trouvés",
+                      "Liste identifiants trouvés",
+                      "Méthode d'alignement"]
+    header_columns.extend(el for el in parametres["header_columns_init"][1:])
     if parametres["meta_bib"] == 1:
         header_columns.extend(
             [
@@ -2425,6 +2393,7 @@ def launch(
     entry_filename,
     type_doc_bib,
     preferences_alignement,
+    kwsudoc_option,
     file_nb,
     meta_bib,
     id_traitement,
@@ -2436,7 +2405,8 @@ def launch(
         2: header_columns_init_cddvd,
         3: header_columns_init_cddvd,
         4: header_columns_init_perimpr,
-        5: header_columns_init_cartes
+        5: header_columns_init_cartes,
+        6: header_columns_init_partitions
     }
     parametres = {
         "meta_bib": meta_bib,
@@ -2445,10 +2415,11 @@ def launch(
         "id_traitement": id_traitement,
         "header_columns_init": header_columns_init_dic[type_doc_bib],
         "preferences_alignement": preferences_alignement,
+        "kwsudoc_option": kwsudoc_option,
         "stats": defaultdict(int)
     }
     main.check_file_name(form_bib2ark, entry_filename)
-    liste_reports = create_reports(id_traitement, file_nb)
+    liste_reports = create_reports(funcs.id_traitement2path(id_traitement), file_nb)
     file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres)
 
     fin_traitements(form_bib2ark, liste_reports, parametres["stats"])
@@ -2466,7 +2437,7 @@ def fin_traitements(form_bib2ark, liste_reports, nb_notices_nb_ARK):
     form_bib2ark.destroy()
     for file in liste_reports:
         file.close()
-
+    main.output_directory = [""]
 
 def stats_extraction(liste_reports, nb_notices_nb_ARK):
     """Ecriture des rapports de statistiques générales d'alignements"""
@@ -2697,16 +2668,25 @@ def formulaire_noticesbib2arkBnF(
     cadre_output_header = tk.Frame(cadre_output, bg=couleur_fond)
     cadre_output_header.pack(anchor="w")
     cadre_output_nb_fichier = tk.Frame(cadre_output, bg=couleur_fond)
-    cadre_output_nb_fichier.pack(side="left", anchor="w")
+    cadre_output_nb_fichier.pack(anchor="w")
 
-    cadre_output_nb_fichiers_zone = tk.Frame(cadre_output_nb_fichier, bg=couleur_fond)
+    cadre_output_nb_fichiers_zone = tk.Frame(cadre_output_nb_fichier, 
+                                             bg=couleur_fond)
     cadre_output_nb_fichiers_zone.pack(anchor="w")
     cadre_output_nb_fichiers_explications = tk.Frame(
         cadre_output_nb_fichier, bg=couleur_fond
     )
     cadre_output_nb_fichiers_explications.pack(anchor="w")
 
-    cadre_output_id_traitement = tk.Frame(cadre_output, padx=20, bg=couleur_fond)
+    cadre_output_files = tk.Frame(cadre_output, padx=2, 
+                                  bg=couleur_fond)
+    cadre_output_files.pack(anchor="w")
+    
+    cadre_output_directory = tk.Frame(cadre_output_files, 
+                                      padx=1, bg=couleur_fond)
+    cadre_output_directory.pack(side="left", anchor="w")
+
+    cadre_output_id_traitement = tk.Frame(cadre_output_files, padx=1, bg=couleur_fond)
     cadre_output_id_traitement.pack(side="left", anchor="w")
 
     zone_notes_message_en_cours = tk.Frame(zone_notes, padx=20, bg=couleur_fond)
@@ -2732,7 +2712,8 @@ def formulaire_noticesbib2arkBnF(
     ).pack()
 
     tk.Label(
-        cadre_input_file, bg=couleur_fond, text="Fichier contenant les notices :\n\n"
+        cadre_input_file, bg=couleur_fond, 
+        text="Fichier contenant les notices :\n\n"
     ).pack(side="left")
     main.download_zone(
         cadre_input_file,
@@ -2740,6 +2721,7 @@ def formulaire_noticesbib2arkBnF(
         entry_file_list,
         couleur_fond,
         zone_notes,
+        widthb = [40,1]
     )
 
     tk.Label(
@@ -2757,7 +2739,7 @@ def formulaire_noticesbib2arkBnF(
         1,
         couleur_fond,
         "[TEX] Monographies texte",
-        "(Colonnes : " + " | ".join(header_columns_init_monimpr) + ")",
+        main.display_headers_in_form(header_columns_init_monimpr),
         "main/examples/mon_impr.tsv",  # noqa
     )
     radioButton_lienExample(
@@ -2766,7 +2748,7 @@ def formulaire_noticesbib2arkBnF(
         2,
         couleur_fond,
         "[VID] Audiovisuel (DVD)",
-        "(" + " | ".join(header_columns_init_cddvd) + ")",
+        main.display_headers_in_form(header_columns_init_cddvd),
         "",
     )
     radioButton_lienExample(
@@ -2775,7 +2757,7 @@ def formulaire_noticesbib2arkBnF(
         3,
         couleur_fond,
         "[AUD] Enregistrements sonores",
-        "(" + " | ".join(header_columns_init_cddvd) + ")",
+        main.display_headers_in_form(header_columns_init_cddvd),
         "main/examples/audio.tsv",  # noqa
     )
     radioButton_lienExample(
@@ -2784,7 +2766,7 @@ def formulaire_noticesbib2arkBnF(
         4,
         couleur_fond,
         "[PER] Périodiques",
-        "(" + " | ".join(header_columns_init_perimpr) + ")",
+        main.display_headers_in_form(header_columns_init_perimpr),
         "main/examples/per.tsv",  # noqa
     )
     radioButton_lienExample(
@@ -2793,7 +2775,16 @@ def formulaire_noticesbib2arkBnF(
         5,
         couleur_fond,
         "[CAR] Cartes",
-        "(" + " | ".join(header_columns_init_cartes) + ")",
+        main.display_headers_in_form(header_columns_init_cartes),
+        "",  # noqa
+    )
+    radioButton_lienExample(
+        cadre_input_type_docs,
+        type_doc_bib,
+        6,
+        couleur_fond,
+        "(en test) [PAR] Partitions",
+        main.display_headers_in_form(header_columns_init_partitions),
         "",  # noqa
     )
     type_doc_bib.set(1)
@@ -2815,6 +2806,7 @@ def formulaire_noticesbib2arkBnF(
         "",
         "",
     )
+
     radioButton_lienExample(
         cadre_input_type_docs,
         preferences_alignement,
@@ -2825,6 +2817,20 @@ def formulaire_noticesbib2arkBnF(
         "",
     )
     preferences_alignement.set(1)
+
+    kwsudoc_option = tk.IntVar()
+    kwsudoc_option_check = tk.Checkbutton(
+        cadre_input_type_docs,
+        bg=couleur_fond,
+        text="+ Utiliser aussi la recherche par mots-clés dans le Sudoc \
+(peut ralentir le programme)",
+        variable=kwsudoc_option,
+        justify="left",
+    )
+    kwsudoc_option.set(1)
+    kwsudoc_option_check.pack(anchor="w")
+
+
 
     # Choix du format
     tk.Label(
@@ -2881,16 +2887,29 @@ def formulaire_noticesbib2arkBnF(
         justify="left",
     )
     meta_bib_check.pack(anchor="w")
-    tk.Label(cadre_output_nb_fichier, text="\n" * 17, bg=couleur_fond).pack()
+    tk.Label(cadre_output_directory, text="\n", bg=couleur_fond).pack()
+
+    
+    # tk.Label(frame_header, text="\n", bg=couleur_fond).pack()
+
+    main.download_zone(
+        cadre_output_directory,
+        "Sélectionner un dossier\nde destination",
+        main.output_directory,
+        couleur_fond,
+        type_action="askdirectory",
+        widthb = [40,1]
+    )
 
     # Ajout (optionnel) d'un identifiant de traitement
-    tk.Label(cadre_output_id_traitement, bg=couleur_fond, text="\n\n\n").pack()
+    #tk.Label(cadre_output_id_traitement,
+    #         bg=couleur_fond, text="\n"*1).pack()
     tk.Label(
-        cadre_output_id_traitement, bg=couleur_fond, text="Préfixe fichiers en sortie"
-    ).pack()
+        cadre_output_id_traitement, bg=couleur_fond, 
+        text="Préfixe fichiers en sortie").pack()
     id_traitement = tk.Entry(cadre_output_id_traitement, width=20, bd=2)
     id_traitement.pack()
-    tk.Label(cadre_output_id_traitement, bg=couleur_fond, text="\n"*3).pack()
+    tk.Label(cadre_output_files, bg=couleur_fond, text="\n"*22).pack()
 
     # Bouton de validation
 
@@ -2906,6 +2925,7 @@ def formulaire_noticesbib2arkBnF(
             entry_file_list[0],
             type_doc_bib.get(),
             preferences_alignement.get(),
+            kwsudoc_option.get(),
             file_nb.get(),
             meta_bib.get(),
             id_traitement.get(),

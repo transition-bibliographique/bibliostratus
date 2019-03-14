@@ -19,6 +19,7 @@ import json
 import random
 import datetime
 import time
+from tkinter import filedialog
 
 from lxml import etree
 from lxml.html import parse
@@ -28,6 +29,7 @@ from unidecode import unidecode
 import pymarc as mc
 
 import main
+import marc2tables
 import noticesaut2arkBnF as aut2ark
 from udecode import udecode
 
@@ -311,6 +313,24 @@ def nettoyageFRBNF(frbnf):
     return frbnf_nett
 
 
+def nettoyageIdRef(idref_id):
+    idref_nett = ""
+    idref_id = unidecode_local(idref_id.lower())
+    if ("idref.fr/" in idref_id):
+        idref_nett = idref_id[idref_id.find("idref.fr/") + 9:]
+        if (len(idref_nett) > 8):
+            idref_nett = idref_nett[:9]
+        else:
+            idref_nett = ""
+    elif ("ppn" in idref_id):
+        idref_nett = idref_id[idref_id.find("ppn") + 3:]
+        if (len(idref_nett) > 8):
+            idref_nett = idref_nett[:9]
+        else:
+            idref_nett = ""
+    return idref_nett
+    
+
 def conversionIsbn(isbn):
     longueur = len(isbn)
     isbnConverti = ""
@@ -445,6 +465,18 @@ def elargirDatesPerios(n):
         liste.append(j + i)
         i += 1
     return " ".join([str(el) for el in liste])
+
+
+def set_proxy_session():
+    import requests
+    proxies = {
+        'http': prefs["http_proxy"]["value"],
+        'https': prefs["https_proxy"]["value"]
+    }
+    s = requests.Session()
+    s.proxies = proxies
+    # r = s.get('https://api.ipify.org?format=json').json()
+    # print(r['ip'])
 
 
 def testURLetreeParse(url, display=True, param_timeout=None):
@@ -596,6 +628,17 @@ def url_requete_sru(query, recordSchema="unimarcxchange",
         startRecord + "&origin=bibliostratus"
     return url
 
+def id_traitement2path(id_traitement):
+    """
+    Construit le chemin des fichiers en sortie
+    de Bibliostratus
+    """
+    if (main.output_directory != [""]):
+        filepath = os.path.join(main.output_directory[0], id_traitement)
+    else:
+        filepath = id_traitement
+    return filepath
+
 
 def open_local_file(path):
     """Construit le chemin absolu vers un fichier en local
@@ -651,6 +694,15 @@ class FRBNF:
         """Méthode permettant d'afficher plus joliment notre objet"""
         return "{}".format(self.init)
 
+class IdRef:
+    """Classe pour les identifiants IdRef (propriété des notices d'AUT)"""
+    def __init__(self, string):  # Notre méthode constructeur
+        self.init = string
+        self.propre = nettoyageIdRef(self.init)
+
+    def __str__(self):
+        """Méthode permettant d'afficher plus joliment notre objet"""
+        return "{}".format(self.init)
 
 class Date:
     """Classe pour les ISNI"""
@@ -664,7 +716,7 @@ class Date:
 
 
 class Name:
-    """Zone de titre"""
+    """Zone de nom d'auteur"""
 
     def __init__(self, string):  # Notre méthode constructeur
         self.init = string
@@ -700,6 +752,7 @@ class Bib_record:
         self.isbn = International_id("")
         self.ean = International_id("")
         self.titre = Titre("")
+        self.soustitre = Titre("")
         self.auteur = ""
         self.date = ""
         self.tome = ""
@@ -756,6 +809,17 @@ class Bib_record:
             self.date = input_row[7]
             self.publisher = input_row[8]
             self.scale = input_row[9]
+        if (option_record == 6):
+            self.type = "PAR"
+            self.intermarc_type_record = "m"
+            self.intermarc_type_doc = "c"
+            self.ean = International_id(input_row[3])
+            self.no_commercial = International_id(input_row[4], False)
+            self.titre = Titre(input_row[5])
+            self.soustitre = Titre(input_row[6])
+            self.auteur = input_row[7]
+            self.date = input_row[8]
+            self.publisher = input_row[9]
         self.titre_nett = nettoyageTitrePourControle(self.titre.init)
         self.auteur_nett = nettoyageAuteur(self.auteur, False)
         self.no_commercial_propre = nettoyage_no_commercial(
@@ -784,6 +848,7 @@ class Aut_record:
         self.metas_init = input_row[1:]
         self.NumNot = input_row[0]
         self.frbnf = FRBNF(input_row[1])
+        self.idref = IdRef(input_row[1])
         self.ark_init = input_row[2]
         self.isni = Isni(input_row[3])
         self.lastname = Name(input_row[4])
@@ -800,6 +865,7 @@ class Bib_Aut_record:
     def __init__(self, input_row, parametres):  # Notre méthode constructeur
         self.metas_init = input_row[1:]
         self.NumNot = input_row[0]
+        self.type = None
         self.NumNot_bib = input_row[1]
         self.ark_bib_init = input_row[2]
         self.frbnf_bib = FRBNF(input_row[3])
@@ -816,8 +882,41 @@ class Bib_Aut_record:
         if (self.date_debut.find("av") > 0):
             self.date_debut = self.date_debut[:self.date_debut.find("av")]
         elif (self.date_debut.find("-") > 0):
-            date_debutdate_debut = self.date_debut[:self.date_debut.find("-")]
+            date_debut = self.date_debut[:self.date_debut.find("-")]
         self.date_debut = main.clean_string(self.date_debut, False, True)
+
+
+class XML2record:
+    """
+    En entrée, une notice MarcXML
+    En sortie, fournit un objet Bib_record manipulable
+    pour un alignement 
+    record_type: 1 = BIB, 2 = AUT
+
+    """
+    def __init__(self, xml_record, record_type=1):  # Notre méthode constructeur
+        self.init = xml_record
+        self.pymarc_record = xml2pymarcrecord(xml_record)
+        self.doc_record = None
+        if (record_type == 1):
+            self.metadata, self.doc_record = marc2tables.record2listemetas(self.pymarc_record, 1)
+            self.record = Bib_record(self.metadata, record_type)
+        else:
+            self.metadata, self.doc_record = marc2tables.record2listemetas(self.pymarc_record, 2)
+            self.record = Aut_record(self.metadata, record_type)
+
+
+class XMLaut2record:
+    """
+    En entrée, une notice MarcXML
+    En sortie, fournit un objet Aut_record manipulable
+    pour un alignement 
+    """
+    def __init__(self, xml_record):  # Notre méthode constructeur
+        self.init = xml_record
+        self.record_type = None
+        self.metadata = marc2tables.record2listemetas(xml_record, 2)
+        self.record = Aut_record(self.metadata, self.record_type)
 
 
 class Alignment_result:
@@ -836,6 +935,8 @@ class Alignment_result:
         if (len(list(set(input_record.alignment_method))) == 1):
             self.alignment_method_list = [input_record.alignment_method[0]]
         self.alignment_method_str = ",".join(self.alignment_method_list)
+        if (self.nb_ids == 0):
+            self.alignment_method_str = ""
         self.liste_metadonnees = [
                                     input_record.NumNot,
                                     self.nb_ids,
@@ -881,6 +982,8 @@ class Aligned_id:
             self.agency = "BNF"
             self.type = "ark"
             self.clean = init[init.find("ark"):]
+
+
 
 
 def xml2pymarcrecord(xml_record):
@@ -1017,6 +1120,93 @@ def domybiblio2ppn(keywords, date="", type_doc="", parametres={}):
     return Listeppn
 
 
+def field2subfield(field, subfield, nb_occ="all", sep="~"):
+    path = "*[@code='" + subfield + "']"
+    listeValues = []
+    if (nb_occ == "first" or nb_occ == 1):
+        if (field.find(path) is not None and
+                field.find(path).text is not None):
+            val = field.find(path).text
+            listeValues.append(val)
+    else:
+        for occ in field.xpath(path):
+            if (occ.text is not None):
+                listeValues.append(occ.text)
+    listeValues = sep.join(listeValues)
+    return listeValues
+
+
+def field2value(field):
+    try:
+        value = " ".join([" ".join(["$" + el.get("code"), el.text]) for el in field.xpath("*")])
+    except ValueError:
+        value = ""
+    return value
+
+
+def record2fieldvalue(record, zone):
+    #Pour chaque zone indiquée dans le formulaire, séparée par un point-virgule, on applique le traitement ci-dessous
+    value = ""
+    field = ""
+    subfields = []
+    if (zone.find("$") > 0):
+        #si la zone contient une précision de sous-zone
+        zone_ss_zones = zone.split("$")
+        field = zone_ss_zones[0]
+        fieldPath = ".//*[@tag='" + field + "']"
+        i = 0
+        for field in record.xpath(fieldPath):
+            i = i+1
+            j = 0
+            for subfield in zone_ss_zones[1:]:
+                sep = ""
+                if (i > 1 and j == 0):
+                    sep = "~"
+                j = j+1
+                subfields.append(subfield)
+                subfieldpath = "*[@code='"+subfield+"']"
+                if (field.find(subfieldpath) is not None):
+                    if (field.find(subfieldpath).text != ""):
+                        valtmp = field.find(subfieldpath).text
+                        #valtmp = field.find(subfieldpath).text.encode("utf-8").decode("utf-8", "ignore")
+                        prefixe = ""
+                        if (len(zone_ss_zones) > 2):
+                            prefixe = " $" + subfield + " "
+                        value = str(value) + str(sep) + str(prefixe) + str(valtmp)
+    else:
+        #si pas de sous-zone précisée
+        field = zone
+        path = ""
+        if (field == "000"):
+            path = ".//*[local-name()='leader']"
+        else:
+            path = ".//*[@tag='" + field + "']"
+        i = 0        
+        for field in record.xpath(path):
+            i = i+1
+            j = 0
+            if (field.find("*", namespaces=ns_bnf) is not None):
+                sep = ""
+                for subfield in field.xpath("*"):
+                    sep = ""
+                    if (i > 1 and j == 0):
+                        sep = "~"
+                    #print (subfield.get("code") + " : " + str(j) + " // sep : " + sep)
+                    j = j+1
+                    valuesubfield = ""
+                    if (subfield.text != ""):
+                        valuesubfield = str(subfield.text)
+                        if (valuesubfield == "None"):
+                            valuesubfield = ""
+                    value = value + sep + " $" + subfield.get("code") + " " + valuesubfield
+            else:
+                value = field.find(".").text
+    if (value != ""):
+        if (value[0] == "~"):
+            value = value[1:]
+    return value.strip()
+
+
 def domybiblio2ppn_pages_suivantes(keywords, Listeppn, 
                                    nb_results, i,
                                    date, type_doc, parametres):
@@ -1041,14 +1231,16 @@ def domybiblio2ppn_pages_suivantes(keywords, Listeppn,
     return Listeppn
 
 
-
-
 def timestamp():
     """Renvoie l'horodatage sous la forme 
     2018-11-08 12:07:09.552751
     """
     timest = datetime.datetime.fromtimestamp(time.time()).strftime("%Y-%m-%d %H-%M-%S")
     return timest
+
+
+
+
 
 if __name__ == '__main__':
     access_to_network = main.check_access_to_network()

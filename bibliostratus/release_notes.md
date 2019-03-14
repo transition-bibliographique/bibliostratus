@@ -1,3 +1,19 @@
+### version 1.26
+14/03/2019
+- Formulaire d'édition des préférences
+- Tous modules :
+	- possibilité de déclarer un proxy réseau dans le fichier preferences.json
+	- option "Editer les préférences" depuis le formulaire principal
+	- nouveau type d'objet XMLbib2record qui pour une notice MARC en entrée fournit (méthode Marc_bib2record.record) une instance de la classe Bib_record
+	- choisir un répertoire cible pour le dépôt des fichiers de résultats
+- Module blanc (alignements BIB):
+	- Correction sur les informations de "méthode d'alignement" :
+		- nettoyage des redondances
+		- ajout d'informations pour identifier les alignements moins fiables
+	- Option "recherche mots-clés dans le Sudoc" désactivable
+	- Nouveau type de document Partitions (en test), exporté dans un format spécifique par le module bleu (marc2tables)
+
+
 ### version 1.25
 11 décembre 2018
 - Module bleu (conversion de notices en tableaux):

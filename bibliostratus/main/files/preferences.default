@@ -1,0 +1,29 @@
+{
+    "display_message_in_progress": {
+        "description": "Afficher ou non le message en rouge quand on sélectionner un fichier à charger. Par défaut : 1 = message à afficher. 0 = ne pas afficher",
+        "value": 1
+        },
+    "marc2tables_input_format": {
+        "description": "Format de données en entrée dans le module bleu (marc2tables). Par défaut : 'unimarc'. Autre valeur autorisée : 'marc21'.",
+        "value": "unimarc"
+        },
+    "stop_words": {
+        "description": "Si renseigné, nom du fichier où se trouve une liste de mots vides, à ignorer pour l'alignement. Par exemple, si la liste contient le mot 'Ste', le titre 'Notice historique sur Marizy-Ste-Geneviève' cherchera en réalité 'Notice historique sur Marizy Geneviève'",
+        "value": ""
+        },
+    "timestamp": {
+        "description": "Option (booléen True/False) pour injecter en dernière colonne des rapports d'alignement l'horodatage. Ceci pour évaluer la performance d'un alignement volumineux au fur et à mesure du traitement.",
+        "value": "False"
+        },
+    "http_proxy": {
+        "description": "URL du proxy HTTP à utiliser dans le contexte d'un réseau professionnel.",
+        "URL": "",
+        "login": "",
+        "mot de passe": ""
+        },
+    "https_proxy": {
+        "description": "URL du proxy HTTPS à utiliser dans le contexte d'un réseau professionnel.",
+        "URL": "",
+        "login": "",
+        "mot de passe": ""
+        }}

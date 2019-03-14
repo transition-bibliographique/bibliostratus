@@ -290,11 +290,13 @@ def aut2ark_by_id(input_record, parametres):
         ark = isni2id(input_record, parametres)
     if (ark == "" and input_record.frbnf.propre != ""):
         ark = frbnfAut2arkAut(input_record)
+    if (ark == "" and input_record.idref.propre != ""):
+        ark = aut_align_idref.idrefAut2arkAut(input_record)
     return ark
 
 def align_from_aut_alignment(input_record, parametres):
     if (parametres["preferences_alignement"] == 1):
-        ark = aut2ark_by_id(input_record,parametres)
+        ark = aut2ark_by_id(input_record, parametres)
         if (ark == ""):
             ark = aut2ark_by_accesspoint(
                     input_record,
@@ -543,10 +545,11 @@ def frbnfAut2arkAut(input_record):
             ark = oldfrbnf2ark(input_record)
         elif (nb_resultats == 1):
             ark = page.find("//srw:recordIdentifier", namespaces=main.ns).text
-            NumNotices2methode[input_record.NumNot].append("FRBNF")
         else:
             ark = ",".join([ark.text for ark in page.xpath(
                 "//srw:recordIdentifier", namespaces=main.ns)])
+    if (ark):
+        input_record.alignment_method.append("FRBNF")
     return ark
 
 
@@ -951,7 +954,7 @@ def launch(form, entry_filename, headers, input_data_type, preferences_alignemen
                   "type_aut": type_aut_dict[input_data_type],
                   "preferences_alignement": preferences_alignement,
                   "stats":  defaultdict(int)}
-    liste_reports = create_reports(id_traitement, file_nb)
+    liste_reports = create_reports(funcs.id_traitement2path(id_traitement), file_nb)
 
     if (input_data_type == 1 or input_data_type == 2):
         align_from_aut(form, entry_filename, liste_reports, parametres)
@@ -1033,20 +1036,20 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
     input_data_type = tk.IntVar()
     bib2ark.radioButton_lienExample(
         frame_input_aut, input_data_type, 1, couleur_fond,
-        "[PËRS] Liste de notices Personnes",
-        "(" + " | ".join(header_columns_init_aut2aut) + ")",
+        "[PERS] Liste de notices Personnes",
+        main.display_headers_in_form(header_columns_init_aut2aut),
         "main/examples/aut_align_aut.tsv"  # noqa
     )
     bib2ark.radioButton_lienExample(
         frame_input_aut, input_data_type, 2, couleur_fond,
         "[ORG] Liste de notices Organisations",
-        "(" + " | ".join(header_columns_init_aut2aut) + ")",
+        main.display_headers_in_form(header_columns_init_aut2aut),
         ""  # noqa
     )
     bib2ark.radioButton_lienExample(
         frame_input_aut, input_data_type, 3, couleur_fond,
         "Liste de notices bibliographiques",
-        "(" + " | ".join(header_columns_init_bib2aut) + ")",
+        main.display_headers_in_form(header_columns_init_bib2aut),
         "main/examples/aut_align_bib.tsv"  # noqa
     )
 
@@ -1121,12 +1124,24 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
                    bg=couleur_fond, justify="left").pack(anchor="w")
     tk.Label(frame_output_file, text="\n", bg=couleur_fond,
              justify="left").pack(anchor="w")
+    
+    # tk.Label(frame_header, text="\n", bg=couleur_fond).pack()
+
+    main.download_zone(
+        frame_output_file,
+        "Sélectionner un dossier\nde destination",
+        main.output_directory,
+        couleur_fond,
+        type_action="askdirectory",
+        widthb = [40,1]
+    )
+
     tk.Label(frame_output_file, text="Préfixe des fichiers en sortie",
              bg=couleur_fond).pack(anchor="w")
     outputID = tk.Entry(frame_output_file, bg=couleur_fond, width=30)
     outputID.pack(anchor="w")
 
-    tk.Label(frame_output_file, text="\n"*10,
+    tk.Label(frame_output_file, text="\n"*3,
              bg=couleur_fond).pack(anchor="w")
 
     # file_format.focus_set()

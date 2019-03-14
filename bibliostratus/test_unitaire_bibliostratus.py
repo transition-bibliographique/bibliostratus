@@ -8,13 +8,15 @@ Ensemble des tests unitaires sur un ensemble de fonctions utilisées par Biblios
 A lancer avec pytest
 """
 from collections import defaultdict
+import os
+import csv
 
 import funcs
 import main
 import aut_align_idref
 import noticesbib2arkBnF as bib2ark
 import noticesaut2arkBnF as aut2ark
-
+import marc2tables
 
 
 # =============================================================================
@@ -192,10 +194,12 @@ def test_alignement_bib():
                                )}
                   }
     param_alignBnF = {"preferences_alignement":  1,
+                  "kwsudoc_option": 1,
                   "meta_bib": 0,
                   "meta_bnf": 0,
                   "stats": defaultdict(int)}
     param_alignSudoc = {"preferences_alignement":  2,
+                  "kwsudoc_option": 1,
                   "meta_bib": 1,
                   "meta_bnf": 0,
                   "stats": defaultdict(int)}
@@ -224,6 +228,7 @@ def test_alignement_aut():
                   "type_aut": "a",
                   "input_data_type": 1,
                   "meta_bnf": 1,
+                  "kwsudoc_option": 1,
                   "isni_option": 1,
                   "stats": defaultdict(int)}
     param_alignIdRef = {"preferences_alignement":  2,
@@ -333,7 +338,7 @@ def test_domybiblio_1_answer():
     ppn = bib2ark.tad2ppn(record, param)
     assert ppn == "PPN015108805" or ppn == ""
 
-def check_controle_011():
+def test_controle_011():
     """
     Recherche de périodique par ISSN dans le catalogue BnF
     Vérifie que le test sur la 011 est correct (True si 011$a, False sinon)
@@ -341,12 +346,44 @@ def check_controle_011():
     et l'extraction de sous-zones
     """
     issn = "1254-728X"
-    recordTrue = bib2ark.ark2recordBNF("ark:/12148/cb345079588")
-    recordFalse = bib2ark.ark2recordBNF("ark:/12148/cb40172844d")
+    test_access1, recordTrue = bib2ark.ark2recordBNF("ark:/12148/cb345079588")
+    test_access2, recordFalse = bib2ark.ark2recordBNF("ark:/12148/cb40172844d")
     testTrue = bib2ark.check_issn_in_011a(recordTrue, issn)
     testFalse = bib2ark.check_issn_in_011a(recordFalse, issn)
     assert testTrue is True
     assert testFalse is False
 
+
+def test_convert_iso2tables():
+    """
+    Ouverture d'un fichier ISO2709 de notices BIB pour le convertir en fichier tabulé
+    """
+    dirpath = os.path.dirname(os.path.realpath(__file__))
+    isofile_name = os.path.join(dirpath, "main", "examples", "noticesbib.iso")    
+    liste_files = marc2tables.iso2tables(None, isofile_name, 1, 1, "pytest_iso", display=False)
+    for file in liste_files:
+        liste_files[file].close()
+        """if ("TEX" not in liste_files[file].name):
+            os.remove(liste_files[file].name)"""
+    first_line_text = []
+    with open("pytest_iso-TEX-.txt", "r", encoding="utf-8") as file:
+        content = csv.reader(file, delimiter="\t")
+        next(content)
+        first_line_text = next(content)
+    wanted = ['FRBNF427031150000009', 'frbnf427031150000009',
+              '', '', '', 'Plan de Paris 2012',
+              'paris service la topographie de documentation fonciere et',
+              '2012', '', 'Mairie de Paris']
+    for i in range(0, len(first_line_text)):
+        wanted_i = " ".join(sorted([el for el in wanted[i].split(" ")]))
+        first_line_text_i = " ".join(sorted([el for el in first_line_text[i].split(" ")]))
+        print(i, wanted_i, first_line_text_i)
+        assert wanted_i == first_line_text_i
+    for file in liste_files:
+        try:
+            os.remove(os.path.join(dirpath, liste_files[file].name))
+        except FileNotFoundError:
+            pass
+
 if __name__ == "__main__":
-  test_alignement_aut()
+  test_convert_iso2tables()

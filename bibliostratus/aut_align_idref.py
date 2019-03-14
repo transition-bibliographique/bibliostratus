@@ -53,6 +53,32 @@ def autArk2ppn(NumNot, ark_nett):
     return Liste_ppn
 
 
+def idrefAut2arkAut(input_record):
+    liste_ark = []
+    url = f"https://www.idref.fr/{input_record.idref.propre}.xml"
+    print(url)
+    (test, result) = funcs.testURLetreeParse(url, display=False)
+    if test:
+        for f033 in result.xpath("//*[@tag='033']"):
+            val = funcs.field2subfield(f033, "a")
+            if ("ark:/12148/" in val):
+                val = val[val.find("ark:/12148/"):]
+                liste_ark.append(val)
+        if (liste_ark):
+            input_record.alignment_method.append("PPN > ARK")
+        if (liste_ark == []
+           and result.find("//*[@tag='035']") is not None
+           and "frbn" in funcs.record2fieldvalue(result, "035$a").lower()):
+            print("test035")
+            aut_record = funcs.XML2record(result, 2).record
+            #print(aut_record.metadata)
+            liste_ark.extend(aut2ark.frbnfAut2arkAut(aut_record).split(","))
+            if (liste_ark):
+                input_record.alignment_method.append("PPN > FBRNF > ARK")
+    liste_ark = ",".join(liste_ark)
+    return liste_ark
+
+
 def aut2ppn_by_accesspoint(input_record, parametres):
     """
     Exemple de requête sur nom, prénom et date de naissance

@@ -380,7 +380,9 @@ def test_encoding_file(master, entry_filename, encoding, file_format):
     return (test, input_file)
 
 
-def iso2tables(master, entry_filename, file_format, rec_format, id_traitement):
+def iso2tables(master, entry_filename, file_format,
+               rec_format, id_traitement,
+               display=True):
     # input_file_test = open(entry_filename,'rb').read()
     # print(chardet.detect(input_file_test).read())
     encoding = "iso-8859-1"
@@ -405,12 +407,15 @@ def iso2tables(master, entry_filename, file_format, rec_format, id_traitement):
                 collection.force_utf8 = True
             (test, record) = detect_errors_encoding_iso(collection)
             if (test):
-                record2listemetas(id_traitement, record, rec_format)
+                record_metas, doc_record = record2listemetas(record, rec_format)
+                record_metas2report(record_metas, doc_record, rec_format,
+                                    id_traitement, display)
     try:
         os.remove("temp_record.txt")
     except FileNotFoundError as err:
         print(err)
     stats["Nombre total de notices traitées"] = i
+    return output_files_dict
 
 
 def xml2tables(master, entry_filename, rec_format, id_traitement):
@@ -421,7 +426,8 @@ def xml2tables(master, entry_filename, rec_format, id_traitement):
         for record in collection:
             # print(record.leader)
             i += 1
-            record2listemetas(id_traitement, record, rec_format)
+            record_metas, doc_record = record2listemetas(record, rec_format)
+            record_metas2report(record_metas, doc_record, rec_format, id_traitement)
         stats["Nombre total de notices traitées"] = i
     except xml.sax._exceptions.SAXParseException:
         message = """Le fichier XML """ + entry_filename + """ n'est pas encodé en UTF-8.
@@ -441,6 +447,12 @@ def metas_from_marc21(record):
     keyTitle = record2title(
         record2meta(record, ["222$a"], ["200$a", "200$e"])
     )
+    global_title = record2title(
+        record2meta(record, ["490$a"], ["245$a", "245$e"])
+    )
+    part_title = ""
+    if (global_title == part_title):
+        part_title = ""
     authors = record2authors(record2meta(record, [
         "100$a",
         "100$m",
@@ -469,20 +481,32 @@ def metas_from_marc21(record):
     id_commercial_aud = record2id_commercial_aud(
         record2meta(record, ["073$a"]))
     return (
-            title, keyTitle, authors,
-            authors2keywords, date, numeroTome, publisher,
-            pubPlace, scale,
-            ark, frbnf, isbn, issn, ean, id_commercial_aud
+            title, keyTitle, global_title, part_title,
+            authors, authors2keywords, date, numeroTome,
+            publisher, pubPlace, scale,
+            ark, frbnf, isbn, issn, ean, 
+            id_commercial_aud
             )
 
 
 def metas_from_unimarc(record):
+    """
+    Définition des zones Marc correspondant aux différentes métadonnées
+    """
     title = record2title(
         record2meta(record, ["200$a", "200$e"])
     )
     keyTitle = record2title(
         record2meta(record, ["530$a"], ["200$a", "200$e"])
     )
+    global_title = record2title(
+        record2meta(record, ["225$a"], ["200$a", "200$e"])
+    )
+    part_title = record2title(
+        record2meta(record, ["464$t"], ["200$a", "200$e"])
+    )
+    if (global_title == part_title):
+        part_title = ""
     authors = record2authors(record2meta(record, [
         "700$a",
         "700$b",
@@ -514,10 +538,11 @@ def metas_from_unimarc(record):
     id_commercial_aud = record2id_commercial_aud(
         record2meta(record, ["071$b", "071$a"]))
     return (
-            title, keyTitle, authors,
-            authors2keywords, date,
-            numeroTome, publisher, pubPlace, scale,
-            ark, frbnf, isbn, issn, ean, id_commercial_aud
+            title, keyTitle, global_title, part_title,
+            authors, authors2keywords, date, numeroTome,
+            publisher, pubPlace, scale,
+            ark, frbnf, isbn, issn, ean, 
+            id_commercial_aud
             )
 
 
@@ -529,13 +554,15 @@ def bibrecord2metas(numNot, doc_record, record, pref_format_file=True):
     le fichier preferences.json
     Sinon, Unimarc"""
     if (pref_format_file == True
-        and prefs["marc2tables_input_format"]["value"] == "marc21"):
-        (title, keyTitle, authors, authors2keywords,
+        and main.prefs["marc2tables_input_format"]["value"] == "marc21"):
+        (title, keyTitle, global_title, part_title,
+         authors, authors2keywords,
          date, numeroTome, publisher, pubPlace, scale,
          ark, frbnf, isbn, issn, ean,
          id_commercial_aud) = metas_from_marc21(record)
     else:
-        (title, keyTitle, authors, authors2keywords,
+        (title, keyTitle, global_title, part_title,
+         authors, authors2keywords,
          date, numeroTome, publisher, pubPlace, scale,
          ark, frbnf, isbn, issn, ean,
          id_commercial_aud) = metas_from_unimarc(record)
@@ -551,6 +578,9 @@ def bibrecord2metas(numNot, doc_record, record, pref_format_file=True):
     elif (doc_record == "im" or doc_record == "jm" or doc_record == "gm"):
         meta = [numNot, frbnf, ark, ean, id_commercial_aud,
                 title, authors2keywords, date, publisher]
+    elif (doc_record == "cm"):
+        meta = [numNot, frbnf, ark, ean, id_commercial_aud,
+                global_title, part_title, authors2keywords, date, publisher]
     elif (len(doc_record) > 1 and doc_record[1] == "s"):
         if (keyTitle == ""):
             meta = [numNot, frbnf, ark, issn, title,
@@ -666,10 +696,10 @@ def record2doc_recordtype(leader, rec_format):
     return doctype, recordtype, doc_record
 
 
-def record2listemetas(id_traitement, record, rec_format=1):
+def record2listemetas(record, rec_format=1):
     numNot = record2meta(record, ["001"])
     doctype, recordtype, doc_record = record2doc_recordtype(record.leader,
-                                                     rec_format)
+                                                            rec_format)
     meta = []
     if (rec_format == 2):
         meta = autrecord2metas(numNot, doc_record, record)
@@ -678,35 +708,47 @@ def record2listemetas(id_traitement, record, rec_format=1):
     else:
         meta = bibrecord2metas(numNot, doc_record, record)
 
-    # print(meta)
+    return meta, doc_record
+    # liste_resultats[doc_record].append(meta)
+
+
+def record_metas2report(record_metas, doc_record, rec_format,
+                        id_traitement, display=True):
+    """
+    une fois récupérées les métadonnées propres à chaque type de notice
+    (grâce à la fonction record2listemetas())
+    on les envoie dans un fichier de résultats, par type de doc
+    """
     if (rec_format == 3):
-        for aut in meta:
+        for aut in record_metas:
             doc_record = aut[0]
             if (doc_record in output_files_dict):
                 stats[doc_record_type[doc_record]] += 1
                 output_files_dict[doc_record].write("\t".join(aut[1:]) + "\n")
-                print(doc_record, ' - ', aut[1])
+                if (display):
+                    print(doc_record, ' - ', aut[1])
             else:
                 stats[doc_record_type[doc_record]] = 1
                 output_files_dict[doc_record] = write_reports(
-                    id_traitement, doc_record, rec_format)
+                    funcs.id_traitement2path(id_traitement), doc_record, rec_format)
                 output_files_dict[doc_record].write("\t".join(aut[1:]) + "\n")
-                print(doc_record, ' - ', aut[1])
+                if (display):
+                    print(doc_record, ' - ', aut[1])
 
     elif (doc_record in output_files_dict):
-        if (meta[0] not in liste_notices_pb_encodage):
+        if (record_metas[0] not in liste_notices_pb_encodage):
             stats[doc_record_type[doc_record]] += 1
-            output_files_dict[doc_record].write("\t".join(meta) + "\n")
-            print(doc_record, ' - ', meta[0])
+            output_files_dict[doc_record].write("\t".join(record_metas) + "\n")
+            if (display):
+                print(doc_record, ' - ', record_metas[0])
 
     else:
         stats[doc_record_type[doc_record]] = 1
         output_files_dict[doc_record] = write_reports(
-            id_traitement, doc_record, rec_format)
-        output_files_dict[doc_record].write("\t".join(meta) + "\n")
-        print(doc_record, ' - ', meta[0])
-
-    # liste_resultats[doc_record].append(meta)
+            funcs.id_traitement2path(id_traitement), doc_record, rec_format)
+        output_files_dict[doc_record].write("\t".join(record_metas) + "\n")
+        if (display):
+            print(doc_record, ' - ', record_metas[0])
 
 
 def write_reports(id_traitement, doc_record, rec_format):
@@ -722,6 +764,9 @@ def write_reports(id_traitement, doc_record, rec_format):
         elif (doc_record == "em"):
             header_columns = bib2ark.header_columns_init_cartes
             filename = "CAR-" + filename
+        elif (doc_record == "cm"):
+            header_columns = bib2ark.header_columns_init_partitions
+            filename = "PAR-" + filename
         elif (doc_record == "gm"):
             header_columns = bib2ark.header_columns_init_cddvd
             filename = "VID-" + filename
@@ -771,6 +816,7 @@ https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr
 def end_of_treatments(form, id_traitement):
     for file in output_files_dict:
         output_files_dict[file].close()
+    main.output_directory = [""]
     encoding_errors(id_traitement)
     print("\n\n------------------------\n\nExtraction terminée\n\n")
     for key in stats:
@@ -783,7 +829,8 @@ def end_of_treatments(form, id_traitement):
 
 
 def launch(form, entry_filename, file_format, rec_format, output_ID, master):
-
+    """Lancement du programme après validation
+    du formulaire de conversion d'un fichier MARC en tableaux"""
     main.check_file_name(form, entry_filename)
     # popup_en_cours = main.message_programme_en_cours(form)
 
@@ -874,7 +921,7 @@ def formulaire_marc2tables(
     # =============================================================================
 
     cadre_output = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton,
-                            relief="groove", height=150, padx=10, bg=couleur_fond)
+                            relief="groove", height=120, padx=10, bg=couleur_fond)
     cadre_output.pack(side="left")
     cadre_output_header = tk.Frame(cadre_output, bg=couleur_fond)
     cadre_output_header.pack(anchor="w")
@@ -957,7 +1004,7 @@ def formulaire_marc2tables(
         ),
     )
     lien_help_encodage.pack()
-    tk.Label(cadre_input_type_docs, bg=couleur_fond, text="\n\n\n").pack()
+    tk.Label(cadre_input_type_docs, bg=couleur_fond, text="\n"*8).pack()
 
     tk.Label(cadre_input_type_docs_interstice2,
              bg=couleur_fond, text="\t", justify="left").pack()
@@ -994,7 +1041,7 @@ def formulaire_marc2tables(
     ).pack(anchor="w")
     rec_format.set(1)
 
-    tk.Label(cadre_input_type_rec, text="\n\n\n\n\n\n", bg=couleur_fond).pack()
+    tk.Label(cadre_input_type_rec, text="\n"*11, bg=couleur_fond).pack()
 
     # =============================================================================
     #     Formulaire - Fichiers en sortie
@@ -1002,13 +1049,24 @@ def formulaire_marc2tables(
     #
 
     # Choix du format
+
     tk.Label(cadre_output_header, bg=couleur_fond, fg=couleur_bouton, font="bold",
              text="En sortie",
              justify="left").pack()
+
+
+    main.download_zone(
+        cadre_output_nom_fichiers,
+        "Sélectionner un dossier de destination",
+        main.output_directory,
+        couleur_fond,
+        type_action="askdirectory",
+        widthb = [40,1]
+    )
     tk.Label(cadre_output_nom_fichiers, bg=couleur_fond,
              text="Préfixe des fichiers en sortie : ",
              justify="left").pack(side="left")
-    output_ID = tk.Entry(cadre_output_nom_fichiers, width=40, bd=2)
+    output_ID = tk.Entry(cadre_output_nom_fichiers, width=20, bd=2)
     output_ID.pack(side="left")
 
     # Sélection du répertoire en sortie
