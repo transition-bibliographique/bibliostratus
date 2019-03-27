@@ -290,7 +290,7 @@ def aut2ark_by_id(input_record, parametres):
         ark = isni2id(input_record, parametres)
     if (ark == "" and input_record.frbnf.propre != ""):
         ark = frbnfAut2arkAut(input_record)
-    if (ark == "" and input_record.idref.propre != ""):
+    if (ark == "" and input_record.ppn.propre != ""):
         ark = aut_align_idref.idrefAut2arkAut(input_record)
     return ark
 

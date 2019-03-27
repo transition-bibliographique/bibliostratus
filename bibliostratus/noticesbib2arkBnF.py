@@ -28,7 +28,7 @@ import json
 
 import funcs
 import main
-
+import aut_align_idref
 
 # Ajout exception SSL pour éviter
 # plantages en interrogeant les API IdRef
@@ -2110,6 +2110,8 @@ def item2ark_by_id(input_record, parametres):
     if ark == "" and input_record.frbnf.propre != "":
         ark = frbnf2ark(input_record)
         ark = ",".join([ark1 for ark1 in ark.split(",") if ark1 != ""])
+    if (ark == "" and input_record.ppn.propre != ""):
+        ark = aut_align_idref.idrefAut2arkAut(input_record, "sudoc")
 
     # A défaut, recherche sur EAN
     if ark == "" and input_record.ean.nett != "":

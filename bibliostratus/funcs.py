@@ -313,11 +313,11 @@ def nettoyageFRBNF(frbnf):
     return frbnf_nett
 
 
-def nettoyageIdRef(idref_id):
+def nettoyageIdRef(idref_id, base="idref.fr/"):
     idref_nett = ""
     idref_id = unidecode_local(idref_id.lower())
-    if ("idref.fr/" in idref_id):
-        idref_nett = idref_id[idref_id.find("idref.fr/") + 9:]
+    if (base in idref_id):
+        idref_nett = idref_id[idref_id.find(base) + 9:]
         if (len(idref_nett) > 8):
             idref_nett = idref_nett[:9]
         else:
@@ -698,11 +698,22 @@ class IdRef:
     """Classe pour les identifiants IdRef (propriété des notices d'AUT)"""
     def __init__(self, string):  # Notre méthode constructeur
         self.init = string
-        self.propre = nettoyageIdRef(self.init)
+        self.propre = nettoyageIdRef(self.init, "idref.fr/")
 
     def __str__(self):
         """Méthode permettant d'afficher plus joliment notre objet"""
         return "{}".format(self.init)
+
+class PPN:
+    """Classe pour les identifiants IdRef (propriété des notices d'AUT)"""
+    def __init__(self, string):  # Notre méthode constructeur
+        self.init = string
+        self.propre = nettoyageIdRef(self.init, "sudoc.fr/")
+
+    def __str__(self):
+        """Méthode permettant d'afficher plus joliment notre objet"""
+        return "{}".format(self.init)
+
 
 class Date:
     """Classe pour les ISNI"""
@@ -748,6 +759,7 @@ class Bib_record:
     def __init__(self, input_row, option_record):  # Notre méthode constructeur
         self.NumNot = input_row[0]
         self.frbnf = FRBNF(input_row[1])
+        self.ppn = PPN(input_row[1])
         self.ark_init = input_row[2]
         self.isbn = International_id("")
         self.ean = International_id("")
@@ -848,7 +860,7 @@ class Aut_record:
         self.metas_init = input_row[1:]
         self.NumNot = input_row[0]
         self.frbnf = FRBNF(input_row[1])
-        self.idref = IdRef(input_row[1])
+        self.ppn = IdRef(input_row[1])
         self.ark_init = input_row[2]
         self.isni = Isni(input_row[3])
         self.lastname = Name(input_row[4])

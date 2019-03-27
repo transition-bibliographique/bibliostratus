@@ -825,7 +825,8 @@ def end_of_treatments(form, id_traitement):
     print("\nNombre total de notices traitées : ",
           stats["Nombre total de notices traitées"])
     print("------------------------")
-    form.destroy()
+    if form is not None:
+        form.destroy()
 
 
 def launch(form, entry_filename, file_format, rec_format, output_ID, master):

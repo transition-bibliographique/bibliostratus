@@ -447,28 +447,28 @@ def control_columns_number(master, row, headers_columns):
 
 
 def popup_errors(master, text, online_help_text="", online_help_link=""):
-    couleur_fond = "white"
-    couleur_bordure = "red"
-    [master,
-     zone_alert_explications,
-     zone_access2programs,
-     zone_actions,
-     zone_ok_help_cancel,
-     zone_notes] = form_generic_frames(master, "Alerte", couleur_fond, couleur_bordure, True)
-    tk.Label(zone_access2programs, text=text, fg=couleur_bordure,
-             font="bold", bg=couleur_fond, padx=20, pady=20).pack()
-    if (online_help_text != ""):
-        help_button = tk.Button(zone_access2programs, bd=2, justify="left", font="Arial 10 italic",
-                                bg="#ffffff",
-                                padx=5, pady=5,
-                                text=online_help_text, command=lambda: click2url(online_help_link))
-        help_button.pack()
-    tk.Label(zone_access2programs, bg=couleur_fond, text="\n").pack()
-    cancel = tk.Button(zone_access2programs, text="Fermer",
-                       command=lambda: annuler(master), padx=10, pady=1, width=15)
-    cancel.pack()
+    if master is not None:
+        couleur_fond = "white"
+        couleur_bordure = "red"
+        [master,
+        zone_alert_explications,
+        zone_access2programs,
+        zone_actions,
+        zone_ok_help_cancel,
+        zone_notes] = form_generic_frames(master, "Alerte", couleur_fond, couleur_bordure, True)
+        tk.Label(zone_access2programs, text=text, fg=couleur_bordure,
+                font="bold", bg=couleur_fond, padx=20, pady=20).pack()
+        if (online_help_text != ""):
+            help_button = tk.Button(zone_access2programs, bd=2, justify="left", font="Arial 10 italic",
+                                    bg="#ffffff",
+                                    padx=5, pady=5,
+                                    text=online_help_text, command=lambda: click2url(online_help_link))
+            help_button.pack()
+        tk.Label(zone_access2programs, bg=couleur_fond, text="\n").pack()
+        cancel = tk.Button(zone_access2programs, text="Fermer",
+                        command=lambda: annuler(master), padx=10, pady=1, width=15)
+        cancel.pack()
 
-# popup_filename = ""
 
 
 def openfile(frame, liste, background_color="white"):

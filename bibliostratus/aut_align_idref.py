@@ -53,9 +53,9 @@ def autArk2ppn(NumNot, ark_nett):
     return Liste_ppn
 
 
-def idrefAut2arkAut(input_record):
+def idrefAut2arkAut(input_record, base="idref"):
     liste_ark = []
-    url = f"https://www.idref.fr/{input_record.idref.propre}.xml"
+    url = f"https://www.{base}.fr/{input_record.ppn.propre}.xml"
     print(url)
     (test, result) = funcs.testURLetreeParse(url, display=False)
     if test:
