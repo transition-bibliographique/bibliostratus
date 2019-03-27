@@ -263,7 +263,8 @@ def record2frbnf(f035a):
     frbnf = []
     f035a = f035a.lower().split(";")
     for f035 in f035a:
-        if (f035.find("frbn") > -1):
+        if ("frbn" in f035
+            or "ppn" in f035):
             frbnf.append(f035)
     frbnf = ";".join(frbnf)
     return frbnf
