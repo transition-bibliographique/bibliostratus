@@ -56,7 +56,7 @@ def autArk2ppn(NumNot, ark_nett):
 def idrefAut2arkAut(input_record, base="idref"):
     liste_ark = []
     url = f"https://www.{base}.fr/{input_record.ppn.propre}.xml"
-    print(url)
+    # print(url)
     (test, result) = funcs.testURLetreeParse(url, display=False)
     if test:
         for f033 in result.xpath("//*[@tag='033']"):
