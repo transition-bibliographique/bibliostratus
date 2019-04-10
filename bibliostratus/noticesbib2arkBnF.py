@@ -415,6 +415,7 @@ def comparaisonTitres(
     numeroTome,
     recordBNF,
     origineComparaison,
+    comparaisonsoustitre = True
     ):
     ark = ""
     subfields_list = ["200$a", "200$e", "200$i",
@@ -440,7 +441,8 @@ def comparaisonTitres(
                                             )
     if (ark != ""
        and input_record.type == "PAR"
-       and input_record.soustitre.controles != ""):
+       and input_record.soustitre.controles != ""
+       and comparaisonsoustitre):
         ark_confirmed = ""
         subfields_list_2 = ["464$t", "200$a+200$e", "225$e"]
         for subfield in subfields_list_2:
@@ -1332,6 +1334,7 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
     # print(NumNot,titre,auteur,auteur_nett,date_nett,numeroTome,typeRecord,typeDoc,anywhere,
     #       pubPlace_nett, annee_plus_trois)
     listeArk = []
+    listeArk_sans_controle = []
     # Cas des périodiques = on récupère uniquement la première date
     # Si elle est sur moins de 4 caractères (19.. devenu 19, 196u devenu 196)
     #   -> on tronque
@@ -1458,6 +1461,7 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
                     i += 1
                 try:
                     recordBNF = srw_record.xpath("srw:recordData/*", namespaces=main.ns)[0]
+                    listeArk_sans_controle.append(ark_current)
                     ark = tad2ark_controle_record(input_record, ark_current, 
                                                   auteur, date_nett, annee_plus_trois, index,
                                                   recordBNF)
@@ -1467,6 +1471,18 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
                 except IndexError:
                     pass
     listeArk = ",".join(ark for ark in listeArk if ark != "")
+    if (listeArk == ""
+       and listeArk_sans_controle
+       and input_record.soustitre.controles):
+        listeArk = []
+        for ark in listeArk_sans_controle:    
+            ark = tad2ark_controle_record(input_record, ark_current, 
+                                          auteur, date_nett, annee_plus_trois, index,
+                                          recordBNF, False)
+            ark = ",".join([a for a in ark if a])
+            if ark:
+                listeArk.append(ark)
+        listeArk = ",".join(ark for ark in listeArk if ark != "")
     # Si la liste retournée est vide, et qu'on est sur des périodiques
     # et que la date
     if (
@@ -1480,7 +1496,7 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
 
 def tad2ark_controle_record(input_record, ark_current, 
                             auteur, date_nett, annee_plus_trois, index, 
-                            xml_record):
+                            xml_record, comparaisonsoustitre = True):
     """
     Ensemble de contrôles sur une notice BnF trouvée par une recherche 
     Titre-Auteur-Date
@@ -1499,10 +1515,11 @@ def tad2ark_controle_record(input_record, ark_current,
                                     date_nett,
                                     input_record.tome_nett,
                                     xml_record,
-                                    "Titre-Auteur-Date" + index)
+                                    "Titre-Auteur-Date" + index,
+                                    comparaisonsoustitre)
             if (ark != "" and date_nett != "-"):
-                ark = checkDate(ark, input_record.date_nett,
-                                xml_record)
+                    ark = checkDate(ark, input_record.date_nett,
+                                    xml_record)
             if ark != "":
                 listeArk.append(ark)
                 # methode = "Titre-Auteur-Date"
@@ -2262,7 +2279,21 @@ def item2ark_by_keywords(input_record, parametres):
     # A défaut, recherche sur Titre-Auteur-Date
     if input_record.titre.init != "":
         ark = tad2ark(input_record, False, False)
-        # print("1." + NumNot + " : " + ark)
+    # Si pas trouvé sur le titre principal et 
+    # qu'il y a un titre de partie 
+    # --> prendre le titre de partie comme titre principal
+    if (ark == ""
+       and input_record.soustitre.controles):
+        input_record_temp = input_record
+        input_record_temp.titre = input_record.soustitre
+        ark = tad2ark(input_record_temp, False, False)
+    # Si pas de résultat et s'il y a un numéro d'opus
+    # -> on relance la recherche sans numéro d'opus
+    if (ark == ""
+       and input_record.titre.recherche_sans_num_opus):
+        input_record_temp = input_record
+        input_record_temp.titre.recherche = input_record.titre.recherche_sans_num_opus
+        ark = tad2ark(input_record_temp, False, False)
     # Si pas trouvé, on cherche l'ensemble des
     # mots dans toutes les zones indifféremment
     if ark == "" and input_record.titre.init != "":

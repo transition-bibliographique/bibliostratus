@@ -9,6 +9,7 @@ Fonctions et classes génériques pour Bibliostratus
 import http.client
 import urllib.parse
 import os
+import re
 import sys
 import socket
 import subprocess
@@ -221,6 +222,23 @@ def nettoyageTitrePourRecherche(string):
         string = clean_stop_words(string, stop_words, "-")
 
     return string
+
+
+def conversionNombres(string):
+    # convertit les nombres en lettres
+    # ou les lettres en nombres si pertinent
+    return ""
+
+
+def nettoyageOpus(string):
+    # supprime la mention d'opus si existe :
+    regex = " (opus |op\.|op ) ?\d+"
+    pattern = re.compile(regex)
+    new_str = ""
+    if (pattern.search(string) is not None):
+        new_str = string[:pattern.search(string).span()[0]] + " " + string[pattern.search(string).span()[1]:]
+        new_str = nettoyageTitrePourRecherche(new_str)
+    return new_str
 
 
 def nettoyageDate(date):
@@ -735,6 +753,8 @@ class Titre:
         self.init = string
         self.controles = nettoyageTitrePourControle(self.init)
         self.recherche = nettoyageTitrePourRecherche(self.init)
+        self.recherche_nombres_convertis = conversionNombres(self.init)
+        self.recherche_sans_num_opus = nettoyageOpus(self.init)
 
     def __str__(self):
         """Méthode permettant d'afficher plus joliment notre objet"""
@@ -746,6 +766,7 @@ class Bib_record:
     du module d'alignement"""
 
     def __init__(self, input_row, option_record):  # Notre méthode constructeur
+        self.input_row = input_row
         self.NumNot = input_row[0]
         self.frbnf = FRBNF(input_row[1])
         self.ark_init = input_row[2]
