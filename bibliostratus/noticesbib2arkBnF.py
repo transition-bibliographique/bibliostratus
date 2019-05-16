@@ -798,7 +798,8 @@ def frbnf2ark(input_record):
 
 def row2file(liste_metadonnees, liste_reports):
     liste_metadonnees_to_report = [str(el) for el in liste_metadonnees]
-    if (main.prefs["timestamp"]["value"] == "True"):
+    if (if "timestamp" in main.prefs
+       and main.prefs["timestamp"]["value"] == "True"):
         timest = funcs.timestamp()
         liste_metadonnees_to_report.append(timest)
     liste_reports[0].write("\t".join(liste_metadonnees_to_report) + "\n")
