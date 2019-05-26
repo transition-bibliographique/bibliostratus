@@ -22,8 +22,8 @@ from unidecode import unidecode
 import ark2records
 import funcs
 import marc2tables
-import noticesaut2arkBnF as aut2ark
-import noticesbib2arkBnF as bib2ark
+import aut2id
+import bib2id
 import edit_preferences as settings
 
 version = 1.26
@@ -677,7 +677,7 @@ def formulaire_main(access_to_network, last_version):
     bib2arkButton = tk.Button(
         frame1,
         text="Aligner ses données  BIB\n avec la BnF ou le Sudoc\nà partir de fichiers tableaux",
-        command=lambda: bib2ark.formulaire_noticesbib2arkBnF(
+        command=lambda: bib2id.formulaire_noticesbib2arkBnF(
             master, access_to_network, [0, False]
         ),
         padx=40,
@@ -691,7 +691,7 @@ def formulaire_main(access_to_network, last_version):
 
     aut2arkButton = tk.Button(
         frame1, text="Aligner ses données AUT ",
-        command=lambda: aut2ark.formulaire_noticesaut2arkBnF(master, access_to_network, [0, False]),
+        command=lambda: aut2id.formulaire_noticesaut2arkBnF(master, access_to_network, [0, False]),
         padx=55, pady=25, bg="#fefefe", font="Arial 8 normal")
     aut2arkButton.pack()
 

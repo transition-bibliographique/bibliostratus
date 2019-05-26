@@ -22,7 +22,7 @@ from lxml import etree
 
 import funcs
 import main
-import noticesbib2arkBnF as bib2ark
+import bib2id
 import udecode
 
 
@@ -451,12 +451,12 @@ def formulaire_ark2records(
 
     # ARK de BIB ou d'AUT ?
     type_records = tk.IntVar()
-    bib2ark.radioButton_lienExample(
+    bib2id.radioButton_lienExample(
         frame_input_aut, type_records, 1, couleur_fond, "N° de notices bibliographiques",
         "",
         "main/examples/listeARKbib.tsv"  # noqa
     )
-    bib2ark.radioButton_lienExample(
+    bib2id.radioButton_lienExample(
         frame_input_aut, type_records, 2, couleur_fond, "N° de notices d'autorités",
         "",
         "main/examples/listeARKaut.tsv"  # noqa
@@ -469,9 +469,9 @@ def formulaire_ark2records(
 
     # 1 ou 2 colonnes ?
     correct_record_option = tk.IntVar()
-    bib2ark.radioButton_lienExample(
+    bib2id.radioButton_lienExample(
         frame_input_aut, correct_record_option, 1, couleur_fond, "Fichier d'1 colonne (1 ARK ou PPN par ligne)", "", "")
-    bib2ark.radioButton_lienExample(
+    bib2id.radioButton_lienExample(
         frame_input_aut, correct_record_option, 2, couleur_fond, "Fichier à 2 colonnes (N° notice local | ARK ou PPN)\n\
 pour réécrire les notices récupérées",
         "", "main/examples/listeARKaut_2cols.tsv")

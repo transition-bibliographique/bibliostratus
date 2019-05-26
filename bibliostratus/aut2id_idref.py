@@ -15,7 +15,7 @@ from lxml import etree
 import pymarc as mc
 
 import funcs
-import noticesaut2arkBnF as aut2ark
+import aut2id
 import marc2tables
 
 
@@ -36,8 +36,8 @@ def aut2ppn_by_id(input_record, parametres):
     Liste_ppn = ""
     if (input_record.isni.propre != ""):
         Liste_ppn = isni2ppn(input_record.NumNot, input_record.isni.propre)
-    if (Liste_ppn == "" and aut2ark.nettoyageArk(input_record.ark_init) != ""):
-        Liste_ppn = autArk2ppn(input_record.NumNot, aut2ark.nettoyageArk(input_record.ark_init))
+    if (Liste_ppn == "" and aut2id.nettoyageArk(input_record.ark_init) != ""):
+        Liste_ppn = autArk2ppn(input_record.NumNot, aut2id.nettoyageArk(input_record.ark_init))
 
     return Liste_ppn
 
@@ -72,7 +72,7 @@ def idrefAut2arkAut(input_record, base="idref"):
             print("test035")
             aut_record = funcs.XML2record(result, 2).record
             #print(aut_record.metadata)
-            liste_ark.extend(aut2ark.frbnfAut2arkAut(aut_record).split(","))
+            liste_ark.extend(aut2id.frbnfAut2arkAut(aut_record).split(","))
             if (liste_ark):
                 input_record.alignment_method.append("PPN > FBRNF > ARK")
     liste_ark = ",".join(liste_ark)

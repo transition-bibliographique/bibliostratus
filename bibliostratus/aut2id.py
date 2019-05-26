@@ -19,8 +19,9 @@ from unidecode import unidecode
 
 import funcs
 import main
-import noticesbib2arkBnF as bib2ark
-import aut_align_idref
+import bib2id
+import aut2id_idref
+import aut2id_concepts
 
 # Ajout exception SSL pour éviter
 # plantages en interrogeant les API IdRef
@@ -44,6 +45,10 @@ header_columns_init_bib2aut = [
     "Date de publication", "ISNI", "Nom", "Prénom", "Dates auteur"
 ]
 
+header_columns_init_rameau = [
+    'N° Notice AUT', 'FRBNF', 'ARK', 'Point d\'accès Rameau'
+]
+
 # Pour chaque notice, on recense la méthode qui a permis de récupérer le
 # ou les ARK
 
@@ -55,7 +60,7 @@ dict_check_apis = defaultdict(dict)
 def create_reports(id_traitement_code, nb_fichiers_a_produire):
     reports = []
     stats_report_file_name = id_traitement_code + \
-        "-" + "rapport_stats_noticesbib2ark.txt"
+        "-" + "rapport_stats_noticesbib2id.txt"
     stats_report_file = open(stats_report_file_name, "w")
     stats_report_file.write("Nb identifiants (ARK ou PPN) trouvés\tNb notices concernées\n")
 
@@ -175,13 +180,13 @@ def isni2id(input_record, parametres, origine="isni"):
     Liste_ids = []
     
     if (parametres["preferences_alignement"] == 2):
-        Liste_ids = aut_align_idref.isni2ppn(input_record, input_record.isni.propre,
+        Liste_ids = aut2id_idref.isni2ppn(input_record, input_record.isni.propre,
                                              parametres,
                                              origine="accesspoint")
         if Liste_ids == []:
             liste_ark = isni2ark(input_record, parametres)
             for ark in liste_ark:
-                ppn = aut_align_idref.autArk2ppn(input_record.NumNot, ark)
+                ppn = aut2id_idref.autArk2ppn(input_record.NumNot, ark)
                 if (ppn):
                     Liste_ids.append(ppn)
                     input_record.alignment_method.append("ISNI > ARK > PPN")
@@ -264,7 +269,7 @@ def accesspoint2isniorg(input_record, parametres):
     if (parametres["preferences_alignement"] == 2):
         for isni in isnis:
             isni_id = isni.split("/")[-1]
-            ppn = aut_align_idref.isni2ppn(input_record, isni_id,
+            ppn = aut2id_idref.isni2ppn(input_record, isni_id,
                                            parametres,
                                            origine="accesspoint")
             if (ppn != ""):
@@ -291,7 +296,7 @@ def aut2ark_by_id(input_record, parametres):
     if (ark == "" and input_record.frbnf.propre != ""):
         ark = frbnfAut2arkAut(input_record)
     if (ark == "" and input_record.ppn.propre != ""):
-        ark = aut_align_idref.idrefAut2arkAut(input_record)
+        ark = aut2id_idref.idrefAut2arkAut(input_record)
     return ark
 
 def align_from_aut_alignment(input_record, parametres):
@@ -308,9 +313,9 @@ def align_from_aut_alignment(input_record, parametres):
                     parametres
                     )
     else:
-        ark = aut_align_idref.aut2ppn_by_id(input_record, parametres)
+        ark = aut2id_idref.aut2ppn_by_id(input_record, parametres)
         if (ark == "" and input_record.lastname.propre):
-            ark = aut_align_idref.aut2ppn_by_accesspoint(input_record, parametres)
+            ark = aut2id_idref.aut2ppn_by_accesspoint(input_record, parametres)
     if (ark == "" and parametres["isni_option"] == 1):
         ark = accesspoint2isniorg(input_record, parametres)
     alignment_result = funcs.Alignment_result(input_record, ark, parametres)
@@ -349,16 +354,29 @@ def align_from_aut_item(row, n, form_aut2ark, parametres, liste_reports):
     alignment_result2output(alignment_result, input_record, parametres, 
                             liste_reports, n)
 
-
+def align_rameau_item(row, n, form, parametres, liste_reports):
+    if (n == 0):
+        assert main.control_columns_number(
+            form_aut2ark, row, header_columns_init_rameau)
+    n += 1
+    if (n % 100 == 0):
+        main.check_access2apis(n, dict_check_apis)
+    input_record = funcs.Aut_record(row, parametres)
+    alignment_result = align_from_rameau_alignment(input_record, parametres)
+    alignment_result2output(alignment_result, input_record, parametres, 
+                            liste_reports, n)
 
 def align_from_aut(form, entry_filename, liste_reports, parametres):
     """Aligner ses données d'autorité avec les autorités BnF à partir
     d'une extraction tabulée de la base d'autorités"""
     header_columns = [
-        "NumNot", "Nb identifiants trouvés", "Liste identifiants AUT trouvés", "Méthode", "ARK AUT initial",
-        "frbnf AUT initial", "ISNI", "Nom", "Complément nom", "Date début",
-        "Date fin"
-    ]
+                      "NumNot", "Nb identifiants trouvés", 
+                      "Liste identifiants AUT trouvés",
+                      "Méthode", "ARK AUT initial",
+                      "frbnf AUT initial", "ISNI", 
+                      "Nom", "Complément nom",
+                      "Date début", "Date fin"
+                     ]
     if (parametres['meta_bnf'] == 1):
         header_columns.extend(
             ["[BnF] Nom", "[BnF] Complément Nom", "[BnF] Dates"])
@@ -382,6 +400,53 @@ def align_from_aut(form, entry_filename, liste_reports, parametres):
             align_from_aut_item(row, n, form, parametres, liste_reports)
             n += 1
 
+def align_rameau(form, entry_filename, liste_reports, parametres):
+    """
+    Alignement d'un fichier contenant une liste de concepts Rameau
+    """
+    header_columns = [
+                      "NumNot", "Nb identifiants trouvés", 
+                      "Liste identifiants AUT trouvés",
+                      "Méthode", "type d'entité"
+                     ]
+    header_columns.extend(header_columns_init_rameau[1:])
+    if (parametres['file_nb'] == 1):
+        row2file(header_columns, liste_reports)
+    elif(parametres['file_nb'] == 2):
+        row2files(header_columns, liste_reports)
+    n = 0
+    with open(entry_filename, newline='\n', encoding="utf-8") as csvfile:
+        entry_file = csv.reader(csvfile, delimiter='\t')
+        if (parametres['headers']):
+            try:
+                next(entry_file)
+            except UnicodeDecodeError:
+                main.popup_errors(
+                    form, main.errors["pb_input_utf8"],
+                    "Comment modifier l'encodage du fichier",
+                    "https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e"  # noqa
+                )
+        for row in entry_file:
+            align_rameau_item(row, n, form, parametres, liste_reports)
+            n += 1
+
+def align_from_rameau_alignment(input_record, parametres):
+    """
+    Alignement sur une notice Rameau
+    input_record est de type Aut_record
+    Renvoie le résultat de l'alignement sous
+    la forme d'un objet de class Alignment_result
+    """
+    ark = aut2ark_by_id(input_record, parametres)
+    if (ark == ""):
+        ark = aut2id_concepts.ram2ark_by_accesspoint(
+                input_record,
+                parametres
+                )
+    # Si l'utilisateur préfère récupérer des PPN
+    # on convertit les ARK en PPN
+    if (parametres["preferences_alignement"] == 2):
+        pass
 
 def align_from_bib_alignment(input_record, parametres):
     """
@@ -505,7 +570,7 @@ def arkBib2arkAut(input_record, parametres):
             input_record.alignment_method.append("ARK notice BIB + contrôle accesspoint")
             if (parametres["preferences_alignement"] == 2):
                 for ark in arks:
-                    ppn = aut_align_idref.autArk2ppn(input_record.NumNot, ark)
+                    ppn = aut2id_idref.autArk2ppn(input_record.NumNot, ark)
                 if (ppn):
                     listeArk.append(ppn)
                 else:
@@ -561,9 +626,9 @@ def frbnfBib2arkAut(input_record, parametres):
                                    "", "", "", input_record.titre.init,
                                    input_record.lastname.propre + " ", "", "", ""], 
                                    1)
-    listeArk_bib = bib2ark.frbnf2ark(bib_record)
+    listeArk_bib = bib2id.frbnf2ark(bib_record)
     for ark in listeArk_bib:
-        record = bib2ark.ark2recordBNF(ark)
+        record = bib2id.ark2recordBNF(ark)
         for record in page.xpath("//srw:recordData", namespaces=main.ns):
             listeArk.extend(extractARKautfromBIB(input_record, xml_record))
     listeArk = ",".join(set(listeArk))
@@ -738,7 +803,7 @@ def bib2arkAUT(input_record, parametres):
                 input_record.alignment_method.append("Référence biblio > ARK")
             if (parametres["preferences_alignement"] == 2):
                 for ark in arks:
-                    ppn = aut_align_idref.autArk2ppn(input_record.NumNot, ark)
+                    ppn = aut2id_idref.autArk2ppn(input_record.NumNot, ark)
                     if (ppn):
                         listeArk.append(ppn)
                         input_record.alignment_method.append("ARK > PPN")
@@ -790,8 +855,8 @@ def bib2ppnAUT_from_sudoc(input_record, parametres):
 &ACT2=*&IKT2=1016&TRM2=&ACT3=*&IKT3=1016&TRM3=&SRT=YOP" + "\
 &ADI_TAA=&ADI_LND=&ADI_JVU=" + urllib.parse.quote(input_record.pubdate_nett) + "\
 &ADI_MAT="
-    listePPN = bib2ark.urlsudoc2ppn(url)
-    listePPN = bib2ark.check_sudoc_results(input_record, listePPN)
+    listePPN = bib2id.urlsudoc2ppn(url)
+    listePPN = bib2id.check_sudoc_results(input_record, listePPN)
     return listePPN
 
 
@@ -943,7 +1008,8 @@ def launch(form, entry_filename, headers, input_data_type, preferences_alignemen
     type_aut_dict = {
         1 : "a",
         2 : "b",
-        3 : "a b"
+        3 : "a b",
+        4 : "j"   # type de notice = Rameau
     }
     parametres = {"headers": headers,
                   "input_data_type": input_data_type,
@@ -960,9 +1026,11 @@ def launch(form, entry_filename, headers, input_data_type, preferences_alignemen
         align_from_aut(form, entry_filename, liste_reports, parametres)
     elif (input_data_type == 3):
         align_from_bib(form, entry_filename, liste_reports, parametres)
+    elif (input_data_type == 3):
+        align_rameau(form, entry_filename, liste_reports, parametres)
     else:
         main.popup_errors("Format en entrée non défini")
-    bib2ark.fin_traitements(form, liste_reports, parametres["stats"])
+    bib2id.fin_traitements(form, liste_reports, parametres["stats"])
 
 
 def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0, False]):
@@ -1034,25 +1102,30 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
     tk.Label(frame_input_aut, bg=couleur_fond, text="\nType de données en entrée",
              font="Arial 10 bold", anchor="w").pack(anchor="w")
     input_data_type = tk.IntVar()
-    bib2ark.radioButton_lienExample(
+    bib2id.radioButton_lienExample(
         frame_input_aut, input_data_type, 1, couleur_fond,
         "[PERS] Liste de notices Personnes",
         main.display_headers_in_form(header_columns_init_aut2aut),
         "main/examples/aut_align_aut.tsv"  # noqa
     )
-    bib2ark.radioButton_lienExample(
+    bib2id.radioButton_lienExample(
         frame_input_aut, input_data_type, 2, couleur_fond,
         "[ORG] Liste de notices Organisations",
         main.display_headers_in_form(header_columns_init_aut2aut),
         ""  # noqa
     )
-    bib2ark.radioButton_lienExample(
+    bib2id.radioButton_lienExample(
         frame_input_aut, input_data_type, 3, couleur_fond,
         "Liste de notices bibliographiques",
         main.display_headers_in_form(header_columns_init_bib2aut),
         "main/examples/aut_align_bib.tsv"  # noqa
     )
-
+    bib2id.radioButton_lienExample(
+        frame_input_aut, input_data_type, 4, couleur_fond,
+        "Liste de notices Rameau",
+        main.display_headers_in_form(header_columns_init_rameau),
+        ""  # noqa
+    )
     input_data_type.set(1)
 
     tk.Label(
@@ -1063,7 +1136,7 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
         justify="left",
     ).pack(anchor="w")
     preferences_alignement = tk.IntVar()
-    bib2ark.radioButton_lienExample(
+    bib2id.radioButton_lienExample(
         frame_input_aut,
         preferences_alignement,
         1,
@@ -1072,7 +1145,7 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
         "",
         "",
     )
-    bib2ark.radioButton_lienExample(
+    bib2id.radioButton_lienExample(
         frame_input_aut,
         preferences_alignement,
         2,

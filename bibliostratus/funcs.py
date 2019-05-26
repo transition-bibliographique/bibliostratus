@@ -30,7 +30,7 @@ import pymarc as mc
 
 import main
 import marc2tables
-import noticesaut2arkBnF as aut2ark
+import aut2id
 from udecode import udecode
 
 # Ajout exception SSL pour éviter
@@ -862,12 +862,22 @@ class Aut_record:
         self.frbnf = FRBNF(input_row[1])
         self.ppn = IdRef(input_row[1])
         self.ark_init = input_row[2]
-        self.isni = Isni(input_row[3])
-        self.lastname = Name(input_row[4])
-        self.firstname = Name(input_row[5])
-        self.firstdate = Date(input_row[6])
-        self.lastdate = Date(input_row[7])
+        self.isni = ""
+        self.lastname = ""
+        self.firstname = ""
+        self.firstdate = ""
+        self.lastdate = ""
+        self.accesspoint = ""
         self.alignment_method = []
+        if (parametres["input_data_type"] == 4):
+            self.accesspoint = input_row[3].strip()
+        else:
+            self.isni = Isni(input_row[3])
+            self.lastname = Name(input_row[4])
+            self.firstname = Name(input_row[5])
+            self.firstdate = Date(input_row[6])
+            self.lastdate = Date(input_row[7])
+            
 
 class Bib_Aut_record:
     """Classe définissant les propriétés d'une notice bibliographique

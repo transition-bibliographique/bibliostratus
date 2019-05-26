@@ -24,8 +24,8 @@ from unidecode import unidecode
 
 import main
 import funcs
-import noticesaut2arkBnF as aut2ark
-import noticesbib2arkBnF as bib2ark
+import bib2id
+import aut2id
 
 
 # Permet d'écrire dans une liste accessible au niveau général depuis le
@@ -761,32 +761,32 @@ def write_reports(id_traitement, doc_record, rec_format):
     if (rec_format == 1):
         if (doc_record == "am" or doc_record == "lm"):
             filename = "TEX-" + filename
-            header_columns = bib2ark.header_columns_init_monimpr
+            header_columns = bib2id.header_columns_init_monimpr
         elif (doc_record == "em"):
-            header_columns = bib2ark.header_columns_init_cartes
+            header_columns = bib2id.header_columns_init_cartes
             filename = "CAR-" + filename
         elif (doc_record == "cm"):
-            header_columns = bib2ark.header_columns_init_partitions
+            header_columns = bib2id.header_columns_init_partitions
             filename = "PAR-" + filename
         elif (doc_record == "gm"):
-            header_columns = bib2ark.header_columns_init_cddvd
+            header_columns = bib2id.header_columns_init_cddvd
             filename = "VID-" + filename
         elif (doc_record == "im" or doc_record == "jm"):
-            header_columns = bib2ark.header_columns_init_cddvd
+            header_columns = bib2id.header_columns_init_cddvd
             filename = "AUD-" + filename
         elif (len(doc_record) > 1 and doc_record[1] == "s"):
-            header_columns = bib2ark.header_columns_init_perimpr
+            header_columns = bib2id.header_columns_init_perimpr
             filename = "PER-" + filename
     if (rec_format == 2):
         if (doc_record == "ca"):
-            header_columns = aut2ark.header_columns_init_aut2aut
+            header_columns = aut2id.header_columns_init_aut2aut
             filename = "PERS-" + filename
         if (doc_record == "cb"):
-            header_columns = aut2ark.header_columns_init_aut2aut
+            header_columns = aut2id.header_columns_init_aut2aut
             filename = "ORG-" + filename
     if (rec_format == 3):
         if (doc_record == "ca" or doc_record == "cb"):
-            header_columns = aut2ark.header_columns_init_bib2aut
+            header_columns = aut2id.header_columns_init_bib2aut
 
     file = create_file_doc_record(filename, id_traitement)
     file.write("\t".join(header_columns) + "\n")
@@ -967,7 +967,7 @@ def formulaire_marc2tables(
              anchor="w", justify="left", font="Arial 9 bold").pack(anchor="w")
     file_format = tk.IntVar()
 
-    bib2ark.radioButton_lienExample(
+    bib2id.radioButton_lienExample(
         cadre_input_type_docs, file_format, 1, couleur_fond,
         "iso2709 encodé UTF-8", "",
         "main/examples/noticesbib.iso"  # noqa
@@ -1015,7 +1015,7 @@ def formulaire_marc2tables(
              anchor="w", justify="left", font="Arial 9 bold").pack(anchor="w")
     rec_format = tk.IntVar()
 
-    bib2ark.radioButton_lienExample(cadre_input_type_rec, rec_format, 1, couleur_fond,
+    bib2id.radioButton_lienExample(cadre_input_type_rec, rec_format, 1, couleur_fond,
                                     "bibliographiques",
                                     "",
                                     "")
