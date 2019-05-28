@@ -862,14 +862,15 @@ class Aut_record:
         self.frbnf = FRBNF(input_row[1])
         self.ppn = IdRef(input_row[1])
         self.ark_init = input_row[2]
-        self.isni = ""
-        self.lastname = ""
-        self.firstname = ""
-        self.firstdate = ""
-        self.lastdate = ""
+        self.isni = Isni("")
+        self.lastname = Name("")
+        self.firstname = Name("")
+        self.firstdate = Date("")
+        self.lastdate = Date("")
         self.accesspoint = ""
         self.alignment_method = []
-        if (parametres["input_data_type"] == 4):
+        if ("input_data_type" in parametres
+           and parametres["input_data_type"] == 4):
             self.accesspoint = input_row[3].strip()
         else:
             self.isni = Isni(input_row[3])
@@ -964,11 +965,23 @@ class Alignment_result:
                                     self.nb_ids,
                                     self.ids_str,
                                     self.alignment_method_str
-                                ] + input_record.metas_init
+                                ] 
+        if ("type_notices_rameau" in parametres
+            and parametres["input_data_type"] == 4):
+            self.liste_metadonnees.append(id_rameau2type(ark, parametres["type_notices_rameau"]))
+        self.liste_metadonnees.extend(input_record.metas_init)
     def __str__(self):
         """Méthode permettant d'afficher plus joliment notre objet"""
         return "{} : {}\nNombre d'ID trouvés : {}".format(self.NumNot, self.ids_str, self.nb_ids)
 
+
+def id_rameau2type(arks, dict_ark2type_rameau):
+    types = []
+    for ark in arks.split(","):
+        if ark in dict_ark2type_rameau:
+            types.append(dict_ark2type_rameau[ark])
+    types = ",".join(types)
+    return types
 
 class Id4record:
     """

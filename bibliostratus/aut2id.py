@@ -354,7 +354,7 @@ def align_from_aut_item(row, n, form_aut2ark, parametres, liste_reports):
     alignment_result2output(alignment_result, input_record, parametres, 
                             liste_reports, n)
 
-def align_rameau_item(row, n, form, parametres, liste_reports):
+def align_rameau_item(row, n, form_aut2ark, parametres, liste_reports):
     if (n == 0):
         assert main.control_columns_number(
             form_aut2ark, row, header_columns_init_rameau)
@@ -437,16 +437,31 @@ def align_from_rameau_alignment(input_record, parametres):
     Renvoie le résultat de l'alignement sous
     la forme d'un objet de class Alignment_result
     """
-    ark = aut2ark_by_id(input_record, parametres)
-    if (ark == ""):
-        ark = aut2id_concepts.ram2ark_by_accesspoint(
-                input_record,
-                parametres
-                )
+    arks = aut2ark_by_id(input_record, parametres)
+    if (arks == ""):
+        arks = aut2id_concepts.ram2ark_by_accesspoint(
+                                                     input_record,
+                                                     parametres
+                                                    )
     # Si l'utilisateur préfère récupérer des PPN
     # on convertit les ARK en PPN
-    if (parametres["preferences_alignement"] == 2):
-        pass
+    if (arks 
+       and parametres["preferences_alignement"] == 2):
+        liste_ppn = []
+        for ark in arks.split(","):
+            ppn = aut2id_idref.autArk2ppn(input_record.NumNot, ark)
+            if ppn:
+                liste_ppn.append(ppn)
+                if ("type_notices_rameau" in parametres
+                    and ark in parametres["type_notices_rameau"]):
+                    parametres["type_notices_rameau"][ppn] = parametres["type_notices_rameau"][ark]
+        liste_ppn = ",".join(liste_ppn)
+        alignment_result = funcs.Alignment_result(input_record, liste_ppn,
+                                                  parametres)
+    else:
+        alignment_result = funcs.Alignment_result(input_record, arks,
+                                                  parametres)
+    return alignment_result
 
 def align_from_bib_alignment(input_record, parametres):
     """
@@ -1020,13 +1035,15 @@ def launch(form, entry_filename, headers, input_data_type, preferences_alignemen
                   "type_aut": type_aut_dict[input_data_type],
                   "preferences_alignement": preferences_alignement,
                   "stats":  defaultdict(int)}
+    if (input_data_type == 4):
+        parametres["type_notices_rameau"] = defaultdict(str)
     liste_reports = create_reports(funcs.id_traitement2path(id_traitement), file_nb)
 
     if (input_data_type == 1 or input_data_type == 2):
         align_from_aut(form, entry_filename, liste_reports, parametres)
     elif (input_data_type == 3):
         align_from_bib(form, entry_filename, liste_reports, parametres)
-    elif (input_data_type == 3):
+    elif (input_data_type == 4):
         align_rameau(form, entry_filename, liste_reports, parametres)
     else:
         main.popup_errors("Format en entrée non défini")
@@ -1214,7 +1231,7 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
     outputID = tk.Entry(frame_output_file, bg=couleur_fond, width=30)
     outputID.pack(anchor="w")
 
-    tk.Label(frame_output_file, text="\n"*3,
+    tk.Label(frame_output_file, text="\n"*7,
              bg=couleur_fond).pack(anchor="w")
 
     # file_format.focus_set()
