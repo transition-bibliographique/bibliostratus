@@ -712,6 +712,22 @@ def record2listemetas(record, rec_format=1):
     return meta, doc_record
     # liste_resultats[doc_record].append(meta)
 
+def rameaurecord2accesspoint(record):
+    """
+    A partir d'une notice Rameau (record est de type pymarc.Record)
+    génération du point d'accès selon la syntaxe Rameau
+    """
+    dict_mapping_accesspoint = {
+        "a": r"\1",
+        "a x" : r"\1 -- \2",
+        "a y" : r"\1 -- \2",
+        "a x g g" : r"\1 -- \2 (\3. - \4)",
+        "a x g g g" : r"\1 -- \2 (\3. \4)",
+    }
+    pass
+
+
+
 
 def record_metas2report(record_metas, doc_record, rec_format,
                         id_traitement, display=True):
@@ -750,6 +766,8 @@ def record_metas2report(record_metas, doc_record, rec_format,
         output_files_dict[doc_record].write("\t".join(record_metas) + "\n")
         if (display):
             print(doc_record, ' - ', record_metas[0])
+
+
 
 
 def write_reports(id_traitement, doc_record, rec_format):

@@ -96,8 +96,11 @@ def extract_sparql_results(sparql_dataset, key, val,
         value = el.get(val).get("value").split("/")[-1]
         liste_uri.append(ark)
         dict_uri[ark] = value
-        if (parametres and "type_notices_rameau" in parametres):
-            parametres["type_notices_rameau"][ark] = dict_type_ram[value]
+        if (parametres and "type_notices_rameau" in parametres)
+            if (value in dict_type_ram):
+                parametres["type_notices_rameau"][ark] = dict_type_ram[value]
+            else:
+                parametres["type_notices_rameau"][ark] = value
     if return_opt == list:
         return liste_uri
     else:
@@ -110,7 +113,6 @@ def rameau_construct_sparql_query(accesspoint, label="skos:prefLabel"):
     la variable label peut être skos:prefLabel,
     skos:altLabel, ou éventuellement autre chose 
     """
-    print(accesspoint)
     query = """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
     PREFIX dcterms: <http://purl.org/dc/terms/>
     select distinct ?concept ?sous_ensemble_Rameau where {
