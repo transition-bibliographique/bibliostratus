@@ -718,16 +718,46 @@ def rameaurecord2accesspoint(record):
     génération du point d'accès selon la syntaxe Rameau
     """
     dict_mapping_accesspoint = {
-        "a": r"\1",
-        "a x" : r"\1 -- \2",
-        "a y" : r"\1 -- \2",
-        "a x g g" : r"\1 -- \2 (\3. - \4)",
-        "a x g g g" : r"\1 -- \2 (\3. \4)",
-    }
-    pass
-
-
-
+            'a': '\1',
+            'a b f x': '\1, \2 (\3) -- \4', 
+            'a y': '\1 -- \2',
+            'a y x': '\1 -- \2 -- \3',
+            'a y y': '\1 -- \2 -- \3',
+            'a b x': '\1. \2 -- \3',
+            'a x x': '\1 -- \2 -- \3',
+            'a c b x': '\1. \3 (\2) -- \4',
+            'a y z': '\1 -- \2 -- \3',
+            'a c': '\1 (\2)',
+            'a c f x': '\1 (\2 ; \3) -- \4',
+            'a b c x': '\1. \2 (\3) -- \4',
+            'a x y': '\1 -- \2 -- \3',
+            'a b c': '\1, \2 (\3)',
+            'a y y z': '\1 -- \2 -- \3 -- \4',
+            'a z x': '\1 -- \3 -- \2',
+            'a b x x': '\1. \2 -- \3 -- \4',
+            'a c x x': '\1 (\2) -- \3 -- \4',
+            'a b d x': '\1, \2 \3 -- \4',
+            'a f x': '\1 (\2) -- \3',
+            'a b c b x': '\1. \2 (\3) -- \5'
+            }
+    tag = ""
+    field_value = []
+    subfields_list = []
+    for field in record:
+        if field[0] == "2":
+            tag = field
+            for subfield in record[field]:
+                subfields_list.append(subfield)
+                field_value.append(f"#{subfield} {record[field][subfield]}")
+    subfields_list = " ".join(subfields_list)
+    field_value = " ".join(field_value)
+    accesspoint_template = ""
+    accesspoint = ""
+    if (subfields_list in dict_mapping_accesspoint):
+        accesspoint_template = dict_mapping_accesspoint[subfields_list]
+        accesspoint_template = "#" + accesspoint_template.replace(" ", " (.+) #") + " (.+)"
+        accesspoint = re.sub(accesspoint_template, field_value)
+    return accesspoint
 
 def record_metas2report(record_metas, doc_record, rec_format,
                         id_traitement, display=True):

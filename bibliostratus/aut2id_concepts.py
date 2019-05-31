@@ -6,7 +6,7 @@ par point d'accès
 """
  
 import csv
-from unidecode import unidecode
+import re
 from lxml import etree
 import http.client
 from urllib import request
@@ -15,6 +15,9 @@ import urllib.error as error
 from collections import defaultdict
 from SPARQLWrapper import SPARQLWrapper, JSON, SPARQLExceptions
 
+import main
+import sru
+
 def ram2ark_by_accesspoint(input_record, parametres):
     """
     Renvoie la liste des ARK à partir d'une requête SPARQL
@@ -22,6 +25,10 @@ def ram2ark_by_accesspoint(input_record, parametres):
     """
     ark, methode = accesspoint2sparql(input_record.accesspoint,
                                       parametres)
+    if ark:
+        input_record.alignment_method.append(methode)
+    else:
+        ark, methode = accesspoint2sru(input_record.accesspoint, parametres)    
     if ark:
         input_record.alignment_method.append(methode)
     return ark
@@ -51,7 +58,7 @@ def accesspoint2sparql(accesspoint, parametres={}):
                                      "concept",
                                      "sous_ensemble_Rameau",
                                      list,
-                                     parametres={})
+                                     parametres)
         if ark:
             methode = "Point d'accès > SPARQL (altLabel)"
     return ",".join(ark), methode
@@ -78,16 +85,6 @@ def sparql2results(query):
 
 def extract_sparql_results(sparql_dataset, key, val, 
                            return_opt=list, parametres={}):
-    dict_type_ram = {
-        "r160": "Personnage",
-        "r161": "Collectivité",
-        "r163": "Titre propre d’anonyme",
-        "r164": "Publications en série",
-        "r165": "Titre uniforme textuel",
-        "r166": "Nom commun",
-        "r167": "Nom géographique",
-        "r168": "Subdivision chronologique",
-    }
     liste_uri = []
     dict_uri = {}
     for el in sparql_dataset:
@@ -96,11 +93,7 @@ def extract_sparql_results(sparql_dataset, key, val,
         value = el.get(val).get("value").split("/")[-1]
         liste_uri.append(ark)
         dict_uri[ark] = value
-        if (parametres and "type_notices_rameau" in parametres)
-            if (value in dict_type_ram):
-                parametres["type_notices_rameau"][ark] = dict_type_ram[value]
-            else:
-                parametres["type_notices_rameau"][ark] = value
+        add_type_rameau(ark, value, parametres)
     if return_opt == list:
         return liste_uri
     else:
@@ -122,3 +115,82 @@ def rameau_construct_sparql_query(accesspoint, label="skos:prefLabel"):
     LIMIT 200
     """
     return query
+
+
+def add_type_rameau(ark, typenotice, parametres):
+    """
+    Alimente, dans parametres{}, un sous-dictionnaire
+    qui associe à chaque ARK son type d'entité Rameau
+    """
+    dict_type_ram = {
+                     "r160": "Personnage",
+                     "r161": "Collectivité",
+                     "r163": "Titre propre d’anonyme",
+                     "r164": "Publications en série",
+                     "r165": "Titre uniforme textuel",
+                     "r166": "Nom commun",
+                     "r167": "Nom géographique",
+                     "r168": "Subdivision chronologique",
+                     "200": "Nom de personne",
+                     "210": "Nom de collectivité",
+                     "215": "Nom géographique",
+                     "216": "Nom de marque",
+                     "220": "Nom de famille",
+                     "230": "Titre uniforme",
+                     "240": "Auteur/titre",
+                     "250": "Nom commun"
+                    }
+    if (parametres and "type_notices_rameau" in parametres):
+        if (typenotice in dict_type_ram):
+            parametres["type_notices_rameau"][ark] = dict_type_ram[typenotice]
+        else:
+            parametres["type_notices_rameau"][ark] = typenotice
+
+
+def accesspoint2sru(accesspoint, parametres={}):
+    """
+    Rechercher le point d'accès dans les notices Rameau
+    """
+    accesspoint = main.clean_string(accesspoint, False, True)
+    methode = []
+    arks = []
+    valid_tag = ""
+    query = f"aut.accesspoint adj \"{accesspoint}\"\
+and aut.status any \"sparse validated\"\
+and aut.type all RAM"
+    result = sru.SRU_result(query)
+    for ark in result.dict_records:
+        xml_record = result.dict_records[ark]
+        tag = ""
+        for field in xml_record:
+            if (field.get("tag") is not None
+               and field.get("tag").startswith("2")):
+                tag = field.get("tag")
+        f2XX = [el[el.find("$a"):]
+                for el in sru.record2fieldvalue(xml_record, tag).split("~")]
+        f4XX = [el[el.find("$a"):]
+                for el in sru.record2fieldvalue(xml_record, f"4{tag[1:]}").split("~")]
+        test = False
+        for acc in f2XX:
+            if test is False:
+                acc = main.clean_string(re.sub(" \$. ", " ", acc[3:]), False, True)
+                if acc == accesspoint:
+                    arks.append(ark)
+                    methode.append("SRU forme retenue")
+                    valid_tag = tag
+                    test = True
+                    add_type_rameau(ark, tag, parametres)
+        for acc in f4XX:
+            if test is False:
+                acc = main.clean_string(re.sub(" \$. ", " ", acc[3:]), False, True)
+                if acc == accesspoint:
+                    arks.append(ark)
+                    methode.append("SRU forme rejetée")
+                    valid_tag = f"4{tag:1}"
+                    test = True
+                    add_type_rameau(ark, tag, parametres)
+        arks = ",".join(arks)
+        methode = ",".join(methode)
+        return arks, methode
+
+
