@@ -1275,6 +1275,18 @@ def timestamp():
 
 
 
+def line2report(line, report, i=0, display=True):
+    """
+    Envoie une line (liste) dans un fichier.
+    Sauf demande contraire, affiche la ligne
+    dans le terminal avec un compteur
+    """
+    if display:
+        if i:
+            print(i, line)
+        else:
+            print(line)
+    report.write("\t".join(line) + "\n")
 
 
 if __name__ == '__main__':

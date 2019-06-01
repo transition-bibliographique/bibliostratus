@@ -24,7 +24,7 @@ import funcs
 import main
 import bib2id
 import udecode
-
+import sru
 
 
 # Permet d'écrire dans une liste accessible au niveau général depuis le
@@ -218,9 +218,17 @@ def bib2aut(identifier, XMLrecord, parametres):
 
 
 def file_create(record_type, parametres):
+    """
+    Création du fichier en sortie : XML, iso2709 ou tabulé
+    """
     file = object
     id_filename = "-".join([parametres["outputID"], record_type])
-    if (parametres["format_file"] == 2):
+    if (parametres["format_file"] == 3):
+        filename = id_filename + ".txt"
+        file = open(filename, "w", encoding="utf-8")
+        headers = ["Numéro de notice", "Type de notice"] + parametres["select_fields"].split(";")
+        funcs.line2report(headers, file, display=False)
+    elif (parametres["format_file"] == 2):
         filename = id_filename + ".xml"
         file = open(filename, "w", encoding="utf-8")
         file.write("<?xml version='1.0' encoding='utf-8'?>\n")
@@ -255,8 +263,16 @@ def record2file(identifier, XMLrec, file, format_file, parametres):
     Si option cochée, réécriture de la notice
     "identifier" est une instance de la classe Id4record
     """
+    #Si fichier tabulé
+    if (format_file == 3):
+        doctype, recordtype, entity_type = sru.extract_docrecordtype(XMLrec, "marc")
+        line = [identifier.NumNot, doctype+recordtype]
+        for field in parametres["select_fields"].split(";"):
+            value = sru.record2fieldvalue(XMLrec, field)
+            line.append(value)
+        funcs.line2report(line, parametres["bib_file"], display=False)
     # Si sortie en iso2709
-    if (format_file == 1):
+    elif (format_file == 1):
         XMLrec_str = XMLrecord2string(identifier, XMLrec, parametres)
         filename_temp = XMLrec2isorecord(XMLrec_str)
         collection = mc.marcxml.parse_xml_to_array(filename_temp, strict=False)
@@ -323,7 +339,7 @@ def extract1record(row, j, form, headers, parametres):
 def callback(master, form, filename, type_records_form, 
              correct_record_option, headers, AUTlieesAUT,
              AUTlieesSUB, AUTlieesWORK, outputID, 
-             format_records=1, format_file=1):
+             format_records=1, format_file=1, select_fields=""):
     AUTliees = AUTlieesAUT + AUTlieesSUB + AUTlieesWORK
     format_BIB = dict_format_records[format_records]
     outputID = funcs.id_traitement2path(outputID)
@@ -342,6 +358,7 @@ def callback(master, form, filename, type_records_form,
         "format_records": format_records,
         "format_file": format_file,
         "format_BIB": format_BIB,
+        "select_fields": select_fields,
         "listeARK_BIB" : [],
         "listeNNA_AUT" : []
     }
@@ -515,7 +532,7 @@ pour réécrire les notices récupérées",
                    variable=format_records_choice, value=3, bg=couleur_fond).pack(anchor="nw")
     tk.Radiobutton(
         frame_output_options_marc,
-        text="[ARK BnF] Unimarc avec notices analytiques",
+        text="[ARK BnF] Unimarc \navec notices analytiques",
         justify="left",
         variable=format_records_choice,
         value=2,
@@ -523,7 +540,7 @@ pour réécrire les notices récupérées",
     ).pack(anchor="nw")
     tk.Radiobutton(
         frame_output_options_marc,
-        text="[ARK BnF] Intermarc avec notices analytiques",
+        text="[ARK BnF] Intermarc \navec notices analytiques",
         justify="left",
         variable=format_records_choice,
         value=4,
@@ -531,8 +548,9 @@ pour réécrire les notices récupérées",
     ).pack(anchor="nw")
     format_records_choice.set(1)
 
-    tk.Label(frame_output_options_inter, text="\n",
-             bg=couleur_fond).pack(side="left")
+
+    tk.Label(frame_output_file, text=" ",
+             bg=couleur_fond).pack()
 
     # tk.Label(
     #     frame_output_options,
@@ -555,7 +573,7 @@ pour réécrire les notices récupérées",
              bg=couleur_fond).pack(side="left", anchor="w")
     outputID = tk.Entry(frame_output_file, bg=couleur_fond)
     outputID.pack(side="left", anchor="w")
-    tk.Label(frame_output_file, text="\n"*8,
+    tk.Label(frame_output_file, text="\n"*5,
              bg=couleur_fond).pack(side="left")
 
     tk.Label(frame_output_options_format,
@@ -565,7 +583,26 @@ pour réécrire les notices récupérées",
                    text="iso2709", variable=format_file, value=1, justify="left").pack(anchor="nw")
     tk.Radiobutton(frame_output_options_format, bg=couleur_fond,
                    text="Marc XML", variable=format_file, value=2, justify="left").pack(anchor="nw")
+    tk.Radiobutton(
+        frame_output_options_format,
+        text="Certaines zones (sép : \";\")\n - fichier tabulé",
+        justify="left",
+        variable=format_file,
+        value=3,
+        bg=couleur_fond
+    ).pack(anchor="nw")
     format_file.set(1)
+
+
+    tk.Label(frame_output_options_format,
+             text="\tZones à récupérer",
+             bg=couleur_fond).pack()
+    tk.Label(frame_output_options_format,
+             text="\t",
+             bg=couleur_fond).pack(side="left", anchor="w")
+    select_fields = tk.Entry(frame_output_options_format, bg=couleur_fond)
+    select_fields.pack(side="left", anchor="w")
+
 
     # file_format.focus_set()
     b = tk.Button(
@@ -584,6 +621,7 @@ pour réécrire les notices récupérées",
             outputID.get(),
             format_records_choice.get(),
             format_file.get(),
+            select_fields.get()
         ),
         width=15,
         borderwidth=1,

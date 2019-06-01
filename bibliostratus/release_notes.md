@@ -1,3 +1,13 @@
+### version 1.27
+Juin 2019
+- noticesbib2arkBnF.py renommé en bib2id.py, noticesaut2arkBnF.py renommé en aut2id.py
+- Module blanc (alignements BIB) :
+	- améliorations pour les partitions
+- Module blanc (alignements AUT) : 
+	- Alignement sur des points d'accès Rameau (fichier aut2id_concepts.py)
+- Module rouge :
+	- Export en format tabulé, avec une liste de zones ou sous-zones à extraire
+
 ### version 1.26
 14/03/2019
 - Formulaire d'édition des préférences

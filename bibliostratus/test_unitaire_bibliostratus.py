@@ -17,6 +17,7 @@ import aut2id_idref
 import bib2id
 import aut2id
 import marc2tables
+import ark2records
 
 
 # =============================================================================
