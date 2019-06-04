@@ -29,6 +29,7 @@ import json
 import funcs
 import main
 import aut2id_idref
+import sru
 
 # Ajout exception SSL pour éviter
 # plantages en interrogeant les API IdRef
@@ -773,9 +774,6 @@ def frbnf2ark(input_record):
                 ark = page.find("//srw:recordIdentifier",
                                 namespaces=main.ns).text
                 if ark != "":
-                    """NumNotices2methode[input_record.NumNot].append(
-                        "FRBNF > ARK"
-                        )"""
                     input_record.alignment_method.append("FRBNF > ARK")
             else:
                 ark = ",".join(
@@ -787,16 +785,14 @@ def frbnf2ark(input_record):
                     ]
                 )
                 if ark != "":
-                    """NumNotices2methode[input_record.NumNot].append(
-                        "FRBNF > ARK"
-                        )"""
                     input_record.alignment_method.append("FRBNF > ARK")
     return ark
 
 
 def row2file(liste_metadonnees, liste_reports):
     liste_metadonnees_to_report = [str(el) for el in liste_metadonnees]
-    if (main.prefs["timestamp"]["value"] == "True"):
+    if ("timestamp" in main.prefs
+       and main.prefs["timestamp"]["value"] == "True"):
         timest = funcs.timestamp()
         liste_metadonnees_to_report.append(timest)
     liste_reports[0].write("\t".join(liste_metadonnees_to_report) + "\n")
@@ -2330,6 +2326,28 @@ def item2id(row, n, form_bib2ark, parametres, liste_reports):
     # print(row)
     input_record = funcs.Bib_record(row, parametres["type_doc_bib"])
     alignment_result = item_alignement(input_record, parametres)
+    
+    # Si échec et que c'est une partition, relancer avec titre de partie
+    if (parametres["type_doc_bib"] == 6
+       and alignment_result.nb_ids == 0
+       and row[5]
+       and row[6]):
+        input_record.titre = input_record.soustitre
+        input_record.soustitre = funcs.Titre("")
+        alignment_result = item_alignement(input_record, parametres)
+        if alignment_result.nb_ids:
+            alignment_result.liste_metadonnees[3] += " - Sans alignement titre principal"
+
+    # Si échec et que c'est une partition, relancer avec titre d'ensemble
+    if (parametres["type_doc_bib"] == 6
+       and alignment_result.nb_ids == 0
+       and row[5]
+       and row[6]):
+        input_record.titre = funcs.Titre(row[5])
+        alignment_result = item_alignement(input_record, parametres)
+        if alignment_result.nb_ids:
+            alignment_result.liste_metadonnees[3] += " - Sans alignement titre de partie"
+
 
     alignment_result2output(alignment_result, input_record,
                             parametres, liste_reports, n)

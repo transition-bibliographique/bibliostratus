@@ -186,7 +186,7 @@ def isni2id(input_record, parametres, origine="isni"):
         if Liste_ids == []:
             liste_ark = isni2ark(input_record, parametres)
             for ark in liste_ark:
-                ppn = aut2id_idref.autArk2ppn(input_record.NumNot, ark)
+                ppn = aut2id_idref.autArk2ppn(input_record, ark)
                 if (ppn):
                     Liste_ids.append(ppn)
                     input_record.alignment_method.append("ISNI > ARK > PPN")
@@ -230,8 +230,11 @@ def accesspoint2isniorg(input_record, parametres):
     (test, records) = funcs.testURLetreeParse(url)
     if test:
         for rec in records.xpath("//srw:records/srw:record", namespaces=main.nsisni):
-            isni = rec.find("srw:recordData//isniURI",
-                            namespaces=main.nsisni).text
+            isni = ""
+            if (rec.find("srw:recordData//isniURI",
+                            namespaces=main.nsisni) is not None):
+                isni = rec.find("srw:recordData//isniURI",
+                                namespaces=main.nsisni).text
             forenames = []
             for forename in rec.xpath("srw:recordData//forename", namespaces=main.nsisni):
                 if (unidecode(forename.text).lower() not in forenames):
@@ -266,7 +269,7 @@ def accesspoint2isniorg(input_record, parametres):
                 isnis[i] = ark
                 input_record.alignment_method.append("ISNI > ARK")
             i += 1
-    if (parametres["preferences_alignement"] == 2):
+    elif (parametres["preferences_alignement"] == 2):
         for isni in isnis:
             isni_id = isni.split("/")[-1]
             ppn = aut2id_idref.isni2ppn(input_record, isni_id,
@@ -280,10 +283,6 @@ def accesspoint2isniorg(input_record, parametres):
     isnis = ",".join(isnis)
     return isnis
 
-def aut2ppn_by_id(input_record, parametres):
-    """Fonction d'alignement sur un identifiant IdRef (PPN)"""
-    ppn = ""
-    return ppn
 
 def aut2ark_by_id(input_record, parametres):
     """Alignement sur un identifiant ARK (actualisation)"""
@@ -302,6 +301,22 @@ def aut2ark_by_id(input_record, parametres):
 def align_from_aut_alignment(input_record, parametres):
     if (parametres["preferences_alignement"] == 1):
         ark = aut2ark_by_id(input_record, parametres)
+        if (ark == ""):
+            ark = aut2ark_by_accesspoint(
+                    input_record,
+                    input_record.NumNot, 
+                    input_record.lastname.propre,
+                    input_record.firstname.propre,
+                    input_record.firstdate.propre,
+                    input_record.lastdate.propre,
+                    parametres
+                    )
+        if (ark == ""):
+            ark = aut2id_idref.aut2ppn_by_id(input_record, parametres)
+        if (ark == "" and input_record.lastname.propre):
+            ark = aut2id_idref.aut2ppn_by_accesspoint(input_record, parametres)
+        if (ark == ""):
+            ark = aut2ark_by_id(input_record, parametres)
         if (ark == ""):
             ark = aut2ark_by_accesspoint(
                     input_record,
@@ -338,7 +353,6 @@ def alignment_result2output(alignment_result, input_record, parametres, liste_re
         row2file(alignment_result.liste_metadonnees, liste_reports)
     elif parametres["file_nb"] == 2:
         row2files(alignment_result.liste_metadonnees, liste_reports)
-
 
 
 def align_from_aut_item(row, n, form_aut2ark, parametres, liste_reports):
@@ -449,7 +463,7 @@ def align_from_rameau_alignment(input_record, parametres):
        and parametres["preferences_alignement"] == 2):
         liste_ppn = []
         for ark in arks.split(","):
-            ppn = aut2id_idref.autArk2ppn(input_record.NumNot, ark)
+            ppn = aut2id_idref.autArk2ppn(input_record, ark)
             if ppn:
                 liste_ppn.append(ppn)
                 if ("type_notices_rameau" in parametres
@@ -585,7 +599,7 @@ def arkBib2arkAut(input_record, parametres):
             input_record.alignment_method.append("ARK notice BIB + contrôle accesspoint")
             if (parametres["preferences_alignement"] == 2):
                 for ark in arks:
-                    ppn = aut2id_idref.autArk2ppn(input_record.NumNot, ark)
+                    ppn = aut2id_idref.autArk2ppn(input_record, ark)
                 if (ppn):
                     listeArk.append(ppn)
                 else:
@@ -818,7 +832,7 @@ def bib2arkAUT(input_record, parametres):
                 input_record.alignment_method.append("Référence biblio > ARK")
             if (parametres["preferences_alignement"] == 2):
                 for ark in arks:
-                    ppn = aut2id_idref.autArk2ppn(input_record.NumNot, ark)
+                    ppn = aut2id_idref.autArk2ppn(input_record, ark)
                     if (ppn):
                         listeArk.append(ppn)
                         input_record.alignment_method.append("ARK > PPN")
