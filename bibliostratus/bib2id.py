@@ -2271,7 +2271,7 @@ def item2ark_by_keywords(input_record, parametres):
     # ou lettres->chiffres
     if (ark == "" and input_record.titre.recherche_nombres_convertis):
         temp_input_record = input_record
-        temp_input_record.titre.recherche = temp_input_record.recherche_nombres_convertis
+        temp_input_record.titre.recherche = temp_input_record.titre.recherche_nombres_convertis
         ark = tad2ark(temp_input_record, parametres,
                       False, False)
         if ark:
@@ -2311,7 +2311,7 @@ def item2ppn_by_keywords(input_record, parametres):
     # ou lettres->chiffres
     if (ppn == "" and input_record.titre.recherche_nombres_convertis):
         temp_input_record = input_record
-        temp_input_record.titre.recherche = temp_input_record.recherche_nombres_convertis
+        temp_input_record.titre.recherche = temp_input_record.titre.recherche_nombres_convertis
         ppn = tad2ppn(temp_input_record, parametres)
         if ppn:
             input_record.alignment_method.append("conversion Nombres/Texte")

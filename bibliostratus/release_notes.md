@@ -5,6 +5,8 @@ Juin 2019
 	- améliorations pour les partitions
 - Module blanc (alignements AUT) : 
 	- Alignement sur des points d'accès Rameau (fichier aut2id_concepts.py)
+	- Métadonnées simples récupérées : ajout des ISNI
+	- Correction des en-têtes de colonnes en sortie
 - Module rouge :
 	- Export en format tabulé, avec une liste de zones ou sous-zones à extraire
 

@@ -139,24 +139,27 @@ def ark2meta_aut(ark):
     accesspointList = []
     accesspoint_complList = []
     datesList = []
+    isnis = []
     for ark in listeARK:
         metas_ark = ark2metas_aut(ark, False)
         accesspointList.append(metas_ark[0])
         accesspoint_complList.append(metas_ark[1])
         datesList.append(metas_ark[2])
+        isnis.append(metas_ark[3])
     accesspointList = "|".join(accesspointList)
     accesspoint_complList = "|".join(accesspoint_complList)
     datesList = "|".join(datesList)
-    metas = [accesspointList, accesspoint_complList, datesList]
+    isnis = "|".join(isnis)
+    metas = [accesspointList, accesspoint_complList, datesList, isnis]
     return metas
 
 
 def ark2metas_aut(ark, unidec=True):
-    url = funcs.url_requete_sru('aut.persistentid any "' + ark + '"')
+    url = funcs.url_requete_sru(f'aut.persistentid any "{ark}" and aut.status any "sparse validated"')
     if ("ppn" in ark.lower()):
         url = "https://www.idref.fr/" + ark[3:] + ".xml"
     (test, record) = funcs.testURLetreeParse(url)
-    accesspoint, accesspoint_compl, dates = ["", "", ""]
+    accesspoint, accesspoint_compl, dates, isni = ["", "", "", ""]
     if test:
         accesspoint = main.extract_subfield(record, "200", "a")
         if not accesspoint:
@@ -167,7 +170,8 @@ def ark2metas_aut(ark, unidec=True):
         dates = main.extract_subfield(record, "200", "f")
         if not dates:
             dates = main.extract_subfield(record, "210", "f")
-    metas = [accesspoint, accesspoint_compl, dates]
+        isni = main.extract_subfield(record, "010", "a")
+    metas = [accesspoint, accesspoint_compl, dates, isni]
     if unidec:
         metas = [unidecode(meta) for meta in metas]
     return metas
@@ -387,13 +391,13 @@ def align_from_aut(form, entry_filename, liste_reports, parametres):
                       "NumNot", "Nb identifiants trouvés", 
                       "Liste identifiants AUT trouvés",
                       "Méthode", "ARK AUT initial",
-                      "frbnf AUT initial", "ISNI", 
+                      "frbnf AUT initial", "ISNI initial", 
                       "Nom", "Complément nom",
                       "Date début", "Date fin"
                      ]
     if (parametres['meta_bnf'] == 1):
         header_columns.extend(
-            ["[BnF] Nom", "[BnF] Complément Nom", "[BnF] Dates"])
+            ["[BnF] Nom", "[BnF] Complément Nom", "[BnF] Dates", "[BnF] ISNI"])
     if (parametres['file_nb'] == 1):
         row2file(header_columns, liste_reports)
     elif(parametres['file_nb'] == 2):
@@ -527,14 +531,17 @@ def align_from_bib_item(row, n, form_aut2ark, parametres, liste_reports):
     alignment_result2output(alignment_result, input_record, parametres, 
                             liste_reports, n)
 
+
 def align_from_bib(form, entry_filename, liste_reports, parametres):
     """Alignement de ses données d'autorité avec les autorités BnF
     à partir d'une extraction de sa base bibliographique
     (métadonnées BIB + Nom, prénom et dates de l'auteur)
     """
     header_columns = [
-        "NumNot", "Nb identifiants trouvés", "Liste identifiants AUT trouvés", "Méthode alignement", "Numéro notice BIB initial", "ark BIB initial",
-        "frbnf BIB initial", "Titre", "ISNI", "Nom", "Complément nom",
+        "NumNot", "Nb identifiants trouvés", "Liste identifiants AUT trouvés",
+        "Méthode alignement", "Numéro notice BIB initial", "ark BIB initial",
+        "frbnf BIB initial", "Titre", "Date de publication", "ISNI initial", 
+        "Nom", "Complément nom",
         "dates Auteur"
     ]
     if (parametres['meta_bnf'] == 1):
@@ -1223,7 +1230,7 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
 
     # Récupérer les métadonnées BnF au passage ?
     meta_bnf = tk.IntVar()
-    tk.Checkbutton(frame_output_file, text="Récupérer les métadonnées simple",
+    tk.Checkbutton(frame_output_file, text="Récupérer les métadonnées simples",
                    variable=meta_bnf,
                    bg=couleur_fond, justify="left").pack(anchor="w")
     tk.Label(frame_output_file, text="\n", bg=couleur_fond,
