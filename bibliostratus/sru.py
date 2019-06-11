@@ -308,6 +308,12 @@ def testURLetreeParse(url, print_error = True):
             print(url)
             print(err)
         test = False
+
+    except http.client.IncompleteRead as err:
+        if (print_error):
+            print(url)
+            print(err)
+        test = False
  
     return (test,resultat)
 
@@ -419,74 +425,68 @@ def field2value(field):
     return value
 
 
-def extract_bnf_meta_marc(record, zone):
-    """
-    Ancien nom de la fonction, qui depuis a été généricisée
-    """
-    value = record2fieldvalue(record, zone)
-    return value
-
 
 def record2fieldvalue(record, zone):
     #Pour chaque zone indiquée dans le formulaire, séparée par un point-virgule, on applique le traitement ci-dessous
     value = ""
     field = ""
     subfields = []
-    if (zone.find("$") > 0):
-        #si la zone contient une précision de sous-zone
-        zone_ss_zones = zone.split("$")
-        field = zone_ss_zones[0]
-        fieldPath = ".//*[@tag='" + field + "']"
-        i = 0
-        for field in record.xpath(fieldPath):
-            i = i+1
-            j = 0
-            for subfield in zone_ss_zones[1:]:
-                sep = ""
-                if (i > 1 and j == 0):
-                    sep = "~"
-                j = j+1
-                subfields.append(subfield)
-                subfieldpath = "*[@code='"+subfield+"']"
-                if (field.find(subfieldpath) is not None):
-                    if (field.find(subfieldpath).text != ""):
-                        valtmp = field.find(subfieldpath).text
-                        #valtmp = field.find(subfieldpath).text.encode("utf-8").decode("utf-8", "ignore")
-                        prefixe = ""
-                        if (len(zone_ss_zones) > 2):
-                            prefixe = " $" + subfield + " "
-                        value = str(value) + str(sep) + str(prefixe) + str(valtmp)
-    else:
-        #si pas de sous-zone précisée
-        field = zone
-        path = ""
-        if (field == "000"):
-            path = ".//*[local-name()='leader']"
-        else:
-            path = ".//*[@tag='" + field + "']"
-        i = 0        
-        for field in record.xpath(path):
-            i = i+1
-            j = 0
-            if (field.find("*", namespaces=ns_bnf) is not None):
-                sep = ""
-                for subfield in field.xpath("*"):
+    if record is not None:
+        if (zone.find("$") > 0):
+            #si la zone contient une précision de sous-zone
+            zone_ss_zones = zone.split("$")
+            field = zone_ss_zones[0]
+            fieldPath = ".//*[@tag='" + field + "']"
+            i = 0
+            for field in record.xpath(fieldPath):
+                i = i+1
+                j = 0
+                for subfield in zone_ss_zones[1:]:
                     sep = ""
                     if (i > 1 and j == 0):
                         sep = "~"
-                    #print (subfield.get("code") + " : " + str(j) + " // sep : " + sep)
                     j = j+1
-                    valuesubfield = ""
-                    if (subfield.text != ""):
-                        valuesubfield = str(subfield.text)
-                        if (valuesubfield == "None"):
-                            valuesubfield = ""
-                    value = value + sep + " $" + subfield.get("code") + " " + valuesubfield
+                    subfields.append(subfield)
+                    subfieldpath = "*[@code='"+subfield+"']"
+                    if (field.find(subfieldpath) is not None):
+                        if (field.find(subfieldpath).text != ""):
+                            valtmp = field.find(subfieldpath).text
+                            #valtmp = field.find(subfieldpath).text.encode("utf-8").decode("utf-8", "ignore")
+                            prefixe = ""
+                            if (len(zone_ss_zones) > 2):
+                                prefixe = " $" + subfield + " "
+                            value = str(value) + str(sep) + str(prefixe) + str(valtmp)
+        else:
+            #si pas de sous-zone précisée
+            field = zone
+            path = ""
+            if (field == "000"):
+                path = ".//*[local-name()='leader']"
             else:
-                value = field.find(".").text
-    if (value != ""):
-        if (value[0] == "~"):
-            value = value[1:]
+                path = ".//*[@tag='" + field + "']"
+            i = 0        
+            for field in record.xpath(path):
+                i = i+1
+                j = 0
+                if (field.find("*", namespaces=ns_bnf) is not None):
+                    sep = ""
+                    for subfield in field.xpath("*"):
+                        sep = ""
+                        if (i > 1 and j == 0):
+                            sep = "~"
+                        #print (subfield.get("code") + " : " + str(j) + " // sep : " + sep)
+                        j = j+1
+                        valuesubfield = ""
+                        if (subfield.text != ""):
+                            valuesubfield = str(subfield.text)
+                            if (valuesubfield == "None"):
+                                valuesubfield = ""
+                        value = value + sep + " $" + subfield.get("code") + " " + valuesubfield
+                else:
+                    value = field.find(".").text
+        if (value != ""):
+            if (value[0] == "~"):
+                value = value[1:]
     return value
 
 
