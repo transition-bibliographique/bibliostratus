@@ -1318,7 +1318,8 @@ def ppn2metas(ppn):
     return [titre, premierauteurPrenom, premierauteurNom, tousauteurs]
 
 
-def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
+def tad2ark(input_record, parametres, 
+            anywhere=False, annee_plus_trois=False):
     """Fonction d'alignement par Titre-Auteur-Date
     (et contrôles sur type Notice, sur n° de volume si nécessaire)
     """
@@ -1470,7 +1471,8 @@ def tad2ark(input_record, anywhere=False, annee_plus_trois=False):
         and input_record.intermarc_type_record == "s"
         and not annee_plus_trois
     ):
-        listeArk = tad2ark(input_record, anywhere=False, annee_plus_trois=True)
+        listeArk = tad2ark(input_record, parametres, 
+                           anywhere=False, annee_plus_trois=True)
     return listeArk
 
 
@@ -1705,8 +1707,10 @@ def tad2ppn(input_record, parametres):
            T (pour les périodiques),
            Y (pour les thèses version de soutenance),
            V (pour le matériel audio-visuel)
-           K (pour les cartes"""
-    typeRecordDic = {"TEX": "B", "VID": "V", "AUD": "V", "PER": "T",
+           K (pour les cartes)
+           M (partitions)"""
+    typeRecordDic = {"TEX": "B", "VID": "V", 
+                     "AUD": "V", "PER": "T",
                      "CP": "K", "PAR": "M"}
     url = "http://www.sudoc.abes.fr//DB=2.1/SET=18/TTL=1/CMD?ACT=SRCHM\
 &MATCFILTER=Y&MATCSET=Y&NOSCAN=Y&PARSE_MNEMONICS=N&PARSE_OPWORDS=N&PARSE_OLDSETS=N\
@@ -2259,12 +2263,40 @@ def item2ark_by_keywords(input_record, parametres):
     ark = ""
     # A défaut, recherche sur Titre-Auteur-Date
     if input_record.titre.init != "":
-        ark = tad2ark(input_record, False, False)
-        # print("1." + NumNot + " : " + ark)
+        ark = tad2ark(input_record, parametres,
+                      False, False)
+
+    # Si rien trouvé et si nombres dans le titre :
+    # on recherche avec la version chiffres->lettres
+    # ou lettres->chiffres
+    if (ark == "" and input_record.titre.recherche_nombres_convertis):
+        temp_input_record = input_record
+        temp_input_record.titre.recherche = temp_input_record.recherche_nombres_convertis
+        ark = tad2ark(temp_input_record, parametres,
+                      False, False)
+        if ark:
+            input_record.alignment_method.append("conversion Nombres/Texte")
+
+
+    # Si rien trouvé et si c'est une partition
+    # et si mention d'opus -> on cherche sans la mention d'opus
+    if (ark == "" 
+       and "type_doc_bib" in parametres
+       and parametres["type_doc_bib"] == 6
+       and input_record.titre.recherche_sans_num_opus):
+        temp_input_record = input_record
+        temp_input_record.titre.recherche = temp_input_record.recherche_sans_num_opus
+        ark = tad2ark(temp_input_record, 
+                      parametres, 
+                      False, False)
+        if ark:
+            input_record.alignment_method.append("recherche sans mention d'opus")
+
     # Si pas trouvé, on cherche l'ensemble des
     # mots dans toutes les zones indifféremment
     if ark == "" and input_record.titre.init != "":
-        ark = tad2ark(input_record, True, False)
+        ark = tad2ark(input_record, parametres,
+                      True, False)
     return ark
 
 
@@ -2273,6 +2305,30 @@ def item2ppn_by_keywords(input_record, parametres):
     ppn = ""
     if input_record.titre.init != "":
         ppn = tad2ppn(input_record, parametres)
+
+    # Si rien trouvé et si nombres dans le titre :
+    # on recherche avec la version chiffres->lettres
+    # ou lettres->chiffres
+    if (ppn == "" and input_record.titre.recherche_nombres_convertis):
+        temp_input_record = input_record
+        temp_input_record.titre.recherche = temp_input_record.recherche_nombres_convertis
+        ppn = tad2ppn(temp_input_record, parametres)
+        if ppn:
+            input_record.alignment_method.append("conversion Nombres/Texte")
+
+
+    # Si rien trouvé et si c'est une partition
+    # et si mention d'opus -> on cherche sans la mention d'opus
+    if (ppn == "" 
+       and "type_doc_bib" in parametres
+       and parametres["type_doc_bib"] == 6
+       and input_record.titre.recherche_sans_num_opus):
+        temp_input_record = input_record
+        temp_input_record.titre.recherche = temp_input_record.recherche_sans_num_opus
+        ppn = tad2ppn(temp_input_record, parametres)
+        if ppn:
+            input_record.alignment_method.append("recherche sans mention d'opus")
+
     return ppn
 
 
@@ -2328,7 +2384,8 @@ def item2id(row, n, form_bib2ark, parametres, liste_reports):
     alignment_result = item_alignement(input_record, parametres)
     
     # Si échec et que c'est une partition, relancer avec titre de partie
-    if (parametres["type_doc_bib"] == 6
+    if ("type_doc_bib" in parametres
+       and parametres["type_doc_bib"] == 6
        and alignment_result.nb_ids == 0
        and row[5]
        and row[6]):
@@ -2339,7 +2396,8 @@ def item2id(row, n, form_bib2ark, parametres, liste_reports):
             alignment_result.liste_metadonnees[3] += " - Sans alignement titre principal"
 
     # Si échec et que c'est une partition, relancer avec titre d'ensemble
-    if (parametres["type_doc_bib"] == 6
+    if ("type_doc_bib" in parametres
+       and parametres["type_doc_bib"] == 6
        and alignment_result.nb_ids == 0
        and row[5]
        and row[6]):

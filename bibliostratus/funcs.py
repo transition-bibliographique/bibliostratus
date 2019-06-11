@@ -224,11 +224,11 @@ def nettoyageTitrePourRecherche(string):
     return string
 
 
-
 def conversionNombres(string):
     # convertit les nombres en lettres
     # ou les lettres en nombres si pertinent
-    return ""
+    new_str = ""
+    return new_str
 
 
 def nettoyageOpus(string):
