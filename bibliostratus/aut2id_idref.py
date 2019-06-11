@@ -35,14 +35,15 @@ def aut2ppn_by_id(input_record, parametres):
     """
     Liste_ppn = ""
     if (input_record.isni.propre != ""):
-        Liste_ppn = isni2ppn(input_record.NumNot, input_record.isni.propre)
+        Liste_ppn = isni2ppn(input_record, input_record.isni.propre, parametres)
     if (Liste_ppn == "" and aut2id.nettoyageArk(input_record.ark_init) != ""):
-        Liste_ppn = autArk2ppn(input_record.NumNot, aut2id.nettoyageArk(input_record.ark_init))
-
+        Liste_ppn = autArk2ppn(input_record, aut2id.nettoyageArk(input_record.ark_init))
+    if Liste_ppn:
+        input_record.alignment_method.append("ARK > PPN")
     return Liste_ppn
 
 
-def autArk2ppn(NumNot, ark_nett):
+def autArk2ppn(input_record, ark_nett):
     Liste_ppn = []
     url = f"https://www.idref.fr/services/ark2idref/http://catalogue.bnf.fr/{ark_nett}"
     (test, result) = funcs.testURLetreeParse(url, display=False)
@@ -102,7 +103,7 @@ def aut2ppn_by_accesspoint(input_record, parametres):
     url = "".join(["https://www.idref.fr/Sru/Solr?q=" + aut_type_dict[parametres["type_aut"]] + "_t:",
                    urllib.parse.quote(" ".join(query)),
                    query_date,
-                   "20AND%20recordtype_z:" + parametres["type_aut"] + "&sort=score%20desc&version=2.2&start=0&rows=1000"])
+                   "%20AND%20recordtype_z:" + parametres["type_aut"] + "&sort=score%20desc&version=2.2&start=0&rows=1000"])
     (test, results) = funcs.testURLetreeParse(url)
     if test:
         for record in results.xpath("//doc"):
@@ -110,7 +111,9 @@ def aut2ppn_by_accesspoint(input_record, parametres):
             ppn = check_idref_record(ppn, input_record, ppn2idrefrecord(ppn, parametres), parametres)
             if ppn:
                 Liste_ppn.append(ppn)
-    Liste_ppn = ",".join(["PPN"+el for el in Liste_ppn])
+    Liste_ppn = ",".join(["PPN" + el for el in Liste_ppn])
+    if (Liste_ppn):
+        input_record.alignment_method.append("Point d'accès > PPN")
     return Liste_ppn
 
 
@@ -168,5 +171,5 @@ def isni2ppn(input_record, isni_id, parametres, origine="isni"):
             Liste_ppn.append(ppn.text)
     Liste_ppn = ",".join(["PPN"+el for el in Liste_ppn if el])
     if Liste_ppn:
-        input_record.alignement_method.append(origine)
+        input_record.alignment_method.append(origine)
     return Liste_ppn
