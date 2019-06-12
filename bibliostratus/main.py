@@ -27,7 +27,7 @@ import bib2id
 import edit_preferences as settings
 
 version = 1.27
-lastupdate = "01/06/2019"
+lastupdate = "12/06/2019"
 programID = "bibliostratus"
 
 # Ajout du fichier preferences.json
