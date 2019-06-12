@@ -1389,7 +1389,7 @@ def tad2ark(input_record, parametres,
            and input_record.scale):
             search_query += f' and bib.anywhere all "{input_record.scale}"'
         url = funcs.url_requete_sru(search_query)
-        # print(url)
+        print(url)
         (test, results) = funcs.testURLetreeParse(url, param_timeout=20)
         index = ""
         if (
@@ -2272,6 +2272,8 @@ def item2ark_by_keywords(input_record, parametres):
     if (ark == "" and input_record.titre.recherche_nombres_convertis):
         temp_input_record = input_record
         temp_input_record.titre.recherche = temp_input_record.titre.recherche_nombres_convertis
+        temp_input_record.titre.controles = funcs.nettoyageTitrePourControle(temp_input_record.titre.recherche)
+        print(temp_input_record.titre)
         ark = tad2ark(temp_input_record, parametres,
                       False, False)
         if ark:
@@ -2285,12 +2287,12 @@ def item2ark_by_keywords(input_record, parametres):
        and parametres["type_doc_bib"] == 6
        and input_record.titre.recherche_sans_num_opus):
         temp_input_record = input_record
-        temp_input_record.titre.recherche = temp_input_record.recherche_sans_num_opus
+        temp_input_record.titre.recherche = temp_input_record.titre.recherche_sans_num_opus
         ark = tad2ark(temp_input_record, 
                       parametres, 
                       False, False)
         if ark:
-            input_record.alignment_method.append("recherche sans mention d'opus")
+            input_record.alignment_method.append(" recherche sans mention d'opus")
 
     # Si pas trouvé, on cherche l'ensemble des
     # mots dans toutes les zones indifféremment
@@ -2312,6 +2314,7 @@ def item2ppn_by_keywords(input_record, parametres):
     if (ppn == "" and input_record.titre.recherche_nombres_convertis):
         temp_input_record = input_record
         temp_input_record.titre.recherche = temp_input_record.titre.recherche_nombres_convertis
+        temp_input_record.titre.controles = funcs.nettoyageTitrePourControle(temp_input_record.titre.recherche)
         ppn = tad2ppn(temp_input_record, parametres)
         if ppn:
             input_record.alignment_method.append("conversion Nombres/Texte")
@@ -2327,7 +2330,7 @@ def item2ppn_by_keywords(input_record, parametres):
         temp_input_record.titre.recherche = temp_input_record.recherche_sans_num_opus
         ppn = tad2ppn(temp_input_record, parametres)
         if ppn:
-            input_record.alignment_method.append("recherche sans mention d'opus")
+            input_record.alignment_method.append(" recherche sans mention d'opus")
 
     return ppn
 
