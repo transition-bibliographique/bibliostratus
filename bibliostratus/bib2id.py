@@ -1389,7 +1389,6 @@ def tad2ark(input_record, parametres,
            and input_record.scale):
             search_query += f' and bib.anywhere all "{input_record.scale}"'
         url = funcs.url_requete_sru(search_query)
-        print(url)
         (test, results) = funcs.testURLetreeParse(url, param_timeout=20)
         index = ""
         if (
@@ -2273,7 +2272,6 @@ def item2ark_by_keywords(input_record, parametres):
         temp_input_record = input_record
         temp_input_record.titre.recherche = temp_input_record.titre.recherche_nombres_convertis
         temp_input_record.titre.controles = funcs.nettoyageTitrePourControle(temp_input_record.titre.recherche)
-        print(temp_input_record.titre)
         ark = tad2ark(temp_input_record, parametres,
                       False, False)
         if ark:
