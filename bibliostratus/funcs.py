@@ -293,17 +293,18 @@ def string2numbers(string):
         else:
             convert_string_list.append(el)
     i = 0
-    convert_string_list_corr = []
     for el in convert_string_list:
         if RepresentsInt(el):
+            el = int(el)
             test_next = True
             while (test_next and i < len(convert_string_list)):
                 try:
-                    if (RepresentsInt(convert_string_list[i+1])):
-                        if convert_string_list[i+1] > el:
-                            el = convert_string_list[i+1] * el
+                    if (RepresentsInt(convert_string_list[i + 1])):
+                        next_val = int(convert_string_list[i + 1])
+                        if next_val > el:
+                            el = next_val * el
                         else:
-                            el = convert_string_list[i+1] + el
+                            el = next_val + el
                         convert_string_list.pop(i+1)
                         convert_string_list[i] = el
                     else:
