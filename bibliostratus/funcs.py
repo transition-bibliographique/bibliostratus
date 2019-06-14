@@ -263,15 +263,18 @@ def int2strings(number):
     Conversion d'un nombre en mot
     """
     string = ""
-    if (number <= 1000):
-        string = main.clean_string(numbers2letters[number])
-    elif (number < 999999):
-        milliers = main.clean_string(numbers2letters[round(number/1000)]) + " mille"
-        milliers = milliers.replace("un mille", "mille")
-        unites = main.clean_string(numbers2letters[int(str(number)[-3:])])
-        if (unites == "zero"):
-            unites = ""
-        string = " ".join([milliers, unites]).strip()
+    try:
+        if (0 <= number <= 1000):
+            string = main.clean_string(numbers2letters[number])
+        elif (1000 < number < 999999):
+            milliers = main.clean_string(numbers2letters[round(number/1000)]) + " mille"
+            milliers = milliers.replace("un mille", "mille")
+            unites = main.clean_string(numbers2letters[int(str(number)[-3:])])
+            if (unites == "zero"):
+                unites = ""
+            string = " ".join([milliers, unites]).strip()
+    except KeyError:
+        pass
     string = string.replace("-", " ").strip()
     return string
 
