@@ -12,6 +12,7 @@ Juin 2019
 - Module rouge :
 	- Export en format tabulé, avec une liste de zones ou sous-zones à extraire
 	- Marqueur dans l'URL d'extraction des notices : "type_action=extract" (pour informations statistiques)
+	- Export de notices Sudoc : si erreur à l'export, teste l'API merged pour le cas où la notice aurait été fusionnée
 
 ### version 1.26
 14/03/2019
