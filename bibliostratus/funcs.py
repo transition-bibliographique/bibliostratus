@@ -1098,7 +1098,7 @@ class Alignment_result:
                                     self.alignment_method_str
                                 ] 
         if ("type_notices_rameau" in parametres
-            and parametres["input_data_type"] == 4):
+           and parametres["input_data_type"] == 4):
             self.liste_metadonnees.append(id_rameau2type(ark, parametres["type_notices_rameau"]))
         self.liste_metadonnees.extend(input_record.metas_init)
     def __str__(self):

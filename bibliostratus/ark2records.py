@@ -62,7 +62,7 @@ def ark2url(identifier, parametres):
         query = urllib.parse.quote(query)
         url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + \
             "&recordSchema=" + parametres["format_BIB"] + \
-            "&maximumRecords=20&startRecord=1&origin=bibliostratus"
+            "&maximumRecords=20&startRecord=1&origin=bibliostratus&type_action=extract"
     elif (identifier.aligned_id.type == "ppn" and parametres["type_records"] == "bib"):
         url = "https://www.sudoc.fr/" + identifier.aligned_id.clean + ".xml"
     elif (identifier.aligned_id.type == "ppn" and parametres["type_records"] == "aut"):
@@ -334,7 +334,39 @@ def extract1record(row, j, form, headers, parametres):
                                     parametres)
                         if (parametres["AUTliees"] > 0):
                             bib2aut(identifier, XMLrec, parametres)
+            elif (identifier.aligned_id.type == "ppn"
+                  and parametres["type_records"] == "bib"):
+                ppn_updated = update_bib_ppn(identifier.aligned_id.clean)
+                if ppn_updated is not None:
+                    print("Nouveau PPN :", ppn_updated)
+                    errors_list.append([f"Fusion de notices Sudoc\t{identifier.aligned_id.init} disparu. Nouveau PPN : {ppn_updated}",
+                                        ""])
+                    identifier = funcs.Id4record([row[0], f"PPN{ppn_updated}"],
+                                                 parametres)
+                    parametres["listeARK_BIB"].append(identifier.aligned_id.clean)
+                    url_record = ark2url(identifier, parametres)
+                    if url_record:
+                        (test, page) = funcs.testURLetreeParse(url_record)
+                        if (test):
+                            nbResults = page2nbresults(page, identifier)
+                            if (nbResults == "1"):
+                                for XMLrec in page.xpath("//record"):
+                                    record2file(identifier, XMLrec,
+                                                parametres["bib_file"],
+                                                parametres["format_file"],
+                                                parametres)
+                                    if (parametres["AUTliees"] > 0):
+                                        bib2aut(identifier, XMLrec, parametres)
 
+def update_bib_ppn(ppn):
+    url = f"https://www.sudoc.fr/services/merged/{ppn}"
+    test, result = funcs.testURLetreeParse(url)
+    if (test
+       and result.find("//result/ppn") is not None):
+        new_ppn = result.find("//result/ppn").text
+        return new_ppn
+    else:
+        return None
 
 def callback(master, form, filename, type_records_form, 
              correct_record_option, headers, AUTlieesAUT,
@@ -385,9 +417,11 @@ def callback(master, form, filename, type_records_form,
 
 
 def errors_file(outputID):
-    errors_file = open(outputID + "-errors.txt", "w", encoding="utf-8")
-    for el in errors_list:
-        errors_file.write(el[1] + "\n" + el[0] + "\n\n")
+    if errors_list:
+        errors_file = open(outputID + "-errors.txt", "w", encoding="utf-8")
+        for el in errors_list:
+            errors_file.write(el[1] + "\n" + el[0] + "\n\n")
+        errors_file.close()
 
 
 def fin_traitements(window, outputID):
@@ -457,12 +491,24 @@ def formulaire_ark2records(
     #         bg=couleur_fond, justify="left").pack(side="left", anchor="w")
     """entry_filename = tk.Entry(frame_input_file, width=20, bd=2, bg=couleur_fond)
     entry_filename.pack(side="left")
-    entry_filename.focus_set()"""
+    entry_filename.focus_set() """
+    
+    main.download_zone(
+                        frame_output_file,
+                        "Sélectionner un dossier de destination",
+                        main.output_directory,
+                        couleur_fond,
+                        type_action="askdirectory",
+                        widthb = [40,1]
+                        )
+
     main.download_zone(
         frame_input_file,
         "Sélectionner un fichier contenant\nune liste de n° de notices\nARK BnF ou PPN Abes\n(un numéro par ligne)",
-        entry_file_list, couleur_fond, zone_notes_message_en_cours
-    )
+        entry_file_list,
+        couleur_fond,
+        zone_notes_message_en_cours
+        )
 
     tk.Label(frame_input_aut, text="\n", bg=couleur_fond).pack()
 
@@ -561,14 +607,7 @@ pour réécrire les notices récupérées",
     #     bg=couleur_fond
     # ).pack()
 
-    main.download_zone(
-        frame_output_file,
-        "Sélectionner un dossier de destination",
-        main.output_directory,
-        couleur_fond,
-        type_action="askdirectory",
-        widthb = [40,1]
-    )
+
     tk.Label(frame_output_file, text="Préfixe fichier(s) en sortie",
              bg=couleur_fond).pack(side="left", anchor="w")
     outputID = tk.Entry(frame_output_file, bg=couleur_fond)

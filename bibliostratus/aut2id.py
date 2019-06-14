@@ -1126,8 +1126,20 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
              bg=couleur_fond, justify="left").pack(side="left", anchor="w")
     """entry_filename = tk.Entry(frame_input_file, width=20, bd=2, bg=couleur_fond)
     entry_filename.pack(side="left")
-    entry_filename.focus_set()"""
-    main.download_zone(frame_input_file, "Sélectionner un fichier\nSéparateur TAB, Encodage UTF-8",
+    entry_filename.focus_set() """
+    
+    main.download_zone(
+        frame_output_file,
+        "Sélectionner un dossier\nde destination",
+        main.output_directory,
+        couleur_fond,
+        type_action="askdirectory",
+        widthb = [40,1]
+    )
+
+
+    main.download_zone(frame_input_file,
+                       "Sélectionner un fichier\nSéparateur TAB, Encodage UTF-8",
                        entry_file_list, couleur_fond, zone_notes_message_en_cours)
 
     # Fichier avec en-têtes ?
@@ -1238,14 +1250,7 @@ def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0
     
     # tk.Label(frame_header, text="\n", bg=couleur_fond).pack()
 
-    main.download_zone(
-        frame_output_file,
-        "Sélectionner un dossier\nde destination",
-        main.output_directory,
-        couleur_fond,
-        type_action="askdirectory",
-        widthb = [40,1]
-    )
+
 
     tk.Label(frame_output_file, text="Préfixe des fichiers en sortie",
              bg=couleur_fond).pack(anchor="w")

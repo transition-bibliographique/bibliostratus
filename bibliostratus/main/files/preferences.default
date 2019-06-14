@@ -1,4 +1,16 @@
 {
+    "http_proxy": {
+        "description": "URL du proxy HTTP à utiliser dans le contexte d'un réseau professionnel.",
+        "URL": "",
+        "login": "",
+        "mot de passe": ""
+        },
+    "https_proxy": {
+        "description": "URL du proxy HTTPS à utiliser dans le contexte d'un réseau professionnel.",
+        "URL": "",
+        "login": "",
+        "mot de passe": ""
+        },
     "display_message_in_progress": {
         "description": "Afficher ou non le message en rouge quand on sélectionner un fichier à charger. Par défaut : 1 = message à afficher. 0 = ne pas afficher",
         "value": 1
@@ -14,16 +26,4 @@
     "timestamp": {
         "description": "Option (booléen True/False) pour injecter en dernière colonne des rapports d'alignement l'horodatage. Ceci pour évaluer la performance d'un alignement volumineux au fur et à mesure du traitement.",
         "value": "False"
-        },
-    "http_proxy": {
-        "description": "URL du proxy HTTP à utiliser dans le contexte d'un réseau professionnel.",
-        "URL": "",
-        "login": "",
-        "mot de passe": ""
-        },
-    "https_proxy": {
-        "description": "URL du proxy HTTPS à utiliser dans le contexte d'un réseau professionnel.",
-        "URL": "",
-        "login": "",
-        "mot de passe": ""
         }}

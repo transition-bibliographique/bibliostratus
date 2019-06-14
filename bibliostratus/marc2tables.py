@@ -995,14 +995,15 @@ def formulaire_marc2tables(
     tk.Label(cadre_input_header, bg=couleur_fond, fg=couleur_bouton,
              text="En entrée\n", justify="left", font="bold").pack(anchor="w")
 
-    # tk.Label(
-    #     cadre_input_file_name,
-    #     bg=couleur_fond,
-    #     text="Fichier contenant les notices : "
-    # ).pack(side="left")
-    """entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
-    entry_filename.pack(side="left")
-    entry_filename.focus_set()"""
+    main.download_zone(
+        cadre_output_nom_fichiers,
+        "Sélectionner un dossier de destination",
+        main.output_directory,
+        couleur_fond,
+        type_action="askdirectory",
+        widthb = [40,1]
+    )
+
     main.download_zone(
         cadre_input_file, "Sélectionner un fichier de notices Unimarc",
         entry_file_list, couleur_fond, cadre_output_message_en_cours
@@ -1105,14 +1106,7 @@ def formulaire_marc2tables(
              justify="left").pack()
 
 
-    main.download_zone(
-        cadre_output_nom_fichiers,
-        "Sélectionner un dossier de destination",
-        main.output_directory,
-        couleur_fond,
-        type_action="askdirectory",
-        widthb = [40,1]
-    )
+
     tk.Label(cadre_output_nom_fichiers, bg=couleur_fond,
              text="Préfixe des fichiers en sortie : ",
              justify="left").pack(side="left")

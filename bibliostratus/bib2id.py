@@ -1060,7 +1060,7 @@ def ean2sudoc(input_record, parametres, controle_titre=True):
                             input_record.titre_nett, input_record.auteur_nett,
                             input_record.date_nett, "", ""
                             ],
-                            parametres["meta_bib"]
+                            parametres["type_doc_bib"]
                             )
                         ark.append(
                                 ppn2ark(temp_record, ppn_val, parametres)
@@ -1103,7 +1103,7 @@ def ppn2ark(input_record, ppn, parametres):
                      input_record.auteur,
                      input_record.date, "", ""
                     ],
-                    parametres["meta_bib"]
+                    parametres["type_doc_bib"]
                 )
                 ark = frbnf2ark(temp_record)
     return ark
@@ -1231,7 +1231,7 @@ def issn2sudoc(input_record, NumNot, issn_init, issn_nett,
                                                             auteur,
                                                             date
                                                         ],
-                                                        parametres["meta_bib"]
+                                                        parametres["type_doc_bib"]
                                                         )
                         ark.append(ppn2ark(temp_record, ppn_val, parametres))
     # Si on trouve un PPN, on ouvre la notice pour voir s'il n'y a pas un ARK
@@ -1254,6 +1254,125 @@ def ark2metas(ark, unidec=True):
     premierauteurNom = ""
     tousauteurs = ""
     date = ""
+    typeSupport = ""
+    dic_182c = {"s": "audio",
+                "c": "informatique",
+                "h": "microforme",
+                "p": "microscopique",
+                "g": "projeté",
+                "e": "stéréoscopique",
+                "v": "vidéo",
+                "x": "autre",
+                "n": "sans médiation"}
+    dic_183a = {"caa": "Bobine de bande informatique",
+            "cab": "Cartouche informatique",
+            "cac": "Cassette de bande informatique",
+            "cad": "Dispositif électronique autonome",
+            "cae": "Mémoire USB",
+            "caf": "Puce RFID",
+            "caz": "Support numérique manipulable (générique)",
+            "cba": "Carte mémoire",
+            "cbb": "Carte mémoire propriétaire",
+            "cca": "Cartouche de jeu",
+            "cda": "Blu-ray disc",
+            "cdb": "Blu-ray disc propriétaire",
+            "cdc": "CD-I",
+            "cdd": "CD-Photo",
+            "cde": "CD-ROM",
+            "cdf": "CD-ROM propriétaire",
+            "cdg": "CDTV",
+            "cdh": "Disque optique hybride",
+            "cdi": "Disquette",
+            "cdj": "Disquette propriétaire",
+            "cdk": "DVD-ROM",
+            "cdl": "DVD-ROM propriétaire",
+            "cea": "Clé de licence de produit numérique",
+            "ceb": "Ressource dématérialisée",
+            "czz": "Autre support électronique",
+            "eaa": "Carte stéréoscopique",
+            "eab": "Disque stéréoscopique",
+            "eac": "Plaque stéréoscopique",
+            "ezz": "Autre support stéréoscopique",
+            "gab": "Bobine de film",
+            "gac": "Cartouche de film fixe",
+            "gad": "Diapositive",
+            "gae": "Film fixe",
+            "gaf": "Film fixe court",
+            "gag": "Rouleau de film",
+            "gah": "Transparent pour rétroprojecteur",
+            "gaz": "Film ou transparent (générique)",
+            "gba": "Plaque de lanterne magique",
+            "gzz": "Autre support pour les images projetées",
+            "haa": "Carte à fenêtre",
+            "hab": "Cassette de microfiches",
+            "hac": "Micro-opaque",
+            "had": "Microfiche",
+            "haz": "Microforme (générique)",
+            "hba": "Bande de microfilm",
+            "hbb": "Bobine de microfilm",
+            "hbc": "Cartouche de microfilm",
+            "hbd": "Cassette de microfilm",
+            "hbe": "Rouleau de microfilm",
+            "hbz": "Microfilm",
+            "hzz": "Autre support pour les microformes",
+            "naa": "Carte",
+            "nba": "Bande de film photographique",
+            "nbb": "Bobine de film photographique",
+            "nbc": "Rouleau de film photographique",
+            "nbz": "Film photographique (terme générique)",
+            "nca": "Tableau à feuilles mobiles",
+            "nda": "Feuille",
+            "ndb": "Autocollant",
+            "ndc": "Dépliant",
+            "ndd": "Transparent",
+            "nea": "Appareil (terme générique)",
+            "neb": "Globe",
+            "nec": "Kit",
+            "ned": "Maquette",
+            "nef": "Matrice",
+            "neg": "Objet numismatique",
+            "neh": "Panneau",
+            "nei": "Panneau dépliant",
+            "nej": "Plaque",
+            "nek": "Plaque photographique",
+            "nel": "Plateau de jeu",
+            "nez": "Objet",
+            "nfa": "Rouleau",
+            "nga": "Volume",
+            "ngb": "Brochure",
+            "ngc": "Fascicule",
+            "nzz": "Autre support sans médiation",
+            "paa": "Lame pour microscope",
+            "pzz": "Autre support microscopique",
+            "saa": "Bande magnétique audio",
+            "sab": "Bobine de piste sonore",
+            "sac": "Bande perforée pour instrument mécanique",
+            "saz": "Support audio (générique)",
+            "sba": "Cartouche audio",
+            "sbb": "Bande TEFI",
+            "sca": "Cassette audio analogique",
+            "scb": "Cassette audio numérique",
+            "sda": "Cylindre phonographique",
+            "sdb": "Fil magnétique",
+            "sdc": "Ruban métallique magnétique",
+            "sea": "CD audio",
+            "seb": "CD-Extra",
+            "sec": "Disque audio",
+            "sed": "DVD audio",
+            "see": "Feuille acoustique",
+            "sef": "MiniDisc",
+            "seg": "Blu-ray audio",
+            "szz": "Autre support vidéo",
+            "vaa": "Bande vidéo",
+            "vaz": "Vidéo (Terme générique)",
+            "vba": "Cassette vidéo",
+            "vbb": "Cassette vidéo numérique",
+            "vca": "Blu-ray vidéo",
+            "vcb": "Disque vidéo",
+            "vcc": "DVD vidéo",
+            "vcd": "HD DVD",
+            "vce": "Vidéo CD",
+            "vzz": "Autre support vidéo"}
     if test:
         titre = main.extract_subfield(record, "200", "a")
         titre_compl = main.extract_subfield(record, "200", "e")
@@ -1266,7 +1385,15 @@ def ark2metas(ark, unidec=True):
             premierauteurPrenom = main.extract_subfield(record, "710", "b")
         tousauteurs = main.extract_subfield(record, "200", "f")
         date = main.extract_subfield(record, "210", "d")
-    metas = [titre, premierauteurPrenom, premierauteurNom, tousauteurs, date]
+        typemedia182 = main.extract_subfield(record, "182", "c")
+        typesupport183 = main.extract_subfield(record, "183", "a")
+        if typemedia182 in dic_182c:
+            typemedia182 = dic_182c[typemedia182]
+        if typesupport183 in dic_183a:
+            typesupport183 = dic_183a[typesupport183]
+        typeSupport = ",".join([typemedia182, typesupport183]).strip(",")
+    metas = [titre, premierauteurPrenom, premierauteurNom,
+             tousauteurs, date, typeSupport]
     if unidec:
         metas = [funcs.unidecode_local(meta) for meta in metas]
     return metas
@@ -2051,6 +2178,7 @@ def ark2metadc(ark):
     PremierAuteurNomList = []
     tousAuteursList = []
     dateList = []
+    typeSupportList = []
     for ark in listeARK:
         metas_ark = ark2metas(ark, False)
         titlesList.append(metas_ark[0])
@@ -2058,17 +2186,20 @@ def ark2metadc(ark):
         PremierAuteurNomList.append(metas_ark[2])
         tousAuteursList.append(metas_ark[3])
         dateList.append(metas_ark[4])
+        typeSupportList.append(metas_ark[5])
     titlesList = "|".join(titlesList)
     PremierAuteurPrenomList = "|".join(PremierAuteurPrenomList)
     PremierAuteurNomList = "|".join(PremierAuteurNomList)
     tousAuteursList = "|".join(tousAuteursList)
     dateList = "|".join(dateList)
+    typeSupportList = "|".join(typeSupportList)
     metas = [
         titlesList,
         PremierAuteurPrenomList,
         PremierAuteurNomList,
         tousAuteursList,
         dateList,
+        typeSupportList
     ]
     return metas
 
@@ -2406,11 +2537,8 @@ def item2id(row, n, form_bib2ark, parametres, liste_reports):
         alignment_result = item_alignement(input_record, parametres)
         if alignment_result.nb_ids:
             alignment_result.liste_metadonnees[3] += " - Sans alignement titre de partie"
-
-
     alignment_result2output(alignment_result, input_record,
                             parametres, liste_reports, n)
-
     return alignment_result
 
 
@@ -2441,7 +2569,8 @@ def file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parame
                 "[BnF/Abes] 1er auteur Prénom",
                 "[BnF/Abes] 1er auteur Nom",
                 "[BnF/Abes] Tous auteurs",
-                "[BnF/Abes] Date"
+                "[BnF/Abes] Date",
+                "[BnF/Abes] Type"
             ]
         )
     # Ajout des en-têtes de colonne dans les fichiers
@@ -2781,6 +2910,15 @@ def formulaire_noticesbib2arkBnF(
     #     fg="red",
     # ).pack()
     # définition input URL (u)
+
+    main.download_zone(
+                        cadre_output_directory,
+                        "Sélectionner un dossier\nde destination",
+                        main.output_directory,
+                        couleur_fond,
+                        type_action="askdirectory",
+                        widthb = [40,1]
+                        )
     tk.Label(
         cadre_input_header,
         bg=couleur_fond,
@@ -2800,8 +2938,8 @@ def formulaire_noticesbib2arkBnF(
         entry_file_list,
         couleur_fond,
         zone_notes,
-        widthb = [40,1]
-    )
+        #widthb=[40,1]
+        )
 
     tk.Label(
         cadre_input_type_docs_zone,
@@ -2971,14 +3109,7 @@ def formulaire_noticesbib2arkBnF(
     
     # tk.Label(frame_header, text="\n", bg=couleur_fond).pack()
 
-    main.download_zone(
-        cadre_output_directory,
-        "Sélectionner un dossier\nde destination",
-        main.output_directory,
-        couleur_fond,
-        type_action="askdirectory",
-        widthb = [40,1]
-    )
+
 
     # Ajout (optionnel) d'un identifiant de traitement
     #tk.Label(cadre_output_id_traitement,

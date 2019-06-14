@@ -10,6 +10,7 @@ les bibliothèques françaises
 """
 
 import codecs
+import os
 import json
 import re
 import tkinter as tk
@@ -480,7 +481,9 @@ def openfile(frame, liste, background_color="white"):
 
 def download_button(frame, text, frame_selected, text_path,
                     couleur_fond, file_entry_list, 
-                    zone_message_en_cours=""):
+                    zone_message_en_cours="",
+                    type_action="select_file"):
+    global output_directory
     if (file_entry_list != []):
         text_path.delete(0.0, 1000.3)
     filename = filedialog.askopenfilename(
@@ -496,6 +499,7 @@ vous pourrez suivre sa progression sur le terminal (fenêtre écran noir).
 Cette fenêtre se fermera automatiquement à la fin du programme"""
     if (zone_message_en_cours != ""):
         zone_message_en_cours.insert(0.0, texte)
+
 
 
 def path_truncator(text, max_length):
@@ -530,7 +534,6 @@ def download_zone(frame, text_bouton, file_entry_list,
                                         bg=couleur_fond, bd=0, 
                                         font="Arial 9 bold")
         zone_message_en_cours.pack()
-    # bouton_telecharger = download_button(frame,"Sélectionner un fichier","#ffffff")
     if (type_action == "askdirectory"):
         select_filename_button = tk.Button(
             frame_button,
@@ -554,7 +557,8 @@ def download_zone(frame, text_bouton, file_entry_list,
                 display_selected,
                 "#ffffff",
                 file_entry_list,
-                zone_message_en_cours
+                zone_message_en_cours,
+                type_action
             ),
             text=text_bouton,
             padx=10,
@@ -576,42 +580,6 @@ def select_directory_button(
         directory_list[0] = filename
     text_path.insert(0.0, path_truncator(filename, 40))
 
-
-def select_directory(frame, text_bouton, directory_list, 
-                     couleur_fond, type_action):
-    frame_button = tk.Frame(frame)
-    frame_button.pack()
-    frame_selected = tk.Frame(frame)
-    frame_selected.pack()
-    display_selected = tk.Text(
-        frame_selected, height=3, width=50, bg=couleur_fond, bd=0, font="Arial 9 bold")
-    display_selected.pack()
-    # bouton_telecharger = download_button(frame,"Sélectionner un fichier","#ffffff")
-    if (type_action == "askdirectory"):
-        select_filename_button = tk.Button(
-        frame_button,
-        command=lambda: download_button(
-            frame,
-            text_bouton,
-            frame_selected,
-            display_selected,
-            "#ffffff",
-            selected_directory,
-        ),
-        text=text_bouton,
-        padx=10,
-        pady=10,
-    )
-    else:
-        select_filename_button = tk.Button(
-                                            frame_button,
-                                            command=lambda: download_button(frame,
-                                                                            text_bouton,
-                                                                            frame_selected, display_selected,
-                                                                            "#ffffff", directory_list),
-                                            text=text_bouton,
-                                            padx=10, pady=10)
-    select_filename_button.pack()
 
 
 def message_programme_en_cours(
@@ -651,9 +619,25 @@ def formulaire_main(access_to_network, last_version):
          couleur_fond,
          couleur_bouton, access_to_network)
 
-    frame1 = tk.Frame(zone_actions, highlightthickness=2,
+    
+    frame_left = tk.Frame(zone_actions, bg=couleur_fond, pady=0, padx=0)
+    frame_left.pack(side="left", anchor="w")
+
+    frame_logo = tk.Frame(frame_left, highlightbackground=couleur_fond,
+                          highlightcolor=couleur_fond,
+                          bg=couleur_fond, pady=0, padx=0)
+    frame_logo.pack(anchor="center")
+
+    logo = tk.PhotoImage(file="main/files/logo_bbs.png")
+    logo = logo.zoom(50) #with 250, I ended up running out of memory
+    logo = logo.subsample(50) #mechanically, here it is adjusted to 32 instead of 320
+    zone_logo = tk.Label(frame_logo, image=logo, borderwidth=0)
+    zone_logo.image = logo
+    zone_logo.pack(anchor="center")
+
+    frame1 = tk.Frame(frame_left, highlightthickness=2,
                       highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=20)
-    frame1.pack(side="left", anchor="w")
+    frame1.pack()
 
     frame2 = tk.Frame(zone_actions, highlightthickness=0,
                       highlightbackground=couleur_bouton, bg=couleur_fond, pady=20, padx=5)
@@ -672,7 +656,7 @@ def formulaire_main(access_to_network, last_version):
     # =============================================================================
     tk.Label(frame1, text="Aligner des données bibliographiques",
              bg=couleur_fond, fg="#365B43", font="Arial 11 bold").pack(anchor="w")
-    tk.Label(frame1, text="\n", bg=couleur_fond).pack()
+    tk.Label(frame1, text="\n", font="Arial 2 bold", bg=couleur_fond).pack()
 
     bib2arkButton = tk.Button(
         frame1,
@@ -695,7 +679,7 @@ def formulaire_main(access_to_network, last_version):
         padx=55, pady=25, bg="#fefefe", font="Arial 8 normal")
     aut2arkButton.pack()
 
-    tk.Label(frame1, text="\n\n", bg=couleur_fond).pack()
+    #tk.Label(frame1, text="\n\n", bg=couleur_fond).pack()
 
     tk.Label(frame2, text="\n\n", bg=couleur_fond).pack()
     # =============================================================================
