@@ -1,5 +1,5 @@
 ### version 1.27
-Juin 2019
+18/03/2019
 - Menu principal : ajout du logo de Bibliostratus
 - noticesbib2arkBnF.py renommé en bib2id.py, noticesaut2arkBnF.py renommé en aut2id.py
 - Module blanc (alignements BIB) :
