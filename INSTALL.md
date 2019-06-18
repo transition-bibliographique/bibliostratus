@@ -18,6 +18,7 @@ $ python3 --version
 ```
 $ apt install python3-tk python3-unidecode 
 $ pip3 install pymarc
+$ pip3 install SPARQLWrapper
 ```
 
 ## Lancer Bibliostratus
