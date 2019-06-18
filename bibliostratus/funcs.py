@@ -20,7 +20,7 @@ import json
 import random
 import datetime
 import time
-from tkinter import filedialog
+
 
 from lxml import etree
 from lxml.html import parse
@@ -31,7 +31,6 @@ import pymarc as mc
 
 import main
 import marc2tables
-import aut2id
 from udecode import udecode
 
 # Ajout exception SSL pour éviter
@@ -258,6 +257,7 @@ def numbers2string(string):
     else:
         return ""
 
+
 def int2strings(number):
     """
     Conversion d'un nombre en mot
@@ -344,7 +344,6 @@ def nettoyageOpus(string):
         new_str = string[:pattern.search(string).span()[0]] + " " + string[pattern.search(string).span()[1]:]
         new_str = nettoyageTitrePourRecherche(new_str)
     return new_str
-
 
 
 def nettoyageDate(date):

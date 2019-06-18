@@ -303,6 +303,7 @@ def aut2ark_by_id(input_record, parametres):
         ark = aut2id_idref.idrefAut2arkAut(input_record)
     return ark
 
+
 def align_from_aut_alignment(input_record, parametres):
     if (parametres["preferences_alignement"] == 1):
         ark = aut2ark_by_id(input_record, parametres)

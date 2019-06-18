@@ -554,8 +554,9 @@ def bibrecord2metas(numNot, doc_record, record, pref_format_file=True):
     que le format de préférence est à chercher dans
     le fichier preferences.json
     Sinon, Unimarc"""
-    if (pref_format_file == True
-        and main.prefs["marc2tables_input_format"]["value"] == "marc21"):
+    if (pref_format_file
+       and "marc2tables_input_format" in main.prefs
+       and main.prefs["marc2tables_input_format"]["value"] == "marc21"):
         (title, keyTitle, global_title, part_title,
          authors, authors2keywords,
          date, numeroTome, publisher, pubPlace, scale,

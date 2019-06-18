@@ -1,7 +1,9 @@
 Bibliostratus : STRatégie d'Alignement d'URIs pour la Transition bibliographique
 ==
 
-[![alt Télécharger Bibliostratus](https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/img/bouton_telecharger_bibliostratus.png)](https://github.com/Transition-bibliographique/bibliostratus/tree/master/bin)
+[![alt Télécharger Bibliostratus : Windows 64 bit - Dernière version](https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/img/bouton_telecharger_bibliostratus.png)](https://github.com/Transition-bibliographique/bibliostratus/raw/master/bin/bibliostratus_latest_win64_py3.6.zip)
+
+[Autres configurations](https://github.com/Transition-bibliographique/bibliostratus/tree/master/bin)
 
 * Le répertoire *bibliostratus* contient le code développé en Python
 * Le répertoire *bin* contient la dernière version compilée de l'exécutable, à télécharger et lancer directement pour utiliser le programme (le code source n'est pas forcément compilé à chaque modification)
@@ -10,12 +12,11 @@ Bibliostratus a pour objectif de proposer un ensemble de fonctions permettant de
 
 Actuellement quatre modules sont en cours de développement, non encore finalisés :
 
-* **marc2tables** : permet de charger en entrée l'extraction d'un catalogue de bibliothèque en Unimarc (formats iso2709 ou MarcXML). Le programme produit autant de fichiers tabulés (tableaux) qu'il y a de combinaisons Type de document / type de notice. Ces tableaux sont au format attendu pour le 2e programme
-* **noticesbib2arkBnF** : exploitation des métadonnées de chaque notice bibliographique pour identifier la notice correspondante dans le catalogue BnF. Pour l'instant, on charge les ressources par type de document/notice (monographies imprimées, CD/DVD, périodiques, etc.). 
-* **noticesaut2arkBnF** : son équivalent pour s'aligner avec les autorités (Personnes physiques et organisations), peu testé pour le moment
-* **ark2records** : en entrée un fichier listant des ARK BnF, afin de récupérer les notices bibliographiques (+option avec notices d'autorité) correspondantes. Le format en sortie est pour l'instant du XML. Il devrait y avoir de l'iso2709 à terme.
+* **Bleu (conversion de notices MARC en tableurs)** : permet de charger en entrée l'extraction d'un catalogue de bibliothèque en Unimarc (formats iso2709 ou MarcXML). Le programme produit autant de fichiers tabulés (tableaux) qu'il y a de combinaisons Type de document / type de notice. Ces tableaux sont au format attendu pour le 2e programme
+* **Blanc (alignement de notices bibliographiques)** : exploitation des métadonnées de chaque notice bibliographique pour identifier la notice correspondante dans le catalogue BnF ou le Sudoc. On charge les ressources par type de document/notice (monographies imprimées, CD/DVD, périodiques, etc.). 
+* **Blanc (alignement de notices d'autorité)** : son équivalent pour s'aligner avec les autorités (Personnes physiques et organisations), avec la BnF ou IdRef
+* **Rouge (extraction de notices Marc BnF ou Abes)** : en entrée un fichier listant des ARK BnF, ou des PPN Sudoc/IdRef, afin de récupérer les notices bibliographiques (+option avec notices d'autorité) correspondantes. Le format en sortie est pour l'instant du XML. Il devrait y avoir de l'iso2709 à terme.
 
-Le fichier **main** encapsule les 4 précédents pour les concevoir comme autant d'étapes dans la transition bibliographique des établissements
 
 Objectifs du programme
 --
