@@ -24,8 +24,8 @@ from unidecode import unidecode
 
 import main
 import funcs
-import noticesaut2arkBnF as aut2ark
-import noticesbib2arkBnF as bib2ark
+import bib2id
+import aut2id
 
 
 # Permet d'écrire dans une liste accessible au niveau général depuis le
@@ -263,7 +263,8 @@ def record2frbnf(f035a):
     frbnf = []
     f035a = f035a.lower().split(";")
     for f035 in f035a:
-        if (f035.find("frbn") > -1):
+        if ("frbn" in f035
+            or "ppn" in f035):
             frbnf.append(f035)
     frbnf = ";".join(frbnf)
     return frbnf
@@ -553,8 +554,9 @@ def bibrecord2metas(numNot, doc_record, record, pref_format_file=True):
     que le format de préférence est à chercher dans
     le fichier preferences.json
     Sinon, Unimarc"""
-    if (pref_format_file == True
-        and main.prefs["marc2tables_input_format"]["value"] == "marc21"):
+    if (pref_format_file
+       and "marc2tables_input_format" in main.prefs
+       and main.prefs["marc2tables_input_format"]["value"] == "marc21"):
         (title, keyTitle, global_title, part_title,
          authors, authors2keywords,
          date, numeroTome, publisher, pubPlace, scale,
@@ -647,6 +649,9 @@ def bibfield2autmetas(numNot, doc_record, record, field):
     no_bib = numNot
     ark = record2ark(record2meta(record, ["033$a"]))
     frbnf = record2frbnf(record2meta(record, ["035$a"]))
+    isbn = record2title(
+        record2meta(record, ["010$a"], ["073$a"])
+    )
     title = record2title(
         record2meta(record, ["200$a", "200$e"])
     )
@@ -656,7 +661,7 @@ def bibfield2autmetas(numNot, doc_record, record, field):
     firstname = subfields2firstocc(field.get_subfields("b"))
     lastname = subfields2firstocc(field.get_subfields("a"))
     dates_aut = subfields2firstocc(field.get_subfields("f"))
-    metas = [doc_record, no_aut, no_bib, ark, frbnf, title,
+    metas = [doc_record, no_aut, no_bib, ark, frbnf, isbn, title,
              pubDate, isni, lastname, firstname, dates_aut]
     return metas
 
@@ -711,6 +716,52 @@ def record2listemetas(record, rec_format=1):
     return meta, doc_record
     # liste_resultats[doc_record].append(meta)
 
+def rameaurecord2accesspoint(record):
+    """
+    A partir d'une notice Rameau (record est de type pymarc.Record)
+    génération du point d'accès selon la syntaxe Rameau
+    """
+    dict_mapping_accesspoint = {
+            'a': '\1',
+            'a b f x': '\1, \2 (\3) -- \4', 
+            'a y': '\1 -- \2',
+            'a y x': '\1 -- \2 -- \3',
+            'a y y': '\1 -- \2 -- \3',
+            'a b x': '\1. \2 -- \3',
+            'a x x': '\1 -- \2 -- \3',
+            'a c b x': '\1. \3 (\2) -- \4',
+            'a y z': '\1 -- \2 -- \3',
+            'a c': '\1 (\2)',
+            'a c f x': '\1 (\2 ; \3) -- \4',
+            'a b c x': '\1. \2 (\3) -- \4',
+            'a x y': '\1 -- \2 -- \3',
+            'a b c': '\1, \2 (\3)',
+            'a y y z': '\1 -- \2 -- \3 -- \4',
+            'a z x': '\1 -- \3 -- \2',
+            'a b x x': '\1. \2 -- \3 -- \4',
+            'a c x x': '\1 (\2) -- \3 -- \4',
+            'a b d x': '\1, \2 \3 -- \4',
+            'a f x': '\1 (\2) -- \3',
+            'a b c b x': '\1. \2 (\3) -- \5'
+            }
+    tag = ""
+    field_value = []
+    subfields_list = []
+    for field in record:
+        if field[0] == "2":
+            tag = field
+            for subfield in record[field]:
+                subfields_list.append(subfield)
+                field_value.append(f"#{subfield} {record[field][subfield]}")
+    subfields_list = " ".join(subfields_list)
+    field_value = " ".join(field_value)
+    accesspoint_template = ""
+    accesspoint = ""
+    if (subfields_list in dict_mapping_accesspoint):
+        accesspoint_template = dict_mapping_accesspoint[subfields_list]
+        accesspoint_template = "#" + accesspoint_template.replace(" ", " (.+) #") + " (.+)"
+        accesspoint = re.sub(accesspoint_template, field_value)
+    return accesspoint
 
 def record_metas2report(record_metas, doc_record, rec_format,
                         id_traitement, display=True):
@@ -751,6 +802,8 @@ def record_metas2report(record_metas, doc_record, rec_format,
             print(doc_record, ' - ', record_metas[0])
 
 
+
+
 def write_reports(id_traitement, doc_record, rec_format):
     filename = doc_record_type[doc_record]
     header_columns = [
@@ -760,32 +813,32 @@ def write_reports(id_traitement, doc_record, rec_format):
     if (rec_format == 1):
         if (doc_record == "am" or doc_record == "lm"):
             filename = "TEX-" + filename
-            header_columns = bib2ark.header_columns_init_monimpr
+            header_columns = bib2id.header_columns_init_monimpr
         elif (doc_record == "em"):
-            header_columns = bib2ark.header_columns_init_cartes
+            header_columns = bib2id.header_columns_init_cartes
             filename = "CAR-" + filename
         elif (doc_record == "cm"):
-            header_columns = bib2ark.header_columns_init_partitions
+            header_columns = bib2id.header_columns_init_partitions
             filename = "PAR-" + filename
         elif (doc_record == "gm"):
-            header_columns = bib2ark.header_columns_init_cddvd
+            header_columns = bib2id.header_columns_init_cddvd
             filename = "VID-" + filename
         elif (doc_record == "im" or doc_record == "jm"):
-            header_columns = bib2ark.header_columns_init_cddvd
+            header_columns = bib2id.header_columns_init_cddvd
             filename = "AUD-" + filename
         elif (len(doc_record) > 1 and doc_record[1] == "s"):
-            header_columns = bib2ark.header_columns_init_perimpr
+            header_columns = bib2id.header_columns_init_perimpr
             filename = "PER-" + filename
     if (rec_format == 2):
         if (doc_record == "ca"):
-            header_columns = aut2ark.header_columns_init_aut2aut
+            header_columns = aut2id.header_columns_init_aut2aut
             filename = "PERS-" + filename
         if (doc_record == "cb"):
-            header_columns = aut2ark.header_columns_init_aut2aut
+            header_columns = aut2id.header_columns_init_aut2aut
             filename = "ORG-" + filename
     if (rec_format == 3):
         if (doc_record == "ca" or doc_record == "cb"):
-            header_columns = aut2ark.header_columns_init_bib2aut
+            header_columns = aut2id.header_columns_init_bib2aut
 
     file = create_file_doc_record(filename, id_traitement)
     file.write("\t".join(header_columns) + "\n")
@@ -825,7 +878,8 @@ def end_of_treatments(form, id_traitement):
     print("\nNombre total de notices traitées : ",
           stats["Nombre total de notices traitées"])
     print("------------------------")
-    form.destroy()
+    if form is not None:
+        form.destroy()
 
 
 def launch(form, entry_filename, file_format, rec_format, output_ID, master):
@@ -945,14 +999,15 @@ def formulaire_marc2tables(
     tk.Label(cadre_input_header, bg=couleur_fond, fg=couleur_bouton,
              text="En entrée\n", justify="left", font="bold").pack(anchor="w")
 
-    # tk.Label(
-    #     cadre_input_file_name,
-    #     bg=couleur_fond,
-    #     text="Fichier contenant les notices : "
-    # ).pack(side="left")
-    """entry_filename = tk.Entry(cadre_input_file, width=40, bd=2)
-    entry_filename.pack(side="left")
-    entry_filename.focus_set()"""
+    main.download_zone(
+        cadre_output_nom_fichiers,
+        "Sélectionner un dossier de destination",
+        main.output_directory,
+        couleur_fond,
+        type_action="askdirectory",
+        widthb = [40,1]
+    )
+
     main.download_zone(
         cadre_input_file, "Sélectionner un fichier de notices Unimarc",
         entry_file_list, couleur_fond, cadre_output_message_en_cours
@@ -965,7 +1020,7 @@ def formulaire_marc2tables(
              anchor="w", justify="left", font="Arial 9 bold").pack(anchor="w")
     file_format = tk.IntVar()
 
-    bib2ark.radioButton_lienExample(
+    bib2id.radioButton_lienExample(
         cadre_input_type_docs, file_format, 1, couleur_fond,
         "iso2709 encodé UTF-8", "",
         "main/examples/noticesbib.iso"  # noqa
@@ -1013,7 +1068,7 @@ def formulaire_marc2tables(
              anchor="w", justify="left", font="Arial 9 bold").pack(anchor="w")
     rec_format = tk.IntVar()
 
-    bib2ark.radioButton_lienExample(cadre_input_type_rec, rec_format, 1, couleur_fond,
+    bib2id.radioButton_lienExample(cadre_input_type_rec, rec_format, 1, couleur_fond,
                                     "bibliographiques",
                                     "",
                                     "")
@@ -1055,14 +1110,7 @@ def formulaire_marc2tables(
              justify="left").pack()
 
 
-    main.download_zone(
-        cadre_output_nom_fichiers,
-        "Sélectionner un dossier de destination",
-        main.output_directory,
-        couleur_fond,
-        type_action="askdirectory",
-        widthb = [40,1]
-    )
+
     tk.Label(cadre_output_nom_fichiers, bg=couleur_fond,
              text="Préfixe des fichiers en sortie : ",
              justify="left").pack(side="left")
