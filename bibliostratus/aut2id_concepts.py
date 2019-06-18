@@ -50,7 +50,7 @@ def accesspoint2sparql(accesspoint, parametres={}):
                                  list,
                                  parametres)
     if ark:
-        methode = "Point d'accès > SPARQL (prefLabel)"
+        methode = "Point d'accès > SPARQL (prefLabel/forme retenue)"
     else:
         query = rameau_construct_sparql_query(accesspoint,
                                               "skos:altLabel")
@@ -60,7 +60,7 @@ def accesspoint2sparql(accesspoint, parametres={}):
                                      list,
                                      parametres)
         if ark:
-            methode = "Point d'accès > SPARQL (altLabel)"
+            methode = "Point d'accès > SPARQL (altLabel/forme rejetée)"
     return ",".join(ark), methode
 
 

@@ -4,6 +4,7 @@ Juin 2019
 - noticesbib2arkBnF.py renommé en bib2id.py, noticesaut2arkBnF.py renommé en aut2id.py
 - Module blanc (alignements BIB) :
 	- améliorations pour les partitions
+	- conversion des nombres en mots (et réciproquement) pour relancer la recherche suite à un premier échec
 	- métadonnées simples récupérées : ajout du type de médiation et type de support (pour faciliter les contrôles)
 - Module blanc (alignements AUT) : 
 	- Alignement sur des points d'accès Rameau (fichier aut2id_concepts.py)
