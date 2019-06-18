@@ -13,3 +13,15 @@ xcopy /S main\examples dist\main\examples\
 rename dist bibliostratus
 "C:\Program Files\7-Zip\7z" a -tzip ..\bin\bibliostratus_%version%_win64_py3.6.zip bibliostratus/
 rd /s /q bibliostratus
+
+set RC=RC
+call set Replaced=%%version:%RC%=%%
+If NOT "%version%"=="%Replaced%" (
+    echo version RC
+	copy ..\bin\bibliostratus_%version%_win64_py3.6.zip ..\bin\RC\bibliostratus_%version%_win64_py3.6.zip
+	del ..\bin\bibliostratus_%version%_win64_py3.6.zip
+) else (
+     ::Version en prod
+	 echo version en prod
+	 copy ..\bin\bibliostratus_%version%_win64_py3.6.zip ..\bin\bibliostratus_latest_win64_py3.6.zip
+)

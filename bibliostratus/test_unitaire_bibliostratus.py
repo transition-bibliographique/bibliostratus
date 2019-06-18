@@ -13,10 +13,11 @@ import csv
 
 import funcs
 import main
-import aut_align_idref
-import noticesbib2arkBnF as bib2ark
-import noticesaut2arkBnF as aut2ark
+import aut2id_idref
+import bib2id
+import aut2id
 import marc2tables
+import ark2records
 
 
 # =============================================================================
@@ -204,8 +205,8 @@ def test_alignement_bib():
                   "meta_bnf": 0,
                   "stats": defaultdict(int)}
     for record in bib_records:
-      bib_records[record]["alignment_resultBnF"] = bib2ark.item_alignement(bib_records[record]["input_record"], param_alignBnF)
-      bib_records[record]["alignment_resultSudoc"] = bib2ark.item_alignement(bib_records[record]["input_record"], param_alignSudoc)
+      bib_records[record]["alignment_resultBnF"] = bib2id.item_alignement(bib_records[record]["input_record"], param_alignBnF)
+      bib_records[record]["alignment_resultSudoc"] = bib2id.item_alignement(bib_records[record]["input_record"], param_alignSudoc)
     
     assert bib_records["TEX1"]["input_record"].alignment_method == ['ISBN + contrôle Titre 200$a', 'isbn2ppn + contrôle Titre 200$a']
     assert bib_records["TEX1"]["alignment_resultBnF"].alignment_method_str == "ISBN + contrôle Titre 200$a"
@@ -261,9 +262,9 @@ def test_alignement_aut():
                            }
                         }
     for record in aut_records_bnf:
-        aut_records_bnf[record]["alignment_result"] = aut2ark.align_from_aut_alignment(aut_records_bnf[record]["input_record"], param_alignBnF)
+        aut_records_bnf[record]["alignment_result"] = aut2id.align_from_aut_alignment(aut_records_bnf[record]["input_record"], param_alignBnF)
     for record in aut_records_idref:
-        aut_records_idref[record]["alignment_result"] = aut2ark.align_from_aut_alignment(aut_records_idref[record]["input_record"], param_alignIdRef)
+        aut_records_idref[record]["alignment_result"] = aut2id.align_from_aut_alignment(aut_records_idref[record]["input_record"], param_alignIdRef)
     # assert aut_records["PEP1"]["input_record"].alignment_method == ["N° sys FRBNF + Nom"]
     # assert aut_records["PEP1"]["alignment_resultBnF"].alignment_method_str == "N° sys FRBNF + Nom"
     assert aut_records_bnf["PEP1"]["alignment_result"].ids_str == "ark:/12148/cb11902332s"
@@ -283,10 +284,10 @@ def test_alignement_bib2aut():
                   "meta_bnf": 1,
                   "isni_option": 0,
                   "stats": defaultdict(int)}
-    listePEP = [["11907286", "cb34633458q", "", "34633458", "Les Révélations des couleurs éthériques de nos auras", "", "", "Henry", "Judith", ""],
-              ["11918746", "cb37713742b", "", "", "Bleu", "", "0000 0001 1470 4939", "Pastoureau", "Michel", "1947-...."],
-              ["11897572", "cb451711140", "", "", "Marseille", "", "", "Contrucci", "Jean", "1939-...."],
-              ["14413819", "cb45108648x", "", "45108648", "La route de l'or bleu", "", "", "Bernard", "Daniel", "1948-...."]
+    listePEP = [["11907286", "cb34633458q", "", "34633458", "", "Les Révélations des couleurs éthériques de nos auras", "", "", "Henry", "Judith", ""],
+              ["11918746", "cb37713742b", "", "", "", "Bleu", "", "0000 0001 1470 4939", "Pastoureau", "Michel", "1947-...."],
+              ["11897572", "cb451711140", "", "", "", "Marseille", "", "", "Contrucci", "Jean", "1939-...."],
+              ["14413819", "cb45108648x", "", "45108648", "", "La route de l'or bleu", "", "", "Bernard", "Daniel", "1948-...."]
              ]
     i = 1
     bib2aut_recordsBnF = defaultdict(dict)
@@ -299,9 +300,9 @@ def test_alignement_bib2aut():
 
   
     for record in bib2aut_recordsBnF:
-        bib2aut_recordsBnF[record]["alignment_result"] = aut2ark.align_from_bib_alignment(bib2aut_recordsBnF[record]["input_record"], param_alignBnF)
+        bib2aut_recordsBnF[record]["alignment_result"] = aut2id.align_from_bib_alignment(bib2aut_recordsBnF[record]["input_record"], param_alignBnF)
     for record in bib2aut_recordsIdRef:
-        bib2aut_recordsIdRef[record]["alignment_result"] = aut2ark.align_from_bib_alignment(bib2aut_recordsIdRef[record]["input_record"], param_alignIdRef)
+        bib2aut_recordsIdRef[record]["alignment_result"] = aut2id.align_from_bib_alignment(bib2aut_recordsIdRef[record]["input_record"], param_alignIdRef)
     assert bib2aut_recordsBnF["PEP1"]["alignment_result"].ids_str == "ark:/12148/cb11907286n"
     assert bib2aut_recordsIdRef["PEP2"]["alignment_result"].ids_str == "PPN027059952"
 
@@ -311,7 +312,7 @@ def test_ppnidref_to_row():
     entrée sous forme d'une liste à 8 items, structurée
     comme les fichiers en entrée des alignements d'autorités"""
     ppn = "026973065" # Jacques Le Goff (1924-2014)
-    metas_row = aut_align_idref.ppn2metasAut(ppn)
+    metas_row = aut2id_idref.ppn2metasAut(ppn)
     assert metas_row[4] == "Le Goff"
     assert metas_row[5] == "Jacques"
     assert metas_row[6] == "1924"
@@ -335,7 +336,7 @@ def test_domybiblio_1_answer():
                                 1
                               )
     param = {"preferences_alignement": 2}
-    ppn = bib2ark.tad2ppn(record, param)
+    ppn = bib2id.tad2ppn(record, param)
     assert ppn == "PPN015108805" or ppn == ""
 
 def test_controle_011():
@@ -346,10 +347,10 @@ def test_controle_011():
     et l'extraction de sous-zones
     """
     issn = "1254-728X"
-    test_access1, recordTrue = bib2ark.ark2recordBNF("ark:/12148/cb345079588")
-    test_access2, recordFalse = bib2ark.ark2recordBNF("ark:/12148/cb40172844d")
-    testTrue = bib2ark.check_issn_in_011a(recordTrue, issn)
-    testFalse = bib2ark.check_issn_in_011a(recordFalse, issn)
+    test_access1, recordTrue = bib2id.ark2recordBNF("ark:/12148/cb345079588")
+    test_access2, recordFalse = bib2id.ark2recordBNF("ark:/12148/cb40172844d")
+    testTrue = bib2id.check_issn_in_011a(recordTrue, issn)
+    testFalse = bib2id.check_issn_in_011a(recordFalse, issn)
     assert testTrue is True
     assert testFalse is False
 
