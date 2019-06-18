@@ -23,11 +23,12 @@ import bib2id
 import aut2id_idref
 import aut2id_concepts
 
+
 # Ajout exception SSL pour éviter
 # plantages en interrogeant les API IdRef
 # (HTTPS sans certificat)
 if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
-    getattr(ssl, '_create_unverified_context', None)): 
+   getattr(ssl, '_create_unverified_context', None)): 
     ssl._create_default_https_context = ssl._create_unverified_context
 
 programID = "noticesaut2arkBnF"
@@ -41,7 +42,7 @@ header_columns_init_aut2aut = [
     'Date de début', 'Date de fin'
 ]
 header_columns_init_bib2aut = [
-    "N° Notice AUT", "N° notice BIB", "ARK Bib", "FRBNF Bib", "Titre",
+    "N° Notice AUT", "N° notice BIB", "ARK Bib", "FRBNF Bib", "ISBN/EAN", "Titre",
     "Date de publication", "ISNI", "Nom", "Prénom", "Dates auteur"
 ]
 
@@ -490,12 +491,13 @@ def align_from_bib_alignment(input_record, parametres):
     ark_trouve = ""
     if (ark_trouve == "" and input_record.isni.propre != ""):
         ark_trouve = isni2id(input_record, parametres)
-    
     if (parametres["preferences_alignement"] == 1):
         if (ark_trouve == "" and input_record.ark_bib_init != ""):
             ark_trouve = arkBib2arkAut(input_record, parametres)
         if (ark_trouve == "" and input_record.frbnf_bib.init != ""):
             ark_trouve = frbnfBib2arkAut(input_record, parametres)
+        if (ark_trouve == "" and input_record.isbn_bib.propre != ""):
+            ark_trouve = isbnBib2arkAut(input_record, parametres)
         if (ark_trouve == "" and input_record.lastname != ""):
             ark_trouve = bib2arkAUT(input_record, parametres)
         if (ark_trouve == "" and input_record.lastname != ""):
@@ -540,13 +542,13 @@ def align_from_bib(form, entry_filename, liste_reports, parametres):
     header_columns = [
         "NumNot", "Nb identifiants trouvés", "Liste identifiants AUT trouvés",
         "Méthode alignement", "Numéro notice BIB initial", "ark BIB initial",
-        "frbnf BIB initial", "Titre", "Date de publication", "ISNI initial", 
+        "frbnf BIB initial", "ISBN", "Titre", "Date de publication", "ISNI initial", 
         "Nom", "Complément nom",
         "dates Auteur"
     ]
     if (parametres['meta_bnf'] == 1):
         header_columns.extend(
-            ["[BnF] Nom", "[BnF] Complément Nom", "[BnF] Dates"])
+            ["[BnF] Nom", "[BnF] Complément Nom", "[BnF] Dates", "[BnF] ISNI"])
     if (parametres['file_nb'] == 1):
         row2file(header_columns, liste_reports)
     elif(parametres['file_nb '] == 2):
@@ -664,13 +666,38 @@ def frbnfBib2arkAut(input_record, parametres):
                                    1)
     listeArk_bib = bib2id.frbnf2ark(bib_record)
     for ark in listeArk_bib:
-        record = bib2id.ark2recordBNF(ark)
-        for record in page.xpath("//srw:recordData", namespaces=main.ns):
-            listeArk.extend(extractARKautfromBIB(input_record, xml_record))
+        test, records = bib2id.ark2recordBNF(ark)
+        if test:
+            for record in records.xpath("//srw:recordData", namespaces=main.ns):
+                listeArk.extend(extractARKautfromBIB(input_record, record))
     listeArk = ",".join(set(listeArk))
     if (listeArk != ""):
-        NumNotices2methode[NumNot].append("FRBNF bib > ARK")
         input_record.alignment_method.append("FRBNF bib > ARK")
+    return listeArk
+
+
+def isbnBib2arkAut(input_record, parametres):
+    """Recherche de l'identifiant d'auteur à partir d'une recherche ISBN + nom d'auteur :
+        """
+    listeArk = []
+    bib_record = funcs.Bib_record([input_record.NumNot, input_record.frbnf_bib.init,
+                                   "", input_record.isbn_bib.init, "", input_record.titre.init,
+                                   input_record.lastname.propre + " ", "", "", ""], 
+                                   1)
+    listeArk_bib = bib2id.isbn2ark(bib_record,
+                                   input_record.NumNot_bib, input_record.isbn_bib.init,
+                                   input_record.isbn_bib.propre, "",
+                                   input_record.titre.controles,
+                                   input_record.lastname.propre,
+                                   "")
+    for ark in listeArk_bib.split(","):
+        test, records = bib2id.ark2recordBNF(ark)
+        if test:
+            for record in records.xpath("//srw:recordData", namespaces=main.ns):
+                listeArk.extend(extractARKautfromBIB(input_record, record))
+    listeArk = ",".join(set(listeArk))
+    if (listeArk != ""):
+        input_record.alignment_method.append("ISBN bib > ARK")
     return listeArk
 
 # Si le FRBNF n'a pas été trouvé, on le recherche comme numéro système ->
@@ -996,6 +1023,7 @@ def extractARKautfromBIB(input_record, xml_record):
                 if (subfield.get("code") == "f"):
                     listeFieldsAuteur[i]["dates"] = main.clean_string(
                         subfield.text, True, True)
+    
     for auteur in listeFieldsAuteur:
         if (("nom" in listeFieldsAuteur[auteur])
             and (input_record.lastname.nett in listeFieldsAuteur[auteur]["nom"] or

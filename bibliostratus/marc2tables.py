@@ -648,6 +648,9 @@ def bibfield2autmetas(numNot, doc_record, record, field):
     no_bib = numNot
     ark = record2ark(record2meta(record, ["033$a"]))
     frbnf = record2frbnf(record2meta(record, ["035$a"]))
+    isbn = record2title(
+        record2meta(record, ["010$a"], ["073$a"])
+    )
     title = record2title(
         record2meta(record, ["200$a", "200$e"])
     )
@@ -657,7 +660,7 @@ def bibfield2autmetas(numNot, doc_record, record, field):
     firstname = subfields2firstocc(field.get_subfields("b"))
     lastname = subfields2firstocc(field.get_subfields("a"))
     dates_aut = subfields2firstocc(field.get_subfields("f"))
-    metas = [doc_record, no_aut, no_bib, ark, frbnf, title,
+    metas = [doc_record, no_aut, no_bib, ark, frbnf, isbn, title,
              pubDate, isni, lastname, firstname, dates_aut]
     return metas
 

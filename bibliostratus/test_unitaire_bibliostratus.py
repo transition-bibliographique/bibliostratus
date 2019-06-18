@@ -284,10 +284,10 @@ def test_alignement_bib2aut():
                   "meta_bnf": 1,
                   "isni_option": 0,
                   "stats": defaultdict(int)}
-    listePEP = [["11907286", "cb34633458q", "", "34633458", "Les Révélations des couleurs éthériques de nos auras", "", "", "Henry", "Judith", ""],
-              ["11918746", "cb37713742b", "", "", "Bleu", "", "0000 0001 1470 4939", "Pastoureau", "Michel", "1947-...."],
-              ["11897572", "cb451711140", "", "", "Marseille", "", "", "Contrucci", "Jean", "1939-...."],
-              ["14413819", "cb45108648x", "", "45108648", "La route de l'or bleu", "", "", "Bernard", "Daniel", "1948-...."]
+    listePEP = [["11907286", "cb34633458q", "", "34633458", "", "Les Révélations des couleurs éthériques de nos auras", "", "", "Henry", "Judith", ""],
+              ["11918746", "cb37713742b", "", "", "", "Bleu", "", "0000 0001 1470 4939", "Pastoureau", "Michel", "1947-...."],
+              ["11897572", "cb451711140", "", "", "", "Marseille", "", "", "Contrucci", "Jean", "1939-...."],
+              ["14413819", "cb45108648x", "", "45108648", "", "La route de l'or bleu", "", "", "Bernard", "Daniel", "1948-...."]
              ]
     i = 1
     bib2aut_recordsBnF = defaultdict(dict)

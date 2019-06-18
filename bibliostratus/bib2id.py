@@ -1122,7 +1122,6 @@ def isbn2ark(input_record,
     resultatsIsbn2ARK = isbn2sru(input_record, NumNot, 
                                  isbn_init, titre_nett,
                                  auteur_nett, date_nett)
-
     # Requête sur l'ISBN dans le SRU, avec contrôle sur Titre ou auteur
     if resultatsIsbn2ARK == "" and isbn_init != isbn_propre:
         resultatsIsbn2ARK = isbn2sru(input_record,

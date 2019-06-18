@@ -1023,22 +1023,38 @@ class Bib_Aut_record:
         self.NumNot_bib = input_row[1]
         self.ark_bib_init = input_row[2]
         self.frbnf_bib = FRBNF(input_row[3])
-        self.titre = Titre(input_row[4])
-        self.pubdate = input_row[5]
+        self.isbn_bib = International_id(input_row[4])
+        self.titre = Titre(input_row[5])
+        self.pubdate = input_row[6]
         self.pubdate_nett = nettoyageDate(self.pubdate)
-        self.isni = Isni(input_row[6])
-        self.lastname = Name(input_row[7])
-        self.firstname = Name(input_row[8])
-        self.author_dates = input_row[9]
+        self.isni = Isni(input_row[7])
+        self.lastname = Name(input_row[8])
+        self.firstname = Name(input_row[9])
+        self.author_dates = input_row[10]
         self.alignment_method = []
     
         self.date_debut = self.author_dates
         if (self.date_debut.find("av") > 0):
             self.date_debut = self.date_debut[:self.date_debut.find("av")]
         elif (self.date_debut.find("-") > 0):
-            date_debut = self.date_debut[:self.date_debut.find("-")]
+            self.date_debut = self.date_debut[:self.date_debut.find("-")]
         self.date_debut = main.clean_string(self.date_debut, False, True)
-
+    
+    def __str__(self):
+        return f"metas_init : {self.metas_init}\n\
+NumNot : {self.NumNot}\n\
+type : {self.type}\n\
+NumNot_bib : {self.NumNot_bib}\n\
+ark_bib_init : {self.ark_bib_init}\n\
+frbnf_bib : {self.frbnf_bib}\n\
+isbn_bib : {self.isbn_bib.init}\n\
+titre : {self.titre.init}\n\
+pubdate : {self.pubdate}\n\
+pubdate_nett : {self.pubdate_nett}\n\
+isni : {self.isni}\n\
+lastname : {self.lastname}\n\
+firstname : {self.firstname}\n\
+author_dates : {self.author_dates}"
 
 class XML2record:
     """
