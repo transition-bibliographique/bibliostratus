@@ -882,7 +882,7 @@ def end_of_treatments(form, id_traitement):
         form.destroy()
 
 
-def launch(form, entry_filename, file_format, rec_format, output_ID, master):
+def launch(entry_filename, file_format, rec_format, output_ID, master=None, form=None):
     """Lancement du programme après validation
     du formulaire de conversion d 'un fichier MARC en tableaux"""
     if form is not None:
@@ -1156,8 +1156,11 @@ def formulaire_marc2tables(
     # Bouton de validation
 
     b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", text="OK",
-                  command=lambda: launch(form, entry_file_list[0], file_format.get(
-                  ), rec_format.get(), output_ID.get(), master),
+                  command=lambda: launch(entry_file_list[0],
+                                         file_format.get(),
+                                         rec_format.get(),
+                                         output_ID.get(),
+                                         master, form),
                   borderwidth=5, padx=10, pady=10, width=10, height=4)
     b.pack()
 

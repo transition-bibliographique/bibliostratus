@@ -368,10 +368,11 @@ def update_bib_ppn(ppn):
     else:
         return None
 
-def launch(master, form, filename, type_records_form, 
-             correct_record_option, headers, AUTlieesAUT,
-             AUTlieesSUB, AUTlieesWORK, outputID, 
-             format_records=1, format_file=1, select_fields=""):
+def launch(filename, type_records_form, 
+           correct_record_option, headers, AUTlieesAUT,
+           AUTlieesSUB, AUTlieesWORK, outputID, 
+           format_records=1, format_file=1, select_fields="",
+           master=None, form=None):
     try:
         [filename, type_records_form, correct_record_option,
         headers, AUTlieesAUT, AUTlieesSUB, AUTlieesWORK, outputID,
@@ -666,8 +667,6 @@ pour réécrire les notices récupérées",
         zone_ok_help_cancel,
         text="OK",
         command=lambda: launch(
-            master,
-            form,
             entry_file_list[0],
             type_records.get(),
             correct_record_option.get(),
@@ -678,7 +677,9 @@ pour réécrire les notices récupérées",
             outputID.get(),
             format_records_choice.get(),
             format_file.get(),
-            select_fields.get()
+            select_fields.get(),
+            master,
+            form,
         ),
         width=15,
         borderwidth=1,

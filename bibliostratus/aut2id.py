@@ -1060,8 +1060,8 @@ def extractARKautfromBIB(input_record, xml_record):
 # Gestion du formulaire
 # ==============================================================================
 
-def launch(form, entry_filename, headers, input_data_type, preferences_alignement, 
-           isni_option, file_nb, id_traitement, meta_bnf):
+def launch(entry_filename, headers, input_data_type, preferences_alignement, 
+           isni_option, file_nb, id_traitement, meta_bnf, form=None):
     """
     Exécution du programme avec tous les paramètres, quand on clique
     sur le bouton OK

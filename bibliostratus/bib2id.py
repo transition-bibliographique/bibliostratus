@@ -2595,7 +2595,6 @@ def file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parame
 
 
 def launch(
-    form_bib2ark,
     zone_controles,
     entry_filename,
     type_doc_bib,
@@ -2604,6 +2603,7 @@ def launch(
     file_nb,
     meta_bib,
     id_traitement,
+    form_bib2ark=None
     ):
     # Préférences alignement : 1 = BnF d'abord, puis Sudoc. 2 : Sudoc d'abord,
     # puis BnF
@@ -2825,7 +2825,7 @@ def radioButton_lienExample(
         )
 
 
-def formulaire_noticesbib2arkBnF(
+def form_bib2id(
     master, access_to_network=True, last_version=[0, False]
 ):
     """Affichage du formulaire : disposition des zones, options, etc."""
@@ -3144,7 +3144,6 @@ def formulaire_noticesbib2arkBnF(
         font="Arial 10 bold",
         text="Aligner les\nnotices BIB",
         command=lambda: launch(
-            form_bib2ark,
             zone_controles,
             entry_file_list[0],
             type_doc_bib.get(),
@@ -3153,6 +3152,7 @@ def formulaire_noticesbib2arkBnF(
             file_nb.get(),
             meta_bib.get(),
             id_traitement.get(),
+            form_bib2ark,
         ),
         borderwidth=5,
         padx=10,

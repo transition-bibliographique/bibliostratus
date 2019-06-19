@@ -669,7 +669,7 @@ def formulaire_main(access_to_network, last_version):
     bib2arkButton = tk.Button(
         frame1,
         text="Aligner ses données  BIB\n avec la BnF ou le Sudoc\nà partir de fichiers tableaux",
-        command=lambda: bib2id.formulaire_noticesbib2arkBnF(
+        command=lambda: bib2id.form_bib2id(
             master, access_to_network, [0, False]
         ),
         padx=40,
