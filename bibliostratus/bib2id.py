@@ -2607,6 +2607,15 @@ def launch(
 ):
     # Préférences alignement : 1 = BnF d'abord, puis Sudoc. 2 : Sudoc d'abord,
     # puis BnF
+    [entry_filename, type_doc_bib,
+     preferences_alignement,
+     kwsudoc_option,
+     file_nb, meta_bib,
+     id_traitement] = [str(entry_filename), int(type_doc_bib),
+                       int(preferences_alignement),
+                       int(kwsudoc_option),
+                       int(file_nb), int(meta_bib),
+                       str(id_traitement)]
     header_columns_init_dic = {
         1: header_columns_init_monimpr,
         2: header_columns_init_cddvd,
@@ -2625,7 +2634,8 @@ def launch(
         "kwsudoc_option": kwsudoc_option,
         "stats": defaultdict(int)
     }
-    main.check_file_name(form_bib2ark, entry_filename)
+    if form_bib2ark is not None:
+        main.check_file_name(form_bib2ark, entry_filename)
     liste_reports = create_reports(funcs.id_traitement2path(id_traitement), file_nb)
     file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres)
 
@@ -2641,7 +2651,8 @@ def fin_traitements(form_bib2ark, liste_reports, nb_notices_nb_ARK):
     check_access_to_apis(liste_reports)
     typesConversionARK(liste_reports)
     print("Programme terminé")
-    form_bib2ark.destroy()
+    if form_bib2ark is not None:
+        form_bib2ark.destroy()
     for file in liste_reports:
         file.close()
     main.output_directory = [""]

@@ -238,6 +238,12 @@ def check_access2apis(i, dict_report):
 
 
 def clean_string(string, replaceSpaces=False, replaceTirets=False):
+    """
+    Nettoyage d'une chaîne de caractères: accents, ponctuations, majuscules
+    En option : 
+        - suppression des espaces
+        - suppression des tirets
+    """
     string = unidecode(string.lower())
     for sign in punctuation:
         string = string.replace(sign, " ")

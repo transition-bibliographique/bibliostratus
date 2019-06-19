@@ -33,6 +33,7 @@ import main
 import marc2tables
 from udecode import udecode
 
+
 # Ajout exception SSL pour éviter
 # plantages en interrogeant les API IdRef
 # (HTTPS sans certificat)
@@ -136,6 +137,31 @@ def clean_stop_words(string, list_stop_words, sep=" "):
             string_list_corr.append(word)
     string_corr = sep.join(string_list_corr)
     return string_corr
+
+
+def clean_string(string, replaceSpaces=False, replaceTirets=False):
+    """
+    Nettoyage d'une chaîne de caractères: accents, ponctuations, majuscules
+    En option : 
+        - suppression des espaces
+        - suppression des tirets
+    """
+    punctuation = [
+                   ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
+                   "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<",
+                   ">", ")", "}"
+                  ]
+    string = unidecode(string.lower())
+    for sign in punctuation:
+        string = string.replace(sign, " ")
+    string = string.replace("'", " ")
+    if replaceTirets:
+        string = string.replace("-", " ")
+    if replaceSpaces:
+        string = string.replace(" ", "")
+    string = ' '.join(s for s in string.split() if s != "")
+    string = string.strip()
+    return string
 
 
 def nettoyage_lettresISBN(isbn):
@@ -393,6 +419,8 @@ def RepresentsInt(s):
         int(s)
         return True
     except ValueError:
+        return False
+    except TypeError:
         return False
 
 
@@ -2438,7 +2466,7 @@ numbers2letters = {0: "Zéro",
 1000: "mille"}
 
 
-letters2numbers = {main.clean_string(numbers2letters[key]):key for key in numbers2letters}
+letters2numbers = {clean_string(numbers2letters[key]):key for key in numbers2letters}
 letters2numbers["et un"] = 1
 letters2numbers["et une"] = 1
 letters2numbers["une"] = 1

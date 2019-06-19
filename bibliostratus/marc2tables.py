@@ -884,8 +884,12 @@ def end_of_treatments(form, id_traitement):
 
 def launch(form, entry_filename, file_format, rec_format, output_ID, master):
     """Lancement du programme après validation
-    du formulaire de conversion d'un fichier MARC en tableaux"""
-    main.check_file_name(form, entry_filename)
+    du formulaire de conversion d 'un fichier MARC en tableaux"""
+    if form is not None:
+        main.check_file_name(form, entry_filename)
+    [entry_filename, file_format,
+     rec_format, output_ID] = [str(entry_filename), int(file_format),
+                               int(rec_format), str(output_ID)]
     # popup_en_cours = main.message_programme_en_cours(form)
 
     # Notices BIB : Type de document / type de notice
