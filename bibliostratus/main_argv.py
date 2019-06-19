@@ -6,6 +6,7 @@ Lancer les modules de Bibliostratus en ligne de commande
 On lance chaque module par son nom de fichier (bib2id, aut2id, etc.) avec les paramètres de chaque fonction
 dans leur ordre d'apparition sur le formulaire
 On peut rajouter le repertoire de destination comme dernier argument. Il faut alors le faire preceder de "--"
+Les valeurs "None" viennent remplacer les objets "Formulaires" utilisés par les fonctions launch de chaque module
 
 python main_argv.py aut2id None "main/examples/aut_align_aut.tsv" 1 1 1 0 1 argv_test_aut2id 1
 python main_argv.py bib2id None None "main/examples/mon_impr.tsv" 1 1 0 1 0 argv_test_bib2id
