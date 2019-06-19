@@ -368,10 +368,27 @@ def update_bib_ppn(ppn):
     else:
         return None
 
-def callback(master, form, filename, type_records_form, 
+def launch(master, form, filename, type_records_form, 
              correct_record_option, headers, AUTlieesAUT,
              AUTlieesSUB, AUTlieesWORK, outputID, 
              format_records=1, format_file=1, select_fields=""):
+    try:
+        [filename, type_records_form, correct_record_option,
+        headers, AUTlieesAUT, AUTlieesSUB, AUTlieesWORK, outputID,
+        format_records, format_file, select_fields] = [str(filename), int(type_records_form), 
+                                                        int(correct_record_option),
+                                                        int(headers),
+                                                        int(AUTlieesAUT),
+                                                        int(AUTlieesSUB), 
+                                                        int(AUTlieesWORK), 
+                                                        str(outputID),
+                                                        int(format_records), 
+                                                        int(format_file), 
+                                                        str(select_fields)]
+    except ValueError as err:
+        print("\n\nDonnées en entrée erronées\n")
+        print(err)
+
     AUTliees = AUTlieesAUT + AUTlieesSUB + AUTlieesWORK
     format_BIB = dict_format_records[format_records]
     outputID = funcs.id_traitement2path(outputID)
@@ -428,7 +445,8 @@ def fin_traitements(window, outputID):
     if (errors_list != []):
         errors_file(outputID)
     print("Programme d'extraction de notices terminé")
-    window.destroy()
+    if window is not None:
+        window.destroy()
     main.output_directory = [""]
 
 
@@ -647,7 +665,7 @@ pour réécrire les notices récupérées",
     b = tk.Button(
         zone_ok_help_cancel,
         text="OK",
-        command=lambda: callback(
+        command=lambda: launch(
             master,
             form,
             entry_file_list[0],

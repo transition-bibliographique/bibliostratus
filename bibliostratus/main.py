@@ -131,7 +131,8 @@ def click2url(url):
 
 
 def annuler(master):
-    master.destroy()
+    if master is not None:
+        master.destroy()
 
 def select_output_directory_button():
     # Allow user to select a directory and store it in global var
@@ -475,7 +476,8 @@ def popup_errors(master, text, online_help_text="", online_help_link=""):
         cancel = tk.Button(zone_access2programs, text="Fermer",
                         command=lambda: annuler(master), padx=10, pady=1, width=15)
         cancel.pack()
-
+    else:
+        print("\n".join([text, online_help_text, online_help_link]))
 
 
 def openfile(frame, liste, background_color="white"):

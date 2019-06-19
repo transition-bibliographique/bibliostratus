@@ -887,9 +887,13 @@ def launch(form, entry_filename, file_format, rec_format, output_ID, master):
     du formulaire de conversion d 'un fichier MARC en tableaux"""
     if form is not None:
         main.check_file_name(form, entry_filename)
-    [entry_filename, file_format,
-     rec_format, output_ID] = [str(entry_filename), int(file_format),
-                               int(rec_format), str(output_ID)]
+    try:
+        [entry_filename, file_format,
+        rec_format, output_ID] = [str(entry_filename), int(file_format),
+                                int(rec_format), str(output_ID)]
+    except ValueError as err:
+        print("\n\nDonnées en entrée erronées\n")
+        print(err)
     # popup_en_cours = main.message_programme_en_cours(form)
 
     # Notices BIB : Type de document / type de notice

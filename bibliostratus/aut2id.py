@@ -1066,6 +1066,18 @@ def launch(form, entry_filename, headers, input_data_type, preferences_alignemen
     Exécution du programme avec tous les paramètres, quand on clique
     sur le bouton OK
     """
+    try:
+        [entry_filename, headers,
+        input_data_type, preferences_alignement,
+        isni_option, file_nb, id_traitement, meta_bnf] = [str(entry_filename), 
+                                                        int(headers), int(input_data_type), 
+                                                        int(preferences_alignement),
+                                                        int(isni_option), int(file_nb), 
+                                                        str(id_traitement), 
+                                                        int(meta_bnf)]
+    except ValueError as err:
+        print("\n\nDonnées en entrée erronées\n")
+        print(err)
     # main.check_file_name(entry_filename)
     # results2file(nb_fichiers_a_produire)
     # Si la valeur input_data_type en entrée est 1 => PEP (code Unimarc IdRef "a")
@@ -1095,7 +1107,7 @@ def launch(form, entry_filename, headers, input_data_type, preferences_alignemen
         align_from_bib(form, entry_filename, liste_reports, parametres)
     elif (input_data_type == 4):
         align_rameau(form, entry_filename, liste_reports, parametres)
-    else:
+    elif form is not None:
         main.popup_errors("Format en entrée non défini")
     bib2id.fin_traitements(form, liste_reports, parametres["stats"])
 

@@ -2604,18 +2604,22 @@ def launch(
     file_nb,
     meta_bib,
     id_traitement,
-):
+    ):
     # Préférences alignement : 1 = BnF d'abord, puis Sudoc. 2 : Sudoc d'abord,
     # puis BnF
-    [entry_filename, type_doc_bib,
-     preferences_alignement,
-     kwsudoc_option,
-     file_nb, meta_bib,
-     id_traitement] = [str(entry_filename), int(type_doc_bib),
-                       int(preferences_alignement),
-                       int(kwsudoc_option),
-                       int(file_nb), int(meta_bib),
-                       str(id_traitement)]
+    try:
+        [entry_filename, type_doc_bib,
+        preferences_alignement,
+        kwsudoc_option,
+        file_nb, meta_bib,
+        id_traitement] = [str(entry_filename), int(type_doc_bib),
+                          int(preferences_alignement),
+                          int(kwsudoc_option),
+                          int(file_nb), int(meta_bib),
+                          str(id_traitement)]
+    except ValueError as err:
+        print("\n\nDonnées en entrée erronées\n")
+        print(err)
     header_columns_init_dic = {
         1: header_columns_init_monimpr,
         2: header_columns_init_cddvd,
