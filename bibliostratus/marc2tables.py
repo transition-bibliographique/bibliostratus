@@ -547,7 +547,8 @@ def metas_from_unimarc(record):
             )
 
 
-def bibrecord2metas(numNot, doc_record, record, pref_format_file=True):
+def bibrecord2metas(numNot, doc_record, record,
+                    pref_format_file=True, all_metas=False):
     """
     Le record est une notice pymarc.Record ou en XML
     Le paramètre pref_format_file permet de préciser
@@ -568,10 +569,14 @@ def bibrecord2metas(numNot, doc_record, record, pref_format_file=True):
          date, numeroTome, publisher, pubPlace, scale,
          ark, frbnf, isbn, issn, ean,
          id_commercial_aud) = metas_from_unimarc(record)
-
     if (doc_record not in liste_fichiers):
         liste_fichiers.append(doc_record)
-    if (doc_record == "am" or doc_record == "lm"):
+    metas = []
+    all_metadata = [numNot, frbnf, ark, isbn, ean, id_commercial_aud, issn,
+                title, authors, date, numeroTome, publisher, pubPlace]
+    if all_metas:
+        metas = all_metadata
+    elif (doc_record == "am" or doc_record == "lm"):
         meta = [numNot, frbnf, ark, isbn, ean, title,
                 authors2keywords, date, numeroTome, publisher]
     elif (doc_record == "em"):
@@ -626,7 +631,7 @@ def record2lastdateAUT(f103b, f200f):
         return f200f
 
 
-def autrecord2metas(numNot, doc_record, record):
+def autrecord2metas(numNot, doc_record, record, allmetas=False):
     ark = record2ark(record2meta(record, ["033$a"]))
     frbnf = record2frbnf(record2meta(record, ["035$a"]))
     isni = record2isniAUT(record2meta(record, ["010$a"]))
@@ -673,7 +678,7 @@ def subfields2firstocc(subfields):
         return ""
 
 
-def bibrecord2autmetas(numNot, doc_record, record):
+def bibrecord2autmetas(numNot, doc_record, record, all_metas=False):
     fields2metas = []
     for f700 in record.get_fields("700"):
         fields2metas.append(bibfield2autmetas(numNot, "ca", record, f700))
@@ -701,17 +706,21 @@ def record2doc_recordtype(leader, rec_format):
     return doctype, recordtype, doc_record
 
 
-def record2listemetas(record, rec_format=1):
+def record2listemetas(record, rec_format=1, all_metas=False):
+    """
+    Pour une notice en entrée, renvoie une sélection de métadonnées
+    Si all_metas is True : renvoie toutes les métadonnées
+    """
     numNot = record2meta(record, ["001"])
     doctype, recordtype, doc_record = record2doc_recordtype(record.leader,
                                                             rec_format)
     meta = []
     if (rec_format == 2):
-        meta = autrecord2metas(numNot, doc_record, record)
+        meta = autrecord2metas(numNot, doc_record, record, all_metas)
     elif(rec_format == 3):
-        meta = bibrecord2autmetas(numNot, doc_record, record)
+        meta = bibrecord2autmetas(numNot, doc_record, record, all_metas)
     else:
-        meta = bibrecord2metas(numNot, doc_record, record)
+        meta = bibrecord2metas(numNot, doc_record, record, all_metas=all_metas)
 
     return meta, doc_record
     # liste_resultats[doc_record].append(meta)
@@ -885,8 +894,7 @@ def end_of_treatments(form, id_traitement):
 def launch(entry_filename, file_format, rec_format, output_ID, master=None, form=None):
     """Lancement du programme après validation
     du formulaire de conversion d 'un fichier MARC en tableaux"""
-    if form is not None:
-        main.check_file_name(form, entry_filename)
+    main.check_file_name(form, entry_filename)
     try:
         [entry_filename, file_format,
         rec_format, output_ID] = [str(entry_filename), int(file_format),

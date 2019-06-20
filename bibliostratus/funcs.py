@@ -1091,15 +1091,17 @@ class XML2record:
     record_type: 1 = BIB, 2 = AUT
 
     """
-    def __init__(self, xml_record, record_type=1):  # Notre méthode constructeur
+    def __init__(self, xml_record, record_type=1, all_metas=False):  # Notre méthode constructeur
         self.init = xml_record
         self.pymarc_record = xml2pymarcrecord(xml_record)
         self.doc_record = None
         if (record_type == 1):
-            self.metadata, self.doc_record = marc2tables.record2listemetas(self.pymarc_record, 1)
+            self.metadata, self.doc_record = marc2tables.record2listemetas(self.pymarc_record, 1,
+                                                                           all_metas)
             self.record = Bib_record(self.metadata, record_type)
         else:
-            self.metadata, self.doc_record = marc2tables.record2listemetas(self.pymarc_record, 2)
+            self.metadata, self.doc_record = marc2tables.record2listemetas(self.pymarc_record, 2,
+                                                                            )
             self.record = Aut_record(self.metadata, record_type)
 
 

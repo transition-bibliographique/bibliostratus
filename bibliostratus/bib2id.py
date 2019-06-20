@@ -344,61 +344,61 @@ def relancerNNBAuteur(input_record, NumNot, systemid, isbn, titre, auteur, date)
     return listeArk
 
 
-# Quand on a trouvé l'ancien numéro système dans une notice BnF :
-# on compare l'ISBN de la notice de la Bibliothèque
-# avec celui de la BnF pour voir si ça colle
-# à défaut, on compare les titres (puis demi-titres)
+
 def comparerBibBnf(input_record,
-                   NumNot, ark_current, systemid, isbn, titre, auteur,
+                   NumNot, ark_current, 
+                   xml_record_current,
+                   systemid, 
+                   identifier, 
+                   titre, auteur,
                    date, origineComparaison
                   ):
-    ark = ""
-    url = funcs.url_requete_sru('bib.persistentid all "' + ark_current + '"')
-    (test, recordBNF) = funcs.testURLetreeParse(url)
-    if test:
-        ark = comparaisonIsbn(input_record,
-            NumNot, ark_current, systemid, isbn, titre, auteur, date, recordBNF
+    # Quand on a trouvé l'ancien numéro système dans une notice BnF :
+    # on compare l'ISBN de la notice de la Bibliothèque
+    # avec celui de la BnF pour voir si ça colle
+    # à défaut, on compare les titres (puis demi-titres)
+    
+    ark = comparaisonIsbn(input_record,
+                          NumNot, ark_current, xml_record_current,
+                          systemid,
+                          identifier, titre, auteur, date, 
+                         )
+    if ark == "":
+        ark = comparaisonTitres(
+            input_record,
+            NumNot,
+            ark_current,
+            systemid,
+            identifier,
+            titre,
+            auteur,
+            date,
+            "",
+            xml_record_current,
+            origineComparaison,
         )
-        if ark == "":
-            ark = comparaisonTitres(
-                input_record,
-                NumNot,
-                ark_current,
-                systemid,
-                isbn,
-                titre,
-                auteur,
-                date,
-                "",
-                recordBNF,
-                origineComparaison,
-            )
     return ark
 
 
-def comparaisonIsbn(input_record,
-    NumNot, ark_current, systemid, isbn, titre, auteur, date, recordBNF
-):
+def comparaisonIsbn(input_record, NumNot, 
+                    ark_current, xml_record_current,
+                    systemid, isbn, titre, auteur, date):
     ark = ""
     isbnBNF = ""
     sourceID = "ISBN"
     # Si le FRBNF de la notice source est présent comme ancien numéro de notice
     # dans la notice BnF, on compare les ISBN en 010, ou à défaut les EAN
     # ou à défaut les ISSN (il peut s'agir d'un périodique)
-    isbnBNF = funcs.nettoyage(main.extract_subfield(recordBNF, "010", "a", 1))
+    isbnBNF = funcs.nettoyage(sru.record2fieldvalue(xml_record_current, "010$a").split("~")[0])
     if isbnBNF == "":
-        isbnBNF = funcs.nettoyage(main.extract_subfield(recordBNF, "038",
-                                                        "a", 1))
+        isbnBNF = funcs.nettoyage(sru.record2fieldvalue(xml_record_current, "038$a").split("~")[0])
         sourceID = "EAN"
     if isbnBNF == "":
-        isbnBNF = funcs.nettoyage(main.extract_subfield(recordBNF, "011",
-                                                        "a", 1))
+        isbnBNF = funcs.nettoyage(sru.record2fieldvalue(xml_record_current, "011$a").split("~")[0])
         sourceID = "ISSN"
     if isbn != "" and isbnBNF != "":
         if isbn in isbnBNF:
             ark = ark_current
-            """NumNotices2methode[NumNot].append("N° sys FRBNF \
-+ contrôle " + sourceID)"""
             input_record.alignment_method.append("N° sys FRBNF \
 + contrôle " + sourceID)
     return ark
@@ -491,12 +491,11 @@ def verificationTomaison(ark, numeroTome, recordBNF):
     liste_subfields_volume = ["200$h", "200$u", "461$v"]
     volumesBNF = ""
     for subf in liste_subfields_volume:
-        volumesBNF += "~" + main.extract_subfield(
-            recordBNF, subf.split("$")[0], subf.split("$")[1]
-        )
+        volumesBNF += "~" + sru.record2fieldvalue(recordBNF,
+                                                  subf)
     volumesBNF = funcs.convert_volumes_to_int(volumesBNF)
     if volumesBNF == "":
-        volumesBNF = main.extract_subfield(recordBNF, "200", "a")
+        volumesBNF = sru.record2fieldvalue(recordBNF, "200$a")
         volumesBNF = funcs.convert_volumes_to_int(volumesBNF)
         for lettre in lettres:
             volumesBNF = volumesBNF.replace(lettre, "~")
@@ -528,9 +527,7 @@ def verificationTomaison_sous_zone(ark, numeroTome, numeroTomeBnF):
 def checkDate(ark, date_init, recordBNF):
     ark_checked = ""
     dateBNF = []
-    dateBNF_100 = funcs.unidecode_local(
-        main.extract_subfield(recordBNF, "100", "a", 1, sep="~").lower()
-    )[9:13]
+    dateBNF_100 = funcs.unidecode_local(sru.record2fieldvalue(recordBNF, "100$a").split("~")[0].lower())[9:13]
     if len(dateBNF_100) > 4:
         dateBNF_100 = dateBNF_100[0:4]
     if main.RepresentsInt(dateBNF_100) is True:
@@ -538,10 +535,10 @@ def checkDate(ark, date_init, recordBNF):
         dateBNF.extend([dateBNF_100 + 1, dateBNF_100 - 1])
     dateBNF.append(dateBNF_100)
     dateBNF_210d = funcs.unidecode_local(
-        main.extract_subfield(recordBNF, "210", "d", 1, sep="~").lower()
+        sru.record2fieldvalue(recordBNF, "210$d").split("~")[0].lower()
     )
     dateBNF_306a = funcs.unidecode_local(
-        main.extract_subfield(recordBNF, "306", "a", 1, sep="~").lower()
+        sru.record2fieldvalue(recordBNF, "306$a").split("~")[0].lower()
     )
     for lettre in lettres:
         dateBNF_210d = dateBNF_210d.replace(lettre, "~")
@@ -691,35 +688,37 @@ def systemid2ark(input_record, NumNot, systemid, tronque, isbn, titre, auteur, d
 
 
 def rechercheNNB(input_record, nnb):
-    ark = ""
+    ark = []
     if nnb.isdigit() is False:
         # pb_frbnf_source.write("\t".join[NumNot,nnb] + "\n")
         ark = "Pb FRBNF"
     elif 30000000 < int(nnb) < 50000000:
-        url = funcs.url_requete_sru('bib.recordid any "' + nnb + '"')
-        (test, page) = funcs.testURLetreeParse(url)
-        if test:
-            for record in page.xpath("//srw:records/srw:record",
-                                     namespaces=main.ns):
-                ark_current = record.find(
-                    "srw:recordIdentifier", namespaces=main.ns
-                ).text
-                identifiant = ""
-                if input_record.type == "TEX":
-                    input_record.isbn.propre
-                if input_record.type == "VID" or input_record.type == "AUD":
-                    identifiant = input_record.ean.propre
-                ark = comparerBibBnf(
-                    input_record,
-                    input_record.NumNot,
-                    ark_current,
-                    nnb,
-                    identifiant,
-                    input_record.titre_nett,
-                    input_record.auteur_nett,
-                    input_record.date_nett,
-                    "Numéro de notice",
-                )
+        sru_result = sru.SRU_result(f"bib.recordid any \"{nnb}\"")
+        identifier = ""
+        if input_record.type == "TEX":
+            identifiant = input_record.isbn.propre
+        elif (input_record.type == "VID" 
+              or input_record.type == "AUD"
+              or input_record.type == "CAR"
+              or input_record.type == "PAR"):
+            identifiant = input_record.ean.propre
+        elif input_record.type == "PER":
+            identifiant = input_record.issn.propre
+        for ark_current in sru_result.dict_records:
+            ark.append(comparerBibBnf(
+                                    input_record,
+                                    input_record.NumNot,
+                                    ark_current,
+                                    sru_result.dict_records[ark_current],
+                                    nnb,
+                                    identifiant,
+                                    input_record.titre_nett,
+                                    input_record.auteur_nett,
+                                    input_record.date_nett,
+                                    "Numéro de notice",
+                                    )
+                          )
+    ark = ",".join([el for el in ark if el])
     return ark
 
 
@@ -731,12 +730,7 @@ def oldfrbnf2ark(input_record):
     """Extrait du FRBNF le numéro système, d'abord sur 9 chiffres,
     puis sur 8 si besoin, avec un contrôle des résultats sur le
     contenu du titre ou sur l'auteur"""
-    systemid = ""
-    if input_record.frbnf.propre[0:5].upper() == "FRBNF":
-        systemid = input_record.frbnf.propre[5:14]
-    else:
-        systemid = input_record.frbnf.propre[4:13]
-
+    systemid = input_record.frbnf.propre.upper().replace("FRBNF","").replace("FRBNF", "")[0:8]
     ark = rechercheNNB(input_record, systemid[0:8])
     if ark == "":
         ark = systemid2ark(
@@ -760,42 +754,23 @@ def frbnf2ark(input_record):
     numéro système (en zone 9XX)"""
     ark = ""
     if input_record.frbnf.propre[0:4].lower() == "frbn":
-        url = funcs.url_requete_sru('bib.otherid all "'
-                                    + input_record.frbnf.propre + '"')
-        (test, page) = funcs.testURLetreeParse(url)
-        if test:
-            nb_resultats = int(
-                page.find("//srw:numberOfRecords", namespaces=main.ns).text
-            )
-
-            if nb_resultats == 0:
-                ark = oldfrbnf2ark(input_record)
-            elif nb_resultats == 1:
-                ark = page.find("//srw:recordIdentifier",
-                                namespaces=main.ns).text
-                if ark != "":
-                    input_record.alignment_method.append("FRBNF > ARK")
-            else:
-                ark = ",".join(
-                    [
-                        ark.text
-                        for ark in page.xpath(
-                            "//srw:recordIdentifier", namespaces=main.ns
-                        )
-                    ]
-                )
-                if ark != "":
-                    input_record.alignment_method.append("FRBNF > ARK")
+        sru_result = sru.SRU_result(f'bib.otherid all "{input_record.frbnf.propre}"')
+        if sru_result.nb_results == 0:
+            ark = oldfrbnf2ark(input_record)
+        else:
+            ark = ",".join(sru_result.list_identifiers)
+            input_record.alignment_method.append("FRBNF > ARK")
     return ark
 
 
 def row2file(liste_metadonnees, liste_reports):
-    liste_metadonnees_to_report = [str(el) for el in liste_metadonnees]
+    metas2report = [str(el) for el in liste_metadonnees]
     if ("timestamp" in main.prefs
        and main.prefs["timestamp"]["value"] == "True"):
         timest = funcs.timestamp()
-        liste_metadonnees_to_report.append(timest)
-    liste_reports[0].write("\t".join(liste_metadonnees_to_report) + "\n")
+        metas2report.append(timest)
+    liste_reports[0].write("\t".join(metas2report) + "\n")
+    return metas2report
 
 
 def row2files(liste_metadonnees, liste_reports):
@@ -1192,7 +1167,8 @@ def issn2sru(input_record, NumNot, issn):
     return listeArk
 
 def check_issn_in_011a(record, issn):
-    f011a = main.extract_subfield(record, "011", "a")
+    f011a = sru.record2fieldvalue(record, "011$a")
+    print(f011a)
     if (issn[0:4] in f011a):
         return True
     else:
@@ -1373,19 +1349,19 @@ def ark2metas(ark, unidec=True):
             "vce": "Vidéo CD",
             "vzz": "Autre support vidéo"}
     if test:
-        titre = main.extract_subfield(record, "200", "a")
-        titre_compl = main.extract_subfield(record, "200", "e")
+        titre = sru.record2fieldvalue(record, "200$a")
+        titre_compl = sru.record2fieldvalue(record, "200$e")
         if (titre_compl):
             titre += titre_compl
-        premierauteurNom = main.extract_subfield(record, "700", "a")
-        premierauteurPrenom = main.extract_subfield(record, "700", "b")
+        premierauteurNom = sru.record2fieldvalue(record, "700$a")
+        premierauteurPrenom = sru.record2fieldvalue(record, "700$b")
         if not premierauteurNom:
-            premierauteurNom = main.extract_subfield(record, "710", "a")
-            premierauteurPrenom = main.extract_subfield(record, "710", "b")
-        tousauteurs = main.extract_subfield(record, "200", "f")
-        date = main.extract_subfield(record, "210", "d")
-        typemedia182 = main.extract_subfield(record, "182", "c")
-        typesupport183 = main.extract_subfield(record, "183", "a")
+            premierauteurNom = sru.record2fieldvalue(record, "710$a")
+            premierauteurPrenom = sru.record2fieldvalue(record, "710$b")
+        tousauteurs = sru.record2fieldvalue(record, "200$f")
+        date = sru.record2fieldvalue(record, "210$d")
+        typemedia182 = sru.record2fieldvalue(record, "182$c")
+        typesupport183 = sru.record2fieldvalue(record, "183$a")
         if typemedia182 in dic_182c:
             typemedia182 = dic_182c[typemedia182]
         if typesupport183 in dic_183a:
@@ -2037,9 +2013,38 @@ def extract_meta(recordBNF, field_subfield, occ="all", anl=False):
 
 
 def ark2recordBNF(ark, typeRecord="bib"):
-    url = funcs.url_requete_sru(typeRecord + '.persistentid any "' + ark + '"')
-    (test, recordBNF) = funcs.testURLetreeParse(url)
-    return (test, recordBNF)
+    record = id2record(ark, typeRecord)
+    if record is not None:
+        return True, record
+    else:
+        return False, record
+
+
+def id2record(identifier, typeRecord="bib"):
+    """
+    A partir d'un identifiant ARK BNF ou PPN Sudoc/IdRef, renvoie une notice Marc XML
+    Si pas de résultat, renvoie None
+    """
+    test = False
+    record = None
+    if ("ark" in identifier):
+        result = sru.SRU_result(f'{typeRecord}.persistentid any "{identifier}"')
+        print(result.dict_records)
+        print(result.list_identifiers)
+        print(result.dict_records[result.list_identifiers[0]])
+        if result.list_identifiers:
+            test is True
+            record = result.dict_records[result.list_identifiers[0]]
+    elif (identifier.lower().startswith("ppn")):
+        if (typeRecord == "bib"):
+            url = "https://www.sudoc.fr/" + identifier[3:] + ".xml"
+        elif (typeRecord == "aut"):
+            url = "https://www.idref.fr/" + identifier[3:] + ".xml"
+        (test, record) = funcs.testURLetreeParse(url)
+    if test:
+        return record
+    else:
+        return None
 
 
 def ppn2recordSudoc(ppn):
@@ -2059,8 +2064,8 @@ def ean2ark(input_record, NumNot, ean, titre, auteur, date):
                 ark_current = record.find(
                     "srw:recordIdentifier", namespaces=main.ns
                 ).text
-                (test2, recordBNF) = ark2recordBNF(ark_current)
-                if test2:
+                recordBNF = id2record(ark_current)
+                if recordBNF is not None:
                     ark = comparaisonTitres(
                         input_record,
                         NumNot,
@@ -2166,40 +2171,30 @@ def controleNoCommercial(input_record, NumNot, ark_current, no_commercial,
 # notice BIB de l'ARK et renvoie d'une liste de métadonnées
 
 
-def ark2metadc(ark):
-    # Attention : la variable 'ark' peut contenir plusieurs ark séparés par
-    # des virgules
-    listeARK = ark.split(",")
-
-    # On récupére tous les titres de chaque ARK, puis tous les auteurs
-    titlesList = []
-    PremierAuteurPrenomList = []
-    PremierAuteurNomList = []
-    tousAuteursList = []
-    dateList = []
-    typeSupportList = []
-    for ark in listeARK:
-        metas_ark = ark2metas(ark, False)
-        titlesList.append(metas_ark[0])
-        PremierAuteurPrenomList.append(metas_ark[1])
-        PremierAuteurNomList.append(metas_ark[2])
-        tousAuteursList.append(metas_ark[3])
-        dateList.append(metas_ark[4])
-        typeSupportList.append(metas_ark[5])
-    titlesList = "|".join(titlesList)
-    PremierAuteurPrenomList = "|".join(PremierAuteurPrenomList)
-    PremierAuteurNomList = "|".join(PremierAuteurNomList)
-    tousAuteursList = "|".join(tousAuteursList)
-    dateList = "|".join(dateList)
-    typeSupportList = "|".join(typeSupportList)
-    metas = [
-        titlesList,
-        PremierAuteurPrenomList,
-        PremierAuteurNomList,
-        tousAuteursList,
-        dateList,
-        typeSupportList
-    ]
+def ark2meta_simples(ark):
+    """" Le parametre 'ark' peut contenir plusieurs identifiants 
+    séparés par des virgules.
+    Pour chaque ARK, il récupère les métadonnées spécifiques au type de document
+    Et les renvoie dans une liste
+    Renvoie toutes les infos, car il peut y avoir plusieurs types de notices
+    dans une liste d'ARK
+    """
+    metas = []
+    for ark in ark.split(","):
+        record = id2record(ark)        
+        if record is not None:
+            record = funcs.XML2record(record, 1, True)
+            if metas == []:
+                for el in record.metadata:
+                    metas.append([])
+            i = 0
+            for el in record.metadata:
+                metas[i].append(el)
+                i += 1 
+    i = 0
+    for liste_el in metas:
+        metas[i] = "|".join(liste_el)
+        i += 1
     return metas
 
 
@@ -2294,8 +2289,8 @@ def item2ark_by_id(input_record, parametres):
     if ark != "" and input_record.tome != "":
         numeroTome = funcs.nettoyageTome(input_record.tome)
         if (numeroTome != ""):
-                (test, recordBNF) = ark2recordBNF(ark)
-                if test:
+                recordBNF = id2record(ark)
+                if recordBNF is not None:
                     ark = verificationTomaison(ark, numeroTome, recordBNF)
 
     # A défaut, recherche sur no_commercial
@@ -2547,7 +2542,7 @@ def alignment_result2output(alignment_result, input_record, parametres, liste_re
     """
     print(str(n) + ". " + input_record.NumNot + " : " + alignment_result.ids_str)
     if parametres["meta_bib"] == 1:
-        alignment_result.liste_metadonnees.extend(ark2metadc(alignment_result.ids_str))
+        alignment_result.liste_metadonnees.extend(ark2meta_simples(alignment_result.ids_str))
     if parametres["file_nb"] == 1:
         row2file(alignment_result.liste_metadonnees, liste_reports)
     elif parametres["file_nb"] == 2:
@@ -2638,8 +2633,7 @@ def launch(
         "kwsudoc_option": kwsudoc_option,
         "stats": defaultdict(int)
     }
-    if form_bib2ark is not None:
-        main.check_file_name(form_bib2ark, entry_filename)
+    main.check_file_name(form_bib2ark, entry_filename)
     liste_reports = create_reports(funcs.id_traitement2path(id_traitement), file_nb)
     file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres)
 

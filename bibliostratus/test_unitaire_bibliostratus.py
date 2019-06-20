@@ -347,8 +347,8 @@ def test_controle_011():
     et l'extraction de sous-zones
     """
     issn = "1254-728X"
-    test_access1, recordTrue = bib2id.ark2recordBNF("ark:/12148/cb345079588")
-    test_access2, recordFalse = bib2id.ark2recordBNF("ark:/12148/cb40172844d")
+    recordTrue = bib2id.id2record("ark:/12148/cb345079588")
+    recordFalse = bib2id.id2record("ark:/12148/cb40172844d")
     testTrue = bib2id.check_issn_in_011a(recordTrue, issn)
     testFalse = bib2id.check_issn_in_011a(recordFalse, issn)
     assert testTrue is True
