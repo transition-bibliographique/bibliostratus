@@ -2048,10 +2048,11 @@ def id2record(identifier, typeRecord="bib"):
 
 
 def ppn2recordSudoc(ppn):
-    ppn = ppn.replace("PPN", "").split("/")[-1].split(".")[0]
-    url = "https://www.sudoc.fr/" + ppn + ".xml"
-    (test, recordSudoc) = funcs.testURLetreeParse(url)
-    return (test, recordSudoc)
+    record = id2record(ppn, "bib")
+    if record is not None:
+        return True, record
+    else:
+        return False, record
 
 
 def ean2ark(input_record, NumNot, ean, titre, auteur, date):
