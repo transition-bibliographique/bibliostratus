@@ -2029,11 +2029,8 @@ def id2record(identifier, typeRecord="bib"):
     record = None
     if ("ark" in identifier):
         result = sru.SRU_result(f'{typeRecord}.persistentid any "{identifier}"')
-        print(result.dict_records)
-        print(result.list_identifiers)
-        print(result.dict_records[result.list_identifiers[0]])
         if result.list_identifiers:
-            test is True
+            test = True
             record = result.dict_records[result.list_identifiers[0]]
     elif (identifier.lower().startswith("ppn")):
         if (typeRecord == "bib"):
