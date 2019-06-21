@@ -110,3 +110,4 @@ ENV/
 # mypy
 .mypy_cache/
 bibliostratus/30000 alignements - temps de traitement
+*.xlsx
