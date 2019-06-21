@@ -3,7 +3,7 @@
 Created on Mon Jun 11 21:21:17 2018
 
 @author: Lully
-Fonctions et classes génériques pour Bibliostratus
+Fonctions et classes génériques pour Bibliostratus 
 """
 
 import http.client

@@ -344,7 +344,7 @@ def test_controle_011():
     Recherche de périodique par ISSN dans le catalogue BnF
     Vérifie que le test sur la 011 est correct (True si 011$a, False sinon)
     Permet de vérifier au passage la conversion d'ARK en XMLrecord, 
-    et l'extraction de sous-zones
+    et l'extraction de sous-zones 
     """
     issn = "1254-728X"
     recordTrue = bib2id.id2record("ark:/12148/cb345079588")
