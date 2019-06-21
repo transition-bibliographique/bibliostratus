@@ -31,7 +31,6 @@ if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
    getattr(ssl, '_create_unverified_context', None)): 
     ssl._create_default_https_context = ssl._create_unverified_context
 
-programID = "noticesaut2arkBnF"
 
 # Permet d'écrire dans une liste accessible au niveau général depuis le
 # formulaire, et d'y accéder ensuite
@@ -61,7 +60,7 @@ dict_check_apis = defaultdict(dict)
 def create_reports(id_traitement_code, nb_fichiers_a_produire):
     reports = []
     stats_report_file_name = id_traitement_code + \
-        "-" + "rapport_stats_noticesbib2id.txt"
+        "-" + "rapport_stats_aut2id.txt"
     stats_report_file = open(stats_report_file_name, "w")
     stats_report_file.write("Nb identifiants (ARK ou PPN) trouvés\tNb notices concernées\n")
 
@@ -79,7 +78,7 @@ def create_reports(id_traitement_code, nb_fichiers_a_produire):
 
 def create_reports_1file(id_traitement_code):
     unique_file_results_frbnf_isbn2ark_name = id_traitement_code + \
-        "-" + "resultats_noticesbib2arkBnF.txt"
+        "-" + "resultats_aut2id.txt"
     unique_file_results_frbnf_isbn2ark = open(
         unique_file_results_frbnf_isbn2ark_name, "w", encoding="utf-8")
     return [unique_file_results_frbnf_isbn2ark]
@@ -87,11 +86,11 @@ def create_reports_1file(id_traitement_code):
 
 def create_reports_files(id_traitement_code):
     multiple_files_pbFRBNF_ISBN_name = id_traitement_code + \
-        "-resultats_Probleme_FRBNF_ISBN.txt"
-    multiple_files_0_ark_name = id_traitement_code + "-resultats_0_ark_trouve.txt"
-    multiple_files_1_ark_name = id_traitement_code + "-resultats_1_ark_trouve.txt"
+        "-Problemes_donnees_initiales.txt"
+    multiple_files_0_ark_name = id_traitement_code + "-resultats_0_ID_trouve.txt"
+    multiple_files_1_ark_name = id_traitement_code + "-resultats_1_ID_trouve.txt"
     multiple_files_plusieurs_ark_name = id_traitement_code + \
-        "-resultats_plusieurs_ark_trouves.txt"
+        "-resultats_plusieurs_ID_trouves.txt"
 
     multiple_files_pbFRBNF_ISBN = open(
         multiple_files_pbFRBNF_ISBN_name, "w", encoding="utf-8")
@@ -1112,7 +1111,11 @@ def launch(entry_filename, headers, input_data_type, preferences_alignement,
     bib2id.fin_traitements(form, liste_reports, parametres["stats"])
 
 
-def formulaire_noticesaut2arkBnF(master, access_to_network=True, last_version=[0, False]):
+def form_aut2id(master, access_to_network=True, last_version=[0, False]):
+    """
+    Génération de la fenêtre de formulaire 
+    d'alignement des notices d'autorité
+    """
     couleur_fond = "white"
     couleur_bouton = "#515151"
 

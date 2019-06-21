@@ -683,7 +683,7 @@ def formulaire_main(access_to_network, last_version):
 
     aut2arkButton = tk.Button(
         frame1, text="Aligner ses données AUT ",
-        command=lambda: aut2id.formulaire_noticesaut2arkBnF(master, access_to_network, [0, False]),
+        command=lambda: aut2id.form_aut2id(master, access_to_network, [0, False]),
         padx=55, pady=25, bg="#fefefe", font="Arial 8 normal")
     aut2arkButton.pack()
 
