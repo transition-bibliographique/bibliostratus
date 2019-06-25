@@ -2164,14 +2164,14 @@ def item2ppn_by_id(input_record, parametres):
     ppn = ""
 
     # Si pas de résultats : on relance une recherche dans le Sudoc
-    if ppn == "":
+    if (ppn == "" and input_record.ean.propre):
         ppn = ean2sudoc(input_record, parametres, True)
 
     # Si pas de résultats : on relance une recherche dans le Sudoc avec l'EAN
     # seul
-    if ppn == "":
+    if (ppn == "" and input_record.ean.propre):
         ppn = ean2sudoc(input_record, parametres, False)
-    if ppn == "":
+    if (ppn == "" and input_record.isbn.propre):
         ppn = isbn2sudoc(input_record, parametres)
 
     # Après alignement sur ISBN/EAN, on
@@ -2185,7 +2185,7 @@ def item2ppn_by_id(input_record, parametres):
                 (test, recordSudoc) = funcs.testURLetreeParse(url)
                 if test:
                     ppn = verificationTomaison(ppn, numeroTome, recordSudoc)"""
-    if ppn == "":
+    if (ppn == "" and input_record.issn.propre):
         ppn = issn2sudoc(
             input_record,
             input_record.NumNot,
