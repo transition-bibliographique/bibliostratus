@@ -97,7 +97,7 @@ class SRU_result:
 # Valeurs par défaut pour les paramètres de l'URL de requête SRU
 #==============================================================================
         if ("recordSchema" not in parametres):
-            parametres["recordSchema"] = "unimarcxchange"
+            parametres["recordSchema"] = "unimarcxchange-anl"
         if ("version" not in parametres):
             parametres["version"] = "1.2"
         if ("operation" not in parametres):

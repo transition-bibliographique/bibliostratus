@@ -360,10 +360,10 @@ def alignment_result2output(alignment_result, input_record, parametres, liste_re
         row2files(alignment_result.liste_metadonnees, liste_reports)
 
 
-def align_from_aut_item(row, n, form_aut2ark, parametres, liste_reports):
+def align_from_aut_item(row, n, form_aut2id, parametres, liste_reports):
     if (n == 0):
         assert main.control_columns_number(
-            form_aut2ark, row, header_columns_init_aut2aut)
+            form_aut2id, row, header_columns_init_aut2aut)
     n += 1
     if (n % 100 == 0):
         main.check_access2apis(n, dict_check_apis)
@@ -373,10 +373,10 @@ def align_from_aut_item(row, n, form_aut2ark, parametres, liste_reports):
     alignment_result2output(alignment_result, input_record, parametres, 
                             liste_reports, n)
 
-def align_rameau_item(row, n, form_aut2ark, parametres, liste_reports):
+def align_rameau_item(row, n, form_aut2id, parametres, liste_reports):
     if (n == 0):
         assert main.control_columns_number(
-            form_aut2ark, row, header_columns_init_rameau)
+            form_aut2id, row, header_columns_init_rameau)
     n += 1
     if (n % 100 == 0):
         main.check_access2apis(n, dict_check_apis)
@@ -521,10 +521,11 @@ def align_from_bib_alignment(input_record, parametres):
     return alignment_result
 
 
-def align_from_bib_item(row, n, form_aut2ark, parametres, liste_reports):
+def align_from_bib_item(row, n, form_aut2id, parametres, liste_reports):
     if (n == 0):
-        assert main.control_columns_number(
-            form_aut2ark, row, header_columns_init_bib2aut)
+        assert main.control_columns_number(form_aut2id,
+                                           row,
+                                           header_columns_init_bib2aut)
     n += 1
     if (n % 100 == 0):
         main.check_access2apis(n, dict_check_apis)
@@ -1060,20 +1061,21 @@ def extractARKautfromBIB(input_record, xml_record):
 # ==============================================================================
 
 def launch(entry_filename, headers, input_data_type, preferences_alignement, 
-           isni_option, file_nb, id_traitement, meta_bnf, form=None):
+           isni_option, file_nb, meta_bnf, id_traitement, form=None):
     """
     Exécution du programme avec tous les paramètres, quand on clique
     sur le bouton OK
     """
     try:
         [entry_filename, headers,
-        input_data_type, preferences_alignement,
-        isni_option, file_nb, id_traitement, meta_bnf] = [str(entry_filename), 
-                                                        int(headers), int(input_data_type), 
-                                                        int(preferences_alignement),
-                                                        int(isni_option), int(file_nb), 
-                                                        str(id_traitement), 
-                                                        int(meta_bnf)]
+         input_data_type, preferences_alignement,
+         isni_option, file_nb, meta_bnf, id_traitement] = [str(entry_filename), 
+                                                           int(headers), int(input_data_type), 
+                                                           int(preferences_alignement),
+                                                           int(isni_option), int(file_nb), 
+                                                           int(meta_bnf),
+                                                           str(id_traitement)
+                                                           ]
     except ValueError as err:
         print("\n\nDonnées en entrée erronées\n")
         print(err)
@@ -1310,7 +1312,8 @@ def form_aut2id(master, access_to_network=True, last_version=[0, False]):
                                          input_data_type.get(),
                                          preferences_alignement.get(), 
                                          isni_option.get(),
-                                         file_nb.get(), outputID.get(), meta_bnf.get()),
+                                         file_nb.get(), meta_bnf.get(),
+                                         outputID.get()),
                   width=15, borderwidth=1, pady=40, fg="white",
                   bg=couleur_bouton, font="Arial 10 bold"
                   )

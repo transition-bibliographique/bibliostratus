@@ -597,7 +597,7 @@ def comparaisonTitres_sous_zone(
                 text_method_alignment += "".join(["[demi-titre",
                                                   "-",
                                                   str(round(len(titre) / 2)),
-                                                  "caractères]"])
+                                                  " caractères]"])
         elif titreBNF in titre:
             text_method_alignment = origineComparaison + " + contrôle : Titre BnF/Sudoc \
 contenu dans titre initial"
@@ -1402,11 +1402,11 @@ def tad2ark(input_record, parametres,
                           ark_current, f"{str(i)}/{str(results.nb_results)}",
                           "(limite max 1000)"),
                     i += 1
-                    ark_validated = tad2ark_controle_record(input_record, ark_current, 
-                                                   auteur, date_nett,
-                                                   annee_plus_trois, index,
-                                                   results.dict_records[ark_current])
-                    listeArk.append(ark_validated)
+                ark_validated = tad2ark_controle_record(input_record, ark_current, 
+                                                auteur, date_nett,
+                                                annee_plus_trois, index,
+                                                results.dict_records[ark_current])
+                listeArk.append(ark_validated)
 
     listeArk = ",".join(ark for ark in listeArk if ark)
     # Si la liste retournée est vide, et qu'on est sur des périodiques
@@ -2248,7 +2248,8 @@ def item2ark_by_keywords(input_record, parametres):
        and parametres["type_doc_bib"] == 6
        and input_record.titre.recherche_sans_num_opus):
         temp_input_record = input_record
-        temp_input_record.titre.recherche = temp_input_record.titre.recherche_sans_num_opus
+        temp_input_record.titre = funcs.Titre(temp_input_record.titre.recherche_sans_num_opus)
+        temp_input_record.titre = temp_input_record.titre
         ark = tad2ark(temp_input_record, 
                       parametres, 
                       False, False)
@@ -2288,7 +2289,7 @@ def item2ppn_by_keywords(input_record, parametres):
        and parametres["type_doc_bib"] == 6
        and input_record.titre.recherche_sans_num_opus):
         temp_input_record = input_record
-        temp_input_record.titre.recherche = temp_input_record.recherche_sans_num_opus
+        temp_input_record.titre.recherche = temp_input_record.titre.recherche_sans_num_opus
         ppn = tad2ppn(temp_input_record, parametres)
         if ppn:
             input_record.alignment_method.append(" recherche sans mention d'opus")
@@ -2387,7 +2388,7 @@ def alignment_result2output(alignment_result, input_record, parametres, liste_re
         row2files(alignment_result.liste_metadonnees, liste_reports)
 
 
-def file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres):
+def file2row(form_bib2ark, entry_filename, liste_reports, parametres):
     """Récupération du contenu du fichier et application des règles d'alignement
     ligne à ligne"""
     header_columns = ["NumNot", "Nb identifiants trouvés",
@@ -2427,17 +2428,15 @@ def file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parame
             n += 1
 
 
-def launch(
-    zone_controles,
-    entry_filename,
-    type_doc_bib,
-    preferences_alignement,
-    kwsudoc_option,
-    file_nb,
-    meta_bib,
-    id_traitement,
-    form_bib2ark=None
-    ):
+def launch(entry_filename,
+           type_doc_bib,
+           preferences_alignement,
+           kwsudoc_option,
+           file_nb,
+           meta_bib,
+           id_traitement,
+           form_bib2ark=None
+           ):
     # Préférences alignement : 1 = BnF d'abord, puis Sudoc. 2 : Sudoc d'abord,
     # puis BnF
     try:
@@ -2473,7 +2472,7 @@ def launch(
     }
     main.check_file_name(form_bib2ark, entry_filename)
     liste_reports = create_reports(funcs.id_traitement2path(id_traitement), file_nb)
-    file2row(form_bib2ark, zone_controles, entry_filename, liste_reports, parametres)
+    file2row(form_bib2ark, entry_filename, liste_reports, parametres)
 
     fin_traitements(form_bib2ark, liste_reports, parametres["stats"])
 
@@ -2941,17 +2940,15 @@ def form_bib2id(
         fg="white",
         font="Arial 10 bold",
         text="Aligner les\nnotices BIB",
-        command=lambda: launch(
-            zone_controles,
-            entry_file_list[0],
-            type_doc_bib.get(),
-            preferences_alignement.get(),
-            kwsudoc_option.get(),
-            file_nb.get(),
-            meta_bib.get(),
-            id_traitement.get(),
-            form_bib2ark,
-        ),
+        command=lambda: launch(entry_file_list[0],
+                               type_doc_bib.get(),
+                               preferences_alignement.get(),
+                               kwsudoc_option.get(),
+                               file_nb.get(),
+                               meta_bib.get(),
+                               id_traitement.get(),
+                               form_bib2ark,
+                              ),
         borderwidth=5,
         padx=10,
         pady=10,

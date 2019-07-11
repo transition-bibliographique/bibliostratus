@@ -7,7 +7,7 @@ On lance chaque module par son nom de fichier (bib2id, aut2id, etc.) avec les pa
 dans leur ordre d'apparition sur le formulaire
 On peut rajouter le repertoire de destination comme dernier argument. Il faut alors le faire preceder de "--"
 
-python main_argv.py aut2id "main/examples/aut_align_aut.tsv" 1 1 1 0 1 argv_test_aut2id 1
+python main_argv.py aut2id "main/examples/aut_align_aut.tsv" 1 1 1 0 1 1 argv_test_aut2id
 python main_argv.py bib2id "main/examples/mon_impr.tsv" 1 1 0 1 0 argv_test_bib2id
 python main_argv.py marc2tables "main/examples/noticesbib.iso" 1 1 argv_test_marc2tables
 python main_argv.py marc2tables "main/examples/noticesbib.iso" 1 1 argv_test_marc2tables --D:/Mes documents
@@ -33,7 +33,20 @@ dic_functions = {
      3 (AUD)\n\
      4 (PER)\n\
      5 (CAR)\n\
-     6 (PAR)"]
+     6 (PAR) "],
+                 ["Préférences d'alignement", "Valeurs autorisées :\n\
+     1 : BnF,\n\
+     2 : Sudoc,\n"],
+                 ["Recherche mot-clé dans le Sudoc", "Valeurs autorisées :\n\
+     0 : Non,\n\
+     1 : Oui,\n"],
+                 ["Nombre de fichiers", "Valeurs autorisées :\n\
+     1 : 1 fichier,\n\
+     2 : 3 fichiers,\n"],
+                 ["Récupérer les métadonnées bibliographiques", "Valeurs autorisées :\n\
+     0 : Non,\n\
+     1 : Oui,\n"],
+                 ["Identifiant du traitement", ""],
                 ]
               },
     "aut2id": {"action": aut2id,
@@ -44,7 +57,20 @@ dic_functions = {
      1 (PERS),\n\
      2 (ORG),\n\
      3 (notices BIB pour alignement d'autorités),\n\
-     4 (Rameau)"]
+     4 (Rameau) "],
+                 ["Préférences d'alignement", "Valeurs autorisées :\n\
+     1 : BnF\n\
+     2 : Sudoc\n"],
+                 ["Rebond sur l'ISNI", "Valeurs autorisées : \n\
+     0 : non \n\
+     1 : oui\n"],
+                 ["Nombre de fichiers", "Valeurs autorisées :\n\
+     1 : 1 fichier\n\
+     2 : 3 fichiers\n"],
+                 ["Récupérer les métadonnées", "Valeurs autorisées : \n\
+     0 : non \n\
+     1 : oui\n"],
+                 ["Identifiant du traitement", ""],
                 ]
               },
     "marc2tables": {"action": marc2tables,
@@ -97,12 +123,19 @@ if __name__ == "__main__":
     try:
         function(*parametres)
     except TypeError as err:
-        # print(err)
+        print("\n")
         print("Fonction appelée : ", function_name)
         print(dic_functions[function_name]["description"])
         print("Liste des paramètres : ")
         i = 1
+        j = 0
         for el in dic_functions[function_name]["parametres"]:
             print("  ", i, ".", el[0], ":", el[1])
+            try:
+                print("    Valeur indiquée : ", parametres[j], "\n"*3)
+            except IndexError:
+                print("    Valeur indiquée : non renseigné")
             i += 1
+            j += 1
+        print("\n\n\nOn peut rajouter le repertoire de destination comme dernier argument. Il faut alors le faire preceder de \"--\"")
         sys.exit()
