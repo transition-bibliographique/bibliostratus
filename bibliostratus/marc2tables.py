@@ -441,7 +441,7 @@ en UTF-8 avant de le mettre en entrée du logiciel"""
         error_file.close()
 
 
-def metas_from_marc21(record):
+def bib_metas_from_marc21(record):
     title = record2title(
         record2meta(record, ["245$a", "245$e"])
     )
@@ -468,8 +468,8 @@ def metas_from_marc21(record):
     )
     authors2keywords = aut2keywords(authors)
     date = record2date(record2meta(
-        record, ["008"]), record2meta(record, ["260$c"]),
-        "marc21")
+                       record, ["008"]), record2meta(record, ["260$c"]),
+                       "marc21")
     numeroTome = record2numeroTome(record2meta(record, ["245$n"], ["490$v"]))
     publisher = record2publisher(record2meta(record, ["260$b"]))
     pubPlace = record2pubPlace(record2meta(record, ["260$a"]))
@@ -489,8 +489,7 @@ def metas_from_marc21(record):
             id_commercial_aud
             )
 
-
-def metas_from_unimarc(record):
+def bib_metas_from_unimarc(record):
     """
     Définition des zones Marc correspondant aux différentes métadonnées
     """
@@ -562,13 +561,13 @@ def bibrecord2metas(numNot, doc_record, record,
          authors, authors2keywords,
          date, numeroTome, publisher, pubPlace, scale,
          ark, frbnf, isbn, issn, ean,
-         id_commercial_aud) = metas_from_marc21(record)
+         id_commercial_aud) = bib_metas_from_marc21(record)
     else:
         (title, keyTitle, global_title, part_title,
          authors, authors2keywords,
          date, numeroTome, publisher, pubPlace, scale,
          ark, frbnf, isbn, issn, ean,
-         id_commercial_aud) = metas_from_unimarc(record)
+         id_commercial_aud) = bib_metas_from_unimarc(record)
     if (doc_record not in liste_fichiers):
         liste_fichiers.append(doc_record)
     metas = []
@@ -613,6 +612,19 @@ def record2lastnameAUT(name):
     return name
 
 
+def record2firstnameAUT_marc21(name):
+    if ',' in name:
+        return name.split(",")[1]
+    else:
+        return name
+
+def record2lastnameAUT_marc21(name):
+    if ',' in name:
+        return name.split(",")[0]
+    else:
+        return name
+
+
 def record2firstdateAUT(f103a, f200f):
     if (f103a[1:5] != "    "):
         return f103a[1:5]
@@ -621,6 +633,9 @@ def record2firstdateAUT(f103a, f200f):
     else:
         return f200f
 
+def record2firstdateAUT_marc21(date):
+    return date
+    
 
 def record2lastdateAUT(f103b, f200f):
     if (f103b[1:5] != "    "):
@@ -631,7 +646,36 @@ def record2lastdateAUT(f103b, f200f):
         return f200f
 
 
-def autrecord2metas(numNot, doc_record, record, allmetas=False):
+def record2lastdateAUT_marc21(date):
+    return date
+
+def autrecord2metas(numNot, doc_record, record,
+                    pref_format_file=True,
+                    all_metas=False):
+    """  Le record est une notice pymarc.Record ou en XML
+    Le paramètre pref_format_file permet de préciser
+    que le format de préférence est à chercher dans
+    le fichier preferences.json
+    Sinon, Unimarc """
+    print(pref_format_file)
+    print(main.prefs["marc2tables_input_format"]["value"])
+    if (pref_format_file
+       and "marc2tables_input_format" in main.prefs
+       and main.prefs["marc2tables_input_format"]["value"] == "marc21"):
+        (ark, frbnf, isni, firstname,
+         lastname, firstdate,
+         lastdate, doc_record) = aut_metas_from_marc21(record)
+    else:
+        (ark, frbnf, isni, firstname,
+         lastname, firstdate,
+         lastdate) = aut_metas_from_unimarc(record)
+    if (doc_record not in liste_fichiers):
+        liste_fichiers.append(doc_record)
+    meta = [numNot, frbnf, ark, isni, lastname, firstname, firstdate, lastdate]
+    return meta
+
+
+def aut_metas_from_unimarc(record):
     ark = record2ark(record2meta(record, ["033$a"]))
     frbnf = record2frbnf(record2meta(record, ["035$a"]))
     isni = record2isniAUT(record2meta(record, ["010$a"]))
@@ -641,12 +685,27 @@ def autrecord2metas(numNot, doc_record, record, allmetas=False):
         record, ["103$a"]), record2meta(record, ["200$f"]))
     lastdate = record2lastdateAUT(record2meta(
         record, ["103$b"]), record2meta(record, ["200$f"]))
+    return (ark, frbnf, isni, firstname,
+            lastname, firstdate, lastdate)
 
-    if (doc_record not in liste_fichiers):
-        liste_fichiers.append(doc_record)
-    meta = [numNot, frbnf, ark, isni, lastname, firstname, firstdate, lastdate]
-    return meta
 
+def aut_metas_from_marc21(record):
+    ark = record2ark(record2meta(record, ["035$a"]))
+    frbnf = record2frbnf(record2meta(record, ["035$a"]))
+    isni = record2isniAUT(record2meta(record, ["024$a"]))
+    firstname = record2lastnameAUT_marc21(record2meta(record, ["100$a"], ["110$a", "111$a"]))
+    lastname = record2firstnameAUT_marc21(record2meta(record, ["100$a"], ["110$b", "111$b"]))
+    firstdate = record2firstdateAUT_marc21(record2meta(record, ["046$f"], ["046$q", "111$d"]))
+    lastdate = record2lastdateAUT_marc21(record2meta(record, ["046$g"], ["046$r"]))
+    if (record2meta(record, ["110$a"])
+       or record2meta(record, ["111$a"])):
+        doc_record = "cb"
+    elif (record2meta(record, ["100$a"])):
+        doc_record = "ca"
+    else:
+        doc_record = "c "
+    return (ark, frbnf, isni, firstname,
+            lastname, firstdate, lastdate, doc_record)
 
 def bibfield2autmetas(numNot, doc_record, record, field):
     metas = []
@@ -716,9 +775,9 @@ def record2listemetas(record, rec_format=1, all_metas=False):
                                                             rec_format)
     meta = []
     if (rec_format == 2):
-        meta = autrecord2metas(numNot, doc_record, record, all_metas)
+        meta = autrecord2metas(numNot, doc_record, record, all_metas=all_metas)
     elif(rec_format == 3):
-        meta = bibrecord2autmetas(numNot, doc_record, record, all_metas)
+        meta = bibrecord2autmetas(numNot, doc_record, record, all_metas=all_metas)
     else:
         meta = bibrecord2metas(numNot, doc_record, record, all_metas=all_metas)
 
