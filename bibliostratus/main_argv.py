@@ -103,7 +103,11 @@ functions_description = [" : ".join([key,  dic_functions[key]['description']])
 error_function_name = "Les fonctions prévues par le programme sont : \n  " + '\n  '.join(functions_description)
 
 if __name__ == "__main__":
-    function_name = sys.argv[1]
+    try:
+        function_name = sys.argv[1]
+    except IndexError:
+        print(f"\nListe des fonctions disponibles : {', '.join(dic_functions.keys())}")
+        sys.exit(1)
     try:
         function = dic_functions[function_name]["action"].launch
     except KeyError:
@@ -113,7 +117,7 @@ if __name__ == "__main__":
     parametres = sys.argv[2:]
     # Si le dernier argument commence par un chevron > : c'est le répertoire de destination
     # pour les rapports
-    if parametres[-1].startswith("--"):
+    if len(parametres) and parametres[-1].startswith("--"):
         main.output_directory = [parametres.pop(-1)[2:].strip()]
     i = 0
     for el in parametres:
@@ -135,7 +139,8 @@ if __name__ == "__main__":
                 print("    Valeur indiquée : ", parametres[j], "\n"*3)
             except IndexError:
                 print("    Valeur indiquée : non renseigné")
+            print("\n")
             i += 1
             j += 1
-        print("\n\n\nOn peut rajouter le repertoire de destination comme dernier argument. Il faut alors le faire preceder de \"--\"")
+        print("\n\nOn peut rajouter le repertoire de destination comme dernier argument. Il faut alors le faire preceder de \"--\"")
         sys.exit()
