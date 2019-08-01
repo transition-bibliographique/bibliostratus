@@ -14,6 +14,7 @@ import random, string
 import os
 import re
 import tkinter as tk
+import tkinter.ttk as ttk
 import urllib.parse
 from copy import deepcopy
 
@@ -23,7 +24,7 @@ from lxml import etree
 import funcs
 import main
 import bib2id
-import udecode
+import forms
 import sru
 
 
@@ -47,6 +48,10 @@ listefieldsLiensSUB = {
 listefieldsLiensWORK = {
     "unimarc": ["500"],
     "intermarc": ["141", "144", "145"]}
+
+
+                      
+
 
 
 def ark2url(identifier, parametres):
@@ -97,7 +102,6 @@ def XMLrecord2string(identifier, record, parametres):
     record_str = re.sub("<record[^>]+>", "<record>", record_str)
     if (parametres["correct_record_option"] == 2):
         record_str = correct_record(identifier, record_str, parametres)
-    # record_str = udecode.replace_xml_entities(record_str)
     return record_str
 
 
@@ -371,21 +375,23 @@ def update_bib_ppn(ppn):
 def launch(filename, type_records_form, 
            correct_record_option, headers, AUTlieesAUT,
            AUTlieesSUB, AUTlieesWORK, outputID, 
-           format_records=1, format_file=1, select_fields="",
+           format_records=1, format_file=1,
+           xml_encoding_option="utf-8",
+           select_fields="",
            master=None, form=None):
     try:
-        [filename, type_records_form, correct_record_option,
-        headers, AUTlieesAUT, AUTlieesSUB, AUTlieesWORK, outputID,
-        format_records, format_file, select_fields] = [str(filename), int(type_records_form), 
-                                                        int(correct_record_option),
-                                                        int(headers),
-                                                        int(AUTlieesAUT),
-                                                        int(AUTlieesSUB), 
-                                                        int(AUTlieesWORK), 
-                                                        str(outputID),
-                                                        int(format_records), 
-                                                        int(format_file), 
-                                                        str(select_fields)]
+        [filename, type_records_form,
+         correct_record_option,
+         headers, AUTlieesAUT,
+         AUTlieesSUB, AUTlieesWORK,
+         outputID, format_records,
+         format_file, xml_encoding_option,
+         select_fields] = [str(filename), int(type_records_form),
+                           int(correct_record_option), int(headers),
+                           int(AUTlieesAUT), int(AUTlieesSUB),
+                           int(AUTlieesWORK), str(outputID),
+                           int(format_records), int(format_file),
+                           str(xml_encoding_option), str(select_fields)]
     except ValueError as err:
         print("\n\nDonnées en entrée erronées\n")
         print(err)
@@ -407,6 +413,7 @@ def launch(filename, type_records_form,
         "outputID": outputID,
         "format_records": format_records,
         "format_file": format_file,
+        "xml_encoding_option": xml_encoding_option,
         "format_BIB": format_BIB,
         "select_fields": select_fields,
         "listeARK_BIB" : [],
@@ -634,23 +641,43 @@ pour réécrire les notices récupérées",
     tk.Label(frame_output_file, text="\n"*5,
              bg=couleur_fond).pack(side="left")
 
-    tk.Label(frame_output_options_format,
-             text="Format du fichier :").pack(anchor="nw")
-    format_file = tk.IntVar()
-    tk.Radiobutton(frame_output_options_format, bg=couleur_fond,
-                   text="iso2709", variable=format_file, value=1, justify="left").pack(anchor="nw")
-    tk.Radiobutton(frame_output_options_format, bg=couleur_fond,
-                   text="Marc XML", variable=format_file, value=2, justify="left").pack(anchor="nw")
-    tk.Radiobutton(
-        frame_output_options_format,
-        text="Certaines zones (sép : \";\")\n - fichier tabulé",
-        justify="left",
-        variable=format_file,
-        value=3,
-        bg=couleur_fond
-    ).pack(anchor="nw")
-    format_file.set(1)
+    """tk.Label(frame_output_options_format,
+             text="Format du fichier :").pack(anchor="nw")"""
 
+    format_file = tk.IntVar()
+    
+    """for format in liste_formats_file:
+        tk.Radiobutton(frame_output_options_format, bg=couleur_fond,
+                       text=format[0], variable=format_file,
+                       value=format[1], justify="left").pack(anchor="nw")
+    format_file.set(1)"""
+    
+    frame2var = [
+                 {"frame": frame_output_options_format,
+                  "name": "frame_output_options_format",
+                  "variables": [["format_file", format_file]]
+                 }
+                ]
+    
+
+    for frame in frame2var:
+        frame_name = frame["name"]
+        for variable in frame["variables"]:
+            variable_name = variable[0]
+            params = forms.form_ark2records[frame_name][variable_name]
+            forms.FormOption(frame["frame"],
+                             variable[1],
+                             params["type"],
+                             params["title"],
+                             params["values"],
+                             params["params"]
+                            )
+
+    xml_encoding_option = forms.Combobox(frame_output_options_format,
+                                         forms.form_ark2records["frame_output_options_format"]["xml_encoding_option"]["title"],
+                                         forms.form_ark2records["frame_output_options_format"]["xml_encoding_option"]["values"],
+                                         forms.form_ark2records["frame_output_options_format"]["xml_encoding_option"]["params"]
+                                        )
 
     tk.Label(frame_output_options_format,
              text="\tZones à récupérer",
@@ -677,6 +704,7 @@ pour réécrire les notices récupérées",
             outputID.get(),
             format_records_choice.get(),
             format_file.get(),
+            xml_encoding_option.options.get(),
             select_fields.get(),
             master,
             form,

@@ -1308,12 +1308,12 @@ def form_aut2id(master, access_to_network=True, last_version=[0, False]):
 
     # file_format.focus_set()
     b = tk.Button(zone_ok_help_cancel, text="Aligner\nles autorités",
-                  command=lambda: launch(form, entry_file_list[0], headers.get(),
+                  command=lambda: launch(entry_file_list[0], headers.get(),
                                          input_data_type.get(),
                                          preferences_alignement.get(), 
                                          isni_option.get(),
                                          file_nb.get(), meta_bnf.get(),
-                                         outputID.get()),
+                                         outputID.get(), form),
                   width=15, borderwidth=1, pady=40, fg="white",
                   bg=couleur_bouton, font="Arial 10 bold"
                   )
