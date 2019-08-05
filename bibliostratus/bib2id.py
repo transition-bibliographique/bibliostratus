@@ -11,7 +11,7 @@ Puis modifier le formulaire pour proposer l'option "Périodiques"
  + définir les colonnes (date ?)
 
 """
-
+import string
 import csv
 import os
 import ssl
@@ -30,6 +30,7 @@ import funcs
 import main
 import aut2id_idref
 import sru
+import forms
 
 # Ajout exception SSL pour éviter
 # plantages en interrogeant les API IdRef
@@ -40,9 +41,6 @@ if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
 
 
 url_access_pbs = []
-
-
-
 
 
 # Permet d'écrire dans une liste accessible au niveau général depuis le
@@ -63,94 +61,7 @@ NumNotices_conversionISBN = defaultdict(dict)
 dict_check_apis = defaultdict(dict)
 
 # Quelques listes de signes à nettoyer
-listeChiffres = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-lettres = [
-    "a",
-    "b",
-    "d",
-    "e",
-    "f",
-    "g",
-    "h",
-    "i",
-    "j",
-    "k",
-    "l",
-    "m",
-    "n",
-    "o",
-    "p",
-    "q",
-    "r",
-    "s",
-    "t",
-    "u",
-    "v",
-    "w",
-    "x",
-    "y",
-    "z",
-]
-lettres_sauf_x = [
-    "a",
-    "b",
-    "d",
-    "e",
-    "f",
-    "g",
-    "h",
-    "i",
-    "j",
-    "k",
-    "l",
-    "m",
-    "n",
-    "o",
-    "p",
-    "q",
-    "r",
-    "s",
-    "t",
-    "u",
-    "v",
-    "w",
-    "y",
-    "z",
-]
-ponctuation = [
-    ".",
-    ",",
-    ";",
-    ":",
-    "?",
-    "!",
-    "%",
-    "$",
-    "£",
-    "€",
-    "#",
-    '"',
-    "&",
-    "~",
-    "{",
-    "(",
-    "[",
-    "`",
-    "\\",
-    "_",
-    "@",
-    ")",
-    "]",
-    "}",
-    "=",
-    "+",
-    "*",
-    "/",
-    "<",
-    ">",
-    ")",
-    "}",
-]
+
 header_columns_init_monimpr = [
     "Num Not",
     "FRBNF",
@@ -331,7 +242,6 @@ def relancerNNBAuteur(input_record, NumNot, systemid, isbn, titre, auteur, date)
     return listeArk
 
 
-
 def comparerBibBnf(input_record,
                    NumNot, ark_current, 
                    xml_record_current,
@@ -486,7 +396,7 @@ def verificationTomaison(ark, numeroTome, recordBNF):
     if volumesBNF == "":
         volumesBNF = sru.record2fieldvalue(recordBNF, "200$a")
         volumesBNF = funcs.convert_volumes_to_int(volumesBNF)
-        for lettre in lettres:
+        for lettre in string.ascii_lowercase:
             volumesBNF = volumesBNF.replace(lettre, "~")
         volumesBNF = volumesBNF.split("~")
         volumesBNF = set(str(funcs.ltrim(nb)) for nb in volumesBNF if nb != "")
@@ -501,16 +411,6 @@ def verificationTomaison_sous_zone(ark, numeroTome, numeroTomeBnF):
     l'extraction des nombres de la sous-zone
     """
     return ark, False
-
-
-# =============================================================================
-# def ltrim(nombre_texte):
-#     "Supprime les 0 initiaux d'un nombre géré sous forme de
-#      chaîne de caractères"
-#     while(len(nombre_texte) > 1 and nombre_texte[0] == "0"):
-#         nombre_texte = nombre_texte[1:]
-#     return nombre_texte
-# =============================================================================
 
 
 def checkDate(ark, date_init, recordBNF):
@@ -532,7 +432,7 @@ def checkDate(ark, date_init, recordBNF):
     for lettre in lettres:
         dateBNF_210d = dateBNF_210d.replace(lettre, "~")
         dateBNF_306a = dateBNF_306a.replace(lettre, "~")
-    for signe in ponctuation:
+    for signe in main.punctuation:
         dateBNF_210d = dateBNF_210d.replace(signe, "~")
         dateBNF_306a = dateBNF_306a.replace(signe, "~")
     dateBNF_210d = [el for el in dateBNF_210d.split("~") if el != ""]
@@ -2684,8 +2584,18 @@ def form_bib2id(
         bg=couleur_fond,
     )
     cadre_output.pack(side="left", anchor="w")
+    
     cadre_output_header = tk.Frame(cadre_output, bg=couleur_fond)
     cadre_output_header.pack(anchor="w")
+
+    cadre_output_directory = tk.Frame(cadre_output, 
+                                      padx=1, bg=couleur_fond)
+    cadre_output_directory.pack()
+
+    cadre_output_files = tk.Frame(cadre_output, padx=2, 
+                                  bg=couleur_fond)
+    cadre_output_files.pack(anchor="w")
+    
     cadre_output_nb_fichier = tk.Frame(cadre_output, bg=couleur_fond)
     cadre_output_nb_fichier.pack(anchor="w")
 
@@ -2697,39 +2607,15 @@ def form_bib2id(
     )
     cadre_output_nb_fichiers_explications.pack(anchor="w")
 
-    cadre_output_files = tk.Frame(cadre_output, padx=2, 
-                                  bg=couleur_fond)
-    cadre_output_files.pack(anchor="w")
-    
-    cadre_output_directory = tk.Frame(cadre_output_files, 
-                                      padx=1, bg=couleur_fond)
-    cadre_output_directory.pack(side="left", anchor="w")
 
-    cadre_output_id_traitement = tk.Frame(cadre_output_files, padx=1, bg=couleur_fond)
-    cadre_output_id_traitement.pack(side="left", anchor="w")
+    frame_outputID = tk.Frame(cadre_output, padx=1, bg=couleur_fond)
+    frame_outputID.pack(anchor="w")
 
     zone_notes_message_en_cours = tk.Frame(zone_notes, padx=20, bg=couleur_fond)
     zone_notes_message_en_cours.pack()
 
-    # ==============================================================================
-    # Message d'alerte dans le formulaire si besoin
-    # ==============================================================================
-    # tk.Label(
-    #     zone_alert_explications,
-    #     text="Attention : format MON IMPR avec une colonne supplémentaire en entrée (EAN)",
-    #     bg=couleur_fond,
-    #     fg="red",
-    # ).pack()
-    # définition input URL (u)
 
-    main.download_zone(
-                        cadre_output_directory,
-                        "Sélectionner un dossier\nde destination",
-                        main.output_directory,
-                        couleur_fond,
-                        type_action="askdirectory",
-                        widthb = [40,1]
-                        )
+
     tk.Label(
         cadre_input_header,
         bg=couleur_fond,
@@ -2752,187 +2638,57 @@ def form_bib2id(
         #widthb=[40,1]
         )
 
-    tk.Label(
-        cadre_input_type_docs_zone,
-        bg=couleur_fond,
-        text="Type de documents  ",
-        font="Arial 10 bold",
-        justify="left",
-    ).pack(anchor="w", side="left")
-
+    main.download_zone(
+                        cadre_output_directory,
+                        "Sélectionner un dossier\nde destination",
+                        main.output_directory,
+                        couleur_fond,
+                        type_action="askdirectory",
+                        widthb = [40,1]
+                        )
     type_doc_bib = tk.IntVar()
-    radioButton_lienExample(
-        cadre_input_type_docs,
-        type_doc_bib,
-        1,
-        couleur_fond,
-        "[TEX] Monographies texte",
-        main.display_headers_in_form(header_columns_init_monimpr),
-        "main/examples/mon_impr.tsv",  # noqa
-    )
-    radioButton_lienExample(
-        cadre_input_type_docs,
-        type_doc_bib,
-        2,
-        couleur_fond,
-        "[VID] Audiovisuel (DVD)",
-        main.display_headers_in_form(header_columns_init_cddvd),
-        "",
-    )
-    radioButton_lienExample(
-        cadre_input_type_docs,
-        type_doc_bib,
-        3,
-        couleur_fond,
-        "[AUD] Enregistrements sonores",
-        main.display_headers_in_form(header_columns_init_cddvd),
-        "main/examples/audio.tsv",  # noqa
-    )
-    radioButton_lienExample(
-        cadre_input_type_docs,
-        type_doc_bib,
-        4,
-        couleur_fond,
-        "[PER] Périodiques",
-        main.display_headers_in_form(header_columns_init_perimpr),
-        "main/examples/per.tsv",  # noqa
-    )
-    radioButton_lienExample(
-        cadre_input_type_docs,
-        type_doc_bib,
-        5,
-        couleur_fond,
-        "[CAR] Cartes",
-        main.display_headers_in_form(header_columns_init_cartes),
-        "",  # noqa
-    )
-    radioButton_lienExample(
-        cadre_input_type_docs,
-        type_doc_bib,
-        6,
-        couleur_fond,
-        "[PAR] Partitions",
-        main.display_headers_in_form(header_columns_init_partitions),
-        "",  # noqa
-    )
     type_doc_bib.set(1)
-
-    tk.Label(
-        cadre_input_type_docs,
-        bg=couleur_fond,
-        text="\nAligner de préférence :",
-        font="Arial 10 bold",
-        justify="left",
-    ).pack(anchor="w")
     preferences_alignement = tk.IntVar()
-    radioButton_lienExample(
-        cadre_input_type_docs,
-        preferences_alignement,
-        1,
-        couleur_fond,
-        "Avec la BnF (et à défaut avec le Sudoc)",
-        "",
-        "",
-    )
-
-    radioButton_lienExample(
-        cadre_input_type_docs,
-        preferences_alignement,
-        2,
-        couleur_fond,
-        "Avec le Sudoc (et à défaut avec la BnF)",
-        "",
-        "",
-    )
     preferences_alignement.set(1)
-
     kwsudoc_option = tk.IntVar()
-    kwsudoc_option_check = tk.Checkbutton(
-        cadre_input_type_docs,
-        bg=couleur_fond,
-        text="+ Utiliser aussi la recherche par mots-clés dans le Sudoc \
-(peut ralentir le programme)",
-        variable=kwsudoc_option,
-        justify="left",
-    )
     kwsudoc_option.set(1)
-    kwsudoc_option_check.pack(anchor="w")
+
+    file_nb = tk.IntVar()
+    file_nb.set(1)
+
+    meta_bib = tk.IntVar()
 
 
+    frame2var = [{"frame": cadre_input_type_docs_zone,
+                  "name": "cadre_input_type_docs_zone",
+                  "variables": [["type_doc_bib", type_doc_bib]]
+                 },
+                 {"frame": cadre_input_type_docs,
+                 "name": "cadre_input_type_docs",
+                 "variables": [["preferences_alignement", preferences_alignement],
+                               ["kwsudoc_option", kwsudoc_option]]},
+                 {"frame": cadre_output_nb_fichiers_zone,
+                  "name": "cadre_output_nb_fichiers_zone",
+                  "variables": [["file_nb", file_nb],
+                                ["meta_bib", meta_bib]]
+                 }]
 
+    
+    
     # Choix du format
     tk.Label(
         cadre_output_header,
         bg=couleur_fond,
         fg=couleur_bouton,
         text="En sortie :",
-        font="bold",
-    ).pack(anchor="w")
-    tk.Label(
-        cadre_output_nb_fichiers_zone,
-        bg=couleur_fond,
-        font="Arial 10 bold",
-        text="Nombre de fichiers  ",
-    ).pack(anchor="w", side="left")
-    file_nb = tk.IntVar()
-    # file_nb = tk.Entry(cadre_output_nb_fichiers_zone, width=3, bd=2)
-    # file_nb.pack(anchor="w", side="left")
-    # tk.Label(
-    #     cadre_output_nb_fichiers_explications,
-    #     bg=couleur_fond,
-    #     text=
-    #     "1 = 1 fichier d'alignements\n2 = Plusieurs fichiers (0 ARK trouvé / 1 ARK / Plusieurs ARK)",  # noqa
-    #     justify="left"
-    # ).pack(anchor="w")
+        font="bold").pack(anchor="w")
 
-    tk.Radiobutton(
-        cadre_output_nb_fichier,
-        bg=couleur_fond,
-        text="1 fichier",
-        variable=file_nb,
-        value=1,
-        justify="left",
-    ).pack(anchor="w")
-    tk.Radiobutton(
-        cadre_output_nb_fichier,
-        bg=couleur_fond,
-        text="Plusieurs fichiers\n(Pb / 0 / 1 / plusieurs ARK trouvés)",
-        justify="left",
-        variable=file_nb,
-        value=2,
-    ).pack(anchor="w")
-    file_nb.set(1)
-    # Récupérer les métadonnées BIB (dublin core)
-    tk.Label(
-        cadre_output_nb_fichier, bg=couleur_fond, fg=couleur_bouton, text="\n"
-    ).pack()
-    meta_bib = tk.IntVar()
-    meta_bib_check = tk.Checkbutton(
-        cadre_output_nb_fichier,
-        bg=couleur_fond,
-        text="Récupérer les métadonnées simples",
-        variable=meta_bib,
-        justify="left",
-    )
-    meta_bib_check.pack(anchor="w")
-    tk.Label(cadre_output_directory, text="\n", bg=couleur_fond).pack()
+    outputID = forms.Entry(frame_outputID,
+                           forms.form_bib2id["frame_outputID"]["outputID"]["title"],
+                           forms.form_bib2id["frame_outputID"]["outputID"]["params"])
 
-    
-    # tk.Label(frame_header, text="\n", bg=couleur_fond).pack()
-
-
-
-    # Ajout (optionnel) d'un identifiant de traitement
-    #tk.Label(cadre_output_id_traitement,
-    #         bg=couleur_fond, text="\n"*1).pack()
-    tk.Label(
-        cadre_output_id_traitement, bg=couleur_fond, 
-        text="Préfixe fichiers en sortie").pack()
-    id_traitement = tk.Entry(cadre_output_id_traitement, width=20, bd=2)
-    id_traitement.pack()
-    tk.Label(cadre_output_files, bg=couleur_fond, text="\n"*22).pack()
-
-    # Bouton de validation
+    forms.display_options(frame2var, forms.form_bib2id)
+    forms.add_saut_de_ligne(frame_outputID, 12)
 
     b = tk.Button(
         zone_ok_help_cancel,
@@ -2998,11 +2754,8 @@ def form_bib2id(
 
     zone_version = tk.Frame(zone_notes, bg=couleur_fond)
     zone_version.pack()
-    tk.Label(
-        zone_version,
-        text="Bibliostratus - Version " + str(main.version) + " - " + main.lastupdate,
-        bg=couleur_fond,
-    ).pack()
+    
+    forms.footer(zone_version, couleur_fond)
 
     zone_controles = tk.Frame(zone_notes, bg=couleur_fond)
     zone_controles.pack()

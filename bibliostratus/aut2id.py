@@ -22,6 +22,7 @@ import main
 import bib2id
 import aut2id_idref
 import aut2id_concepts
+import forms
 
 
 # Ajout exception SSL pour éviter
@@ -1139,6 +1140,12 @@ def form_aut2id(master, access_to_network=True, last_version=[0, False]):
     frame_input_file.pack()
     frame_input_aut = tk.Frame(frame_input, bg=couleur_fond,)
     frame_input_aut.pack(anchor="w")
+    frame_input_aut_headers = tk.Frame(frame_input_aut, bg=couleur_fond,)
+    frame_input_aut_headers.pack(anchor="w")
+    frame_input_aut_input_data_type = tk.Frame(frame_input_aut, bg=couleur_fond,)
+    frame_input_aut_input_data_type.pack()
+    frame_input_aut_preferences = tk.Frame(frame_input_aut, bg=couleur_fond,)
+    frame_input_aut_preferences.pack(anchor="w")
 
     frame_output = tk.Frame(zone_actions,
                             bg=couleur_fond, padx=10, pady=10,
@@ -1149,17 +1156,6 @@ def form_aut2id(master, access_to_network=True, last_version=[0, False]):
     frame_output_file = tk.Frame(
         frame_output, bg=couleur_fond, padx=10, pady=10)
     frame_output_file.pack(anchor="w")
-    frame_output_options = tk.Frame(
-        frame_output, bg=couleur_fond, padx=10, pady=10)
-    frame_output_options.pack(anchor="w")
-    frame_output_options_marc = tk.Frame(frame_output_options, bg=couleur_fond)
-    frame_output_options_marc.pack(side="left", anchor="nw")
-    frame_output_options_inter = tk.Frame(
-        frame_output_options, bg=couleur_fond)
-    frame_output_options_inter.pack(side="left")
-    frame_output_options_format = tk.Frame(
-        frame_output_options, bg=couleur_fond)
-    frame_output_options_format.pack(side="left", anchor="nw")
 
     zone_notes_message_en_cours = tk.Frame(
         zone_notes, padx=20, bg=couleur_fond)
@@ -1170,10 +1166,35 @@ def form_aut2id(master, access_to_network=True, last_version=[0, False]):
 
     tk.Label(frame_input_file, text="Fichier contenant \nles notices d'autorité à aligner\n\n",
              bg=couleur_fond, justify="left").pack(side="left", anchor="w")
-    """entry_filename = tk.Entry(frame_input_file, width=20, bd=2, bg=couleur_fond)
-    entry_filename.pack(side="left")
-    entry_filename.focus_set() """
+
     
+    main.download_zone(frame_input_file,
+                       "Sélectionner un fichier\nSéparateur TAB, Encodage UTF-8",
+                       entry_file_list, couleur_fond, zone_notes_message_en_cours)
+
+    # Fichier avec en-têtes ?
+    
+    headers = tk.IntVar()
+    """tk.Checkbutton(frame_input_aut, text="Mon fichier a des en-têtes de colonne",
+                   variable=headers,
+                   bg=couleur_fond, justify="left").pack(anchor="w")"""
+    headers.set(1)
+
+    input_data_type = tk.IntVar()
+    input_data_type.set(1)
+
+    # Préférences : BnF > Idref ou IdRef > BnF
+    preferences_alignement = tk.IntVar()
+    preferences_alignement.set(1)
+
+    # Option Relance sur isni ?
+    isni_option = tk.IntVar()
+    isni_option.set(1)
+
+
+    tk.Label(frame_output_header, text="En sortie", font="bold",
+             fg=couleur_bouton, bg=couleur_fond).pack()
+
     main.download_zone(
         frame_output_file,
         "Sélectionner un dossier\nde destination",
@@ -1183,130 +1204,36 @@ def form_aut2id(master, access_to_network=True, last_version=[0, False]):
         widthb = [40,1]
     )
 
-
-    main.download_zone(frame_input_file,
-                       "Sélectionner un fichier\nSéparateur TAB, Encodage UTF-8",
-                       entry_file_list, couleur_fond, zone_notes_message_en_cours)
-
-    # Fichier avec en-têtes ?
-    headers = tk.IntVar()
-    tk.Checkbutton(frame_input_aut, text="Mon fichier a des en-têtes de colonne",
-                   variable=headers,
-                   bg=couleur_fond, justify="left").pack(anchor="w")
-    headers.set(1)
-
-    tk.Label(frame_input_aut, bg=couleur_fond, text="\nType de données en entrée",
-             font="Arial 10 bold", anchor="w").pack(anchor="w")
-    input_data_type = tk.IntVar()
-    bib2id.radioButton_lienExample(
-        frame_input_aut, input_data_type, 1, couleur_fond,
-        "[PERS] Liste de notices Personnes",
-        main.display_headers_in_form(header_columns_init_aut2aut),
-        "main/examples/aut_align_aut.tsv"  # noqa
-    )
-    bib2id.radioButton_lienExample(
-        frame_input_aut, input_data_type, 2, couleur_fond,
-        "[ORG] Liste de notices Organisations",
-        main.display_headers_in_form(header_columns_init_aut2aut),
-        ""  # noqa
-    )
-    bib2id.radioButton_lienExample(
-        frame_input_aut, input_data_type, 3, couleur_fond,
-        "Liste de notices bibliographiques",
-        main.display_headers_in_form(header_columns_init_bib2aut),
-        "main/examples/aut_align_bib.tsv"  # noqa
-    )
-    bib2id.radioButton_lienExample(
-        frame_input_aut, input_data_type, 4, couleur_fond,
-        "Liste de notices Rameau",
-        main.display_headers_in_form(header_columns_init_rameau),
-        ""  # noqa
-    )
-    input_data_type.set(1)
-
-    tk.Label(
-        frame_input_aut,
-        bg=couleur_fond,
-        text="\nAligner de préférence :",
-        font="Arial 10 bold",
-        justify="left",
-    ).pack(anchor="w")
-    preferences_alignement = tk.IntVar()
-    bib2id.radioButton_lienExample(
-        frame_input_aut,
-        preferences_alignement,
-        1,
-        couleur_fond,
-        "Avec la BnF (et à défaut avec le Sudoc)",
-        "",
-        "",
-    )
-    bib2id.radioButton_lienExample(
-        frame_input_aut,
-        preferences_alignement,
-        2,
-        couleur_fond,
-        "Avec IdRef (et à défaut avec la BnF)",
-        "",
-        "",
-    )
-    preferences_alignement.set(1)
-
-
-    # Option Relance sur isni ?
-    isni_option = tk.IntVar()
-    tk.Checkbutton(frame_input_aut, text="Relancer sur isni.org en cas d'absence de réponse",
-                   variable=isni_option,
-                   bg=couleur_fond, justify="left").pack(anchor="w")
-    isni_option.set(1)
-
-    # $1k.Label(frame_input_aut,bg=couleur_fond, text="\n").pack()
-
-    tk.Label(frame_output_header, text="En sortie", font="bold",
-             fg=couleur_bouton, bg=couleur_fond).pack()
-
     file_nb = tk.IntVar()
-    tk.Radiobutton(
-        frame_output_file,
-        bg=couleur_fond,
-        text="1 fichier",
-        variable=file_nb,
-        value=1,
-        justify="left"
-    ).pack(anchor="w")
-    tk.Radiobutton(
-        frame_output_file,
-        bg=couleur_fond,
-        text="Plusieurs fichiers \n(Pb / 0 / 1 / plusieurs ARK trouvés)",
-        variable=file_nb,
-        value=2,
-        justify="left"
-    ).pack(anchor="w")
     file_nb.set(1)
 
-    tk.Label(frame_output_file, bg=couleur_fond, text="\n").pack()
-
-    # Récupérer les métadonnées BnF au passage ?
     meta_bnf = tk.IntVar()
-    tk.Checkbutton(frame_output_file, text="Récupérer les métadonnées simples",
-                   variable=meta_bnf,
-                   bg=couleur_fond, justify="left").pack(anchor="w")
-    tk.Label(frame_output_file, text="\n", bg=couleur_fond,
-             justify="left").pack(anchor="w")
-    
-    # tk.Label(frame_header, text="\n", bg=couleur_fond).pack()
+    meta_bnf.set(0)
+
+    frame2var = [{"frame": frame_input_aut_headers,
+                  "name": "frame_input_aut_headers",
+                  "variables": [["headers", headers]]},
+                  {"frame": frame_input_aut_input_data_type,
+                  "name": "frame_input_aut_input_data_type",
+                  "variables": [["input_data_type", input_data_type]]},
+                  {"frame": frame_input_aut_preferences,
+                   "name": "frame_input_aut_preferences",
+                   "variables": [["preferences_alignement", preferences_alignement],
+                                 ["isni_option", isni_option]]},
+                  {"frame": frame_output_file,
+                  "name": "frame_output_file",
+                  "variables": [["file_nb", file_nb],
+                                ["meta_bnf", meta_bnf]]}
+                ]
+
+    forms.display_options(frame2var, forms.form_aut2id)
 
 
+    outputID = forms.Entry(frame_output_file,
+                           forms.form_aut2id["frame_output_file"]["outputID"]["title"],
+                           forms.form_aut2id["frame_output_file"]["outputID"]["params"])
+    forms.add_saut_de_ligne(frame_output_file, nb_sauts=7)
 
-    tk.Label(frame_output_file, text="Préfixe des fichiers en sortie",
-             bg=couleur_fond).pack(anchor="w")
-    outputID = tk.Entry(frame_output_file, bg=couleur_fond, width=30)
-    outputID.pack(anchor="w")
-
-    tk.Label(frame_output_file, text="\n"*7,
-             bg=couleur_fond).pack(anchor="w")
-
-    # file_format.focus_set()
     b = tk.Button(zone_ok_help_cancel, text="Aligner\nles autorités",
                   command=lambda: launch(entry_file_list[0], headers.get(),
                                          input_data_type.get(),
@@ -1341,23 +1268,10 @@ def form_aut2id(master, access_to_network=True, last_version=[0, False]):
                        command=lambda: main.annuler(form), pady=10, padx=5, width=12)
     cancel.pack()
 
-    tk.Label(zone_notes, text="Bibliostratus - Version " +
-             str(main.version) + " - " + main.lastupdate, bg=couleur_fond).pack()
-
-    # if main.last_version[1]:
-    #     download_update = tk.Button(
-    #         zone_notes,
-    #         text="Télécharger la version " + str(main.last_version[0]),
-    #         command=download_last_update
-    #     )
-    #     download_update.pack()
+    forms.footer(zone_notes, couleur_fond)
 
     tk.mainloop()
 
 
 if __name__ == '__main__':
-    access_to_network = main.check_access_to_network()
-    last_version = [0, False]
-    if(access_to_network is True):
-        last_version = main.check_last_compilation(main.programID)
-    main.formulaire_main(access_to_network, last_version)
+    forms.default_launch()

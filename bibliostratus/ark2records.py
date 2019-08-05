@@ -488,45 +488,36 @@ def formulaire_ark2records(
     frame_input_file.pack()
     frame_input_aut = tk.Frame(frame_input, bg=couleur_fond)
     frame_input_aut.pack()
+    frame_input_aut_file = tk.Frame(frame_input_aut, bg=couleur_fond)
+    frame_input_aut_file.pack()
+    frame_input_aut_headers = tk.Frame(frame_input_aut, bg=couleur_fond)
+    frame_input_aut_headers.pack(anchor="w")
+    frame_input_aut_liees = tk.Frame(frame_input_aut, bg=couleur_fond)
+    frame_input_aut_liees.pack(anchor="w")
 
     frame_output = tk.Frame(zone_actions,
                             bg=couleur_fond, padx=10, pady=10,
                             highlightthickness=2, highlightbackground=couleur_bouton)
     frame_output.pack(side="left", anchor="w")
-
-    frame_output_options = tk.Frame(
-        frame_output, bg=couleur_fond, padx=10, pady=10)
+    frame_output_file = tk.Frame(frame_output, bg=couleur_fond, padx=10, pady=10)
+    frame_output_file.pack()
+    frame_output_options = tk.Frame(frame_output, bg=couleur_fond, padx=10, pady=10)
     frame_output_options.pack(anchor="w")
-    frame_output_file = tk.Frame(
-        frame_output, bg=couleur_fond, padx=10, pady=10)
-    frame_output_file.pack(anchor="w")
     frame_output_options_marc = tk.Frame(frame_output_options, bg=couleur_fond)
     frame_output_options_marc.pack(side="left", anchor="nw")
-    frame_output_options_inter = tk.Frame(
-        frame_output_options, bg=couleur_fond)
-    frame_output_options_inter.pack(side="left")
-    frame_output_options_format = tk.Frame(
-        frame_output_options, bg=couleur_fond)
+    frame_output_options_intermediaire = tk.Frame(frame_output_options, bg=couleur_fond)
+    frame_output_options_intermediaire.pack(side="left", anchor="nw")
+    frame_output_options_format = tk.Frame(frame_output_options, bg=couleur_fond)
     frame_output_options_format.pack(side="left", anchor="nw")
+    frame_outputID = tk.Frame(frame_output, bg=couleur_fond)
+    frame_outputID.pack()
 
     zone_notes_message_en_cours = tk.Frame(
         zone_notes, padx=20, bg=couleur_fond)
     zone_notes_message_en_cours.pack()
 
-    # tk.Label(frame_input_file, text="Fichier contenant les ARK\n (1 par ligne) \n\n",
-    #         bg=couleur_fond, justify="left").pack(side="left", anchor="w")
-    """entry_filename = tk.Entry(frame_input_file, width=20, bd=2, bg=couleur_fond)
-    entry_filename.pack(side="left")
-    entry_filename.focus_set() """
     
-    main.download_zone(
-                        frame_output_file,
-                        "Sélectionner un dossier de destination",
-                        main.output_directory,
-                        couleur_fond,
-                        type_action="askdirectory",
-                        widthb = [40,1]
-                        )
+
 
     main.download_zone(
         frame_input_file,
@@ -536,142 +527,53 @@ def formulaire_ark2records(
         zone_notes_message_en_cours
         )
 
-    tk.Label(frame_input_aut, text="\n", bg=couleur_fond).pack()
+    main.download_zone(
+                        frame_output_file,
+                        "Sélectionner un dossier de destination",
+                        main.output_directory,
+                        couleur_fond,
+                        type_action="askdirectory",
+                        widthb = [40,1]
+                        )
 
-    # ARK de BIB ou d'AUT ?
-    type_records = tk.IntVar()
-    bib2id.radioButton_lienExample(
-        frame_input_aut, type_records, 1, couleur_fond, "N° de notices bibliographiques",
-        "",
-        "main/examples/listeARKbib.tsv"  # noqa
-    )
-    bib2id.radioButton_lienExample(
-        frame_input_aut, type_records, 2, couleur_fond, "N° de notices d'autorités",
-        "",
-        "main/examples/listeARKaut.tsv"  # noqa
-    )
-    type_records.set(1)
-
-    tk.Label(frame_input_aut, text="-------------------",
-             bg=couleur_fond).pack()
-
-
-    # 1 ou 2 colonnes ?
-    correct_record_option = tk.IntVar()
-    bib2id.radioButton_lienExample(
-        frame_input_aut, correct_record_option, 1, couleur_fond, "Fichier d'1 colonne (1 ARK ou PPN par ligne)", "", "")
-    bib2id.radioButton_lienExample(
-        frame_input_aut, correct_record_option, 2, couleur_fond, "Fichier à 2 colonnes (N° notice local | ARK ou PPN)\n\
-pour réécrire les notices récupérées",
-        "", "main/examples/listeARKaut_2cols.tsv")
-    correct_record_option.set(1)
-
-    tk.Label(frame_input_aut, text="-------------------",
-             bg=couleur_fond).pack()
-
-    # Fichier avec en-têtes ?
-    headers = tk.IntVar()
-    tk.Checkbutton(frame_input_aut, text="Mon fichier a des en-têtes de colonne",
-                   variable=headers,
-                   bg=couleur_fond, justify="left").pack(anchor="w")
-
+    type_records = tk.IntVar()          # ARK de BIB ou d'AUT ?
+    correct_record_option = tk.IntVar() # 1 ou 2 colonnes ?
+    headers = tk.IntVar()               # Fichier avec en-têtes ?
     headers.set(1)
 
-    # notices d'autorité liées
-    tk.Label(frame_input_aut, text="Récupérer aussi les notices d'autorité liées",
-             bg=couleur_fond, justify="left", font="Arial 9 bold").pack(anchor="w")
-    AUTlieesAUT = tk.IntVar()
-    tk.Checkbutton(frame_input_aut, text="auteurs",
-                   variable=AUTlieesAUT,
-                   bg=couleur_fond, justify="left").pack(anchor="w", side="left")
-    # tk.Label(frame_input_aut, text="\n", bg=couleur_fond).pack()
+    AUTlieesAUT = tk.IntVar()           # notices d'autorité liées
     AUTlieesSUB = tk.IntVar()
-    tk.Checkbutton(frame_input_aut, text="sujets",
-                   variable=AUTlieesSUB,
-                   bg=couleur_fond, justify="left").pack(anchor="w", side="left")
     AUTlieesWORK = tk.IntVar()
-    tk.Checkbutton(frame_input_aut, text="oeuvres",
-                   variable=AUTlieesWORK,
-                   bg=couleur_fond, justify="left").pack(anchor="w", side="left")
 
-    # Choix du format
-    tk.Label(frame_output_options_marc,
-             text="Notices à récupérer en :").pack(anchor="nw")
-    format_records_choice = tk.IntVar()
-    tk.Radiobutton(frame_output_options_marc, text="Unimarc",
-                   variable=format_records_choice, value=1, bg=couleur_fond).pack(anchor="nw")
-    tk.Radiobutton(frame_output_options_marc, text="Intermarc", justify="left",
-                   variable=format_records_choice, value=3, bg=couleur_fond).pack(anchor="nw")
-    tk.Radiobutton(
-        frame_output_options_marc,
-        text="[ARK BnF] Unimarc \navec notices analytiques",
-        justify="left",
-        variable=format_records_choice,
-        value=2,
-        bg=couleur_fond
-    ).pack(anchor="nw")
-    tk.Radiobutton(
-        frame_output_options_marc,
-        text="[ARK BnF] Intermarc \navec notices analytiques",
-        justify="left",
-        variable=format_records_choice,
-        value=4,
-        bg=couleur_fond
-    ).pack(anchor="nw")
+    format_records_choice = tk.IntVar() # Choix du format
     format_records_choice.set(1)
-
-
-    tk.Label(frame_output_file, text=" ",
-             bg=couleur_fond).pack()
-
-    # tk.Label(
-    #     frame_output_options,
-    #     text="\n\n",
-    #     justify="left",
-    #     variable=format_records_choice,
-    #     value=4,
-    #     bg=couleur_fond
-    # ).pack()
-
-
-    tk.Label(frame_output_file, text="Préfixe fichier(s) en sortie",
-             bg=couleur_fond).pack(side="left", anchor="w")
-    outputID = tk.Entry(frame_output_file, bg=couleur_fond)
-    outputID.pack(side="left", anchor="w")
-    tk.Label(frame_output_file, text="\n"*5,
-             bg=couleur_fond).pack(side="left")
-
-    """tk.Label(frame_output_options_format,
-             text="Format du fichier :").pack(anchor="nw")"""
-
     format_file = tk.IntVar()
+    format_file.set(1)
     
-    """for format in liste_formats_file:
-        tk.Radiobutton(frame_output_options_format, bg=couleur_fond,
-                       text=format[0], variable=format_file,
-                       value=format[1], justify="left").pack(anchor="nw")
-    format_file.set(1)"""
-    
-    frame2var = [
+    frame2var = [{"frame": frame_input_aut_file,
+                  "name": "frame_input_aut_file",
+                  "variables": [["type_records", type_records],
+                                ["correct_record_option", correct_record_option]]},
+                 {"frame": frame_input_aut_headers,
+                  "name": "frame_input_aut_headers",             
+                   "variables": [["headers", headers]]},
+                 {"frame": frame_input_aut_liees,
+                  "name": "frame_input_aut_liees", 
+                  "variables": [["AUTlieesAUT", AUTlieesAUT],
+                                ["AUTlieesSUB", AUTlieesSUB],
+                                ["AUTlieesWORK", AUTlieesWORK]]
+                 },
                  {"frame": frame_output_options_format,
                   "name": "frame_output_options_format",
                   "variables": [["format_file", format_file]]
+                 },
+                 {"frame": frame_output_options_marc,
+                  "name": "frame_output_options_marc",
+                  "variables": [["format_records_choice", format_records_choice]]
                  }
                 ]
     
-
-    for frame in frame2var:
-        frame_name = frame["name"]
-        for variable in frame["variables"]:
-            variable_name = variable[0]
-            params = forms.form_ark2records[frame_name][variable_name]
-            forms.FormOption(frame["frame"],
-                             variable[1],
-                             params["type"],
-                             params["title"],
-                             params["values"],
-                             params["params"]
-                            )
+    forms.display_options(frame2var, forms.form_ark2records)
 
     xml_encoding_option = forms.Combobox(frame_output_options_format,
                                          forms.form_ark2records["frame_output_options_format"]["xml_encoding_option"]["title"],
@@ -679,14 +581,17 @@ pour réécrire les notices récupérées",
                                          forms.form_ark2records["frame_output_options_format"]["xml_encoding_option"]["params"]
                                         )
 
-    tk.Label(frame_output_options_format,
-             text="\tZones à récupérer",
-             bg=couleur_fond).pack()
-    tk.Label(frame_output_options_format,
-             text="\t",
-             bg=couleur_fond).pack(side="left", anchor="w")
-    select_fields = tk.Entry(frame_output_options_format, bg=couleur_fond)
-    select_fields.pack(side="left", anchor="w")
+    select_fields = forms.Entry(frame_output_options_format,
+                                forms.form_ark2records["frame_output_options_format"]["select_fields"]["title"],
+                                forms.form_ark2records["frame_output_options_format"]["select_fields"]["params"])
+    outputID = forms.Entry(frame_output,
+                           forms.form_ark2records["frame_outputID"]["outputID"]["title"],
+                           forms.form_ark2records["frame_outputID"]["outputID"]["params"])
+
+    forms.add_saut_de_ligne(frame_input_aut_liees, nb_sauts=2)
+    forms.add_saut_de_ligne(frame_output_options_intermediaire, nb_sauts=1)
+    forms.add_saut_de_ligne(frame_outputID, nb_sauts=1)
+    
 
 
     # file_format.focus_set()
@@ -739,16 +644,7 @@ pour réécrire les notices récupérées",
                        command=lambda: main.annuler(form), pady=10, padx=5, width=12)
     cancel.pack()
 
-    tk.Label(zone_notes, text="Bibliostratus - Version " +
-             str(main.version) + " - " + main.lastupdate, bg=couleur_fond).pack()
-
-    # if (main.last_version[1] == True):
-    #     download_update = tk.Button(
-    #         zone_notes,
-    #         text="Télécharger la version " + str(main.last_version[0]),
-    #         command=download_last_update
-    #     )
-    #     download_update.pack()
+    forms.footer(zone_notes, couleur_fond)
 
     tk.mainloop()
 

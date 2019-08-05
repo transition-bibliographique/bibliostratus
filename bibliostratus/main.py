@@ -25,6 +25,7 @@ import funcs
 import marc2tables
 import aut2id
 import bib2id
+import forms
 import edit_preferences as settings
 
 version = 1.27
@@ -194,9 +195,8 @@ def display_headers_in_form(headers_list):
     """
     splitter = 75
     line = " | ".join(headers_list)
-    pos_last_pipe = 0
     if (len(line) > splitter
-        and "|" in line[splitter:]):
+       and "|" in line[splitter:]):
         line_begin, line_end = line[:splitter], line[splitter:]
         adjust, line_end = line_end[:line_end.find("|")], line_end[line_end.find("|")+1:].strip()
         line_begin = line_begin + adjust + "|"
@@ -265,6 +265,7 @@ def RepresentsInt(s):
     except ValueError:
         return False
 
+
 def field2subfield(field, subfield, nb_occ="all", sep="~"):
     path = "*[@code='" + subfield + "']"
     listeValues = []
@@ -311,8 +312,8 @@ def extract_subfield(record, field, subfield, nb_occ="all", sep="~"):
     return listeValues
 
 
-def form_saut_de_ligne(frame, couleur_fond):
-    tk.Label(frame, text="\n", bg=couleur_fond).pack()
+def form_saut_de_ligne(frame, couleur_fond="#ffffff", nb_sauts=1):
+    tk.Label(frame, text="\n"*nb_sauts, bg=couleur_fond).pack()
 
 
 def form_generic_frames(master, title, couleur_fond,
@@ -805,8 +806,4 @@ def check_proxy():
 
 if __name__ == '__main__':
     check_proxy()
-    access_to_network = check_access_to_network()
-    last_version = [0, False]
-    if (access_to_network):
-        last_version = check_last_compilation(programID)
-    formulaire_main(access_to_network, last_version)
+    forms.default_launch()
