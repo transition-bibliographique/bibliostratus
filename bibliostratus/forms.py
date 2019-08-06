@@ -360,20 +360,24 @@ form_ark2records = {"frame_input_aut_file":
                              "type": "radioButton",
                              "values": dict_formats_file,
                              "params" : form_ark_records_radio_default
-                            },
-                      "select_fields":
-                            {"title": "\nSi tabulé : zones à récupérer",
-                             "type": "Entry",
-                             "params": form_ark_records_entry_default
-                        },
-                      "xml_encoding_option":
-                            {"title": "\nSi XML, encodage :",
-                             "type": "Combobox",
-                             "values": liste_encoding,
-                             "params": {"title": {"options": {"bg": form_ark2records_global["couleur_fond"]},
-                                                "pack": {"anchor": "nw"}},
-                                        "values": {"pack": {"anchor": "nw"}}
-                                       }
+                            }
+                    },
+                    "frame_output_options_si_xml":
+                        {
+                        "xml_encoding_option":
+                                {"title": "\n\nSi XML, encodage :",
+                                "type": "Combobox",
+                                "values": liste_encoding,
+                                "params": {"title": {"options": {"bg": form_ark2records_global["couleur_fond"],
+                                                     "font": "Arial 10 bold"},
+                                                    "pack": {"anchor": "nw"}},
+                                            "values": {"pack": {"anchor": "nw"}}
+                                        }
+                                },
+                        "select_fields":
+                                {"title": "Si tabulé : zones à récupérer",
+                                "type": "Entry",
+                                "params": form_ark_records_entry_default
                             }
                      },
                     "frame_output_options_marc":

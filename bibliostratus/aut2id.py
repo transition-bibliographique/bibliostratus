@@ -1227,8 +1227,6 @@ def form_aut2id(master, access_to_network=True, last_version=[0, False]):
                 ]
 
     forms.display_options(frame2var, forms.form_aut2id)
-
-
     outputID = forms.Entry(frame_output_file,
                            forms.form_aut2id["frame_output_file"]["outputID"]["title"],
                            forms.form_aut2id["frame_output_file"]["outputID"]["params"])
@@ -1240,7 +1238,7 @@ def form_aut2id(master, access_to_network=True, last_version=[0, False]):
                                          preferences_alignement.get(), 
                                          isni_option.get(),
                                          file_nb.get(), meta_bnf.get(),
-                                         outputID.get(), form),
+                                         outputID.value.get(), form),
                   width=15, borderwidth=1, pady=40, fg="white",
                   bg=couleur_bouton, font="Arial 10 bold"
                   )

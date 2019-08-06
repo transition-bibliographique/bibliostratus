@@ -429,7 +429,7 @@ def checkDate(ark, date_init, recordBNF):
     dateBNF_306a = funcs.unidecode_local(
         sru.record2fieldvalue(recordBNF, "306$a").split("~")[0].lower()
     )
-    for lettre in lettres:
+    for lettre in string.ascii_lowercase:
         dateBNF_210d = dateBNF_210d.replace(lettre, "~")
         dateBNF_306a = dateBNF_306a.replace(lettre, "~")
     for signe in main.punctuation:
@@ -2702,7 +2702,7 @@ def form_bib2id(
                                kwsudoc_option.get(),
                                file_nb.get(),
                                meta_bib.get(),
-                               id_traitement.get(),
+                               outputID.value.get(),
                                form_bib2ark,
                               ),
         borderwidth=5,

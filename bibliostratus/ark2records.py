@@ -502,13 +502,18 @@ def formulaire_ark2records(
     frame_output_file = tk.Frame(frame_output, bg=couleur_fond, padx=10, pady=10)
     frame_output_file.pack()
     frame_output_options = tk.Frame(frame_output, bg=couleur_fond, padx=10, pady=10)
-    frame_output_options.pack(anchor="w")
+    frame_output_options.pack()
     frame_output_options_marc = tk.Frame(frame_output_options, bg=couleur_fond)
-    frame_output_options_marc.pack(side="left", anchor="nw")
-    frame_output_options_intermediaire = tk.Frame(frame_output_options, bg=couleur_fond)
-    frame_output_options_intermediaire.pack(side="left", anchor="nw")
-    frame_output_options_format = tk.Frame(frame_output_options, bg=couleur_fond)
+    frame_output_options_marc.pack(anchor="w")
+    frame_output_options_format_global = tk.Frame(frame_output_options, bg=couleur_fond)
+    frame_output_options_format_global.pack()
+    frame_output_options_format = tk.Frame(frame_output_options_format_global, bg=couleur_fond)
     frame_output_options_format.pack(side="left", anchor="nw")
+    frame_output_options_intermediaire = tk.Frame(frame_output_options_format_global, bg=couleur_fond)
+    frame_output_options_intermediaire.pack(side="left", anchor="nw")
+    frame_output_options_si_xml = tk.Frame(frame_output_options_format_global, bg=couleur_fond)
+    frame_output_options_si_xml.pack(side="left", anchor="nw")
+    
     frame_outputID = tk.Frame(frame_output, bg=couleur_fond)
     frame_outputID.pack()
 
@@ -575,20 +580,20 @@ def formulaire_ark2records(
     
     forms.display_options(frame2var, forms.form_ark2records)
 
-    xml_encoding_option = forms.Combobox(frame_output_options_format,
-                                         forms.form_ark2records["frame_output_options_format"]["xml_encoding_option"]["title"],
-                                         forms.form_ark2records["frame_output_options_format"]["xml_encoding_option"]["values"],
-                                         forms.form_ark2records["frame_output_options_format"]["xml_encoding_option"]["params"]
+    xml_encoding_option = forms.Combobox(frame_output_options_si_xml,
+                                         forms.form_ark2records["frame_output_options_si_xml"]["xml_encoding_option"]["title"],
+                                         forms.form_ark2records["frame_output_options_si_xml"]["xml_encoding_option"]["values"],
+                                         forms.form_ark2records["frame_output_options_si_xml"]["xml_encoding_option"]["params"]
                                         )
 
-    select_fields = forms.Entry(frame_output_options_format,
-                                forms.form_ark2records["frame_output_options_format"]["select_fields"]["title"],
-                                forms.form_ark2records["frame_output_options_format"]["select_fields"]["params"])
+    select_fields = forms.Entry(frame_output_options_si_xml,
+                                forms.form_ark2records["frame_output_options_si_xml"]["select_fields"]["title"],
+                                forms.form_ark2records["frame_output_options_si_xml"]["select_fields"]["params"])
     outputID = forms.Entry(frame_output,
                            forms.form_ark2records["frame_outputID"]["outputID"]["title"],
                            forms.form_ark2records["frame_outputID"]["outputID"]["params"])
 
-    forms.add_saut_de_ligne(frame_input_aut_liees, nb_sauts=2)
+    forms.add_saut_de_ligne(frame_input_aut_liees, nb_sauts=5)
     forms.add_saut_de_ligne(frame_output_options_intermediaire, nb_sauts=1)
     forms.add_saut_de_ligne(frame_outputID, nb_sauts=1)
     
@@ -606,11 +611,11 @@ def formulaire_ark2records(
             AUTlieesAUT.get(),
             AUTlieesSUB.get(),
             AUTlieesWORK.get(),
-            outputID.get(),
+            outputID.value.get(),
             format_records_choice.get(),
             format_file.get(),
             xml_encoding_option.options.get(),
-            select_fields.get(),
+            select_fields.value.get(),
             master,
             form,
         ),
