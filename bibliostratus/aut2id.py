@@ -1253,11 +1253,7 @@ def form_aut2id(master, access_to_network=True, last_version=[0, False]):
     tk.Label(zone_ok_help_cancel, text="\n",
              bg=couleur_fond, font="Arial 1 normal").pack()
 
-    forum_button = tk.Button(zone_ok_help_cancel,
-                             text=main.texte_bouton_forum,
-                             command=lambda: main.click2url(
-                                 main.url_forum_aide),
-                             pady=5, padx=5, width=12)
+    forum_button = forms.forum_button(zone_ok_help_cancel)
     forum_button.pack()
 
     tk.Label(zone_ok_help_cancel, text="\n",

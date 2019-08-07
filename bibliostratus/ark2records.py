@@ -233,9 +233,16 @@ def file_create(record_type, parametres):
         headers = ["Numéro de notice", "Type de notice"] + parametres["select_fields"].split(";")
         funcs.line2report(headers, file, display=False)
     elif (parametres["format_file"] == 2):
+        output_encoding = "utf-8"
+        if ("xml_encoding_option" in parametres):
+            output_encoding = parametres["xml_encoding_option"]
         filename = id_filename + ".xml"
-        file = open(filename, "w", encoding="utf-8")
-        file.write("<?xml version='1.0' encoding='utf-8'?>\n")
+        print(output_encoding)
+        print("filename", filename)
+
+        file = open(filename, "w", encoding=output_encoding)
+        
+        file.write(f"<?xml version='1.0' encoding='{output_encoding}'?>\n")
         file.write("<collection>")
     else:
         filename = id_filename + ".iso2709"
@@ -419,6 +426,7 @@ def launch(filename, type_records_form,
         "listeARK_BIB" : [],
         "listeNNA_AUT" : []
     }
+    print(parametres)
     main.generic_input_controls(master, filename)
 
     bib_file = file_create(type_records, parametres)
@@ -515,7 +523,8 @@ def formulaire_ark2records(
     frame_output_options_si_xml.pack(side="left", anchor="nw")
     
     frame_outputID = tk.Frame(frame_output, bg=couleur_fond)
-    frame_outputID.pack()
+    frame_outputID.pack(anchor="w")
+    # forms.add_saut_de_ligne(frame_outputID)
 
     zone_notes_message_en_cours = tk.Frame(
         zone_notes, padx=20, bg=couleur_fond)
@@ -589,7 +598,7 @@ def formulaire_ark2records(
     select_fields = forms.Entry(frame_output_options_si_xml,
                                 forms.form_ark2records["frame_output_options_si_xml"]["select_fields"]["title"],
                                 forms.form_ark2records["frame_output_options_si_xml"]["select_fields"]["params"])
-    outputID = forms.Entry(frame_output,
+    outputID = forms.Entry(frame_outputID,
                            forms.form_ark2records["frame_outputID"]["outputID"]["title"],
                            forms.form_ark2records["frame_outputID"]["outputID"]["params"])
 
@@ -633,14 +642,10 @@ def formulaire_ark2records(
                           command=lambda: main.click2url(main.url_online_help),
                           pady=5, padx=5, width=12)
     call4help.pack()
-    tk.Label(zone_ok_help_cancel, text="\n",
-             bg=couleur_fond, font="Arial 1 normal").pack()
+    
+    forms.add_saut_de_ligne(zone_ok_help_cancel)
 
-    forum_button = tk.Button(zone_ok_help_cancel,
-                             text=main.texte_bouton_forum,
-                             command=lambda: main.click2url(
-                                 main.url_forum_aide),
-                             pady=5, padx=5, width=12)
+    forum_button = forms.forum_button(zone_ok_help_cancel)
     forum_button.pack()
 
     tk.Label(zone_ok_help_cancel, text="\n",
@@ -655,8 +660,4 @@ def formulaire_ark2records(
 
 
 if __name__ == '__main__':
-    access_to_network = main.check_access_to_network()
-    if(access_to_network is True):
-        last_version = main.check_last_compilation(main.programID)
-    main.formulaire_main(access_to_network, last_version)
-    # formulaire_ark2records(access_to_network,[version, False])
+    forms.default_launch()

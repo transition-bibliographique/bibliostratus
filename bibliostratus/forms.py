@@ -10,9 +10,16 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import os
 
+import smc.bibencodings
+
 import main
 import aut2id
 import ark2records
+import funcs
+
+
+url_forum_aide = "http://www.agorabib.fr/topic/3317-bibliostratus-mettre-en-correspondance-ses-notices-avec-celles-de-la-bnf/"  # noqa
+texte_bouton_forum = "Forum\nutilisateurs"
 
 
 dict_formats_file = {1: "iso2709",
@@ -47,7 +54,8 @@ ark2records_dict_correct_record_option = {1:
                                              "link": "main/examples/listeARKaut_2cols.tsv"},
                                              }
 
-liste_encoding = ["utf-8", "iso-5426", "iso-8859-1"]
+# liste_encoding = ["utf-8", "iso-5426", "iso-8859-1"]
+liste_encoding = ["utf-8", "iso-8859-1"]
 
 class RadioList:
     def __init__(self, frame, var, title, dict_values, params):  # Notre méthode constructeur
@@ -163,7 +171,11 @@ def radioButton_lienExample(
         )
 
 
-
+def forum_button(frame):
+    button = tk.Button(frame, text=texte_bouton_forum,
+              command=lambda: main.click2url(url_forum_aide),
+              pady=5, padx=5, width=12)
+    return button
 
 class Combobox:
     def __init__(self, frame, title, val, params):
@@ -628,3 +640,46 @@ form_bib2id = {"cadre_input_type_docs_zone":
                                 }
                     }
                 }
+
+marc2tables_file_format = {1:
+                            {"line1": "iso2709 encodé UTF-8",
+                             "line2": "",
+                             "link": "main/examples/noticesbib.iso"},
+                           2:
+                            {"line1": "iso2709 encodé ISO-8859-1",
+                             "line2": "",
+                             "link": ""},
+                           3:
+                            {"line1": "Marc XML encodé UTF-8",
+                             "line2": "",
+                             "link": ""}}
+
+
+marc2tables_rec_format = {1: "bibliographiques",
+                          2: "autorités",
+                          3: "bibliographiques pour alignement d'autorités"}
+
+form_marc2tables = {"frame_input_type_docs":
+                    
+                      {"file_format":
+                            {"title": "Format de fichier",
+                             "type": "radioButton",
+                             "values": marc2tables_file_format,
+                             "params": form_option_pack_default,
+                             "default": 1}},
+                    "frame_input_type_rec":
+                        {"rec_format":
+                            {"title": "\nType de notices",
+                             "type": "radioButton",
+                             "values": marc2tables_rec_format,
+                             "params": form_option_pack_default,
+                             "default": 1}},
+                    "frame_outputID":
+                    {
+                            "outputID":
+                                {"title": "\nPréfixe des fichiers en sortie",
+                                 "type": "Entry",
+                                 "params": form_option_pack_default
+                                }
+                    }
+                   }

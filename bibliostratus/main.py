@@ -91,8 +91,7 @@ urlSRUroot = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrie
 url_online_help = "https://github.com/Transition-bibliographique/bibliostratus/wiki"
 texte_bouton_help = "Documentation\nen ligne"
 
-url_forum_aide = "http://www.agorabib.fr/topic/3317-bibliostratus-mettre-en-correspondance-ses-notices-avec-celles-de-la-bnf/"  # noqa
-texte_bouton_forum = "Forum\nutilisateurs"
+
 
 chiffers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 letters = [
@@ -733,7 +732,7 @@ def formulaire_main(access_to_network, last_version):
                                   padx=10, pady=10, bg="#99182D", fg="white")
     ark2recordsButton.pack()
 
-    tk.Label(frame3, text="\n", bg=couleur_fond, font="Arial 7 normal").pack()
+    forms.add_saut_de_ligne(frame3)
 
     tk.Label(zone_ok_help_cancel, text=" ", pady=5, bg=couleur_fond).pack()
 
@@ -744,15 +743,11 @@ def formulaire_main(access_to_network, last_version):
     call4help.pack()
     tk.Label(frame_help_cancel, text="\n",
              bg=couleur_fond, font="Arial 1 normal").pack()
-
-    forum_button = tk.Button(frame_help_cancel,
-                             text=texte_bouton_forum,
-                             command=lambda: click2url(url_forum_aide),
-                             pady=15, padx=5, width=12)
+    
+    forum_button = forms.forum_button(frame_help_cancel)
     forum_button.pack()
 
-    tk.Label(frame_help_cancel, text="\n",
-             bg=couleur_fond, font="Arial 8 normal").pack()
+    forms.add_saut_de_ligne(frame_help_cancel)
     cancel = tk.Button(frame_help_cancel, text="Annuler", bg=couleur_fond,
                        command=lambda: annuler(master), pady=45, padx=5, width=12)
     cancel.pack()

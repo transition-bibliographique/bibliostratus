@@ -2728,14 +2728,7 @@ def form_bib2id(
         zone_ok_help_cancel, text="\n", bg=couleur_fond, font="Arial 1 normal"
     ).pack()
 
-    forum_button = tk.Button(
-        zone_ok_help_cancel,
-        text=main.texte_bouton_forum,
-        command=lambda: main.click2url(main.url_forum_aide),
-        pady=5,
-        padx=5,
-        width=12,
-    )
+    forum_button = forms.forum_button(zone_ok_help_cancel)
     forum_button.pack()
 
     tk.Label(
@@ -2763,8 +2756,4 @@ def form_bib2id(
 
 
 if __name__ == "__main__":
-    access_to_network = main.check_access_to_network()
-    last_version = [0, False]
-    if access_to_network is True:
-        last_version = main.check_last_compilation(main.programID)
-    main.formulaire_main(access_to_network, last_version)
+    forms.default_launch()

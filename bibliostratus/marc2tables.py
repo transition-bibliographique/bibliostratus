@@ -26,6 +26,7 @@ import main
 import funcs
 import bib2id
 import aut2id
+import forms
 
 
 # Permet d'écrire dans une liste accessible au niveau général depuis le
@@ -1018,66 +1019,72 @@ def formulaire_marc2tables(
                                             couleur_fond, couleur_bouton,
                                             access_to_network)
 
-    cadre_input = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton,
+    frame_input = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton,
                            relief="groove", height=150, padx=10, bg=couleur_fond)
-    cadre_input.pack(side="left", anchor="w")
-    cadre_input_header = tk.Frame(cadre_input, bg=couleur_fond)
-    cadre_input_header.pack(anchor="w")
-    cadre_input_file = tk.Frame(cadre_input, bg=couleur_fond)
-    cadre_input_file.pack(anchor="w")
-    cadre_input_file_name = tk.Frame(cadre_input_file, bg=couleur_fond)
-    cadre_input_file_name.pack(side="left")
-    cadre_input_file_browse = tk.Frame(cadre_input_file, bg=couleur_fond)
-    cadre_input_file_browse.pack(side="left")
-    cadre_input_infos_format = tk.Frame(cadre_input, bg=couleur_fond)
-    cadre_input_infos_format.pack(side="left")
+    frame_input.pack(side="left", anchor="w")
+    frame_input_header = tk.Frame(frame_input, bg=couleur_fond)
+    frame_input_header.pack(anchor="w")
+    frame_input_file = tk.Frame(frame_input, bg=couleur_fond)
+    frame_input_file.pack(anchor="w")
+    frame_input_file_name = tk.Frame(frame_input_file, bg=couleur_fond)
+    frame_input_file_name.pack(side="left")
+    frame_input_file_browse = tk.Frame(frame_input_file, bg=couleur_fond)
+    frame_input_file_browse.pack(side="left")
+    frame_input_infos_format = tk.Frame(frame_input, bg=couleur_fond)
+    frame_input_infos_format.pack(side="left")
 
-    cadre_input_type_docs_interstice1 = tk.Frame(cadre_input, bg=couleur_fond)
-    cadre_input_type_docs_interstice1.pack(side="left")
+    frame_input_type_docs = tk.Frame(frame_input, bg=couleur_fond)
+    frame_input_type_docs.pack(anchor="w")
+    frame_input_type_rec = tk.Frame(frame_input, bg=couleur_fond)
+    frame_input_type_rec.pack(anchor="w")
 
-    cadre_input_type_docs = tk.Frame(cadre_input, bg=couleur_fond)
-    cadre_input_type_docs.pack(side="left")
-    cadre_input_type_docs_interstice2 = tk.Frame(cadre_input, bg=couleur_fond)
-    cadre_input_type_docs_interstice2.pack(side="left")
-    cadre_input_type_rec = tk.Frame(cadre_input, bg=couleur_fond)
-    cadre_input_type_rec.pack(side="left")
-
-    cadre_inter = tk.Frame(zone_actions, borderwidth=0,
+    frame_inter = tk.Frame(zone_actions, borderwidth=0,
                            padx=10, bg=couleur_fond)
-    cadre_inter.pack(side="left")
-    tk.Label(cadre_inter, text=" ", bg=couleur_fond).pack()
+    frame_inter.pack(side="left")
+
 
     # =============================================================================
     #     Formulaire - Fichier en entrée
     # =============================================================================
 
-    cadre_output = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton,
+    frame_output = tk.Frame(zone_actions, highlightthickness=2, highlightbackground=couleur_bouton,
                             relief="groove", height=120, padx=10, bg=couleur_fond)
-    cadre_output.pack(side="left")
-    cadre_output_header = tk.Frame(cadre_output, bg=couleur_fond)
-    cadre_output_header.pack(anchor="w")
-    cadre_output_nom_fichiers = tk.Frame(cadre_output, bg=couleur_fond)
-    cadre_output_nom_fichiers.pack(anchor="w")
-    cadre_output_repertoire = tk.Frame(cadre_output, bg=couleur_fond)
-    cadre_output_repertoire.pack(anchor="w")
-    cadre_output_explications = tk.Frame(
-        cadre_output, padx=20, bg=couleur_fond)
-    cadre_output_explications.pack(anchor="w")
+    frame_output.pack(side="left")
+    frame_output_header = tk.Frame(frame_output, bg=couleur_fond)
+    frame_output_header.pack(anchor="w")
+    frame_output_nom_fichiers = tk.Frame(frame_output, bg=couleur_fond)
+    frame_output_nom_fichiers.pack(anchor="w")
+    frame_output_directory = tk.Frame(frame_output, bg=couleur_fond)
+    frame_output_directory.pack(anchor="w")
+    frame_outputID = tk.Frame(frame_output, bg=couleur_fond)
+    frame_outputID.pack(anchor="w")
+    frame_output_explications = tk.Frame(frame_output, bg=couleur_fond)
+    frame_output_explications.pack(anchor="w")
 
-    cadre_output_message_en_cours = tk.Frame(
-        cadre_output, padx=20, bg=couleur_fond)
-    cadre_output_message_en_cours.pack(anchor="w")
+    frame_output_message_en_cours = tk.Frame(
+        zone_notes, padx=20, bg=couleur_fond)
+    frame_output_message_en_cours.pack(anchor="w")
 
-    cadre_valider = tk.Frame(zone_ok_help_cancel, borderwidth=0,
+    frame_valider = tk.Frame(zone_ok_help_cancel, borderwidth=0,
                              relief="groove", height=150, padx=10, bg=couleur_fond)
-    cadre_valider.pack(side="left")
+    frame_valider.pack(side="left")
 
     # définition input URL (u)
-    tk.Label(cadre_input_header, bg=couleur_fond, fg=couleur_bouton,
+    tk.Label(frame_inter, text=" ", bg=couleur_fond).pack()
+    tk.Label(frame_input_header, bg=couleur_fond, fg=couleur_bouton,
              text="En entrée\n", justify="left", font="bold").pack(anchor="w")
 
     main.download_zone(
-        cadre_output_nom_fichiers,
+        frame_input_file, "Sélectionner un fichier de notices Unimarc",
+        entry_file_list, couleur_fond, frame_output_message_en_cours
+    )
+
+    tk.Label(frame_output_header, bg=couleur_fond, fg=couleur_bouton, font="bold",
+             text="En sortie",
+             justify="left").pack()
+
+    main.download_zone(
+        frame_output_directory,
         "Sélectionner un dossier de destination",
         main.output_directory,
         couleur_fond,
@@ -1085,123 +1092,45 @@ def formulaire_marc2tables(
         widthb = [40,1]
     )
 
-    main.download_zone(
-        cadre_input_file, "Sélectionner un fichier de notices Unimarc",
-        entry_file_list, couleur_fond, cadre_output_message_en_cours
-    )
 
-    tk.Label(cadre_input_type_docs_interstice1, bg=couleur_fond,
-             text="\t\t", justify="left").pack()
-
-    tk.Label(cadre_input_type_docs, bg=couleur_fond, text="Format de fichier",
-             anchor="w", justify="left", font="Arial 9 bold").pack(anchor="w")
+    # Format du fichier
     file_format = tk.IntVar()
-
-    bib2id.radioButton_lienExample(
-        cadre_input_type_docs, file_format, 1, couleur_fond,
-        "iso2709 encodé UTF-8", "",
-        "main/examples/noticesbib.iso"  # noqa
-    )
-    tk.Radiobutton(
-        cadre_input_type_docs,
-        bg=couleur_fond,
-        text="iso2709 encodé ISO-8859-1",
-        variable=file_format,
-        value=3,
-        anchor="w",
-        justify="left"
-    ).pack(anchor="w")
-
-    tk.Radiobutton(
-        cadre_input_type_docs,
-        bg=couleur_fond,
-        text="Marc XML encodé UTF-8",
-        variable=file_format,
-        value=2,
-        anchor="w",
-        justify="left"
-    ).pack(anchor="w")
     file_format.set(1)
 
-    tk.Label(cadre_input_type_docs, bg=couleur_fond, text="\n",
-             font="Arial 4", justify="left").pack()
+    # Type de notices
+    rec_format = tk.IntVar()
+    rec_format.set(1)
+
+    outputID = forms.Entry(frame_outputID,
+                        forms.form_ark2records["frame_outputID"]["outputID"]["title"],
+                        forms.form_ark2records["frame_outputID"]["outputID"]["params"])
+
+    frame2var = [{"frame": frame_input_type_docs,
+                  "name": "frame_input_type_docs",
+                  "variables": [["file_format", file_format]]},
+                 {"frame": frame_input_type_rec,
+                  "name": "frame_input_type_rec",
+                  "variables":[["rec_format", rec_format]]}
+                ]
+    forms.display_options(frame2var, forms.form_marc2tables)
+
+    #forms.add_saut_de_ligne(frame_input_type_docs)
 
     lien_help_encodage = tk.Button(
-        cadre_input_type_docs,
+        frame_input_type_docs,
         font="Arial 8 italic",
         border=0,
         text="Je ne sais pas / Je ne comprends pas",
         command=lambda: main.click2url(
             "https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr%C3%A9parer-ses-donn%C3%A9es-pour-l'alignement-%C3%A0-partir-d'un-export-catalogue#lencodage-des-fichiers-en-entr%C3%A9e"  # noqa
         ),
-    )
-    lien_help_encodage.pack()
-    tk.Label(cadre_input_type_docs, bg=couleur_fond, text="\n"*8).pack()
-
-    tk.Label(cadre_input_type_docs_interstice2,
-             bg=couleur_fond, text="\t", justify="left").pack()
-
-    tk.Label(cadre_input_type_rec, bg=couleur_fond, text="\nType de notices",
-             anchor="w", justify="left", font="Arial 9 bold").pack(anchor="w")
-    rec_format = tk.IntVar()
-
-    bib2id.radioButton_lienExample(cadre_input_type_rec, rec_format, 1, couleur_fond,
-                                    "bibliographiques",
-                                    "",
-                                    "")
-
-    tk.Radiobutton(
-        cadre_input_type_rec,
-        bg=couleur_fond,
-        text="autorités",
-        variable=rec_format,
-        value=2,
-        anchor="w",
-        justify="left"
-    ).pack(anchor="w")
-    tk.Label(
-        cadre_input_type_rec, text="\n", bg=couleur_fond, font="Arial 1 normal"
     ).pack()
-    tk.Radiobutton(
-        cadre_input_type_rec,
-        bg=couleur_fond,
-        text="biblio - pour alignement Autorités",
-        variable=rec_format,
-        value=3,
-        anchor="w",
-        justify="left"
-    ).pack(anchor="w")
-    rec_format.set(1)
 
-    tk.Label(cadre_input_type_rec, text="\n"*11, bg=couleur_fond).pack()
-
-    # =============================================================================
-    #     Formulaire - Fichiers en sortie
-    # =============================================================================
-    #
-
-    # Choix du format
-
-    tk.Label(cadre_output_header, bg=couleur_fond, fg=couleur_bouton, font="bold",
-             text="En sortie",
-             justify="left").pack()
+    forms.add_saut_de_ligne(frame_input_type_docs)
+    #forms.add_saut_de_ligne(frame_input_type_docs_interstice2)
+    #forms.add_saut_de_ligne(frame_input_type_rec, 11)
 
 
-
-    tk.Label(cadre_output_nom_fichiers, bg=couleur_fond,
-             text="Préfixe des fichiers en sortie : ",
-             justify="left").pack(side="left")
-    output_ID = tk.Entry(cadre_output_nom_fichiers, width=20, bd=2)
-    output_ID.pack(side="left")
-
-    # Sélection du répertoire en sortie
-    # tk.Label(cadre_output_repertoire,text="\n",bg=couleur_fond).pack()
-    # main.select_directory(
-    #     cadre_output_repertoire, "Dossier où déposer les fichiers",
-    #     output_directory_list, couleur_fond
-    # )
-
-    # Ajout (optionnel) d'un identifiant de traitement
     message_fichiers_en_sortie = """
   Le programme va générer plusieurs fichiers, par type de document,
   en fonction du processus d'alignement avec les données de la BnF
@@ -1216,15 +1145,16 @@ def formulaire_marc2tables(
 
   Pour répartir les notices en fichiers, le programme utilise les informations
   présentes dans les zones codées de chaque notice Unimarc
-"""
-    tk.Label(cadre_output_explications, bg=couleur_fond,
+  
+  """
+    tk.Label(frame_output_explications, bg=couleur_fond,
              text=message_fichiers_en_sortie,
              justify="left").pack()
     # explications.pack()
 
     # Bouton de validation
 
-    b = tk.Button(cadre_valider, bg=couleur_bouton, fg="white", font="bold", text="OK",
+    b = tk.Button(frame_valider, bg=couleur_bouton, fg="white", font="bold", text="OK",
                   command=lambda: launch(entry_file_list[0],
                                          file_format.get(),
                                          rec_format.get(),
@@ -1233,46 +1163,30 @@ def formulaire_marc2tables(
                   borderwidth=5, padx=10, pady=10, width=10, height=4)
     b.pack()
 
-    tk.Label(cadre_valider, font="bold", text="", bg=couleur_fond).pack()
+    tk.Label(frame_valider, font="bold", text="", bg=couleur_fond).pack()
 
-    call4help = tk.Button(cadre_valider,
+    call4help = tk.Button(frame_valider,
                           text=main.texte_bouton_help,
                           command=lambda: main.click2url(main.url_online_help),
                           pady=5, padx=5, width=12)
     call4help.pack()
-    tk.Label(cadre_valider, text="\n", bg=couleur_fond,
+    tk.Label(frame_valider, text="\n", bg=couleur_fond,
              font="Arial 1 normal").pack()
 
-    forum_button = tk.Button(cadre_valider,
-                             text=main.texte_bouton_forum,
-                             command=lambda: main.click2url(
-                                 main.url_forum_aide),
-                             pady=5, padx=5, width=12)
+    forum_button = forms.forum_button(frame_valider)
     forum_button.pack()
 
-    tk.Label(cadre_valider, text="\n", bg=couleur_fond,
+    tk.Label(frame_valider, text="\n", bg=couleur_fond,
              font="Arial 4 normal").pack()
-    cancel = tk.Button(cadre_valider, text="Annuler", bg=couleur_fond,
+    cancel = tk.Button(frame_valider, text="Annuler", bg=couleur_fond,
                        command=lambda: main.annuler(form), pady=10, padx=5, width=12)
     cancel.pack()
 
-    tk.Label(zone_notes, text="Bibliostratus - Version " +
-             str(main.version) + " - " + main.lastupdate, bg=couleur_fond).pack()
+    forms.footer(zone_notes, couleur_fond)
 
-    # if (main.last_version[1] == True):
-    #     download_update = tk.Button(
-    #         zone_notes,
-    #         text="Télécharger la version " + str(main.last_version[0]),
-    #         command=download_last_update
-    #     )
-    #     download_update.pack()
 
     tk.mainloop()
 
 
 if __name__ == '__main__':
-    access_to_network = main.check_access_to_network()
-    if(access_to_network is True):
-        last_version = main.check_last_compilation(main.programID)
-    main.formulaire_main(access_to_network, last_version)
-    # formulaire_marc2tables(access_to_network,last_version)
+    forms.default_launch()
