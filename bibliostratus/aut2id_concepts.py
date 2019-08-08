@@ -42,6 +42,7 @@ def accesspoint2sparql(accesspoint, parametres={}):
     chaque ARK appartient
     """
     methode = ""
+    ark = []
     query = rameau_construct_sparql_query(accesspoint,
                                           "skos:prefLabel")
     ark = extract_sparql_results(sparql2results(query),
@@ -189,8 +190,8 @@ and aut.type all RAM"
                     valid_tag = f"4{tag:1}"
                     test = True
                     add_type_rameau(ark, tag, parametres)
-        arks = ",".join(arks)
-        methode = ",".join(methode)
-        return arks, methode
+    arks = ",".join(arks)
+    methode = ",".join(methode)
+    return arks, methode
 
 
