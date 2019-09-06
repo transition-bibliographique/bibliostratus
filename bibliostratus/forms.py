@@ -10,8 +10,6 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import os
 
-import smc.bibencodings
-
 import main
 import aut2id
 import ark2records

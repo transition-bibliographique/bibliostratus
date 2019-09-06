@@ -20,6 +20,7 @@ from copy import deepcopy
 
 import pymarc as mc
 from lxml import etree
+import smc.bibencodings
 
 import funcs
 import main
@@ -48,10 +49,6 @@ listefieldsLiensSUB = {
 listefieldsLiensWORK = {
     "unimarc": ["500"],
     "intermarc": ["141", "144", "145"]}
-
-
-                      
-
 
 
 def ark2url(identifier, parametres):
@@ -166,9 +163,8 @@ def correct_record(identifier, record_str, parametres):
                     new_xml_record.append(etree.fromstring(deepcopy(etree.tostring(field))))
             elif (marc_tag != "003"):
                 new_xml_record.append(etree.fromstring(deepcopy(etree.tostring(field))))
-    
-    rewrited_record = etree.tostring(
-        new_xml_record,encoding="utf-8").decode(encoding="utf-8")
+    rewrited_record = etree.tostring(new_xml_record,
+                                     encoding="utf-8").decode(encoding="utf-8")
 
     return rewrited_record
 
@@ -237,8 +233,6 @@ def file_create(record_type, parametres):
         if ("xml_encoding_option" in parametres):
             output_encoding = parametres["xml_encoding_option"]
         filename = id_filename + ".xml"
-        print(output_encoding)
-        print("filename", filename)
 
         file = open(filename, "w", encoding=output_encoding)
         
@@ -426,7 +420,6 @@ def launch(filename, type_records_form,
         "listeARK_BIB" : [],
         "listeNNA_AUT" : []
     }
-    print(parametres)
     main.generic_input_controls(master, filename)
 
     bib_file = file_create(type_records, parametres)

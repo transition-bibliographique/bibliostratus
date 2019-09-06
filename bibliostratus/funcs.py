@@ -1164,8 +1164,12 @@ class Id4record:
     Objet à partir d'une ligne en entrée du module rouge (ark2record)
     """
     def __init__(self, row, parametres={}): 
-        self.NumNot = row[0]
-        self.aligned_id = Aligned_id(row[-1])
+        try:
+            self.NumNot = row[0]
+            self.aligned_id = Aligned_id(row[-1])
+        except IndexError:
+            self.NumNot = ""
+            self.aligned_id = ""
 
     def __str__(self):
         """Méthode permettant d'afficher plus joliment notre objet"""
