@@ -19,6 +19,8 @@ $ python3 --version
 $ apt install python3-tk python3-unidecode 
 $ pip3 install pymarc
 $ pip3 install SPARQLWrapper
+$ pip3 install lxml
+$ pip3 install smc.bibencodings
 ```
 
 ## Lancer Bibliostratus

@@ -126,6 +126,50 @@ def action_marc2tables():
                        args.recordtype, args.id)
 
 
+def action_ark2records():
+    convert_ark2records = argparse.ArgumentParser(description="Export de notices en MARC")
+    convert_ark2records = initialized_action(convert_ark2records)
+    convert_ark2records.add_argument("--recordtype", help="Type de notices", default="bib",
+                                     choices=["bib", "aut"])
+    convert_ark2records.add_argument("--colnum", help="Nombre de colonnes en entrée [1 / 2]",
+                                     default=1,
+                                     choices=[1, 2],
+                                     type=int)
+    convert_ark2records.add_argument("--headers", help="Fichier avec en-têtes", default="oui")
+    convert_ark2records.add_argument("--get_authors", 
+                                     help="Récupérer les auteurs liés",
+                                     default="non")
+    convert_ark2records.add_argument("--get_subjets", 
+                                     help="Récupérer les notices Sujet liées",
+                                     default="non")
+    convert_ark2records.add_argument("--get_works", 
+                                     help="Récupérer les notices Oeuvres liées",
+                                     default="non")
+    convert_ark2records.add_argument("--output_format", 
+                                     help="Format en sortie des notices",
+                                     default="unimarc",
+                                     choices=["unimarc", "intermarc", 
+                                              "unimarc-anl", "intermarc-anl"])
+    convert_ark2records.add_argument("--output_file", 
+                                     help="Format en sortie du fichier",
+                                     default="iso2709",
+                                     choices=["iso2709", "xml", "tab"])
+    convert_ark2records.add_argument("--encoding", 
+                                     help="Encodage en sortie",
+                                     default="utf8",
+                                     choices=["utf8", "8859-1"])
+    convert_ark2records.add_argument("--fields", 
+                                     help="Zones spécifiques à récupérer")
+
+    args = convert_ark2records.parse_args()
+    args.headers = dic_checkbox[args.headers.lower()]
+    ark2records.launch(args.file, args.recordtype, args.colnum,
+                       args.header, args.get_authors, args.get_subjects,
+                       args.get_works, args.dir, args.output_format,
+                       args.output_file, args.encoding, args.fields,
+                       args.id)
+
+
 def initialized_action(argumentParser):
     argumentParser.add_argument("--action", help="Commande",
                                 choices=["bib2id", "aut2id", "marc2tables", "ark2records"])
