@@ -12,6 +12,10 @@ python bibliostratus-cli-test.py --action bib2id --file main\examples\mon_impr.t
 
 aut2id
 python bibliostratus-cli-test.py --action aut2id --file main\examples\aut_align_aut.tsv
+
+marc2tables
+python bibliostratus-cli-test.py --action marc2tables --file main\examples\3bibrecords.xml --filetype xml-utf8 --recordtype bib --id cli_test
+
 """
 
 import sys
@@ -29,7 +33,8 @@ import ark2records
 
 dic_functions = {
     "align_bib": bib2id,
-    "align_aut": aut2id
+    "align_aut": aut2id,
+    "marc2tables": marc2tables
 }
 
 dic_doctype = {"tex": 1,
@@ -43,14 +48,27 @@ dic_doctype = {"tex": 1,
                "bib2aut": 3,
                "ram": 4,
                "rameau": 4}
+
+dic_input_filetype = {"iso2708-utf8": 1,
+                      "iso2709": 1,
+                      "iso2709-8859-1": 2,
+                      "xml-utf8": 3,
+                      "xml": 3}
+
+dic_input_recordtype = {"bib": 1,
+                        "aut": 2,
+                        "bib2aut": 3}
+
 align_prefs = {"bnf": 1,
                 "sudoc": 2,
                 "idref": 2,
                 "abes": 2}
+
 dic_files_number = {"1": 1,
                     "mul": 2,
                     "plusieurs": 2,
                     "plus": 2}
+
 dic_checkbox = {"1": 1,
                 "o": 1,
                 "oui": 1,
@@ -63,28 +81,26 @@ dic_checkbox = {"1": 1,
                 "no": 0,
                 "False": 0}
 
-
 def action_align():
     align_bib = argparse.ArgumentParser(description="Alignement de notices")
-    align_bib.add_argument("--action", help="Commande")
-    align_bib.add_argument("--file", help="Nom du fichier en entrée")
-    align_bib.add_argument("--doctype", help="Type de documents à aligner", default="tex")
-    align_bib.add_argument("--align_pref", help="Préférences d'alignement (bnf / abes)", default="bnf")
+    align_bib = initialized_action(align_bib)
+    align_bib.add_argument("--doctype", help="Type de documents à aligner", default="tex",
+                           choices=dic_doctype.keys())
+    align_bib.add_argument("--align_pref", help="Préférences d'alignement (bnf / abes)", default="bnf",
+                           choices=["bnf", "abes", "sudoc", "idref"])
     align_bib.add_argument("--sudoc_kw", help="Recherche par mots-clés dans le Sudoc", default="non")
     align_bib.add_argument("--isni", help="Relancer la recherche dans isni.org", default="non")
     align_bib.add_argument("--headers", help="Fichier avec en-têtes", default="oui")
-    align_bib.add_argument("--dir", help="Dossier de destination", default="")
     align_bib.add_argument("--files_nb", help="Nombre de fichiers en sortie", default="1")
     align_bib.add_argument("--metas", help="Récupérer les métadonnées simples", default="0")
-    align_bib.add_argument("--id", help="Préfixe pour les fichiers en sortie", default="")
     args = align_bib.parse_args()
-    args.headers = dic_checkbox[args.headers]
-    args.doctype = dic_doctype[args.doctype]
-    args.align_pref = align_prefs[args.align_pref]
-    args.sudoc_kw = dic_checkbox[args.sudoc_kw]
-    args.isni = dic_checkbox[args.isni]
-    args.files_nb = dic_files_number[args.files_nb]
-    args.metas = dic_checkbox[args.metas]
+    args.headers = dic_checkbox[args.headers.lower()]
+    args.doctype = dic_doctype[args.doctype.lower()]
+    args.align_pref = align_prefs[args.align_pref.lower()]
+    args.sudoc_kw = dic_checkbox[args.sudoc_kw.lower()]
+    args.isni = dic_checkbox[args.isni.lower()]
+    args.files_nb = dic_files_number[args.files_nb.lower()]
+    args.metas = dic_checkbox[args.metas.lower()]
     if args.action == "bib2id":
         bib2id.launch(args.file, args.doctype, args.align_pref, args.sudoc_kw,
                       args.files_nb, args.metas, args.id)
@@ -93,8 +109,35 @@ def action_align():
                       args.isni, args.files_nb, args.metas, args.id)
 
 
+def action_marc2tables():
+    convert_marc2tables = argparse.ArgumentParser(description="Conversion de fichiers Marc en tableaux")
+    convert_marc2tables = initialized_action(convert_marc2tables)
+    convert_marc2tables.add_argument("--filetype", help="Type de fichier en entrée",
+                                     default="iso2708-utf8",
+                                     choices=["iso2708-utf8", "iso2709-8859-1",
+                                              "xml", "xml-utf8"])
+    convert_marc2tables.add_argument("--recordtype", help="Type de notices", default="bib",
+                                     choices=["bib", "aut", "bib2aut"])
+    args = convert_marc2tables.parse_args()
+    
+    args.filetype = dic_input_filetype[args.filetype.lower()]
+    args.recordtype = dic_input_recordtype[args.recordtype.lower()]
+    marc2tables.launch(args.file, args.filetype,
+                       args.recordtype, args.id)
+
+
+def initialized_action(argumentParser):
+    argumentParser.add_argument("--action", help="Commande",
+                                choices=["bib2id", "aut2id", "marc2tables", "ark2records"])
+    argumentParser.add_argument("--file", help="Nom du fichier en entrée")
+    argumentParser.add_argument("--dir", help="Dossier de destination", default="")
+    argumentParser.add_argument("--id", help="Préfixe pour le(s) fichier(s) en sortie", default="")
+    return argumentParser
+
 if __name__ == "__main__":
     if sys.argv[2].endswith("2id"):
         action_align()
+    elif sys.argv[2] == "marc2tables":
+        action_marc2tables()
     
     
