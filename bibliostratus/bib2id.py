@@ -73,6 +73,7 @@ header_columns_init_monimpr = [
     "Date",
     "Volume-Tome",
     "Editeur",
+#    "Type doc - Type notice"
 ]
 header_columns_init_cddvd = [
     "Num Not",
@@ -84,6 +85,7 @@ header_columns_init_cddvd = [
     "Auteur",
     "Date",
     "Editeur",
+#    "Type doc - Type notice"
 ]
 header_columns_init_perimpr = [
     "Num Not",
@@ -94,6 +96,7 @@ header_columns_init_perimpr = [
     "Auteur",
     "Date",
     "Lieu de publication",
+#    "Type doc - Type notice"
 ]
 
 header_columns_init_cartes = [
@@ -106,7 +109,8 @@ header_columns_init_cartes = [
     "Auteur",
     "Date",
     "Editeur",
-    "Echelle"
+    "Echelle",
+#    "Type doc - Type notice"
 ]
 
 header_columns_init_partitions = [
@@ -120,6 +124,7 @@ header_columns_init_partitions = [
     "Auteur",
     "Date",
     "Editeur",
+#    "Type doc - Type notice"
 ]
 
 # Noms des fichiers en sortie

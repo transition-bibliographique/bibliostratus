@@ -598,6 +598,7 @@ def bibrecord2metas(numNot, doc_record, record,
     else:
         meta = [numNot, frbnf, ark, isbn, ean, id_commercial_aud, issn,
                 title, authors, date, numeroTome, publisher, pubPlace]
+    # meta.append(doc_record)
     return meta
 
 

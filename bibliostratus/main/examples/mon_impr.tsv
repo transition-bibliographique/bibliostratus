@@ -1,21 +1,21 @@
-NumNotice	FRBNF	ARK	ISBN	EAN	Titre	Auteur(s)	Date	Volume/Tome	Editeur
-315742	FRBNF438877170000008		978-2-917559-28-4		Avec nous, après nous	Peres Shimon Attali Jacques	DL 2013		Baker Street
-315749			978-2-213-67872-6	9782213678726	L'informatique du temps et des événements	Berry Gérard	DL 2013		Collège de France
-315756	FRBNF435361100000003		978-2-213-67203-8		Mon Paris, ma mémoire	Morin Edgar	DL 2013		Fayard
-315763			978-2-213-66672-3		Adieu à Berlin	Isherwood Christopher Savitzky Ludmila	impr. 2013		Fayard
-315770		ark:/12148/cb435580221	978-2-213-66853-6		Dictionnaire Ferré	Belleret Robert	impr. 2013		Fayard
-315777			978-2-213-67800-9		Défense républicaine et participation ministérielle, 1899-1902	Jaurès Jean Agulhon Maurice  Chanet Jean-François	impr. 2013		
-315784			978-2-213-66285-5		Philosophie de l'écran	Charolles Valérie	impr. 2013		
-315791	FRBNF435147370000003	ark:/12148/cb435147376	978-2-213-66893-2		Conversations Hitler-Mussolini	Milza Pierre	impr. 2013		
-315798			978-2-213-67716-3		Quand la justice crée l'insécurité	Bébin Xavier	impr. 2013		
-315805					Le Genre humain		1981-		
-315812			978-2-213-67797-2		Je me souviens	Perec Georges	impr. 2013		
-315819			Br.		Les Romanov	Carrère d'Encausse Hélène	impr. 2013		
-315826	FRBNF436902570000002		978-2-213-67207-6		L'âge des cénacles	Glinoer Anthony Laisney Vincent	impr. 2013		
-315833	FRBNF435733340000007		978-2-213-67197-0	9782213671970	Réinventer la France	Lévy Jacques Kahn Sylvain	DL 2013		
-315840			978-2-213-66320-3	9782213663203	L'archipel du goulag	Solženicyn Aleksandr Isaevič Johannet Geneviève	impr. 2013		
-315847			978-2-213-67253-3	9782213672533	Qui rapportera ces paroles	Delbo Charlotte	impr. 2013		
-315854		ark:/12148/cb435951034	978-2-213-67258-8	9782213672588	Regards sur Debussy	Chimènes Myriam Laederich Alexandra Boulez Pierre	DL 2013		
-315861			978-2-213-67849-8	9782213678498	Comment la musique est devenue romantique	Reibel Emmanuel	impr. 2013		
-315868			978-2-9542687-1-2		L'écume des jours	Vian Boris	DL 2013		
-316541			978-2-01-202994-1		Journal d'une princesse	Cabot Meg	DL 2012	1	
+NumNotice	FRBNF	ARK	ISBN	EAN	Titre	Auteur(s)	Date	Volume/Tome	Editeur	Type doc-Type notice
+315742	FRBNF438877170000008		978-2-917559-28-4		Avec nous, après nous	Peres Shimon Attali Jacques	DL 2013		Baker Street	am
+315749			978-2-213-67872-6	9782213678726	L'informatique du temps et des événements	Berry Gérard	DL 2013		Collège de France	am
+315756	FRBNF435361100000003		978-2-213-67203-8		Mon Paris, ma mémoire	Morin Edgar	DL 2013		Fayard	am
+315763			978-2-213-66672-3		Adieu à Berlin	Isherwood Christopher Savitzky Ludmila	impr. 2013		Fayard	am
+315770		ark:/12148/cb435580221	978-2-213-66853-6		Dictionnaire Ferré	Belleret Robert	impr. 2013		Fayard	am
+315777			978-2-213-67800-9		Défense républicaine et participation ministérielle, 1899-1902	Jaurès Jean Agulhon Maurice  Chanet Jean-François	impr. 2013			am
+315784			978-2-213-66285-5		Philosophie de l'écran	Charolles Valérie	impr. 2013			am
+315791	FRBNF435147370000003	ark:/12148/cb435147376	978-2-213-66893-2		Conversations Hitler-Mussolini	Milza Pierre	impr. 2013			am
+315798			978-2-213-67716-3		Quand la justice crée l'insécurité	Bébin Xavier	impr. 2013			am
+315805					Le Genre humain		1981-			am
+315812			978-2-213-67797-2		Je me souviens	Perec Georges	impr. 2013			am
+315819			Br.		Les Romanov	Carrère d'Encausse Hélène	impr. 2013			am
+315826	FRBNF436902570000002		978-2-213-67207-6		L'âge des cénacles	Glinoer Anthony Laisney Vincent	impr. 2013			am
+315833	FRBNF435733340000007		978-2-213-67197-0	9782213671970	Réinventer la France	Lévy Jacques Kahn Sylvain	DL 2013			am
+315840			978-2-213-66320-3	9782213663203	L'archipel du goulag	Solženicyn Aleksandr Isaevič Johannet Geneviève	impr. 2013			am
+315847			978-2-213-67253-3	9782213672533	Qui rapportera ces paroles	Delbo Charlotte	impr. 2013			am
+315854		ark:/12148/cb435951034	978-2-213-67258-8	9782213672588	Regards sur Debussy	Chimènes Myriam Laederich Alexandra Boulez Pierre	DL 2013			am
+315861			978-2-213-67849-8	9782213678498	Comment la musique est devenue romantique	Reibel Emmanuel	impr. 2013			am
+315868			978-2-9542687-1-2		L'écume des jours	Vian Boris	DL 2013			am
+316541			978-2-01-202994-1		Journal d'une princesse	Cabot Meg	DL 2012	1		am
