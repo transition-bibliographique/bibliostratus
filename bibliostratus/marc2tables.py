@@ -573,33 +573,33 @@ def bibrecord2metas(numNot, doc_record, record,
         liste_fichiers.append(doc_record)
     metas = []
     all_metadata = [numNot, frbnf, ark, isbn, ean, id_commercial_aud, issn,
-                title, authors, date, numeroTome, publisher, pubPlace]
+                    title, authors, date, numeroTome, publisher, pubPlace]
     if all_metas:
         metas = all_metadata
     elif (doc_record == "am" or doc_record == "lm"):
-        meta = [numNot, frbnf, ark, isbn, ean, title,
-                authors2keywords, date, numeroTome, publisher]
+        metas = [numNot, frbnf, ark, isbn, ean, title,
+                 authors2keywords, date, numeroTome, publisher]
     elif (doc_record == "em"):
-        meta = [numNot, frbnf, ark, isbn, ean, title,
-                authors2keywords, date, publisher, scale]
+        metas = [numNot, frbnf, ark, isbn, ean, title,
+                 authors2keywords, date, publisher, scale]
     elif (doc_record == "im" or doc_record == "jm" or doc_record == "gm"):
-        meta = [numNot, frbnf, ark, ean, id_commercial_aud,
-                title, authors2keywords, date, publisher]
+        metas = [numNot, frbnf, ark, ean, id_commercial_aud,
+                 title, authors2keywords, date, publisher]
     elif (doc_record == "cm"):
-        meta = [numNot, frbnf, ark, ean, id_commercial_aud,
-                global_title, part_title, authors2keywords, date, publisher]
+        metas = [numNot, frbnf, ark, ean, id_commercial_aud,
+                 global_title, part_title, authors2keywords, date, publisher]
     elif (len(doc_record) > 1 and doc_record[1] == "s"):
         if (keyTitle == ""):
-            meta = [numNot, frbnf, ark, issn, title,
-                    authors2keywords, date, pubPlace]
+            metas = [numNot, frbnf, ark, issn, title,
+                     authors2keywords, date, pubPlace]
         else:
-            meta = [numNot, frbnf, ark, issn, keyTitle,
-                    authors2keywords, date, pubPlace]
+            metas = [numNot, frbnf, ark, issn, keyTitle,
+                     authors2keywords, date, pubPlace]
     else:
-        meta = [numNot, frbnf, ark, isbn, ean, id_commercial_aud, issn,
+        metas = [numNot, frbnf, ark, isbn, ean, id_commercial_aud, issn,
                 title, authors, date, numeroTome, publisher, pubPlace]
     # meta.append(doc_record)
-    return meta
+    return metas
 
 
 def record2isniAUT(isni):
