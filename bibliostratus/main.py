@@ -423,10 +423,14 @@ def check_file_utf8(master, filename):
 
 
 def check_file_name(master, filename):
-    try:
-        open(filename, "r")
-    except FileNotFoundError:
-        popup_errors(master, "Le fichier " + filename + " n'existe pas")
+    if filename:
+        try:
+            open(filename, "r")
+        except FileNotFoundError:
+            popup_errors(master, "Le fichier " + filename + " n'existe pas")
+    else:
+        popup_errors(master, "Merci d'indiquer un nom de fichier en entrée")
+        raise
 
 
 def control_columns_number(master, row, headers_columns):

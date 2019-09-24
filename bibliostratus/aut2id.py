@@ -1067,6 +1067,11 @@ def launch(entry_filename, headers, input_data_type, preferences_alignement,
     Exécution du programme avec tous les paramètres, quand on clique
     sur le bouton OK
     """
+    if entry_filename == []:
+        main.popup_errors(form, "Merci d'indiquer un nom de fichier en entrée")
+        raise
+    else:
+        entry_filename = entry_filename[0]
     try:
         [entry_filename, headers,
          input_data_type, preferences_alignement,
@@ -1233,7 +1238,7 @@ def form_aut2id(master, access_to_network=True, last_version=[0, False]):
     forms.add_saut_de_ligne(frame_output_file, nb_sauts=7)
 
     b = tk.Button(zone_ok_help_cancel, text="Aligner\nles autorités",
-                  command=lambda: launch(entry_file_list[0], headers.get(),
+                  command=lambda: launch(entry_file_list, headers.get(),
                                          input_data_type.get(),
                                          preferences_alignement.get(), 
                                          isni_option.get(),

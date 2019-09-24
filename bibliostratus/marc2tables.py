@@ -957,14 +957,19 @@ def end_of_treatments(form, id_traitement):
 def launch(entry_filename, file_format, rec_format, output_ID, master=None, form=None):
     """Lancement du programme après validation
     du formulaire de conversion d 'un fichier MARC en tableaux"""
-    main.check_file_name(form, entry_filename)
+    if entry_filename == []:
+        main.popup_errors(form, "Merci d'indiquer un nom de fichier en entrée")
+        raise
+    else:
+        entry_filename = entry_filename[0]
     try:
         [entry_filename, file_format,
-        rec_format, output_ID] = [str(entry_filename), int(file_format),
-                                int(rec_format), str(output_ID)]
+         rec_format, output_ID] = [str(entry_filename), int(file_format),
+                                   int(rec_format), str(output_ID)]
     except ValueError as err:
         print("\n\nDonnées en entrée erronées\n")
         print(err)
+    main.check_file_name(form, entry_filename)
     # popup_en_cours = main.message_programme_en_cours(form)
 
     # Notices BIB : Type de document / type de notice
@@ -1156,10 +1161,10 @@ def formulaire_marc2tables(
     # Bouton de validation
 
     b = tk.Button(frame_valider, bg=couleur_bouton, fg="white", font="bold", text="OK",
-                  command=lambda: launch(entry_file_list[0],
+                  command=lambda: launch(entry_file_list,
                                          file_format.get(),
                                          rec_format.get(),
-                                         output_ID.get(),
+                                         outputID.value.get(),
                                          master, form),
                   borderwidth=5, padx=10, pady=10, width=10, height=4)
     b.pack()

@@ -126,10 +126,10 @@ def action_align():
     main.output_directory = [args.dir]
     if args.action == "bib2id":
         bib2id.launch(args.file, args.doctype, args.align_pref, args.sudoc_kw,
-                      args.files_nb, args.metas, args.id)
+                      args.files_nb, args.metas, args.prefix)
     elif args.action == "aut2id":
         aut2id.launch(args.file, args.headers, args.doctype, args.align_pref,
-                      args.isni, args.files_nb, args.metas, args.id)
+                      args.isni, args.files_nb, args.metas, args.prefix)
     
 
 
@@ -148,7 +148,7 @@ def action_marc2tables():
     args.recordtype = dic_input_recordtype[args.recordtype.lower()]
     main.output_directory = [args.dir]
     marc2tables.launch(args.file, args.filetype,
-                       args.recordtype, args.id)
+                       args.recordtype, args.prefix)
 
 
 def action_ark2records():
@@ -202,7 +202,7 @@ def action_ark2records():
                        args.headers, args.get_authors, args.get_subjects,
                        args.get_works, args.dir, args.output_format,
                        args.output_file, args.encoding, args.fields,
-                       args.id)
+                       args.prefix)
 
 
 def initialized_action(argumentParser):

@@ -380,6 +380,11 @@ def launch(filename, type_records_form,
            xml_encoding_option="utf-8",
            select_fields="",
            master=None, form=None):
+    if filename == []:
+        main.popup_errors(form, "Merci d'indiquer un nom de fichier en entrée")
+        raise
+    else:
+        filename = filename[0]
     try:
         [filename, type_records_form,
          correct_record_option,
@@ -433,6 +438,8 @@ def launch(filename, type_records_form,
             next(entry_file, None)
         j = 0
         for row in entry_file:
+            if j == 0:
+                check_nb_colonnes(row, parametres, master)
             extract1record(row, j, form, headers, parametres)
             j = j + 1
 
@@ -440,6 +447,20 @@ def launch(filename, type_records_form,
         if (AUTliees == 1):
             file_fin(aut_file, format_file)
     fin_traitements(form, outputID)
+
+
+def check_nb_colonnes(row, parametres, frame_master):
+    """
+    Vérifie s'il y a bien dans le fichier
+    le nombre de colonnes indiquées dans le formulaire
+    """
+    nbcol = len(row)
+    
+    if parametres["correct_record_option"] != nbcol:
+        alert = f"""Erreur dans les paramètres en entrée :
+Nombre de colonnes dans le fichier : {nbcol}
+Nombre de colonnes indiqué : {parametres["correct_record_option"]}"""
+        main.popup_errors(frame_master, alert)
 
 
 def errors_file(outputID):
@@ -606,7 +627,7 @@ def formulaire_ark2records(
         zone_ok_help_cancel,
         text="OK",
         command=lambda: launch(
-            entry_file_list[0],
+            entry_file_list,
             type_records.get(),
             correct_record_option.get(),
             headers.get(),

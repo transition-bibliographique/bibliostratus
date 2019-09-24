@@ -127,6 +127,29 @@ header_columns_init_partitions = [
 #    "Type doc - Type notice"
 ]
 
+header_columns_all = [
+    "NumNot",
+    "FRBNF",
+    "ARK",
+    "ISBN",
+    "EAN",
+    "Référence commerciale",
+    "ISSN",
+    "Titre",
+    "Auteur(s)",
+    "Date",
+    "Tome/Volume",
+    "Editeur",
+    "Lieu de publication"]
+
+headers_dict = {"TEX": header_columns_init_monimpr,
+                "VID": header_columns_init_cddvd,
+                "AUD": header_columns_init_cddvd,
+                "PER": header_columns_init_perimpr,
+                "CAR": header_columns_init_cartes,
+                "PAR": header_columns_init_partitions,
+                "all": header_columns_all}
+
 # Noms des fichiers en sortie
 
 
@@ -1925,21 +1948,24 @@ def ark2meta_simples(ark):
     dans une liste d'ARK
     """
     metas = []
+    doctypes = []
     for ark in ark.split(","):
-        record = id2record(ark)        
+        record = id2record(ark)
         if record is not None:
             record = funcs.XML2record(record, 1, True)
             if metas == []:
-                for el in record.metadata:
+                for el in record.metadata[3:]:
                     metas.append([])
             i = 0
-            for el in record.metadata:
+            for el in record.metadata[3:]:
                 metas[i].append(el)
-                i += 1 
+                i += 1
+            doctypes.append(record.doc_record)
     i = 0
     for liste_el in metas:
         metas[i] = "|".join(liste_el)
         i += 1
+    metas.append("|".join(doctypes))
     return metas
 
 
@@ -2300,17 +2326,10 @@ def file2row(form_bib2ark, entry_filename, liste_reports, parametres):
                       "Liste identifiants trouvés",
                       "Méthode d'alignement"]
     header_columns.extend(el for el in parametres["header_columns_init"][1:])
+    header_columns.append("Type doc / Type notice")
     if parametres["meta_bib"] == 1:
-        header_columns.extend(
-            [
-                "[BnF/Abes] Titre",
-                "[BnF/Abes] 1er auteur Prénom",
-                "[BnF/Abes] 1er auteur Nom",
-                "[BnF/Abes] Tous auteurs",
-                "[BnF/Abes] Date",
-                "[BnF/Abes] Type"
-            ]
-        )
+        headers_add_metas = [f"[BnF/Abes] {el}" for el in headers_dict["all"][3:]]
+        header_columns.extend(headers_add_metas)
     # Ajout des en-têtes de colonne dans les fichiers
     if parametres["file_nb"] == 1:
         row2file(header_columns, liste_reports)
@@ -2344,6 +2363,11 @@ def launch(entry_filename,
            ):
     # Préférences alignement : 1 = BnF d'abord, puis Sudoc. 2 : Sudoc d'abord,
     # puis BnF
+    if entry_filename == []:
+        main.popup_errors(form_bib2ark, "Merci d'indiquer un nom de fichier en entrée")
+        raise
+    else:
+        entry_filename = entry_filename[0]
     try:
         [entry_filename, type_doc_bib,
         preferences_alignement,
@@ -2701,7 +2725,7 @@ def form_bib2id(
         fg="white",
         font="Arial 10 bold",
         text="Aligner les\nnotices BIB",
-        command=lambda: launch(entry_file_list[0],
+        command=lambda: launch(entry_file_list,
                                type_doc_bib.get(),
                                preferences_alignement.get(),
                                kwsudoc_option.get(),
