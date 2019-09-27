@@ -1,3 +1,10 @@
+### version 1.28
+- possibilité de lancer Bibliostratus en ligne de commande en exécutant le fichier bibliostratus-cli.py
+- tous modules : vérification qu'il y a bien un fichier en entrée
+- ajout d'un fichier forms.py qui gère les libellés et variables des différents paramètres pour les modules
+- Module blanc (alignements BIB) :
+	- quand on récupère les métadonnées simples en sortie, celles-ci sont plus riches et systématiquement les mêmes (ISBN, EAN, N° référence commerciale musicale, ISSN, Titre, Auteur, Date, Editeur, Lieu de publication, N° de volume, type de notice/type de document)
+
 ### version 1.27
 18/03/2019
 - Menu principal : ajout du logo de Bibliostratus
