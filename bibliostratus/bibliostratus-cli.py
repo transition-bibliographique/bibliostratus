@@ -40,7 +40,8 @@ import ark2records
 dic_functions = {
     "align_bib": bib2id,
     "align_aut": aut2id,
-    "marc2tables": marc2tables
+    "marc2tables": marc2tables,
+    "ark2records": ark2records
 }
 
 dic_doctype = {"tex": 1,
@@ -137,8 +138,8 @@ def action_marc2tables():
     convert_marc2tables = argparse.ArgumentParser(description="Conversion de fichiers Marc en tableaux")
     convert_marc2tables = initialized_action(convert_marc2tables)
     convert_marc2tables.add_argument("--filetype", help="Type de fichier en entrée",
-                                     default="iso2708-utf8",
-                                     choices=["iso2708-utf8", "iso2709-8859-1",
+                                     default="iso2709-utf8",
+                                     choices=["iso2709-utf8", "iso2709-8859-1",
                                               "xml", "xml-utf8"])
     convert_marc2tables.add_argument("--recordtype", help="Type de notices", default="bib",
                                      choices=["bib", "aut", "bib2aut"])
