@@ -19,6 +19,10 @@
         "description": "Format de données en entrée dans le module bleu (marc2tables). Par défaut : 'unimarc'. Autre valeur autorisée : 'marc21'.",
         "value": "unimarc"
         },
+    "csv_pref" {
+        "description": "Pour les fichiers produits en format CSV, possibilité de choisir entre CSV (séparateur virgule) et TSV (séparateur Tabulation). Valeurs autorisées : csv, tsv. Par défaut : tsv.",
+        "value": "tsv"
+    },
     "stop_words": {
         "description": "Si renseigné, nom du fichier où se trouve une liste de mots vides, à ignorer pour l'alignement. Par exemple, si la liste contient le mot 'Ste', le titre 'Notice historique sur Marizy-Ste-Geneviève' cherchera en réalité 'Notice historique sur Marizy Geneviève'",
         "value": ""
