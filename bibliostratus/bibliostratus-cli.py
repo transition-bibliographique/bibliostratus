@@ -126,10 +126,10 @@ def action_align():
     args.metas = dic_checkbox[args.metas.lower()]
     main.output_directory = [args.dir]
     if args.action == "bib2id":
-        bib2id.launch(args.file, args.doctype, args.align_pref, args.sudoc_kw,
+        bib2id.launch([args.file], args.doctype, args.align_pref, args.sudoc_kw,
                       args.files_nb, args.metas, args.prefix)
     elif args.action == "aut2id":
-        aut2id.launch(args.file, args.headers, args.doctype, args.align_pref,
+        aut2id.launch([args.file], args.headers, args.doctype, args.align_pref,
                       args.isni, args.files_nb, args.metas, args.prefix)
     
 
@@ -148,7 +148,7 @@ def action_marc2tables():
     args.filetype = dic_input_filetype[args.filetype.lower()]
     args.recordtype = dic_input_recordtype[args.recordtype.lower()]
     main.output_directory = [args.dir]
-    marc2tables.launch(args.file, args.filetype,
+    marc2tables.launch([args.file], args.filetype,
                        args.recordtype, args.prefix)
 
 
@@ -199,7 +199,7 @@ def action_ark2records():
     args.output_file = dic_output_file[args.output_file]
     args.encoding = dic_output_encoding[args.encoding]
     main.output_directory = [args.dir]
-    ark2records.launch(args.file, args.recordtype, args.colnum,
+    ark2records.launch([args.file], args.recordtype, args.colnum,
                        args.headers, args.get_authors, args.get_subjects,
                        args.get_works, args.dir, args.output_format,
                        args.output_file, args.encoding, args.fields,

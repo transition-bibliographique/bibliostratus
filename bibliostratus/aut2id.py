@@ -202,7 +202,8 @@ def isni2id(input_record, parametres, origine="isni"):
     if (Liste_ids):
         if (origine == "isni"):
             input_record.alignment_method.append("ISNI")
-    Liste_ids = ",".join([el for el in Liste_ids if el])
+    if type(Liste_ids) == list:
+        Liste_ids = ",".join([el for el in Liste_ids if el])
     return Liste_ids
 
 
@@ -284,8 +285,8 @@ def accesspoint2isniorg(input_record, parametres):
                 isnis[i] = ppn
                 input_record.alignment_method.append("ISNI > PPN")
             i += 1
-
-    isnis = ",".join(isnis)
+    if type(isnis == list):
+        isnis = ",".join(isnis)
     return isnis
 
 
