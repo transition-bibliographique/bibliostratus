@@ -23,6 +23,10 @@
         "description": "Lors de la production de formats Colonnes en sortie, possibilité de choisir le séparateur : CSV (virgule) ou TSV (tabulations). Valeurs autorisées : csv, tsv. Valeur par défaut : tsv",
         "value": "tsv"
         },
+    "csv_pref" {
+        "description": "Pour les fichiers produits en format CSV, possibilité de choisir entre CSV (séparateur virgule) et TSV (séparateur Tabulation). Valeurs autorisées : csv, tsv. Par défaut : tsv",
+        "value": "tsv"
+    },
     "stop_words": {
         "description": "Si renseigné, nom du fichier où se trouve une liste de mots vides, à ignorer pour l'alignement. Par exemple, si la liste contient le mot 'Ste', le titre 'Notice historique sur Marizy-Ste-Geneviève' cherchera en réalité 'Notice historique sur Marizy Geneviève'",
         "value": ""
