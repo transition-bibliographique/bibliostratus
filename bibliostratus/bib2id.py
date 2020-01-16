@@ -764,6 +764,7 @@ def isbn_anywhere2sru(input_record, NumNot, isbn, titre, auteur, date):
     pour des réimpressions achetées par un département de la Direction des
     collections de la BnF)
     """
+    listeARK = []
     results = sru.SRU_result(f'bib.anywhere all "{isbn}"')
     for ark_current in results.dict_records:
         ark = comparaisonTitres(
