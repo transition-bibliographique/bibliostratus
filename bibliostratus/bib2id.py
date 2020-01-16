@@ -729,6 +729,7 @@ def isbnauteur2sru(input_record, NumNot, isbn, titre, auteur, date):
     on recherche ISBN + le mot le plus long dans la zone "auteur",
     et pas de contrôle sur Titre ensuite
     """
+    listeARK = []
     motlongauteur = funcs.nettoyageAuteur(auteur, True)
     urlSRU = funcs.url_requete_sru(
         'bib.isbn all "' + isbn + '" and bib.author all "'
