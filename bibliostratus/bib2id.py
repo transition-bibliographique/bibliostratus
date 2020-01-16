@@ -1008,7 +1008,6 @@ def issn2sru(input_record, NumNot, issn):
 
 def check_issn_in_011a(record, issn):
     f011a = sru.record2fieldvalue(record, "011$a")
-    print(f011a)
     if (issn[0:4] in f011a):
         return True
     else:
