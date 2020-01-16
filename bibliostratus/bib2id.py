@@ -729,6 +729,7 @@ def isbnauteur2sru(input_record, NumNot, isbn, titre, auteur, date):
     on recherche ISBN + le mot le plus long dans la zone "auteur",
     et pas de contrôle sur Titre ensuite
     """
+    listeARK = []
     motlongauteur = funcs.nettoyageAuteur(auteur, True)
     urlSRU = funcs.url_requete_sru(
         'bib.isbn all "' + isbn + '" and bib.author all "'
@@ -1604,7 +1605,7 @@ def tad2ppn(input_record, parametres):
 &ACT1=*&IKT1=4&TRM1=" + urllib.parse.quote(input_record.titre.recherche) + "\
 &ACT2=*&IKT2=1016&TRM2=&ACT3=*&IKT3=1016&TRM3=&SRT=YOP" + "\
 &ADI_TAA=&ADI_LND=&ADI_JVU=" + urllib.parse.quote(input_record.date_nett) + "\
-& ADI_MAT = " + typeRecordDic[input_record.type]
+&ADI_MAT=" + typeRecordDic[input_record.type]
     url = url.replace("ADI_MAT=B", "ADI_MAT=B&ADI_MAT=Y")
     url = url.replace("ADI_MAT=N", "ADI_MAT=N&ADI_MAT=G")
     listePPN = urlsudoc2ppn(url)
