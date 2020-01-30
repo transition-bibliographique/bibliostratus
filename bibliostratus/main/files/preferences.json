@@ -26,4 +26,8 @@
         "URL": "",
         "login": "",
         "mot de passe": ""
+        },
+    "worldcat_api_key": {
+        "description": "API Key OCLC pour interroger les web services Worldcat (recherche sur ISBN)",
+        "value": ""
         }}
