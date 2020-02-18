@@ -1,5 +1,10 @@
 # coding: utf-8
 
+version = 1.29
+lastupdate = "18/02/2020"
+programID = "bibliostratus"
+
+
 import codecs
 import os
 import json
@@ -23,6 +28,3 @@ import mapping_number_letters
 import sru
 import udecode
 
-version = 1.28
-lastupdate = "16/01/2019"
-programID = "bibliostratus"
