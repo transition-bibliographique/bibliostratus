@@ -635,6 +635,11 @@ def testURLetreeParse(url, display=True, param_timeout=None):
     resultat = ""
     try:
         resultat = etree.parse(request.urlopen(url, timeout=param_timeout))
+    except UnicodeEncodeError as err:
+        test = False
+        if (display):
+            print(url)
+            print(err, param_timeout, "UnicodeEncodeError")
     except socket.timeout as err:
         test = False
         if (display):
@@ -2779,6 +2784,13 @@ roman_numbers = [
     "CCXCIX",
     "CCC"
 ]
+
+
+def cprint(thing):
+    # Utilisation de la fonction cprint() pour faire des contrôles
+    # lors du débugage du code, et pouvoir facilement retrouver
+    # (et mettre en commentaire ou supprimer) ces lignes
+    print(thing)
 
 
 if __name__ == '__main__':

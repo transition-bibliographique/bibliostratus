@@ -659,8 +659,7 @@ def autrecord2metas(numNot, doc_record, record,
     que le format de préférence est à chercher dans
     le fichier preferences.json
     Sinon, Unimarc """
-    print(pref_format_file)
-    print(main.prefs["marc2tables_input_format"]["value"])
+    
     if (pref_format_file
        and "marc2tables_input_format" in main.prefs
        and main.prefs["marc2tables_input_format"]["value"] == "marc21"):
