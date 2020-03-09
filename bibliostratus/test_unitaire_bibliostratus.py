@@ -386,5 +386,11 @@ def test_convert_iso2tables():
         except FileNotFoundError:
             pass
 
+def test_prefs_default():
+    prefs = {}
+    with open(prefs_file_name, encoding="utf-8") as prefs_file:
+        prefs = json.load(prefs_file)
+
+
 if __name__ == "__main__":
   test_convert_iso2tables()
