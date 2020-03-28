@@ -1045,7 +1045,8 @@ def issn2sudoc(input_record, NumNot, issn_init, issn_nett,
                                                             issn_nett,
                                                             titre,
                                                             auteur,
-                                                            date
+                                                            date,
+                                                            input_record.pubPlace
                                                         ],
                                                         parametres["type_doc_bib"]
                                                         )
@@ -2295,7 +2296,7 @@ def item_alignement(input_record, parametres):
             and "kwsudoc_option" in parametres
             and parametres["kwsudoc_option"]==1):
             bibid = item2ppn_by_keywords(input_record, parametres)
-    if parametres["preferences_alignement"] == 3:
+    elif parametres["preferences_alignement"] == 3:
         bibid = item2oclc_by_id(input_record, parametres)        
     else:
         bibid = item2ppn_by_id(input_record, parametres)

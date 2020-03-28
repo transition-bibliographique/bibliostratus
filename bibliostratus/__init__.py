@@ -1,7 +1,7 @@
 # coding: utf-8
 
 version = 1.29
-lastupdate = "18/02/2020"
+lastupdate = "28/03/2020"
 programID = "bibliostratus"
 
 

@@ -10,6 +10,7 @@ A lancer avec pytest
 from collections import defaultdict
 import os
 import csv
+import json
 
 import funcs
 import main
@@ -24,6 +25,10 @@ import ark2records
 # Tests des fonctions de nettoyage de chaînes de caractères
 # =============================================================================
 
+try:
+    os.remove("test.txt")
+except FileNotFoundError:
+    pass
 
 def test_nettoyage():
     text = "Ça, c'est : l'été-du-siècle$"
@@ -183,14 +188,12 @@ def test_alignement_bib():
                                )},
                    "PER1": {"input_record": funcs.Bib_record(
                                 ["616", "", "", "2267-8417", 
-                                "Fisheye le magazine lifestyle de la photographie", "", 
-                                "2013-", "Paris"],
+                                "Fisheye", "", "2013-", "Paris"],
                                 4
                                )},
                    "PER2": {"input_record": funcs.Bib_record(
                                 ["629", "FRBNF391212190000007", 
-                                 "", "", "Arts magazine", "", 
-                                 "2005-2016 2006-2016", ""],
+                                 "", "", "Arts magazine", "", "2005-2016", ""],
                                 4
                                )}
                   }
@@ -205,10 +208,12 @@ def test_alignement_bib():
                   "meta_bnf": 0,
                   "stats": defaultdict(int)}
     for record in bib_records:
-      bib_records[record]["alignment_resultBnF"] = bib2id.item_alignement(bib_records[record]["input_record"], param_alignBnF)
-      bib_records[record]["alignment_resultSudoc"] = bib2id.item_alignement(bib_records[record]["input_record"], param_alignSudoc)
-    
-    assert bib_records["TEX1"]["input_record"].alignment_method == ['ISBN + contrôle Titre 200$a', 'isbn2ppn + contrôle Titre 200$a']
+        param_alignBnF["type_doc_bib"] = bib_records[record]["input_record"].option_record
+        param_alignSudoc["type_doc_bib"] = bib_records[record]["input_record"].option_record
+        bib_records[record]["alignment_resultBnF"] = bib2id.item_alignement(bib_records[record]["input_record"], 
+                                                                            param_alignBnF)
+        bib_records[record]["alignment_resultSudoc"] = bib2id.item_alignement(bib_records[record]["input_record"], 
+                                                                             param_alignSudoc)
     assert bib_records["TEX1"]["alignment_resultBnF"].alignment_method_str == "ISBN + contrôle Titre 200$a"
     assert bib_records["TEX1"]["alignment_resultBnF"].ids_str == "ark:/12148/cb43536110d"
     assert bib_records["TEX1"]["alignment_resultSudoc"].ids_str == "PPN168081768"
@@ -220,6 +225,7 @@ def test_alignement_bib():
     assert bib_records["PER2"]["alignment_resultBnF"].ids_str == "ark:/12148/cb39121219d"
     assert bib_records["PER2"]["alignment_resultBnF"].alignment_method_str == "Numéro de notice + contrôle Titre 200$a"
     assert bib_records["PER2"]["alignment_resultSudoc"].ids_str == "ark:/12148/cb39121219d"
+
 
 
 def test_alignement_aut():
@@ -389,7 +395,7 @@ def test_convert_iso2tables():
 
 def test_prefs_default():
     prefs = {}
-    with open(prefs_file_name, encoding="utf-8") as prefs_file:
+    with open(main.prefs_file_name, encoding="utf-8") as prefs_file:
         prefs = json.load(prefs_file)
 
 

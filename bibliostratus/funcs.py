@@ -698,6 +698,11 @@ def testURLetreeParse(url, display=True, param_timeout=None):
             print(url)
             print(err)
             url_access_pbs.append([url, "urllib.error.HTTPError"])
+    except socket.timeout as err:
+        test = False
+        if display:
+            print(err)
+        url_access_pbs.append([url, "timeout > 5 secondes"])
     return (test, resultat)
 
 
@@ -920,6 +925,7 @@ class Bib_record:
 
     def __init__(self, input_row, option_record):  # Notre méthode constructeur
         self.input_row = input_row
+        self.option_record = option_record
         self.NumNot = input_row[0]
         self.frbnf = FRBNF(input_row[1])
         self.ppn = PPN(input_row[1])

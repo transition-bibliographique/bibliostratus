@@ -36,7 +36,6 @@ import ark2records
 
 
 
-
 dic_functions = {
     "align_bib": bib2id,
     "align_aut": aut2id,
@@ -102,6 +101,8 @@ dic_checkbox = {"1": 1,
                 "non": 0,
                 "no": 0,
                 "False": 0}
+
+
 
 def action_align():
     align_bib = argparse.ArgumentParser(description="Alignement de notices")
