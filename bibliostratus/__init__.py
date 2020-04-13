@@ -1,7 +1,7 @@
 # coding: utf-8
 
 version = 1.29
-lastupdate = "28/03/2020"
+lastupdate = "12/04/2020"
 programID = "bibliostratus"
 
 
@@ -9,10 +9,12 @@ import codecs
 import os
 import json
 import re
+import smc.bibencodings
 import tkinter as tk
 import webbrowser
 from tkinter import filedialog
 from urllib import error, request
+import pymarc
 
 from unidecode import unidecode
 
