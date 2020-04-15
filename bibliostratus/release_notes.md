@@ -1,5 +1,14 @@
 ### version 1.29
 - Création d'un fichier __init__.py (conformité aux pratiques de programmes Python)
+- Lancement de Bibliostratus en ligne de commande (fichier cli.py)
+- Ajout d'un paramètre tsv_csv dans les préférences : possibilité d'avoir des fichiers CSV (avec autre séparateur que la tabulation)
+- Correction et compléments sur les tests automatiques
+- Début d'intégration de code pour pouvoir faire des alignements sur Worldcat
+- Corrections de bugs 
+  - sur les requêtes Titre-auteur-date dans le Sudoc
+  - sur le mapping marc > tableaux
+  - sur le fichier preferences.default
+ 
 
 ### version 1.28
 - possibilité de lancer Bibliostratus en ligne de commande en exécutant le fichier bibliostratus-cli.py
