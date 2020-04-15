@@ -1347,7 +1347,7 @@ def int2strings(number):
 
 def clean_string(string,complet=False):
     """Nettoyage de tous les signes de ponctuation (sauf le point)"""
-    ponctuation = [".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\","\"","~","{","(","[","`","\\","_","@",")","]","}","=","+","*","\/","<",">",")","}","-"]
+    ponctuation = [".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\","\"","~","{","(","[","`","_","@",")","]","}","=","+","*","/","<",">",")","}","-"]
     if string is None:
         string = ""
     if (complet):

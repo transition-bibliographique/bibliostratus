@@ -635,6 +635,11 @@ def testURLetreeParse(url, display=True, param_timeout=None):
     resultat = ""
     try:
         resultat = etree.parse(request.urlopen(url, timeout=param_timeout))
+    except UnicodeEncodeError as err:
+        test = False
+        if (display):
+            print(url)
+            print(err, param_timeout, "UnicodeEncodeError")
     except socket.timeout as err:
         test = False
         if (display):
@@ -693,6 +698,11 @@ def testURLetreeParse(url, display=True, param_timeout=None):
             print(url)
             print(err)
             url_access_pbs.append([url, "urllib.error.HTTPError"])
+    except socket.timeout as err:
+        test = False
+        if display:
+            print(err)
+        url_access_pbs.append([url, "timeout > 5 secondes"])
     return (test, resultat)
 
 
@@ -915,6 +925,7 @@ class Bib_record:
 
     def __init__(self, input_row, option_record):  # Notre méthode constructeur
         self.input_row = input_row
+        self.option_record = option_record
         self.NumNot = input_row[0]
         self.frbnf = FRBNF(input_row[1])
         self.ppn = PPN(input_row[1])
@@ -2779,6 +2790,13 @@ roman_numbers = [
     "CCXCIX",
     "CCC"
 ]
+
+
+def cprint(thing):
+    # Utilisation de la fonction cprint() pour faire des contrôles
+    # lors du débugage du code, et pouvoir facilement retrouver
+    # (et mettre en commentaire ou supprimer) ces lignes
+    print(thing)
 
 
 if __name__ == '__main__':

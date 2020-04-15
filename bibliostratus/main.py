@@ -20,6 +20,8 @@ from urllib import error, request
 
 from unidecode import unidecode
 
+import __init__ as init
+
 import ark2records
 import funcs
 import marc2tables
@@ -28,9 +30,9 @@ import bib2id
 import forms
 import edit_preferences as settings
 
-version = 1.28
-lastupdate = "27/09/2019"
-programID = "bibliostratus"
+version = init.version
+lastupdate = init.lastupdate
+programID = init.programID
 
 # Ajout du fichier preferences.json
 

@@ -1045,7 +1045,8 @@ def issn2sudoc(input_record, NumNot, issn_init, issn_nett,
                                                             issn_nett,
                                                             titre,
                                                             auteur,
-                                                            date
+                                                            date,
+                                                            input_record.pubPlace
                                                         ],
                                                         parametres["type_doc_bib"]
                                                         )
@@ -1993,6 +1994,51 @@ def extract_cols_from_row(row, liste):
 # ==============================================================================
 
 
+def item2oclc_by_id(input_record, parametres):
+    oclcn = ""
+    wskey = main.prefs["worldcat_api_key"]["value"]
+    url = "https://www.worldcat.org/isbn/"
+    if wskey and input_record.isbn.propre:
+        oclcn = item2oclc_by_isbn(input_record, parametres, url_oclc, wskey)
+    if oclcn:
+        input_record.alignment_method.append("ISBN > OCLCN")
+    elif wskey and input_record.isbn.converti:
+        temp_record = input_record
+        temp_record.isbn.propre = input_record.isbn.converti
+        oclcn = item2oclc_by_isbn(temp_record, parametres, url_oclc, wskey)
+    if oclcn:
+        input_record.alignment_method.append("ISBN converti > OCLCN")
+    # AJouter l'EAN
+    elif wskey and input_record.ean.propre:
+        oclcn = item2oclc_by_ean(input_record, parametres, url_oclc, wskey)
+    if oclcn:
+        input_record.alignment_method.append("EAN > OCLCN")
+    return oclcn
+
+def item2oclc_by_isbn(input_record, parametres, url_oclc, wskey):
+    oclcn = ""
+    url = f"{url}/isbn/{input_record.isbn.propre}?wskey={wskey}"
+    test, xml_record = funcs.testURLetreeParse(url)
+    if test:
+        oclcn = get_oclcn(xml_record)
+    return oclcn
+
+def item2oclc_by_ean(input_record, parametres, url_oclc, wskey):
+    oclcn = ""
+    url = f"{url}/ean/{input_record.ean.propre}?wskey={wskey}"
+    test, xml_record = funcs.testURLetreeParse(url)
+    if test:
+        oclcn = get_oclcn(xml_record)
+    return oclcn
+
+
+def get_oclcn(xml_record):
+    oclcn = ""
+    oclcn = sru.record2fieldvalue("001")
+    if oclcn:
+        oclcn = "OCLCN" + oclcn
+    return oclcn
+
 def item2ark_by_id(input_record, parametres):
     """Tronc commun de fonctions d'alignement, applicables pour tous les types de notices
     Par identifiant international : EAN, ISBN, N° commercial, ISSN"""
@@ -2235,32 +2281,35 @@ def item_alignement(input_record, parametres):
     En entrée, une Bib_record (générée à partir d'une ligne du fichier
     en sortie, la liste des métadonnées attendues par le rapport)
     """
-    ark = ""
+    bibid = ""
     # Si option 1 : on aligne sur les ID en commençant par la BnF, puis par le Sudoc
     # Si aucun résultat -> recherche Titre-Auteur-Date à la BnF
     # Si option 2 : on commence par le Sudoc, puis par la BnF
+    # Si option 3 : on aligne avec WorldCat (uniquement)
     if parametres["preferences_alignement"] == 1:
-        ark = item2ark_by_id(input_record, parametres)
-        if ark == "":
-            ark = item2ark_by_keywords(input_record, parametres)
-        if ark == "":
-            ark = item2ppn_by_id(input_record, parametres)
-        if (ark == "" 
+        bibid = item2ark_by_id(input_record, parametres)
+        if bibid == "":
+            bibid = item2ark_by_keywords(input_record, parametres)
+        if bibid == "":
+            bibid = item2ppn_by_id(input_record, parametres)
+        if (bibid == "" 
             and "kwsudoc_option" in parametres
             and parametres["kwsudoc_option"]==1):
-            ark = item2ppn_by_keywords(input_record, parametres)
+            bibid = item2ppn_by_keywords(input_record, parametres)
+    elif parametres["preferences_alignement"] == 3:
+        bibid = item2oclc_by_id(input_record, parametres)        
     else:
-        ark = item2ppn_by_id(input_record, parametres)
-        if (ark == "" 
-            and "kwsudoc_option" in parametres
-            and parametres["kwsudoc_option"]==1):
-            ark = item2ppn_by_keywords(input_record, parametres)
-        if ark == "":
-            ark = item2ark_by_id(input_record, parametres)
-        if ark == "":
-            ark = item2ark_by_keywords(input_record, parametres)
-    alignment_result = funcs.Alignment_result(input_record, ark, parametres)
-    if ark == "Pb FRBNF":
+        bibid = item2ppn_by_id(input_record, parametres)
+        if (bibid == "" 
+           and "kwsudoc_option" in parametres
+           and parametres["kwsudoc_option"]==1):
+            bibid = item2ppn_by_keywords(input_record, parametres)
+        if bibid == "":
+            bibid = item2ark_by_id(input_record, parametres)
+        if bibid == "":
+            bibid = item2ark_by_keywords(input_record, parametres)
+    alignment_result = funcs.Alignment_result(input_record, bibid, parametres)
+    if bibid == "Pb FRBNF":
         parametres["stats"]["Pb FRBNF"] += 1
     else:
         parametres["stats"][alignment_result.nb_ids] += 1

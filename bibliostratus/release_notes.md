@@ -1,3 +1,6 @@
+### version 1.29
+- Création d'un fichier __init__.py (conformité aux pratiques de programmes Python)
+
 ### version 1.28
 - possibilité de lancer Bibliostratus en ligne de commande en exécutant le fichier bibliostratus-cli.py
 - tous modules : vérification qu'il y a bien un fichier en entrée

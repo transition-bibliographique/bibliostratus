@@ -15,6 +15,7 @@ import tkinter as tk
 import webbrowser
 import xml
 from lxml import etree
+
 from collections import defaultdict
 import json
 
@@ -378,7 +379,8 @@ def test_encoding_file(master, entry_filename, encoding, file_format):
     try:
         os.remove("temp_file_sans_bom.txt")
     except FileNotFoundError:
-        print("Fichier temporaire UTF8-sans BOM inutile")
+        pass
+        # print("Fichier temporaire UTF8-sans BOM inutile")
     return (test, input_file)
 
 
@@ -659,8 +661,7 @@ def autrecord2metas(numNot, doc_record, record,
     que le format de préférence est à chercher dans
     le fichier preferences.json
     Sinon, Unimarc """
-    print(pref_format_file)
-    print(main.prefs["marc2tables_input_format"]["value"])
+    
     if (pref_format_file
        and "marc2tables_input_format" in main.prefs
        and main.prefs["marc2tables_input_format"]["value"] == "marc21"):
@@ -999,7 +1000,7 @@ def launch(entry_filename, file_format, rec_format, output_ID, master=None, form
             dcrec_libelles = "-".join([doct_libelle, recordt_libelle])
             doc_record_type[dcrec] = dcrec_libelles
     print("Fichier en entrée : ", entry_filename)
-    if (file_format == 1 or file_format == 3):
+    if (file_format == 1 or file_format == 2):
         iso2tables(master, entry_filename, file_format, rec_format, output_ID)
     else:
         xml2tables(master, entry_filename, rec_format, output_ID)
