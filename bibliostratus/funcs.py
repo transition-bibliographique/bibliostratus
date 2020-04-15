@@ -20,6 +20,7 @@ import json
 import random
 import datetime
 import time
+import itertools as IT
 
 
 from lxml import etree
@@ -1136,6 +1137,7 @@ class Alignment_result:
     les données en entrée (dont le numéro de notice)
     """
     def __init__(self, input_record, ark, parametres):  # Notre méthode constructeur
+        self.input_record = input_record
         self.NumNot = input_record.NumNot
         self.ids_str = ark
         self.ids_list = self.ids_str.split(",")
@@ -2797,6 +2799,22 @@ def cprint(thing):
     # lors du débugage du code, et pouvoir facilement retrouver
     # (et mettre en commentaire ou supprimer) ces lignes
     print(thing)
+
+
+def chunks(lst, n):
+    """
+    Permet de découper les requêtes dans le SRU par 10.000 (donc de paralléliser 
+    10 requêtes"""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
+
+def chunks_iter(iterable, n):
+    """
+    Récupère le contenu d'un iterator par groupes de n éléments
+    """
+    iterable = iter(iterable)
+    return iter(lambda: list(IT.islice(iterable, n)), [])
 
 
 if __name__ == '__main__':

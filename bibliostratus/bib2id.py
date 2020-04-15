@@ -26,6 +26,9 @@ from lxml.html import parse
 from urllib import request
 import json
 
+from joblib import Parallel, delayed
+import multiprocessing
+
 import funcs
 import main
 import aut2id_idref
@@ -39,6 +42,7 @@ if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
    getattr(ssl, '_create_unverified_context', None)):
     ssl._create_default_https_context = ssl._create_unverified_context
 
+NUM_PARALLEL = 10    # Nombre de notices à aligner simultanément
 
 url_access_pbs = []
 
@@ -2316,15 +2320,9 @@ def item_alignement(input_record, parametres):
     return alignment_result
 
 
-def item2id(row, n, form_bib2ark, parametres, liste_reports):
+def item2id(row, n, parametres):
     """Pour chaque ligne : constitution d'une notice et règles d'alignement
     propres à ce type de notice"""
-    if n == 0:
-        assert main.control_columns_number(
-            form_bib2ark, row, parametres["header_columns_init"]
-        )
-    if n % 100 == 0:
-        main.check_access2apis(n, dict_check_apis)
     # print(row)
     input_record = funcs.Bib_record(row, parametres["type_doc_bib"])
     alignment_result = item_alignement(input_record, parametres)
@@ -2351,8 +2349,8 @@ def item2id(row, n, form_bib2ark, parametres, liste_reports):
         alignment_result = item_alignement(input_record, parametres)
         if alignment_result.nb_ids:
             alignment_result.liste_metadonnees[3] += " - Sans alignement titre de partie"
-    alignment_result2output(alignment_result, input_record,
-                            parametres, liste_reports, n)
+    # alignment_result2output(alignment_result, input_record,
+    #                         parametres, liste_reports, n)
     return alignment_result
 
 
@@ -2385,7 +2383,7 @@ def file2row(form_bib2ark, entry_filename, liste_reports, parametres):
         row2file(header_columns, liste_reports)
     elif parametres["file_nb"] == 2:
         row2files(header_columns, liste_reports)
-    n = 0
+    n = 1
     with open(entry_filename, newline="\n", encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter="\t")
         try:
@@ -2397,9 +2395,18 @@ def file2row(form_bib2ark, entry_filename, liste_reports, parametres):
                 "Comment modifier l'encodage du fichier",
                 "https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e",  # noqa
             )
-        for row in entry_file:
-            item2id(row, n, form_bib2ark, parametres, liste_reports)
-            n += 1
+        for rows in funcs.chunks_iter(entry_file, 10):
+            if (n-1) == 0:
+                assert main.control_columns_number(
+                        form_bib2ark, rows[0], parametres["header_columns_init"]
+                        )
+            if (n-1) % 100 == 0:
+                main.check_access2apis(n, dict_check_apis)
+            alignment_results = Parallel(n_jobs=NUM_PARALLEL)(delayed(item2id)(row, n, parametres) for row in rows)
+            for alignment_result in alignment_results:
+                alignment_result2output(alignment_result, alignment_result.input_record,
+                                        parametres, liste_reports, n)
+                n += 1
 
 
 def launch(entry_filename,
