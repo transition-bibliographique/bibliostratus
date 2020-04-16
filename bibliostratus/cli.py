@@ -202,9 +202,8 @@ def action_ark2records():
     main.output_directory = [args.dir]
     ark2records.launch([args.file], args.recordtype, args.colnum,
                        args.headers, args.get_authors, args.get_subjects,
-                       args.get_works, args.dir, args.output_format,
-                       args.output_file, args.encoding, args.fields,
-                       args.prefix)
+                       args.get_works, args.prefix, args.output_format,
+                       args.output_file, args.encoding, args.fields)
 
 
 def initialized_action(argumentParser):

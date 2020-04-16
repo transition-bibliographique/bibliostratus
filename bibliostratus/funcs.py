@@ -1180,6 +1180,7 @@ class Id4record:
         try:
             self.NumNot = row[0]
             self.aligned_id = Aligned_id(row[-1])
+            self.dict_rec = {"record": None}
         except IndexError:
             self.NumNot = ""
             self.aligned_id = ""

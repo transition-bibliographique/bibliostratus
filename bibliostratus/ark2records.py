@@ -17,6 +17,8 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import urllib.parse
 from copy import deepcopy
+from joblib import Parallel, delayed
+import multiprocessing
 
 import pymarc as mc
 from lxml import etree
@@ -27,6 +29,9 @@ import main
 import bib2id
 import forms
 import sru
+
+
+NUM_PARALLEL = 10    # Nombre de notices à exporter simultanément
 
 
 # Permet d'écrire dans une liste accessible au niveau général depuis le
@@ -181,7 +186,7 @@ def extract_nna_from_bib_record(record, field, source, parametres):
     return liste_nna
 
 
-def bib2aut(identifier, XMLrecord, parametres):
+def bib2aut(identifier, XMLrecord, parametres, multiprocess):
     """Si une des option "Récupérer les notices d'autorité liées" est cochée
     récupération des identifiants de ces AUT pour les récupérer"""
     source = "bnf"
@@ -189,7 +194,9 @@ def bib2aut(identifier, XMLrecord, parametres):
         source = "sudoc"
     liste_nna = []
     listefields = []
+    linked_aut_record = []
     format_marc = parametres["format_BIB"].split("x")[0]
+    linked_aut_records = []
     if (parametres["AUTlieesAUT"] == 1):
         listefields.extend(listefieldsLiensAUT[format_marc])
     if (parametres["AUTlieesSUB"] == 1):
@@ -210,11 +217,17 @@ def bib2aut(identifier, XMLrecord, parametres):
                 ".//srw:recordData/mxc:record", namespaces=main.ns
             )[0]
             linked_identifier = funcs.Id4record([record.find("//srw:recordIdentifier", namespaces=main.ns).text])
-            record2file(linked_identifier, XMLrec, parametres["aut_file"],
-                        parametres["format_file"], parametres)
+            # record2file(linked_identifier, XMLrec, parametres["aut_file"],
+            #             parametres["format_file"], parametres)
+            linked_aut_record.append([linked_identifier, XMLrec])
         elif (test and source == "idref" and record.find("leader") is not None):
-                record2file(f"PPN{nna}", record, parametres["aut_file"],
-                            parametres["format_file"], parametres)
+                # record2file(f"PPN{nna}", record, parametres["aut_file"],
+                #             parametres["format_file"], parametres)
+            linked_aut_record.append([f"PPN{nna}", record])
+        if multiprocess:
+            for el in linked_aut_record:
+                el[1] = etree.tostring(el[1])
+        return linked_aut_record
 
 
 def file_create(record_type, parametres):
@@ -261,7 +274,7 @@ def XMLrec2isorecord(XMLrec):
     return filename_temp
 
 
-def record2file(identifier, XMLrec, file, format_file, parametres):
+def record2file(identifier, XMLrec, file, format_file, parametres, dict_files):
     """
     Conversion de la notice XML trouvée en ligne 
     -> incrémentation dans le fichier en sortie
@@ -275,7 +288,7 @@ def record2file(identifier, XMLrec, file, format_file, parametres):
         for field in parametres["select_fields"].split(";"):
             value = sru.record2fieldvalue(XMLrec, field)
             line.append(value)
-        funcs.line2report(line, parametres["bib_file"], display=False)
+        funcs.line2report(line, dict_files["bib_file"], display=False)
     # Si sortie en iso2709
     elif (format_file == 1):
         XMLrec_str = XMLrecord2string(identifier, XMLrec, parametres)
@@ -308,10 +321,11 @@ def page2nbresults(page, identifier):
     return nbresults
 
 
-def extract1record(row, j, form, headers, parametres):
+def extract1record(row, parametres, multiprocess=False):
     identifier = funcs.Id4record(row, parametres)
+    xml_record = None
+    linked_aut_record = None
     if (len(identifier.aligned_id.clean) > 1 and identifier.aligned_id.clean not in parametres["listeARK_BIB"]):
-        print(str(j) + ". " + identifier.aligned_id.clean)
         parametres["listeARK_BIB"].append(identifier.aligned_id.clean)
         url_record = ark2url(identifier, parametres)
         if url_record:
@@ -323,22 +337,24 @@ def extract1record(row, j, form, headers, parametres):
                     for XMLrec in page.xpath(
                             "//srw:record/srw:recordData/mxc:record",
                             namespaces=main.ns):
-                        record2file(identifier, XMLrec,
+                        xml_record = XMLrec
+                        """record2file(identifier, XMLrec,
                             parametres["bib_file"], 
                             parametres["format_file"],
                             parametres
-                        )
+                        )"""
                         if (parametres["AUTliees"] > 0):
-                            bib2aut(identifier, XMLrec, parametres)
+                            linked_aut_record = bib2aut(identifier, XMLrec, parametres, multiprocess)
                 # Si on part d'un PPN
                 elif (nbResults == "1" and identifier.aligned_id.type == "ppn"):
                     for XMLrec in page.xpath("//record"):
-                        record2file(identifier, XMLrec,
+                        xml_record = XMLrec
+                        """record2file(identifier, XMLrec,
                                     parametres["bib_file"],
                                     parametres["format_file"],
-                                    parametres)
+                                    parametres)"""
                         if (parametres["AUTliees"] > 0):
-                            bib2aut(identifier, XMLrec, parametres)
+                            linked_aut_record = bib2aut(identifier, XMLrec, parametres, multiprocess)
             elif (identifier.aligned_id.type == "ppn"
                   and parametres["type_records"] == "bib"):
                 ppn_updated = update_bib_ppn(identifier.aligned_id.clean)
@@ -356,12 +372,16 @@ def extract1record(row, j, form, headers, parametres):
                             nbResults = page2nbresults(page, identifier)
                             if (nbResults == "1"):
                                 for XMLrec in page.xpath("//record"):
-                                    record2file(identifier, XMLrec,
+                                    xml_record = XMLrec
+                                    """record2file(identifier, XMLrec,
                                                 parametres["bib_file"],
                                                 parametres["format_file"],
-                                                parametres)
+                                                parametres)"""
                                     if (parametres["AUTliees"] > 0):
-                                        bib2aut(identifier, XMLrec, parametres)
+                                        linked_aut_record = bib2aut(identifier, XMLrec, parametres, multiprocess)
+    if multiprocess and xml_record is not None:
+        xml_record = etree.tostring(xml_record)    
+    return identifier, xml_record, linked_aut_record
 
 def update_bib_ppn(ppn):
     url = f"https://www.sudoc.fr/services/merged/{ppn}"
@@ -409,6 +429,7 @@ def launch(filename, type_records_form,
     if (type_records_form == 2):
         type_records = "aut"
     parametres = {
+        "headers": headers,
         "type_records": type_records,
         "correct_record_option": correct_record_option,
         "type_records_form": type_records_form,
@@ -425,29 +446,47 @@ def launch(filename, type_records_form,
         "listeARK_BIB" : [],
         "listeNNA_AUT" : []
     }
+    files = {}
     main.generic_input_controls(master, filename)
-
     bib_file = file_create(type_records, parametres)
-    parametres["bib_file"] = bib_file
+    files["bib_file"] = bib_file
     if (parametres["AUTliees"] > 0):
         aut_file = file_create("aut", parametres)
-        parametres["aut_file"] = aut_file
-    with open(filename, newline='\n', encoding="utf-8") as csvfile:
-        entry_file = csv.reader(csvfile, delimiter='\t')
-        if headers:
-            next(entry_file, None)
-        j = 0
-        for row in entry_file:
-            if j == 0:
-                check_nb_colonnes(row, parametres, master)
-            extract1record(row, j, form, headers, parametres)
-            j = j + 1
-
-        file_fin(bib_file, format_file)
-        if (AUTliees == 1):
-            file_fin(aut_file, format_file)
+        files["aut_file"] = aut_file
+    file2extract(filename, parametres, files, master, form)
+    file_fin(files["bib_file"], format_file)
+    if (AUTliees == 1):
+        file_fin(files['aut_file'], format_file)
     fin_traitements(form, outputID)
 
+
+def file2extract(filename, parametres, files, master_form, ark2records_form):
+    with open(filename, newline='\n', encoding="utf-8") as csvfile:
+        entry_file = csv.reader(csvfile, delimiter='\t')
+        if parametres["headers"]:
+            next(entry_file, None)
+        j = 0
+        for rows in funcs.chunks_iter(entry_file, 10):
+            if j == 0:
+                check_nb_colonnes(rows[0], parametres, master_form)
+                j += 1
+            records = Parallel(n_jobs=NUM_PARALLEL)(delayed(extract1record)(row, parametres, True) for row in rows)
+            for identifier, xml_record, linked_aut_records in records:
+                print(str(j) + ". " + identifier.aligned_id.clean)
+                record2file(identifier, etree.fromstring(xml_record), files["bib_file"], 
+                            parametres["format_file"], parametres, files)
+                if linked_aut_records is not None:
+                    for identifier, xml_record in linked_aut_records:
+                        record2file(identifier, etree.fromstring(xml_record), files["aut_file"],
+                                    parametres["format_file"], parametres, files)
+                j += 1
+        """for row in entry_file:
+            if j == 0:
+                check_nb_colonnes(row, parametres, master)
+                j += 1
+            extract1record(row, j, form, headers, parametres)"""
+
+    
 
 def check_nb_colonnes(row, parametres, frame_master):
     """
