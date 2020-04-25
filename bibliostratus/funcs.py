@@ -78,8 +78,8 @@ lettres_sauf_x = [
     "p", "q", "r", "s", "t", "u", "v", "w", "y", "z"
 ]
 ponctuation = [
-    ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
-    "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<",
+    ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", '"', "&", "~",
+    "{", "(", "[", "`", r"\\", "_", "@", ")", "]", "}", "=", "+", "*", r"/", "<",
     ">", ")", "}", "̊"
 ]
 
@@ -148,8 +148,8 @@ def clean_string(string, replaceSpaces=False, replaceTirets=False):
         - suppression des tirets
     """
     punctuation = [
-                   ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
-                   "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<",
+                   ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", '"', "&", "~",
+                   "{", "(", "[", "`", r"\\", "_", "@", ")", "]", "}", "=", "+", "*", r"/", "<",
                    ">", ")", "}"
                   ]
     string = unidecode(string.lower())
@@ -364,7 +364,7 @@ def string2int(string):
 
 def nettoyageOpus(string):
     # supprime la mention d'opus si existe :
-    regex = " (opus |op\.|op ) ?\d+"
+    regex = r" (opus |op\.|op ) ?\d+"
     pattern = re.compile(regex)
     new_str = ""
     if (pattern.search(string) is not None):
@@ -1063,7 +1063,17 @@ class Bib_Aut_record:
         self.ark_bib_init = input_row[2]
         self.frbnf_bib = FRBNF(input_row[3])
         self.isbn_bib = International_id(input_row[4])
+        self.isbn = International_id(input_row[4])
+        self.ean = International_id(input_row[4])
+        self.auteur = f"{input_row[9]} {input_row[8]}"
+        self.date = input_row[6]
+        self.tome = ""
+        self.publisher = ""
+        self.no_commercial = International_id("")
+        self.issn = International_id("")
+        self.pubPlace = ""
         self.titre = Titre(input_row[5])
+        self.soustitre = Titre("")
         self.pubdate = input_row[6]
         self.pubdate_nett = nettoyageDate(self.pubdate)
         self.isni = Isni(input_row[7])

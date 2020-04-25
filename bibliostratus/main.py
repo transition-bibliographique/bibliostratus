@@ -30,6 +30,8 @@ import bib2id
 import forms
 import edit_preferences as settings
 
+import pkg_resources.py2_warn
+
 version = init.version
 lastupdate = init.lastupdate
 programID = init.programID
