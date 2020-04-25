@@ -1283,6 +1283,7 @@ def tad2ark(input_record, parametres,
     listeArk = []
 
     index = ""
+    params_sru = {"maximumRecords": "500"}
     param_date, date_nett = tad2ark_date(input_record, annee_plus_trois)
     if input_record.titre.recherche != "":
         auteur = input_record.auteur
@@ -1312,7 +1313,7 @@ def tad2ark(input_record, parametres,
            and input_record.scale):
             search_query.append(f'bib.anywhere all "{input_record.scale}"')
         search_query = " and ".join(search_query)
-        results = sru.SRU_result(search_query)
+        results = sru.SRU_result(search_query, parametres=params_sru)
         if (results.nb_results == 0):
             search_query = [f'bib.title all "{input_record.titre.recherche}"',
                             f'bib.author all "{auteur_nett}"',
@@ -1327,14 +1328,14 @@ def tad2ark(input_record, parametres,
                                ]
                 index = " dans toute la notice"
             search_query = " ".join(search_query)
-            results = sru.SRU_result(search_query)
+            results = sru.SRU_result(search_query, parametres=params_sru)
         if results.list_identifiers:
             i = 1
             for ark_current in results.dict_records:
                 if (results.nb_results > 100):
                     print(" "*4, input_record.NumNot, "-",
                           ark_current, f"{str(i)}/{str(results.nb_results)}",
-                          "(limite max 1000)"),
+                          "(limite max 500)"),
                     i += 1
                 ark_validated = tad2ark_controle_record(input_record, ark_current, 
                                                 auteur, date_nett,
@@ -1648,7 +1649,7 @@ def check_sudoc_result(input_record, ppn):
                                     input_record.lastname.propre,
                                     input_record.pubdate_nett, False, "",
                                     xml_record)
-    ppn_checked = ",".join([ppn for ppn in ppn_checked if ppn])            
+    #ppn_checked = ",".join([ppn for ppn in ppn_checked if ppn])            
     return ppn_checked
 
 
@@ -1836,7 +1837,7 @@ def id2record(identifier, typeRecord="bib"):
 
 
 def ppn2recordSudoc(ppn):
-    record = id2record(ppn, "bib")
+    record = id2record(f"PPN{ppn}", "bib")
     if record is not None:
         return True, record
     else:
@@ -2160,13 +2161,7 @@ def item2ppn_by_id(input_record, parametres):
     # ajoute un contrôle sur le numéro
     # de tome/volume, s'il est renseigné
     # dans les données en entrée
-    """if ppn != "" and input_record.tome != "":
-        numeroTome = funcs.nettoyageTome(input_record.tome)
-        if (numeroTome != ""):
-                url = ppn2recordSudoc(ppn)
-                (test, recordSudoc) = funcs.testURLetreeParse(url)
-                if test:
-                    ppn = verificationTomaison(ppn, numeroTome, recordSudoc)"""
+
     if (ppn == "" and input_record.issn.propre):
         ppn = issn2sudoc(
             input_record,
