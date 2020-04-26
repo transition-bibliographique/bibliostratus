@@ -1883,7 +1883,7 @@ def no_commercial2ark(input_record, NumNot,
         query = f'bib.anywhere  all "{no_commercial}"'
     else:
         query = f'bib.comref all "{no_commercial}"'
-        if (re.fullmatch("\d{13}", no_commercial) is not None):
+        if (re.fullmatch(r"\d{12}.", no_commercial) is not None):
             query += f' or bib.ean all "{no_commercial}"'
     results = sru.SRU_result(query)
     

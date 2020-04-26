@@ -78,8 +78,8 @@ lettres_sauf_x = [
     "p", "q", "r", "s", "t", "u", "v", "w", "y", "z"
 ]
 ponctuation = [
-    ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
-    "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<",
+    ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", r"\", '"', "&", "~",
+    "{", "(", "[", "`", "_", "@", ")", "]", "}", "=", "+", "*", r"/", "<",
     ">", ")", "}", "̊"
 ]
 
@@ -115,7 +115,7 @@ def nettoyage(string, remplacerEspaces=True, remplacerTirets=True, remplacerApos
     string = unidecode_local(string.lower())
     for signe in ponctuation:
         string = string.replace(signe, "")
-    string = string.replace("\\'", "'")
+    string = string.replace(r"\'", "'")
     string = " ".join([el for el in string.split(" ") if el != ""])
     if remplacerTirets:
         string = string.replace("-", " ")
@@ -149,7 +149,7 @@ def clean_string(string, replaceSpaces=False, replaceTirets=False):
     """
     punctuation = [
                    ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
-                   "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<",
+                   "{", "(", "[", "`", r"\", "_", "@", ")", "]", "}", "=", "+", "*", r"/", "<",
                    ">", ")", "}"
                   ]
     string = unidecode(string.lower())
@@ -364,7 +364,7 @@ def string2int(string):
 
 def nettoyageOpus(string):
     # supprime la mention d'opus si existe :
-    regex = " (opus |op\.|op ) ?\d+"
+    regex = r" (opus |op\.|op ) ?\d+"
     pattern = re.compile(regex)
     new_str = ""
     if (pattern.search(string) is not None):
@@ -811,7 +811,7 @@ def open_local_file(path):
     try:
         os.startfile(filepath)
     except FileNotFoundError:
-        filepath = filepath.replace("main/examples", "examples").replace("/", "\\")
+        filepath = filepath.replace("main/examples", "examples").replace("/", r"\")
         os.startfile(filepath)
     except AttributeError:
         opener = "open" if sys.platform == "darwin" else "xdg-open"
