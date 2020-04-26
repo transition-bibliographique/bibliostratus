@@ -17,6 +17,9 @@ import tkinter as tk
 import webbrowser
 from tkinter import filedialog
 from urllib import error, request
+import multiprocessing
+
+import pkg_resources.py2_warn
 
 from unidecode import unidecode
 
@@ -807,4 +810,5 @@ def check_proxy():
 
 if __name__ == '__main__':
     check_proxy()
+    multiprocessing.freeze_support()
     forms.default_launch()
