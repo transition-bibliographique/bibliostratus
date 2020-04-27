@@ -224,7 +224,7 @@ def test_alignement_bib():
     assert bib_records["PER1"]["alignment_resultSudoc"].ids_str == "PPN174256019"
     assert bib_records["PER2"]["alignment_resultBnF"].ids_str == "ark:/12148/cb39121219d"
     assert bib_records["PER2"]["alignment_resultBnF"].alignment_method_str == "Numéro de notice + contrôle Titre 200$a"
-    assert bib_records["PER2"]["alignment_resultSudoc"].ids_str == "ark:/12148/cb39121219d"
+    assert bib_records["PER2"]["alignment_resultSudoc"].ids_str == "PPN077575245"
 
 
 

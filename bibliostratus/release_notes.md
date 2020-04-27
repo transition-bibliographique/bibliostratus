@@ -1,3 +1,8 @@
+### version 1.30
+- parallélisation des alignements (par 10) dans bib2id et aut2id, et des récupérations de notices (ark2records)
+- correction d'un bug pour récupérer les PPN trouvés par recherche titre-auteur-date
+- Quand contrôle sur identifiant (EAN, ISBN, etc), vérification de la date dans la 305 aussi
+
 ### version 1.29
 - Création d'un fichier __init__.py (conformité aux pratiques de programmes Python)
 - Lancement de Bibliostratus en ligne de commande (fichier cli.py)

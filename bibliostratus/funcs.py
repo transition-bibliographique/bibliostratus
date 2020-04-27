@@ -78,7 +78,7 @@ lettres_sauf_x = [
     "p", "q", "r", "s", "t", "u", "v", "w", "y", "z"
 ]
 ponctuation = [
-    ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", r"\", '"', "&", "~",
+    ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", r"\\", '"', "&", "~",
     "{", "(", "[", "`", "_", "@", ")", "]", "}", "=", "+", "*", r"/", "<",
     ">", ")", "}", "̊"
 ]
@@ -149,7 +149,7 @@ def clean_string(string, replaceSpaces=False, replaceTirets=False):
     """
     punctuation = [
                    ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
-                   "{", "(", "[", "`", r"\", "_", "@", ")", "]", "}", "=", "+", "*", r"/", "<",
+                   "{", "(", "[", "`", r"\\", "_", "@", ")", "]", "}", "=", "+", "*", r"/", "<",
                    ">", ")", "}"
                   ]
     string = unidecode(string.lower())
@@ -811,7 +811,7 @@ def open_local_file(path):
     try:
         os.startfile(filepath)
     except FileNotFoundError:
-        filepath = filepath.replace("main/examples", "examples").replace("/", r"\")
+        filepath = filepath.replace("main/examples", "examples").replace("/", r"\\")
         os.startfile(filepath)
     except AttributeError:
         opener = "open" if sys.platform == "darwin" else "xdg-open"
@@ -1063,6 +1063,11 @@ class Bib_Aut_record:
         self.ark_bib_init = input_row[2]
         self.frbnf_bib = FRBNF(input_row[3])
         self.isbn_bib = International_id(input_row[4])
+        self.ean = International_id(input_row[4])
+        self.isbn = International_id(input_row[4])
+        self.issn = International_id("")
+        self.auteur = f"{input_row[9]} {input_row[8]}"
+        self.no_commercial = International_id("")
         self.titre = Titre(input_row[5])
         self.pubdate = input_row[6]
         self.pubdate_nett = nettoyageDate(self.pubdate)

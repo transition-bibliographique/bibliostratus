@@ -461,14 +461,20 @@ def checkDate(ark, date_init, recordBNF):
     dateBNF_306a = funcs.unidecode_local(
         sru.record2fieldvalue(recordBNF, "306$a").split("~")[0].lower()
     )
+    dateBNF_305a = funcs.unidecode_local(
+        sru.record2fieldvalue(recordBNF, "305$a").split("~")[0].lower()
+    )
     for lettre in string.ascii_lowercase:
         dateBNF_210d = dateBNF_210d.replace(lettre, "~")
         dateBNF_306a = dateBNF_306a.replace(lettre, "~")
+        dateBNF_305a = dateBNF_305a.replace(lettre, "~")
     for signe in main.punctuation:
         dateBNF_210d = dateBNF_210d.replace(signe, "~")
         dateBNF_306a = dateBNF_306a.replace(signe, "~")
+        dateBNF_305a = dateBNF_305a.replace(signe, "~")
     dateBNF_210d = [el for el in dateBNF_210d.split("~") if el != ""]
     dateBNF_306a = [el for el in dateBNF_306a.split("~") if el != ""]
+    dateBNF_305a = [el for el in dateBNF_305a.split("~") if el != ""]
     for date in dateBNF_210d:
         if main.RepresentsInt(date) is True:
             date = int(date)
@@ -477,8 +483,13 @@ def checkDate(ark, date_init, recordBNF):
         if main.RepresentsInt(date) is True:
             date = int(date)
             dateBNF.extend([date + 1, date - 1])
+    for date in dateBNF_305a:
+        if main.RepresentsInt(date) is True:
+            date = int(date)
+            dateBNF.extend([date + 1, date - 1])
     dateBNF.extend(dateBNF_210d)
     dateBNF.extend(dateBNF_306a)
+    dateBNF.extend(dateBNF_305a)
     dateBNF = " ".join([str(date) for date in dateBNF])
     if len(str(date_init)) > 3 and str(date_init)[0:4] in dateBNF:
         ark_checked = ark
