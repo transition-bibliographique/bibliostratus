@@ -1338,7 +1338,7 @@ def tad2ark(input_record, parametres,
                                 f'bib.doctype any "{input_record.intermarc_type_doc}"'
                                ]
                 index = " dans toute la notice"
-            search_query = " ".join(search_query)
+            search_query = " and ".join(search_query)
             results = sru.SRU_result(search_query, parametres=params_sru)
         if results.list_identifiers:
             i = 1
