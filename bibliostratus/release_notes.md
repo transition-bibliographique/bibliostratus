@@ -1,3 +1,6 @@
+### version 1.31
+
+
 ### version 1.30
 - parallélisation des alignements (par 10) dans bib2id et aut2id, et des récupérations de notices (ark2records)
 - correction d'un bug pour récupérer les PPN trouvés par recherche titre-auteur-date
