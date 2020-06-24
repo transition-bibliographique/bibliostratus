@@ -15,6 +15,9 @@ import urllib.parse
 from collections import defaultdict
 import os, ssl
 
+from joblib import Parallel, delayed
+import multiprocessing
+
 from unidecode import unidecode
 
 import funcs
@@ -25,13 +28,14 @@ import aut2id_concepts
 import forms
 
 
+NUM_PARALLEL = 10    # Nombre de notices à aligner simultanément
+
 # Ajout exception SSL pour éviter
 # plantages en interrogeant les API IdRef
 # (HTTPS sans certificat)
 if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
    getattr(ssl, '_create_unverified_context', None)): 
     ssl._create_default_https_context = ssl._create_unverified_context
-
 
 # Permet d'écrire dans une liste accessible au niveau général depuis le
 # formulaire, et d'y accéder ensuite
@@ -49,6 +53,11 @@ header_columns_init_bib2aut = [
 header_columns_init_rameau = [
     'N° Notice AUT', 'FRBNF', 'ARK', 'Point d\'accès Rameau'
 ]
+
+aligntype2headers = {1: header_columns_init_aut2aut,
+                     2: header_columns_init_aut2aut,
+                     3: header_columns_init_bib2aut,
+                     4: header_columns_init_rameau}
 
 # Pour chaque notice, on recense la méthode qui a permis de récupérer le
 # ou les ARK
@@ -362,42 +371,36 @@ def alignment_result2output(alignment_result, input_record, parametres, liste_re
         row2files(alignment_result.liste_metadonnees, liste_reports)
 
 
-def align_from_aut_item(row, n, form_aut2id, parametres, liste_reports):
-    if (n == 0):
-        assert main.control_columns_number(
-            form_aut2id, row, header_columns_init_aut2aut)
-    n += 1
-    if (n % 100 == 0):
-        main.check_access2apis(n, dict_check_apis)
 
+def aut2id_item(row, n, parametres):
     input_record = funcs.Aut_record(row, parametres)
     alignment_result = align_from_aut_alignment(input_record, parametres)
-    alignment_result2output(alignment_result, input_record, parametres, 
-                            liste_reports, n)
+    return alignment_result
 
-def align_rameau_item(row, n, form_aut2id, parametres, liste_reports):
-    if (n == 0):
-        assert main.control_columns_number(
-            form_aut2id, row, header_columns_init_rameau)
-    n += 1
-    if (n % 100 == 0):
-        main.check_access2apis(n, dict_check_apis)
+"""
+def align_from_aut_item(row, n, parametres):
+    input_record = funcs.Aut_record(row, parametres)
+    alignment_result = align_from_aut_alignment(input_record, parametres)
+    return alignment_result
+
+
+def align_from_bib_item(row, n, parametres):
+    input_record = funcs.Bib_Aut_record(row, parametres)
+    alignment_result = align_from_bib_alignment(input_record, parametres)
+    return alignment_result
+
+
+def align_rameau_item(row, n, parametres):
     input_record = funcs.Aut_record(row, parametres)
     alignment_result = align_from_rameau_alignment(input_record, parametres)
-    alignment_result2output(alignment_result, input_record, parametres, 
-                            liste_reports, n)
+    return alignement_result
+"""
 
-def align_from_aut(form, entry_filename, liste_reports, parametres):
+def align_aut_file(form, entry_filename, liste_reports, parametres):
     """Aligner ses données d'autorité avec les autorités BnF à partir
     d'une extraction tabulée de la base d'autorités"""
-    header_columns = [
-                      "NumNot", "Nb identifiants trouvés", 
-                      "Liste identifiants AUT trouvés",
-                      "Méthode", "ARK AUT initial",
-                      "frbnf AUT initial", "ISNI initial", 
-                      "Nom", "Complément nom",
-                      "Date début", "Date fin"
-                     ]
+    header_columns = ["NumNot", "Nb identifiants trouvés", 
+                      "Liste identifiants AUT trouvés"] + aligntype2headers[parametres["input_data_type"]][1:]
     if (parametres['meta_bnf'] == 1):
         header_columns.extend(
             ["[BnF] Nom", "[BnF] Complément Nom", "[BnF] Dates", "[BnF] ISNI"])
@@ -405,7 +408,7 @@ def align_from_aut(form, entry_filename, liste_reports, parametres):
         row2file(header_columns, liste_reports)
     elif(parametres['file_nb'] == 2):
         row2files(header_columns, liste_reports)
-    n = 0
+    n = 1
     with open(entry_filename, newline='\n', encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter='\t')
         if (parametres['headers']):
@@ -417,39 +420,22 @@ def align_from_aut(form, entry_filename, liste_reports, parametres):
                     "Comment modifier l'encodage du fichier",
                     "https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e"  # noqa
                 )
-        for row in entry_file:
-            align_from_aut_item(row, n, form, parametres, liste_reports)
-            n += 1
+        for rows in funcs.chunks_iter(entry_file, 10):
+            if ((n-1) == 0):
+                assert main.control_columns_number(form,
+                                                   rows[0],
+                                                   aligntype2headers[parametres["input_data_type"]])
+            if ((n-1) % 100 == 0):
+                main.check_access2apis(n, dict_check_apis)
+            alignment_results = Parallel(n_jobs=NUM_PARALLEL)(delayed(aut2id_item)(row, n, parametres) for row in rows)
+            for alignment_result in alignment_results:
+                alignment_result2output(alignment_result, alignment_result.input_record,
+                                        parametres, liste_reports, n)
+                n += 1
+        # for row in entry_file:
+        #     align_from_aut_item(row, n, form, parametres, liste_reports)
+        #     n += 1
 
-def align_rameau(form, entry_filename, liste_reports, parametres):
-    """
-    Alignement d'un fichier contenant une liste de concepts Rameau
-    """
-    header_columns = [
-                      "NumNot", "Nb identifiants trouvés", 
-                      "Liste identifiants AUT trouvés",
-                      "Méthode", "type d'entité"
-                     ]
-    header_columns.extend(header_columns_init_rameau[1:])
-    if (parametres['file_nb'] == 1):
-        row2file(header_columns, liste_reports)
-    elif(parametres['file_nb'] == 2):
-        row2files(header_columns, liste_reports)
-    n = 0
-    with open(entry_filename, newline='\n', encoding="utf-8") as csvfile:
-        entry_file = csv.reader(csvfile, delimiter='\t')
-        if (parametres['headers']):
-            try:
-                next(entry_file)
-            except UnicodeDecodeError:
-                main.popup_errors(
-                    form, main.errors["pb_input_utf8"],
-                    "Comment modifier l'encodage du fichier",
-                    "https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e"  # noqa
-                )
-        for row in entry_file:
-            align_rameau_item(row, n, form, parametres, liste_reports)
-            n += 1
 
 def align_from_rameau_alignment(input_record, parametres):
     """
@@ -521,56 +507,6 @@ def align_from_bib_alignment(input_record, parametres):
     else:
         parametres["stats"][alignment_result.nb_ids] += 1
     return alignment_result
-
-
-def align_from_bib_item(row, n, form_aut2id, parametres, liste_reports):
-    if (n == 0):
-        assert main.control_columns_number(form_aut2id,
-                                           row,
-                                           header_columns_init_bib2aut)
-    n += 1
-    if (n % 100 == 0):
-        main.check_access2apis(n, dict_check_apis)
-    input_record = funcs.Bib_Aut_record(row, parametres)
-    alignment_result = align_from_bib_alignment(input_record, parametres)
-    alignment_result2output(alignment_result, input_record, parametres, 
-                            liste_reports, n)
-
-
-def align_from_bib(form, entry_filename, liste_reports, parametres):
-    """Alignement de ses données d'autorité avec les autorités BnF
-    à partir d'une extraction de sa base bibliographique
-    (métadonnées BIB + Nom, prénom et dates de l'auteur)
-    """
-    header_columns = [
-        "NumNot", "Nb identifiants trouvés", "Liste identifiants AUT trouvés",
-        "Méthode alignement", "Numéro notice BIB initial", "ark BIB initial",
-        "frbnf BIB initial", "ISBN", "Titre", "Date de publication", "ISNI initial", 
-        "Nom", "Complément nom",
-        "dates Auteur"
-    ]
-    if (parametres['meta_bnf'] == 1):
-        header_columns.extend(
-            ["[BnF] Nom", "[BnF] Complément Nom", "[BnF] Dates", "[BnF] ISNI"])
-    if (parametres['file_nb'] == 1):
-        row2file(header_columns, liste_reports)
-    elif(parametres['file_nb '] == 2):
-        row2files(header_columns, liste_reports)
-    n = 0
-    with open(entry_filename, newline='\n', encoding="utf-8") as csvfile:
-        entry_file = csv.reader(csvfile, delimiter='\t')
-        if (parametres['headers']):
-            try:
-                next(entry_file)
-            except UnicodeDecodeError:
-                main.popup_errors(
-                    form, main.errors["pb_input_utf8"],
-                    "Comment modifier l'encodage du fichier",
-                    "https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e"  # noqa
-                )
-        for row in entry_file:
-            align_from_bib_item(row, n, form, parametres, liste_reports)
-            n += 1
 
 
 def nettoyageArk(ark):
@@ -1109,12 +1045,8 @@ def launch(entry_filename, headers, input_data_type, preferences_alignement,
         parametres["type_notices_rameau"] = defaultdict(str)
     liste_reports = create_reports(funcs.id_traitement2path(id_traitement), file_nb)
 
-    if (input_data_type == 1 or input_data_type == 2):
-        align_from_aut(form, entry_filename, liste_reports, parametres)
-    elif (input_data_type == 3):
-        align_from_bib(form, entry_filename, liste_reports, parametres)
-    elif (input_data_type == 4):
-        align_rameau(form, entry_filename, liste_reports, parametres)
+    if (input_data_type in [1, 2, 3, 4] or input_data_type == 2):
+        align_aut_file(form, entry_filename, liste_reports, parametres)
     elif form is not None:
         main.popup_errors("Format en entrée non défini")
     bib2id.fin_traitements(form, liste_reports, parametres["stats"])
@@ -1274,4 +1206,5 @@ def form_aut2id(master, access_to_network=True, last_version=[0, False]):
 
 
 if __name__ == '__main__':
+    multiprocessing.freeze_support()
     forms.default_launch()

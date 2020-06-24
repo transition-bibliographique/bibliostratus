@@ -26,6 +26,9 @@ from lxml.html import parse
 from urllib import request
 import json
 
+from joblib import Parallel, delayed
+import multiprocessing
+
 import funcs
 import main
 import aut2id_idref
@@ -39,6 +42,7 @@ if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
    getattr(ssl, '_create_unverified_context', None)):
     ssl._create_default_https_context = ssl._create_unverified_context
 
+NUM_PARALLEL = 10    # Nombre de notices à aligner simultanément
 
 url_access_pbs = []
 
@@ -457,14 +461,20 @@ def checkDate(ark, date_init, recordBNF):
     dateBNF_306a = funcs.unidecode_local(
         sru.record2fieldvalue(recordBNF, "306$a").split("~")[0].lower()
     )
+    dateBNF_305a = funcs.unidecode_local(
+        sru.record2fieldvalue(recordBNF, "305$a").split("~")[0].lower()
+    )
     for lettre in string.ascii_lowercase:
         dateBNF_210d = dateBNF_210d.replace(lettre, "~")
         dateBNF_306a = dateBNF_306a.replace(lettre, "~")
+        dateBNF_305a = dateBNF_305a.replace(lettre, "~")
     for signe in main.punctuation:
         dateBNF_210d = dateBNF_210d.replace(signe, "~")
         dateBNF_306a = dateBNF_306a.replace(signe, "~")
+        dateBNF_305a = dateBNF_305a.replace(signe, "~")
     dateBNF_210d = [el for el in dateBNF_210d.split("~") if el != ""]
     dateBNF_306a = [el for el in dateBNF_306a.split("~") if el != ""]
+    dateBNF_305a = [el for el in dateBNF_305a.split("~") if el != ""]
     for date in dateBNF_210d:
         if main.RepresentsInt(date) is True:
             date = int(date)
@@ -473,8 +483,13 @@ def checkDate(ark, date_init, recordBNF):
         if main.RepresentsInt(date) is True:
             date = int(date)
             dateBNF.extend([date + 1, date - 1])
+    for date in dateBNF_305a:
+        if main.RepresentsInt(date) is True:
+            date = int(date)
+            dateBNF.extend([date + 1, date - 1])
     dateBNF.extend(dateBNF_210d)
     dateBNF.extend(dateBNF_306a)
+    dateBNF.extend(dateBNF_305a)
     dateBNF = " ".join([str(date) for date in dateBNF])
     if len(str(date_init)) > 3 and str(date_init)[0:4] in dateBNF:
         ark_checked = ark
@@ -1279,6 +1294,7 @@ def tad2ark(input_record, parametres,
     listeArk = []
 
     index = ""
+    params_sru = {"maximumRecords": "500"}
     param_date, date_nett = tad2ark_date(input_record, annee_plus_trois)
     if input_record.titre.recherche != "":
         auteur = input_record.auteur
@@ -1308,7 +1324,7 @@ def tad2ark(input_record, parametres,
            and input_record.scale):
             search_query.append(f'bib.anywhere all "{input_record.scale}"')
         search_query = " and ".join(search_query)
-        results = sru.SRU_result(search_query)
+        results = sru.SRU_result(search_query, parametres=params_sru)
         if (results.nb_results == 0):
             search_query = [f'bib.title all "{input_record.titre.recherche}"',
                             f'bib.author all "{auteur_nett}"',
@@ -1322,15 +1338,15 @@ def tad2ark(input_record, parametres,
                                 f'bib.doctype any "{input_record.intermarc_type_doc}"'
                                ]
                 index = " dans toute la notice"
-            search_query = " ".join(search_query)
-            results = sru.SRU_result(search_query)
+            search_query = " and ".join(search_query)
+            results = sru.SRU_result(search_query, parametres=params_sru)
         if results.list_identifiers:
             i = 1
             for ark_current in results.dict_records:
                 if (results.nb_results > 100):
                     print(" "*4, input_record.NumNot, "-",
                           ark_current, f"{str(i)}/{str(results.nb_results)}",
-                          "(limite max 1000)"),
+                          "(limite max 500)"),
                     i += 1
                 ark_validated = tad2ark_controle_record(input_record, ark_current, 
                                                 auteur, date_nett,
@@ -1644,7 +1660,7 @@ def check_sudoc_result(input_record, ppn):
                                     input_record.lastname.propre,
                                     input_record.pubdate_nett, False, "",
                                     xml_record)
-    ppn_checked = ",".join([ppn for ppn in ppn_checked if ppn])            
+    #ppn_checked = ",".join([ppn for ppn in ppn_checked if ppn])            
     return ppn_checked
 
 
@@ -1832,7 +1848,7 @@ def id2record(identifier, typeRecord="bib"):
 
 
 def ppn2recordSudoc(ppn):
-    record = id2record(ppn, "bib")
+    record = id2record(f"PPN{ppn}", "bib")
     if record is not None:
         return True, record
     else:
@@ -1878,7 +1894,7 @@ def no_commercial2ark(input_record, NumNot,
         query = f'bib.anywhere  all "{no_commercial}"'
     else:
         query = f'bib.comref all "{no_commercial}"'
-        if (re.fullmatch("\d{13}", no_commercial) is not None):
+        if (re.fullmatch(r"\d{12}.", no_commercial) is not None):
             query += f' or bib.ean all "{no_commercial}"'
     results = sru.SRU_result(query)
     
@@ -2156,13 +2172,7 @@ def item2ppn_by_id(input_record, parametres):
     # ajoute un contrôle sur le numéro
     # de tome/volume, s'il est renseigné
     # dans les données en entrée
-    """if ppn != "" and input_record.tome != "":
-        numeroTome = funcs.nettoyageTome(input_record.tome)
-        if (numeroTome != ""):
-                url = ppn2recordSudoc(ppn)
-                (test, recordSudoc) = funcs.testURLetreeParse(url)
-                if test:
-                    ppn = verificationTomaison(ppn, numeroTome, recordSudoc)"""
+
     if (ppn == "" and input_record.issn.propre):
         ppn = issn2sudoc(
             input_record,
@@ -2316,15 +2326,9 @@ def item_alignement(input_record, parametres):
     return alignment_result
 
 
-def item2id(row, n, form_bib2ark, parametres, liste_reports):
+def item2id(row, n, parametres):
     """Pour chaque ligne : constitution d'une notice et règles d'alignement
     propres à ce type de notice"""
-    if n == 0:
-        assert main.control_columns_number(
-            form_bib2ark, row, parametres["header_columns_init"]
-        )
-    if n % 100 == 0:
-        main.check_access2apis(n, dict_check_apis)
     # print(row)
     input_record = funcs.Bib_record(row, parametres["type_doc_bib"])
     alignment_result = item_alignement(input_record, parametres)
@@ -2351,8 +2355,8 @@ def item2id(row, n, form_bib2ark, parametres, liste_reports):
         alignment_result = item_alignement(input_record, parametres)
         if alignment_result.nb_ids:
             alignment_result.liste_metadonnees[3] += " - Sans alignement titre de partie"
-    alignment_result2output(alignment_result, input_record,
-                            parametres, liste_reports, n)
+    # alignment_result2output(alignment_result, input_record,
+    #                         parametres, liste_reports, n)
     return alignment_result
 
 
@@ -2385,7 +2389,7 @@ def file2row(form_bib2ark, entry_filename, liste_reports, parametres):
         row2file(header_columns, liste_reports)
     elif parametres["file_nb"] == 2:
         row2files(header_columns, liste_reports)
-    n = 0
+    n = 1
     with open(entry_filename, newline="\n", encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter="\t")
         try:
@@ -2397,9 +2401,18 @@ def file2row(form_bib2ark, entry_filename, liste_reports, parametres):
                 "Comment modifier l'encodage du fichier",
                 "https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e",  # noqa
             )
-        for row in entry_file:
-            item2id(row, n, form_bib2ark, parametres, liste_reports)
-            n += 1
+        for rows in funcs.chunks_iter(entry_file, 10):
+            if (n-1) == 0:
+                assert main.control_columns_number(
+                        form_bib2ark, rows[0], parametres["header_columns_init"]
+                        )
+            if (n-1) % 100 == 0:
+                main.check_access2apis(n, dict_check_apis)
+            alignment_results = Parallel(n_jobs=NUM_PARALLEL)(delayed(item2id)(row, n, parametres) for row in rows)
+            for alignment_result in alignment_results:
+                alignment_result2output(alignment_result, alignment_result.input_record,
+                                        parametres, liste_reports, n)
+                n += 1
 
 
 def launch(entry_filename,

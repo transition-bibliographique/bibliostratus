@@ -20,6 +20,7 @@ import json
 import random
 import datetime
 import time
+import itertools as IT
 
 
 from lxml import etree
@@ -77,8 +78,8 @@ lettres_sauf_x = [
     "p", "q", "r", "s", "t", "u", "v", "w", "y", "z"
 ]
 ponctuation = [
-    ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
-    "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<",
+    ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", r"\\", '"', "&", "~",
+    "{", "(", "[", "`", "_", "@", ")", "]", "}", "=", "+", "*", r"/", "<",
     ">", ")", "}", "̊"
 ]
 
@@ -114,7 +115,7 @@ def nettoyage(string, remplacerEspaces=True, remplacerTirets=True, remplacerApos
     string = unidecode_local(string.lower())
     for signe in ponctuation:
         string = string.replace(signe, "")
-    string = string.replace("\\'", "'")
+    string = string.replace(r"\'", "'")
     string = " ".join([el for el in string.split(" ") if el != ""])
     if remplacerTirets:
         string = string.replace("-", " ")
@@ -148,7 +149,7 @@ def clean_string(string, replaceSpaces=False, replaceTirets=False):
     """
     punctuation = [
                    ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
-                   "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<",
+                   "{", "(", "[", "`", r"\\", "_", "@", ")", "]", "}", "=", "+", "*", r"/", "<",
                    ">", ")", "}"
                   ]
     string = unidecode(string.lower())
@@ -363,7 +364,7 @@ def string2int(string):
 
 def nettoyageOpus(string):
     # supprime la mention d'opus si existe :
-    regex = " (opus |op\.|op ) ?\d+"
+    regex = r" (opus |op\.|op ) ?\d+"
     pattern = re.compile(regex)
     new_str = ""
     if (pattern.search(string) is not None):
@@ -810,7 +811,7 @@ def open_local_file(path):
     try:
         os.startfile(filepath)
     except FileNotFoundError:
-        filepath = filepath.replace("main/examples", "examples").replace("/", "\\")
+        filepath = filepath.replace("main/examples", "examples").replace("/", r"\\")
         os.startfile(filepath)
     except AttributeError:
         opener = "open" if sys.platform == "darwin" else "xdg-open"
@@ -1062,6 +1063,11 @@ class Bib_Aut_record:
         self.ark_bib_init = input_row[2]
         self.frbnf_bib = FRBNF(input_row[3])
         self.isbn_bib = International_id(input_row[4])
+        self.ean = International_id(input_row[4])
+        self.isbn = International_id(input_row[4])
+        self.issn = International_id("")
+        self.auteur = f"{input_row[9]} {input_row[8]}"
+        self.no_commercial = International_id("")
         self.titre = Titre(input_row[5])
         self.pubdate = input_row[6]
         self.pubdate_nett = nettoyageDate(self.pubdate)
@@ -1136,6 +1142,7 @@ class Alignment_result:
     les données en entrée (dont le numéro de notice)
     """
     def __init__(self, input_record, ark, parametres):  # Notre méthode constructeur
+        self.input_record = input_record
         self.NumNot = input_record.NumNot
         self.ids_str = ark
         self.ids_list = self.ids_str.split(",")
@@ -1178,6 +1185,7 @@ class Id4record:
         try:
             self.NumNot = row[0]
             self.aligned_id = Aligned_id(row[-1])
+            self.dict_rec = {"record": None}
         except IndexError:
             self.NumNot = ""
             self.aligned_id = ""
@@ -2797,6 +2805,22 @@ def cprint(thing):
     # lors du débugage du code, et pouvoir facilement retrouver
     # (et mettre en commentaire ou supprimer) ces lignes
     print(thing)
+
+
+def chunks(lst, n):
+    """
+    Permet de découper les requêtes dans le SRU par 10.000 (donc de paralléliser 
+    10 requêtes"""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
+
+def chunks_iter(iterable, n):
+    """
+    Récupère le contenu d'un iterator par groupes de n éléments
+    """
+    iterable = iter(iterable)
+    return iter(lambda: list(IT.islice(iterable, n)), [])
 
 
 if __name__ == '__main__':

@@ -1,3 +1,9 @@
+### version 1.30
+- parallélisation des alignements (par 10) dans bib2id et aut2id, et des récupérations de notices (ark2records)
+- correction d'un bug pour récupérer les PPN trouvés par recherche titre-auteur-date
+- Quand contrôle sur identifiant (EAN, ISBN, etc), vérification de la date dans la 305 aussi
+
+
 ### version 1.29
 - Création d'un fichier __init__.py (conformité aux pratiques de programmes Python)
 - Lancement de Bibliostratus en ligne de commande (fichier cli.py)
@@ -8,7 +14,7 @@
   - sur les requêtes Titre-auteur-date dans le Sudoc
   - sur le mapping marc > tableaux
   - sur le fichier preferences.default
- 
+
 
 ### version 1.28
 - possibilité de lancer Bibliostratus en ligne de commande en exécutant le fichier bibliostratus-cli.py
@@ -16,6 +22,7 @@
 - ajout d'un fichier forms.py qui gère les libellés et variables des différents paramètres pour les modules
 - Module blanc (alignements BIB) :
 	- quand on récupère les métadonnées simples en sortie, celles-ci sont plus riches et systématiquement les mêmes (ISBN, EAN, N° référence commerciale musicale, ISSN, Titre, Auteur, Date, Editeur, Lieu de publication, N° de volume, type de notice/type de document)
+
 
 ### version 1.27
 18/03/2019
@@ -33,6 +40,7 @@
 	- Export en format tabulé, avec une liste de zones ou sous-zones à extraire
 	- Marqueur dans l'URL d'extraction des notices : "type_action=extract" (pour informations statistiques)
 	- Export de notices Sudoc : si erreur à l'export, teste l'API merged pour le cas où la notice aurait été fusionnée
+
 
 ### version 1.26
 14/03/2019
@@ -64,6 +72,7 @@
 - Module rouge (export de notices)
 	- Export correct des diacritiques dans le format XML
 	- Option de réécriture des notices exportées : injection en 001 du numéro de notice locale (si fichier en entrée a 2 colonnes), et ajout d'une 003 et 033 pour les identifiants des agences
+
 
 ### version 1.24
 6 novembre 2018

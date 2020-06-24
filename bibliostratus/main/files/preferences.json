@@ -13,7 +13,7 @@
         },
     "timestamp": {
         "description": "Option (booléen True/False) pour injecter en dernière colonne des rapports d'alignement l'horodatage. Ceci pour évaluer la performance d'un alignement volumineux au fur et à mesure du traitement.",
-        "value": "False"
+        "value": "True"
         },
     "http_proxy": {
         "description": "URL du proxy HTTP à utiliser dans le contexte d'un réseau professionnel. Exemple de valeur pour la BnF : http://fw_proxy.bnf.fr:8080",
