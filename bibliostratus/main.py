@@ -13,6 +13,7 @@ import codecs
 import os
 import json
 import re
+from pkg_resources import py2_warn
 import tkinter as tk
 import webbrowser
 from tkinter import filedialog

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 version = 1.30
-lastupdate = "24/06/2020"
+lastupdate = "25/06/2020"
 programID = "bibliostratus"
 
 
@@ -14,6 +14,7 @@ import tkinter as tk
 import webbrowser
 from tkinter import filedialog
 from urllib import error, request
+from pkg_resources import py2_warn
 import pymarc
 
 from unidecode import unidecode
