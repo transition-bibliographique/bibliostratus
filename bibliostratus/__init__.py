@@ -10,6 +10,7 @@ import os
 import json
 import re
 import smc.bibencodings
+from pkg_resources import py2_warn
 import tkinter as tk
 import webbrowser
 from tkinter import filedialog
