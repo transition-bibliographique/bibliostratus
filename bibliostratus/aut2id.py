@@ -373,8 +373,15 @@ def alignment_result2output(alignment_result, input_record, parametres, liste_re
 
 
 def aut2id_item(row, n, parametres):
-    input_record = funcs.Aut_record(row, parametres)
-    alignment_result = align_from_aut_alignment(input_record, parametres)
+    if parametres["input_data_type"] in [1, 2]:
+        input_record = funcs.Aut_record(row, parametres)
+        alignment_result = align_from_aut_alignment(input_record, parametres)
+    elif parametres["input_data_type"] == 3:
+        input_record = funcs.Bib_Aut_record(row, parametres)
+        alignment_result = align_from_bib_alignment(input_record, parametres)
+    elif parametres["input_data_type"] == 4:
+        input_record = funcs.Aut_record(row, parametres)
+        alignment_result = align_from_rameau_alignment(input_record, parametres)
     return alignment_result
 
 """
@@ -1046,7 +1053,7 @@ def launch(entry_filename, headers, input_data_type, preferences_alignement,
         parametres["type_notices_rameau"] = defaultdict(str)
     liste_reports = create_reports(funcs.id_traitement2path(id_traitement), file_nb)
 
-    if (input_data_type in [1, 2, 3, 4] or input_data_type == 2):
+    if (input_data_type in [1, 2, 3, 4]):
         align_aut_file(form, entry_filename, liste_reports, parametres)
     elif form is not None:
         main.popup_errors("Format en entrée non défini")

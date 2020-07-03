@@ -1,5 +1,8 @@
 ### version 1.31
-- Module blanc [Autorités] : correction d'un bug pour l'alignement par références bibliographiques
+- Module blanc [Autorités] :
+  - correction d'un bug pour l'alignement par références bibliographiques
+  - correction d'un bug sur l'alignement des notices Rameau
+
 
 ### version 1.30
 - parallélisation des alignements (par 10) dans bib2id et aut2id, et des récupérations de notices (ark2records)
