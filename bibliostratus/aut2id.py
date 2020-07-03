@@ -400,7 +400,7 @@ def align_aut_file(form, entry_filename, liste_reports, parametres):
     """Aligner ses données d'autorité avec les autorités BnF à partir
     d'une extraction tabulée de la base d'autorités"""
     header_columns = ["NumNot", "Nb identifiants trouvés", 
-                      "Liste identifiants AUT trouvés"] + aligntype2headers[parametres["input_data_type"]][1:]
+                      "Liste identifiants AUT trouvés", "Méthode"] + aligntype2headers[parametres["input_data_type"]][1:]
     if (parametres['meta_bnf'] == 1):
         header_columns.extend(
             ["[BnF] Nom", "[BnF] Complément Nom", "[BnF] Dates", "[BnF] ISNI"])
@@ -748,13 +748,14 @@ def aut2ark_by_accesspoint(input_record, NumNot, nom_nett, prenom_nett,
     # Conversion du type d'autorité des codes Unimarc
     # en codes Intermarc pour le SRU BnF
     type_aut_dict = {"a" : "PEP",
-                     "b" : "ORG"}
+                     "b": "ORG",
+                     "a b": "PEP ORG"}
 
     listeArk = []
     url = funcs.url_requete_sru(
         'aut.accesspoint adj "' + " ".join([nom_nett, prenom_nett, date_debut]) 
         + '" and aut.status any "sparse validated"'
-        + ' and aut.type all "' + type_aut_dict[parametres["type_aut"]] + '"')
+        + ' and aut.type any "' + type_aut_dict[parametres["type_aut"]] + '"')
     testdatefin = False
     if (date_debut == "" and date_fin != ""):
         url = funcs.url_requete_sru('aut.accesspoint adj "' + " ".join(
