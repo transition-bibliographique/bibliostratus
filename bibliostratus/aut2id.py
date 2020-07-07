@@ -970,7 +970,6 @@ def extractARKautfromBIB(input_record, xml_record):
                 if (subfield.get("code") == "f"):
                     listeFieldsAuteur[i]["dates"] = main.clean_string(
                         subfield.text, True, True)
-    
     for auteur in listeFieldsAuteur:
         if (("nom" in listeFieldsAuteur[auteur])
             and (input_record.lastname.nett in listeFieldsAuteur[auteur]["nom"] or
@@ -991,12 +990,13 @@ def extractARKautfromBIB(input_record, xml_record):
                             listeNNA.append(listeFieldsAuteur[auteur]["nna"])
                         except KeyError:
                             pass
-            elif (input_record.date_debut != "" and "dates" in listeFieldsAuteur[auteur]):
+            elif (input_record.date_debut != "" and "dates" in listeFieldsAuteur[auteur] and "nna" in listeFieldsAuteur[auteur]):
                 if (input_record.date_debut in listeFieldsAuteur[auteur]["dates"] or
                         listeFieldsAuteur[auteur]["dates"] in input_record.date_debut):
                     listeNNA.append(listeFieldsAuteur[auteur]["nna"])
             elif ("nna" in listeFieldsAuteur[auteur]):
                 listeNNA.append(listeFieldsAuteur[auteur]["nna"])
+    
     for nna in listeNNA:
         listeArk.append(nna2ark(nna))
     return listeArk
