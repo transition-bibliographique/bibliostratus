@@ -845,13 +845,10 @@ def bib2ppnAUT(input_record, parametres):
             for record in results.xpath(
                     "//record", namespaces=main.ns):
                 listePPNaut.extend(extractARKautfromBIB(input_record, record, source="sudoc"))
-    print("listePPNbib", listePPNbib)
-    print("listePPNaut", listePPNaut)
     if parametres["preferences_alignement"] == 1:
         listeARKaut = []
         for el in listePPNaut:
             temp_aut_record = funcs.Aut_record(f",{el},,,,,,".split(","), {"input_data_type": 1})
-            print("temp_aut_record", temp_aut_record.ppn)
             ark = aut2id_idref.idrefAut2arkAut(temp_aut_record)
             if ark:
                 listeARKaut.append(ark)
