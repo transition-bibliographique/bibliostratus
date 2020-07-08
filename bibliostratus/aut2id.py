@@ -823,7 +823,6 @@ def bib2arkAUT(input_record, parametres):
                 listeArk.extend(arks)
 
     listeArk = ",".join(set([el for el in listeArk if el]))
-    
     if (listeArk != ""):
         input_record.alignment_method.append("Titre-Auteur-Date")
     return listeArk
@@ -843,9 +842,22 @@ def bib2ppnAUT(input_record, parametres):
         url = "https://www.sudoc.fr/" + ppn + ".xml"
         (test, results) = funcs.testURLetreeParse(url)
         if (test):
-                for record in results.xpath(
-                        "//record", namespaces=main.ns):
-                    listePPNaut.extend(extractARKautfromBIB(input_record, record))
+            for record in results.xpath(
+                    "//record", namespaces=main.ns):
+                listePPNaut.extend(extractARKautfromBIB(input_record, record, source="sudoc"))
+    print("listePPNbib", listePPNbib)
+    print("listePPNaut", listePPNaut)
+    if parametres["preferences_alignement"] == 1:
+        listeARKaut = []
+        for el in listePPNaut:
+            temp_aut_record = funcs.Aut_record(f",{el},,,,,,".split(","), {"input_data_type": 1})
+            print("temp_aut_record", temp_aut_record.ppn)
+            ark = aut2id_idref.idrefAut2arkAut(temp_aut_record)
+            if ark:
+                listeARKaut.append(ark)
+            # Reprendre ici la conversion des PPN en ARK autorités
+        if listeARKaut:
+            listePPNaut = listeARKaut
     listePPNaut = ",".join(set([el for el in listePPNaut if el]))
     if (listePPNaut != ""):
         input_record.alignment_method.append("Titre-Auteur-Date")
@@ -947,7 +959,7 @@ def compareFullAccessPoint(NumNot, ark_current, recordBNF, nom, prenom, date_deb
     return ark
 
 
-def extractARKautfromBIB(input_record, xml_record):
+def extractARKautfromBIB(input_record, xml_record, source="bnf"):
     """Récupère tous les auteurs d'une notice bibliographique
     et compare chacun avec un nom-prénom d'auteur en entrée"""
     listeNNA = []
@@ -996,10 +1008,13 @@ def extractARKautfromBIB(input_record, xml_record):
                     listeNNA.append(listeFieldsAuteur[auteur]["nna"])
             elif ("nna" in listeFieldsAuteur[auteur]):
                 listeNNA.append(listeFieldsAuteur[auteur]["nna"])
-    
-    for nna in listeNNA:
-        listeArk.append(nna2ark(nna))
-    return listeArk
+    if source == "bnf":
+        for nna in listeNNA:
+            listeArk.append(nna2ark(nna))
+        return listeArk
+    else:
+        listeNNA = ["PPN"+el for el in listeNNA]
+        return listeNNA
 
 
 # ==============================================================================

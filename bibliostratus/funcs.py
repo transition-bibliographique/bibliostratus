@@ -1024,7 +1024,7 @@ class Bib_record:
 
 class Aut_record:
     """Classe définissant les propriétés d'une notice d'autorité mise en entrée
-    du module d'alignement aut2ark, à partir de notices AUT"""
+    du module d'alignement aut2id, à partir de notices AUT"""
 
     def __init__(self, input_row, parametres):  # Notre méthode constructeur
         self.metas_init = input_row[1:]
