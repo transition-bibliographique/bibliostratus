@@ -384,24 +384,6 @@ def aut2id_item(row, n, parametres):
         alignment_result = align_from_rameau_alignment(input_record, parametres)
     return alignment_result
 
-"""
-def align_from_aut_item(row, n, parametres):
-    input_record = funcs.Aut_record(row, parametres)
-    alignment_result = align_from_aut_alignment(input_record, parametres)
-    return alignment_result
-
-
-def align_from_bib_item(row, n, parametres):
-    input_record = funcs.Bib_Aut_record(row, parametres)
-    alignment_result = align_from_bib_alignment(input_record, parametres)
-    return alignment_result
-
-
-def align_rameau_item(row, n, parametres):
-    input_record = funcs.Aut_record(row, parametres)
-    alignment_result = align_from_rameau_alignment(input_record, parametres)
-    return alignement_result
-"""
 
 def align_aut_file(form, entry_filename, liste_reports, parametres):
     """Aligner ses données d'autorité avec les autorités BnF à partir
@@ -848,8 +830,7 @@ def bib2ppnAUT(input_record, parametres):
     if parametres["preferences_alignement"] == 1:
         listeARKaut = []
         for el in listePPNaut:
-            temp_aut_record = funcs.Aut_record(f",{el},,,,,,".split(","), {"input_data_type": 1})
-            ark = aut2id_idref.idrefAut2arkAut(temp_aut_record)
+            ark = idrefppn2arkAut(el)
             if ark:
                 listeARKaut.append(ark)
             # Reprendre ici la conversion des PPN en ARK autorités
@@ -859,6 +840,13 @@ def bib2ppnAUT(input_record, parametres):
     if (listePPNaut != ""):
         input_record.alignment_method.append("Titre-Auteur-Date")
     return listePPNaut
+
+
+def idrefppn2arkAut(idrefppn):
+    """ Conversion d'un PPN IdRef de personne en ARK BnF"""
+    temp_aut_record = funcs.Aut_record(f",{idrefppn},,,,,,".split(","), {"input_data_type": 1})
+    ark = aut2id_idref.idrefAut2arkAut(temp_aut_record, "idref")
+    return ark
 
 
 def bib2ppnAUT_from_sudoc(input_record, parametres):

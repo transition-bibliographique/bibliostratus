@@ -1028,6 +1028,7 @@ class Aut_record:
 
     def __init__(self, input_row, parametres):  # Notre méthode constructeur
         self.metas_init = input_row[1:]
+        self.parametres = parametres
         self.NumNot = input_row[0]
         self.frbnf = FRBNF(input_row[1])
         self.ppn = IdRef(input_row[1])
@@ -1048,6 +1049,9 @@ class Aut_record:
             self.firstname = Name(input_row[5])
             self.firstdate = Date(input_row[6])
             self.lastdate = Date(input_row[7])
+
+    def __str__(self):
+        return f"objet Aut_record : {str(self.metas_init)} -- {str(self.parametres)}"
             
 
 class Bib_Aut_record:
@@ -1119,7 +1123,7 @@ class XML2record:
         else:
             self.metadata, self.doc_record = marc2tables.record2listemetas(self.pymarc_record, 2,
                                                                             )
-            self.record = Aut_record(self.metadata, record_type)
+            self.record = Aut_record(self.metadata, {"input_data_type": record_type})
 
 
 class XMLaut2record:
