@@ -570,7 +570,7 @@ def systemid2ark(input_record, NumNot, systemid, tronque, isbn, titre, auteur, d
     for ark_current in results.dict_records:
         zones9XX = [str(i) for i in range(900, 1000)]
         for zone in zones9XX:
-            for zone9XX in record.xpath(f"*[@tag='{zone}']"):
+            for zone9XX in results.dict_records[ark_current].xpath(f"*[@tag='{zone}']"):
                 local_val = sru.field2subfield(zone9XX, "a")
                 if local_val == systemid:
                     listeARK.append(comparerBibBnf(input_record,
