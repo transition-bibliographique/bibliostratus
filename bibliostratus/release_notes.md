@@ -2,6 +2,8 @@
 - Module blanc [Autorités] :
   - correction d'un bug pour l'alignement par références bibliographiques
   - correction d'un bug sur l'alignement des notices Rameau
+- Module blanc [Bibliographique] :
+  - Correction d'un bug sur l'alignement par ancien numéro de notices
 
 
 ### version 1.30

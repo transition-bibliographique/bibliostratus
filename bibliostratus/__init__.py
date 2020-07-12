@@ -16,6 +16,10 @@ import webbrowser
 from tkinter import filedialog
 from urllib import error, request
 import pymarc
+import ssl
+
+from joblib import Parallel, delayed
+import multiprocessing
 
 from unidecode import unidecode
 
