@@ -810,5 +810,5 @@ def check_proxy():
 
 if __name__ == '__main__':
     check_proxy()
-    freeze_support
+    freeze_support()
     forms.default_launch()

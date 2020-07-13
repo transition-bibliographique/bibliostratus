@@ -713,4 +713,5 @@ def formulaire_ark2records(
 
 
 if __name__ == '__main__':
+    multiprocessing.freeze_support()
     forms.default_launch()

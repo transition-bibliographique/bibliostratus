@@ -2848,4 +2848,5 @@ def form_bib2id(
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     forms.default_launch()
