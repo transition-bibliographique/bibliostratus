@@ -31,6 +31,8 @@ import bib2id
 import forms
 import edit_preferences as settings
 
+from multiprocessing import freeze_support
+
 version = init.version
 lastupdate = init.lastupdate
 programID = init.programID
@@ -808,4 +810,5 @@ def check_proxy():
 
 if __name__ == '__main__':
     check_proxy()
+    freeze_support
     forms.default_launch()
