@@ -266,8 +266,7 @@ def relancerNNBAuteur(input_record, NumNot, systemid, isbn, titre, auteur, date)
     listeArk = []
     if (auteur and auteur is not None):
         results = sru.SRU_result(f'bib.author all "{auteur}" and bib.otherid all "{systemid}"')
-        for ark_current in results.list_identifiers:
-            listeArk.append(ark)
+        listeArk.extend(results.list_identifiers)
     if listeArk:
         input_record.alignment_method.append("N° sys FRBNF + Auteur")
     listeArk = ",".join([ark for ark in listeArk if ark])
