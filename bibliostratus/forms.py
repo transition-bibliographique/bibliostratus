@@ -589,7 +589,8 @@ bib2id_type_doc_bib = {1:
 
 bib2id_input_preferences_alignement = {1: "Avec la BnF (et à défaut avec le Sudoc)",
                                        2: "Avec le Sudoc (et à défaut avec la BnF)",
-                                       3: "Avec WorldCat"}
+                                       #3: "Avec WorldCat"
+                                       }
 
 
 form_bib2id = {"cadre_input_type_docs_zone":

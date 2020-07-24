@@ -19,7 +19,7 @@ import webbrowser
 from tkinter import filedialog
 from urllib import error, request
 
-from unidecode import unidecode
+from udecode import udecode
 
 import __init__ as init
 
@@ -249,7 +249,7 @@ def clean_string(string, replaceSpaces=False, replaceTirets=False):
         - suppression des espaces
         - suppression des tirets
     """
-    string = unidecode(string.lower())
+    string = udecode(string.lower())
     for sign in punctuation:
         string = string.replace(sign, " ")
     string = string.replace("'", " ")
