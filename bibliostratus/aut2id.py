@@ -347,6 +347,19 @@ def align_from_aut_alignment(input_record, parametres):
         ark = aut2id_idref.aut2ppn_by_id(input_record, parametres)
         if (ark == "" and input_record.lastname.propre):
             ark = aut2id_idref.aut2ppn_by_accesspoint(input_record, parametres)
+        if (ark == ""):
+            ark = aut2ark_by_id(input_record, parametres)
+        if (ark == ""):
+            ark = aut2ark_by_accesspoint(
+                    input_record,
+                    input_record.NumNot, 
+                    input_record.lastname.propre,
+                    input_record.firstname.propre,
+                    input_record.firstdate.propre,
+                    input_record.lastdate.propre,
+                    parametres
+                    )
+
     if (ark == "" and parametres["isni_option"] == 1):
         ark = accesspoint2isniorg(input_record, parametres)
     alignment_result = funcs.Alignment_result(input_record, ark, parametres)
