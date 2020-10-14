@@ -81,9 +81,9 @@ dic_input_recordtype = {"bib": 1,
                         "bib2aut": 3}
 
 align_prefs = {"bnf": 1,
-                "sudoc": 2,
-                "idref": 2,
-                "abes": 2}
+               "sudoc": 2,
+               "idref": 2,
+               "abes": 2}
 
 dic_files_number = {"1": 1,
                     "mul": 2,

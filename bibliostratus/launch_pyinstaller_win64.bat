@@ -4,7 +4,7 @@
 :: 4. Supprime le répertoire initial "bibliostratus" 
 @echo off
 set /p version="version: "
-pyinstaller main.py
+pyinstaller main.py --exclude-module numpy
 rd /s /q build
 copy bibliostratus.bat dist
 xcopy /S main\files dist\main\files\

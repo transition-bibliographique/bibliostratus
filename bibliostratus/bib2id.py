@@ -266,8 +266,7 @@ def relancerNNBAuteur(input_record, NumNot, systemid, isbn, titre, auteur, date)
     listeArk = []
     if (auteur and auteur is not None):
         results = sru.SRU_result(f'bib.author all "{auteur}" and bib.otherid all "{systemid}"')
-        for ark_current in results.list_identifiers:
-            listeArk.append(ark)
+        listeArk.extend(results.list_identifiers)
     if listeArk:
         input_record.alignment_method.append("N° sys FRBNF + Auteur")
     listeArk = ",".join([ark for ark in listeArk if ark])
@@ -570,7 +569,7 @@ def systemid2ark(input_record, NumNot, systemid, tronque, isbn, titre, auteur, d
     for ark_current in results.dict_records:
         zones9XX = [str(i) for i in range(900, 1000)]
         for zone in zones9XX:
-            for zone9XX in record.xpath(f"*[@tag='{zone}']"):
+            for zone9XX in results.dict_records[ark_current].xpath(f"*[@tag='{zone}']"):
                 local_val = sru.field2subfield(zone9XX, "a")
                 if local_val == systemid:
                     listeARK.append(comparerBibBnf(input_record,
@@ -2848,4 +2847,5 @@ def form_bib2id(
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     forms.default_launch()

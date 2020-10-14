@@ -70,7 +70,7 @@ letters = [
 ]
 punctation = [
     ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", "\\", "\"", "&", "~",
-    "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "\/", "<",
+    "{", "(", "[", "`", "\\", "_", "@", ")", "]", "}", "=", "+", "*", "/", "<",
     ">", ")", "}"
 ]
 
@@ -137,7 +137,7 @@ def clean_letters(text):
 
 
 def clean_spaces(text):
-    text = re.sub("\s\s+", " ", text).strip()
+    text = re.sub(r"\s\s+", " ", text).strip()
     return text
 
 
@@ -696,7 +696,7 @@ def aut_metas_from_marc21(record):
     ark = record2ark(record2meta(record, ["035$a"]))
     frbnf = record2frbnf(record2meta(record, ["035$a"]))
     isni = record2isniAUT(record2meta(record, ["024$a"]))
-    if re.fullmatch("\d{16}", isni) is None:
+    if re.fullmatch(r"\d{16}", isni) is None:
         isni = ""
     firstname = record2lastnameAUT_marc21(record2meta(record, ["100$a"], ["110$a", "111$a"]))
     lastname = record2firstnameAUT_marc21(record2meta(record, ["100$a"], ["110$b", "111$b"]))

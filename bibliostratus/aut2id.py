@@ -347,6 +347,19 @@ def align_from_aut_alignment(input_record, parametres):
         ark = aut2id_idref.aut2ppn_by_id(input_record, parametres)
         if (ark == "" and input_record.lastname.propre):
             ark = aut2id_idref.aut2ppn_by_accesspoint(input_record, parametres)
+        if (ark == ""):
+            ark = aut2ark_by_id(input_record, parametres)
+        if (ark == ""):
+            ark = aut2ark_by_accesspoint(
+                    input_record,
+                    input_record.NumNot, 
+                    input_record.lastname.propre,
+                    input_record.firstname.propre,
+                    input_record.firstdate.propre,
+                    input_record.lastdate.propre,
+                    parametres
+                    )
+
     if (ark == "" and parametres["isni_option"] == 1):
         ark = accesspoint2isniorg(input_record, parametres)
     alignment_result = funcs.Alignment_result(input_record, ark, parametres)
@@ -373,34 +386,23 @@ def alignment_result2output(alignment_result, input_record, parametres, liste_re
 
 
 def aut2id_item(row, n, parametres):
-    input_record = funcs.Aut_record(row, parametres)
-    alignment_result = align_from_aut_alignment(input_record, parametres)
+    if parametres["input_data_type"] in [1, 2]:
+        input_record = funcs.Aut_record(row, parametres)
+        alignment_result = align_from_aut_alignment(input_record, parametres)
+    elif parametres["input_data_type"] == 3:
+        input_record = funcs.Bib_Aut_record(row, parametres)
+        alignment_result = align_from_bib_alignment(input_record, parametres)
+    elif parametres["input_data_type"] == 4:
+        input_record = funcs.Aut_record(row, parametres)
+        alignment_result = align_from_rameau_alignment(input_record, parametres)
     return alignment_result
 
-"""
-def align_from_aut_item(row, n, parametres):
-    input_record = funcs.Aut_record(row, parametres)
-    alignment_result = align_from_aut_alignment(input_record, parametres)
-    return alignment_result
-
-
-def align_from_bib_item(row, n, parametres):
-    input_record = funcs.Bib_Aut_record(row, parametres)
-    alignment_result = align_from_bib_alignment(input_record, parametres)
-    return alignment_result
-
-
-def align_rameau_item(row, n, parametres):
-    input_record = funcs.Aut_record(row, parametres)
-    alignment_result = align_from_rameau_alignment(input_record, parametres)
-    return alignement_result
-"""
 
 def align_aut_file(form, entry_filename, liste_reports, parametres):
     """Aligner ses données d'autorité avec les autorités BnF à partir
     d'une extraction tabulée de la base d'autorités"""
     header_columns = ["NumNot", "Nb identifiants trouvés", 
-                      "Liste identifiants AUT trouvés"] + aligntype2headers[parametres["input_data_type"]][1:]
+                      "Liste identifiants AUT trouvés", "Méthode"] + aligntype2headers[parametres["input_data_type"]][1:]
     if (parametres['meta_bnf'] == 1):
         header_columns.extend(
             ["[BnF] Nom", "[BnF] Complément Nom", "[BnF] Dates", "[BnF] ISNI"])
@@ -748,13 +750,14 @@ def aut2ark_by_accesspoint(input_record, NumNot, nom_nett, prenom_nett,
     # Conversion du type d'autorité des codes Unimarc
     # en codes Intermarc pour le SRU BnF
     type_aut_dict = {"a" : "PEP",
-                     "b" : "ORG"}
+                     "b": "ORG",
+                     "a b": "PEP ORG"}
 
     listeArk = []
     url = funcs.url_requete_sru(
         'aut.accesspoint adj "' + " ".join([nom_nett, prenom_nett, date_debut]) 
         + '" and aut.status any "sparse validated"'
-        + ' and aut.type all "' + type_aut_dict[parametres["type_aut"]] + '"')
+        + ' and aut.type any "' + type_aut_dict[parametres["type_aut"]] + '"')
     testdatefin = False
     if (date_debut == "" and date_fin != ""):
         url = funcs.url_requete_sru('aut.accesspoint adj "' + " ".join(
@@ -815,7 +818,6 @@ def bib2arkAUT(input_record, parametres):
                 listeArk.extend(arks)
 
     listeArk = ",".join(set([el for el in listeArk if el]))
-    
     if (listeArk != ""):
         input_record.alignment_method.append("Titre-Auteur-Date")
     return listeArk
@@ -835,13 +837,29 @@ def bib2ppnAUT(input_record, parametres):
         url = "https://www.sudoc.fr/" + ppn + ".xml"
         (test, results) = funcs.testURLetreeParse(url)
         if (test):
-                for record in results.xpath(
-                        "//record", namespaces=main.ns):
-                    listePPNaut.extend(extractARKautfromBIB(input_record, record))
+            for record in results.xpath(
+                    "//record", namespaces=main.ns):
+                listePPNaut.extend(extractARKautfromBIB(input_record, record, source="sudoc"))
+    if parametres["preferences_alignement"] == 1:
+        listeARKaut = []
+        for el in listePPNaut:
+            ark = idrefppn2arkAut(el)
+            if ark:
+                listeARKaut.append(ark)
+            # Reprendre ici la conversion des PPN en ARK autorités
+        if listeARKaut:
+            listePPNaut = listeARKaut
     listePPNaut = ",".join(set([el for el in listePPNaut if el]))
     if (listePPNaut != ""):
         input_record.alignment_method.append("Titre-Auteur-Date")
     return listePPNaut
+
+
+def idrefppn2arkAut(idrefppn):
+    """ Conversion d'un PPN IdRef de personne en ARK BnF"""
+    temp_aut_record = funcs.Aut_record(f",{idrefppn},,,,,,".split(","), {"input_data_type": 1})
+    ark = aut2id_idref.idrefAut2arkAut(temp_aut_record, "idref")
+    return ark
 
 
 def bib2ppnAUT_from_sudoc(input_record, parametres):
@@ -939,7 +957,7 @@ def compareFullAccessPoint(NumNot, ark_current, recordBNF, nom, prenom, date_deb
     return ark
 
 
-def extractARKautfromBIB(input_record, xml_record):
+def extractARKautfromBIB(input_record, xml_record, source="bnf"):
     """Récupère tous les auteurs d'une notice bibliographique
     et compare chacun avec un nom-prénom d'auteur en entrée"""
     listeNNA = []
@@ -962,7 +980,6 @@ def extractARKautfromBIB(input_record, xml_record):
                 if (subfield.get("code") == "f"):
                     listeFieldsAuteur[i]["dates"] = main.clean_string(
                         subfield.text, True, True)
-    
     for auteur in listeFieldsAuteur:
         if (("nom" in listeFieldsAuteur[auteur])
             and (input_record.lastname.nett in listeFieldsAuteur[auteur]["nom"] or
@@ -983,15 +1000,19 @@ def extractARKautfromBIB(input_record, xml_record):
                             listeNNA.append(listeFieldsAuteur[auteur]["nna"])
                         except KeyError:
                             pass
-            elif (input_record.date_debut != "" and "dates" in listeFieldsAuteur[auteur]):
+            elif (input_record.date_debut != "" and "dates" in listeFieldsAuteur[auteur] and "nna" in listeFieldsAuteur[auteur]):
                 if (input_record.date_debut in listeFieldsAuteur[auteur]["dates"] or
                         listeFieldsAuteur[auteur]["dates"] in input_record.date_debut):
                     listeNNA.append(listeFieldsAuteur[auteur]["nna"])
             elif ("nna" in listeFieldsAuteur[auteur]):
                 listeNNA.append(listeFieldsAuteur[auteur]["nna"])
-    for nna in listeNNA:
-        listeArk.append(nna2ark(nna))
-    return listeArk
+    if source == "bnf":
+        for nna in listeNNA:
+            listeArk.append(nna2ark(nna))
+        return listeArk
+    else:
+        listeNNA = ["PPN"+el for el in listeNNA]
+        return listeNNA
 
 
 # ==============================================================================
@@ -1045,7 +1066,7 @@ def launch(entry_filename, headers, input_data_type, preferences_alignement,
         parametres["type_notices_rameau"] = defaultdict(str)
     liste_reports = create_reports(funcs.id_traitement2path(id_traitement), file_nb)
 
-    if (input_data_type in [1, 2, 3, 4] or input_data_type == 2):
+    if (input_data_type in [1, 2, 3, 4]):
         align_aut_file(form, entry_filename, liste_reports, parametres)
     elif form is not None:
         main.popup_errors("Format en entrée non défini")

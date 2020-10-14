@@ -59,6 +59,7 @@ def idrefAut2arkAut(input_record, base="idref"):
     url = f"https://www.{base}.fr/{input_record.ppn.propre}.xml"
     # print(url)
     (test, result) = funcs.testURLetreeParse(url, display=False)
+    
     if test:
         for f033 in result.xpath("//*[@tag='033']"):
             val = funcs.field2subfield(f033, "a")
