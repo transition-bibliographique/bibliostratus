@@ -1,7 +1,9 @@
 ### version 1.31
+- Modules blancs : correction d'un bug sur l'affichage multi-fenêtres suite à la parallélisation
 - Module blanc [Autorités] :
   - correction d'un bug pour l'alignement par références bibliographiques
   - correction d'un bug sur l'alignement des notices Rameau
+  - correction d'un bug : quand préférence d'alignement = IdRef, Bibliostratus ne relançait pas la recherche sur le catalogue BnF quand 0 PPN trouvé
 - Module blanc [Bibliographique] :
   - Correction d'un bug sur l'alignement par ancien numéro de notices
 
