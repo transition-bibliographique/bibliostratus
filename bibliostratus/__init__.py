@@ -1,7 +1,7 @@
 # coding: utf-8
 
-version = 1.30
-lastupdate = "25/06/2020"
+version = 1.31
+lastupdate = "13/10/2020"
 programID = "bibliostratus"
 
 
@@ -10,12 +10,16 @@ import os
 import json
 import re
 import smc.bibencodings
+from pkg_resources import py2_warn
 import tkinter as tk
 import webbrowser
 from tkinter import filedialog
 from urllib import error, request
-from pkg_resources import py2_warn
 import pymarc
+import ssl
+
+from joblib import Parallel, delayed
+import multiprocessing
 
 from unidecode import unidecode
 
