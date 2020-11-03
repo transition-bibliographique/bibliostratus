@@ -31,3 +31,5 @@ Mode d'emploi et tutoriels
 * [Consulter le forum utilisateurs](http://www.agorabib.fr/topic/3317-bibliostratus-mettre-en-correspondance-ses-notices-avec-celles-de-la-bnf/ "topic Agorabib")
 * [Consulter la documentation technique](https://github.com/Transition-bibliographique/bibliostratus/tree/master/doc)
 * [Installer Bibliostratus sur Linux](INSTALL.md)
+
+* [Notes de version](bibliostratus/release_notes.md)
