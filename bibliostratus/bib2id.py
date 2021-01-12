@@ -395,6 +395,7 @@ def comparaisonTitres(
             ark = ""
     if ark != "" and numeroTome != "":
         ark = verificationTomaison(ark, numeroTome, recordBNF)
+        
     if ark != "" and date != "":
         if (
             "ISBN" in origineComparaison
@@ -910,8 +911,7 @@ def ean2sudoc(input_record, parametres, controle_titre=True):
 
 def ppn2ark(input_record, ppn, parametres):
     ark = ""
-    ppn = ppn.replace("PPN", "")
-    url = "https://www.sudoc.fr/" + ppn + ".rdf"
+    url = "https://www.sudoc.fr/" + ppn.replace("PPN", "") + ".rdf"
     (test, record) = funcs.testURLetreeParse(url)
     if test:
         for sameAs in record.xpath("//owl:sameAs", namespaces=main.nsSudoc):
@@ -1317,7 +1317,7 @@ def tad2ark(input_record, parametres,
                             f'bib.doctype any "{input_record.intermarc_type_doc}"'
                            ]
             index = " dans toute la notice"
-
+        #print(search_query)
         # Ajout du critère Echelle pour les cartes
         if (input_record.type == "CP"
            and input_record.scale):
@@ -1390,7 +1390,7 @@ def tad2ark_date(input_record, annee_plus_trois):
 
 def tad2ark_controle_record(input_record, ark_current, 
                             auteur, date_nett, annee_plus_trois, index, 
-                            xml_record):
+                            xml_record, origine="Titre-Auteur-Date"):
     """
     Ensemble de contrôles sur une notice BnF trouvée par une recherche 
     Titre-Auteur-Date
@@ -1409,7 +1409,7 @@ def tad2ark_controle_record(input_record, ark_current,
                                     date_nett,
                                     input_record.tome_nett,
                                     xml_record,
-                                    "Titre-Auteur-Date" + index)
+                                    origine + index)
             if (ark != "" and date_nett != "-"):
                 ark = checkDate(ark, input_record.date_nett,
                                 xml_record)
@@ -1429,12 +1429,12 @@ def tad2ark_controle_record(input_record, ark_current,
                                 date_nett,
                                 "",
                                 xml_record,
-                                "Titre-Auteur-Date" + index)
-    if (ark and input_record.isbn.propre):
+                                origine + index)
+    if (ark and input_record.isbn.propre and "Titre" in origine):
         input_record.alignment_method.append("Problème ISBN non reconnu")
-    if (ark and input_record.ean.propre):
+    if (ark and input_record.ean.propre and "Titre" in origine):
         input_record.alignment_method.append("Problème EAN non reconnu")
-    if (ark and input_record.issn.propre):
+    if (ark and input_record.issn.propre and "Titre" in origine):
         input_record.alignment_method.append("Problème ISSN non reconnu")
     return ark
 
@@ -1626,23 +1626,26 @@ def tad2ppn(input_record, parametres):
     url = url.replace("ADI_MAT=B", "ADI_MAT=B&ADI_MAT=Y")
     url = url.replace("ADI_MAT=N", "ADI_MAT=N&ADI_MAT=G")
     listePPN = urlsudoc2ppn(url)
+    
     listePPN = check_sudoc_results(input_record, listePPN)
+    listePPN = ",".join([f"PPN{ppn}" for ppn in listePPN.split(",") if ppn])
     return listePPN
 
 
-def check_sudoc_results(input_record, listePPN):
+def check_sudoc_results(input_record, listePPN, origine="Titre-Auteur-Date"):
     """
     Pour une liste de PPN trouvée, vérifier ceux qui correspondent bien à la notice initiale
+    L'origine permet de préciser si l'alignement vient de isbn/ean ou titre-auteur-date (TAD)
     """
     listePPN_checked = []
     for ppn in listePPN:
-        ppn_checked = check_sudoc_result(input_record, ppn)
+        ppn_checked = check_sudoc_result(input_record, ppn, origine)
         if (ppn_checked):
             listePPN_checked.append(ppn_checked)
-    listePPN_checked = ",".join(["PPN"+el for el in listePPN_checked if el])
+    listePPN_checked = ",".join([el for el in listePPN_checked if el])
     return listePPN_checked
 
-def check_sudoc_result(input_record, ppn):
+def check_sudoc_result(input_record, ppn, origine="Titre-Auteur-Date"):
     """
     Vérification de l'adéquation entre un PPN et une notice en entrée
     """
@@ -1653,12 +1656,12 @@ def check_sudoc_result(input_record, ppn):
             ppn_checked = tad2ark_controle_record(input_record, ppn, 
                                     input_record.auteur_nett,
                                     input_record.date_nett, False, "",
-                                    xml_record)
+                                    xml_record, origine)
         elif (type(input_record) == funcs.Bib_Aut_record):
             ppn_checked = tad2ark_controle_record(input_record, ppn, 
                                     input_record.lastname.propre,
                                     input_record.pubdate_nett, False, "",
-                                    xml_record)
+                                    xml_record, origine)
     #ppn_checked = ",".join([ppn for ppn in ppn_checked if ppn])            
     return ppn_checked
 
@@ -1847,7 +1850,10 @@ def id2record(identifier, typeRecord="bib"):
 
 
 def ppn2recordSudoc(ppn):
-    record = id2record(f"PPN{ppn}", "bib")
+    if "PPN" in ppn:
+        record = id2record(ppn, "bib")
+    else:
+        record = id2record(f"PPN{ppn}", "bib")
     if record is not None:
         return True, record
     else:
@@ -2185,6 +2191,7 @@ def item2ppn_by_id(input_record, parametres):
         )
     return ppn
 
+
 def check_ppn_by_kw(ppn, input_record, source_alignement):
     url_sudoc_record = "https://www.sudoc.fr/" + ppn.replace("PPN", "") + ".xml"
     (test, record_sudoc) = funcs.testURLetreeParse(url_sudoc_record, display=False)
@@ -2242,7 +2249,7 @@ def item2ark_by_keywords(input_record, parametres):
                       False, False)
         if ark:
             input_record.alignment_method.append(" recherche sans mention d'opus")
-
+    
     # Si pas trouvé, on cherche l'ensemble des
     # mots dans toutes les zones indifféremment
     if ark == "" and input_record.titre.init != "":
@@ -2254,6 +2261,7 @@ def item2ark_by_keywords(input_record, parametres):
 def item2ppn_by_keywords(input_record, parametres):
     """Alignement par mots clés sur le catalogue Sudoc"""
     ppn = ""
+
     if input_record.titre.init != "":
         ppn = tad2ppn(input_record, parametres)
 
@@ -2317,6 +2325,7 @@ def item_alignement(input_record, parametres):
             bibid = item2ark_by_id(input_record, parametres)
         if bibid == "":
             bibid = item2ark_by_keywords(input_record, parametres)
+    
     alignment_result = funcs.Alignment_result(input_record, bibid, parametres)
     if bibid == "Pb FRBNF":
         parametres["stats"]["Pb FRBNF"] += 1

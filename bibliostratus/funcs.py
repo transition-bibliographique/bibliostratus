@@ -1075,6 +1075,8 @@ class Bib_Aut_record:
         self.titre = Titre(input_row[5])
         self.pubdate = input_row[6]
         self.pubdate_nett = nettoyageDate(self.pubdate)
+        self.date_nett = self.pubdate
+        self.tome_nett = ""
         self.isni = Isni(input_row[7])
         self.lastname = Name(input_row[8])
         self.firstname = Name(input_row[9])

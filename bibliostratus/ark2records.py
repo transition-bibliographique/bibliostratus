@@ -328,6 +328,7 @@ def extract1record(row, parametres, multiprocess=False):
     if (len(identifier.aligned_id.clean) > 1 and identifier.aligned_id.clean not in parametres["listeARK_BIB"]):
         parametres["listeARK_BIB"].append(identifier.aligned_id.clean)
         url_record = ark2url(identifier, parametres)
+        print(url_record)
         if url_record:
             (test, page) = funcs.testURLetreeParse(url_record)
             if (test):

@@ -834,12 +834,13 @@ def bib2ppnAUT(input_record, parametres):
     listePPNbib = bib2ppnAUT_from_sudoc(input_record, parametres).split(",")
     listePPNbib = [el.replace("PPN", "") for el in listePPNbib if el]                        
     for ppn in listePPNbib:
-        url = "https://www.sudoc.fr/" + ppn + ".xml"
+        url = "https://www.sudoc.fr/" + ppn.replace("PPN", "") + ".xml"
         (test, results) = funcs.testURLetreeParse(url)
         if (test):
             for record in results.xpath(
                     "//record", namespaces=main.ns):
                 listePPNaut.extend(extractARKautfromBIB(input_record, record, source="sudoc"))
+    
     if parametres["preferences_alignement"] == 1:
         listeARKaut = []
         for el in listePPNaut:
@@ -850,8 +851,6 @@ def bib2ppnAUT(input_record, parametres):
         if listeARKaut:
             listePPNaut = listeARKaut
     listePPNaut = ",".join(set([el for el in listePPNaut if el]))
-    if (listePPNaut != ""):
-        input_record.alignment_method.append("Titre-Auteur-Date")
     return listePPNaut
 
 
@@ -867,7 +866,10 @@ def bib2ppnAUT_from_sudoc(input_record, parametres):
     Recherche dans le sudoc (interface web parsée)
     à partir d'un input_record d'instance Bib_Aut_record
     """
-    url = "http://www.sudoc.abes.fr//DB=2.1/SET=18/TTL=1/CMD?ACT=SRCHM\
+    listePPN = []
+    listePPN = ",".join(bib2ppnAUT_from_isbnean(input_record, parametres))
+    if len(listePPN) == 0:
+        url = "http://www.sudoc.abes.fr//DB=2.1/SET=18/TTL=1/CMD?ACT=SRCHM\
 &MATCFILTER=Y&MATCSET=Y&NOSCAN=Y&PARSE_MNEMONICS=N&PARSE_OPWORDS=N&PARSE_OLDSETS=N\
 &IMPLAND=Y&ACT0=SRCHA&screen_mode=Recherche\
 &IKT0=1004&TRM0=" + urllib.parse.quote(input_record.lastname.propre + " " + input_record.firstname.propre) + "\
@@ -875,11 +877,24 @@ def bib2ppnAUT_from_sudoc(input_record, parametres):
 &ACT2=*&IKT2=1016&TRM2=&ACT3=*&IKT3=1016&TRM3=&SRT=YOP" + "\
 &ADI_TAA=&ADI_LND=&ADI_JVU=" + urllib.parse.quote(input_record.pubdate_nett) + "\
 &ADI_MAT="
-    listePPN = bib2id.urlsudoc2ppn(url)
-    listePPN = bib2id.check_sudoc_results(input_record, listePPN)
+        listePPN = bib2id.urlsudoc2ppn(url)
+        listePPN = bib2id.check_sudoc_results(input_record, listePPN, "Titre-Auteur-Date")
     return listePPN
 
 
+def bib2ppnAUT_from_isbnean(input_record, parametres):
+    # Recherche de la notice BIB à partir de l'EAN
+    listePPN = []
+        # Si pas de résultats : on relance une recherche dans le Sudoc
+    if (len(listePPN) == 0 and input_record.ean.propre):
+        listePPN = bib2id.ean2sudoc(input_record, parametres, True).split(",")
+    # Si pas de résultats : on relance une recherche dans le Sudoc avec l'EAN
+    # seul
+    if (len(listePPN) == 0 and input_record.ean.propre):
+        listePPN = bib2id.ean2sudoc(input_record, parametres, False).split(",")
+    if (len(listePPN) == 0 and input_record.isbn.propre):
+        listePPN = bib2id.isbn2sudoc(input_record, parametres)
+    return listePPN
 
 def nna2ark(nna):
     url = funcs.url_requete_sru(
