@@ -86,6 +86,8 @@ align_prefs = {"bnf": 1,
                "abes": 2}
 
 dic_files_number = {"1": 1,
+                    "2": 2,
+                    "3": 2,
                     "mul": 2,
                     "plusieurs": 2,
                     "plus": 2}
