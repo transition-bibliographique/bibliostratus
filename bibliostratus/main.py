@@ -15,7 +15,6 @@ import json
 import re
 from pkg_resources import py2_warn
 import tkinter as tk
-from pkg_resources import py2_warn
 import webbrowser
 from tkinter import filedialog
 from urllib import error, request
