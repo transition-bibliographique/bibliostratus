@@ -328,7 +328,7 @@ def extract1record(row, parametres, multiprocess=False):
     if (len(identifier.aligned_id.clean) > 1 and identifier.aligned_id.clean not in parametres["listeARK_BIB"]):
         parametres["listeARK_BIB"].append(identifier.aligned_id.clean)
         url_record = ark2url(identifier, parametres)
-        print(url_record)
+        #print(url_record)
         if url_record:
             (test, page) = funcs.testURLetreeParse(url_record)
             if (test):
@@ -474,8 +474,12 @@ def file2extract(filename, parametres, files, master_form, ark2records_form):
             records = Parallel(n_jobs=NUM_PARALLEL)(delayed(extract1record)(row, parametres, True) for row in rows)
             for identifier, xml_record, linked_aut_records in records:
                 print(str(j) + ". " + identifier.aligned_id.clean)
-                record2file(identifier, etree.fromstring(xml_record), files["bib_file"], 
+                try:
+                    record2file(identifier, etree.fromstring(xml_record), files["bib_file"], 
                             parametres["format_file"], parametres, files)
+                except ValueError as err:
+                    errors_list.append([str(err), f"Problème d'accès à la notice : {identifier.aligned_id.clean}"])
+                    print(f"Pas d'accès à la notice  {identifier.aligned_id.clean}{str(err)} : consulter le fichier d'erreurs {parametres['outputID']}-errors.txt")
                 if linked_aut_records is not None:
                     for identifier, xml_record in linked_aut_records:
                         record2file(identifier, etree.fromstring(xml_record), files["aut_file"],
