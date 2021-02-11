@@ -1114,9 +1114,9 @@ class XML2record:
     record_type: 1 = BIB, 2 = AUT
 
     """
-    def __init__(self, xml_record, record_type=1, all_metas=False):  # Notre méthode constructeur
+    def __init__(self, identifier, xml_record, record_type=1, all_metas=False):  # Notre méthode constructeur
         self.init = xml_record
-        self.pymarc_record = xml2pymarcrecord(xml_record)
+        self.pymarc_record = xml2pymarcrecord(identifier, xml_record)
         self.doc_record = None
         if (record_type == 1):
             self.metadata, self.doc_record = marc2tables.record2listemetas(self.pymarc_record, 1,
@@ -1226,7 +1226,7 @@ class Aligned_id:
 
 
 
-def xml2pymarcrecord(xml_record):
+def xml2pymarcrecord(identifier, xml_record):
     """
     Sert à récupérer un fichier en ligne, contenant
     une notice simple en XML (balise racine <record/>)

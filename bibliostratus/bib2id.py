@@ -1975,15 +1975,18 @@ def ark2meta_simples(ark):
     for ark in ark.split(","):
         record = id2record(ark)
         if record is not None:
-            record = funcs.XML2record(record, 1, True)
-            if metas == []:
+            try:
+                record = funcs.XML2record(ark, record, 1, True)
+                if metas == []:
+                    for el in record.metadata[3:]:
+                        metas.append([])
+                i = 0
                 for el in record.metadata[3:]:
-                    metas.append([])
-            i = 0
-            for el in record.metadata[3:]:
-                metas[i].append(el)
-                i += 1
-            doctypes.append(record.doc_record)
+                    metas[i].append(el)
+                    i += 1
+                doctypes.append(record.doc_record)
+            except IndexError:
+                pass
     i = 0
     for liste_el in metas:
         metas[i] = "|".join(liste_el)
