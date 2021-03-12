@@ -5,6 +5,7 @@
 @echo off
 set /p version="version: "
 pyinstaller main.py --exclude-module numpy
+::pyinstaller main.py
 rd /s /q build
 copy bibliostratus.bat dist
 xcopy /S main\files dist\main\files\

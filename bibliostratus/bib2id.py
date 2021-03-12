@@ -34,6 +34,7 @@ import main
 import aut2id_idref
 import sru
 import forms
+import bib2id_gmb
 
 # Ajout exception SSL pour éviter
 # plantages en interrogeant les API IdRef
@@ -808,6 +809,7 @@ def isbn2sudoc(input_record, parametres):
     un FRBNF, auquel cas on convertit le PPN en ARK. Sinon, on garde le(s) PPN
     """
     url = "https://www.sudoc.fr/services/isbn2ppn/" + input_record.isbn.propre
+    #print(url)
     Listeppn = []
     isbnTrouve = funcs.testURLretrieve(url)
     ark = []
@@ -2455,6 +2457,16 @@ def launch(entry_filename,
     except ValueError as err:
         print("\n\nDonnées en entrée erronées\n")
         print(err)
+
+    params_gmb = {}
+    #print(main.prefs)
+    if main.prefs["gmb"]["value"] == 1:
+        type_doc_bib = 1
+        preferences_alignement = 1
+        kwsudoc_option = 0
+        params_gmb = bib2id_gmb.launch_gmb_program()
+        entry_filename = bib2id_gmb.csvfile2bbsfile(entry_filename, params_gmb)
+    
     header_columns_init_dic = {
         1: header_columns_init_monimpr,
         2: header_columns_init_cddvd,

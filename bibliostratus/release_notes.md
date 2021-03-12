@@ -1,3 +1,12 @@
+### version 1.32
+- Module blanc [Bibliographique]
+	- correction d'un bug sur les ISBN se terminant par X, pour les alignements avec le Sudoc
+	- Possibilité de charger un fichier Excel dans le cadre d'un projet Gallica Marque Blanche	
+- Module rouge (export de notices) :
+	- prise en compte d'un message d'erreur possible du SRU de la BnF
+- Exécution de Bibliostratus en ligne de commande
+	- correction d'un bug sur les valeurs autorisées
+
 ### version 1.31
 - Modules blancs : correction d'un bug sur l'affichage multi-fenêtres suite à la parallélisation
 - Module blanc [Autorités] :

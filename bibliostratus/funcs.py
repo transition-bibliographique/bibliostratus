@@ -10,6 +10,7 @@ import http.client
 import urllib.parse
 import re
 import os
+import csv
 import sys
 import socket
 import subprocess
@@ -435,12 +436,12 @@ def ltrim(nombre_texte):
 def nettoyage_isbn(isbn):
     isbn_nett = isbn.split(";")[0].split(",")[0].split("(")[0].split("[")[0]
     isbn_nett = isbn_nett.replace("-", "").replace(" ", "").replace("°", "")
-    isbn_nett = unidecode_local(isbn_nett)
+    isbn_nett = unidecode_local(isbn_nett).lower()
     for signe in ponctuation:
         isbn_nett = isbn_nett.replace(signe, "")
-    isbn_nett = isbn_nett.lower()
     for lettre in lettres_sauf_x:
         isbn_nett = isbn_nett.replace(lettre, "")
+    isbn_nett = isbn_nett.replace("x", "X")
     return isbn_nett
 
 
@@ -2811,6 +2812,30 @@ def cprint(thing):
     # lors du débugage du code, et pouvoir facilement retrouver
     # (et mettre en commentaire ou supprimer) ces lignes
     print(thing)
+
+
+def file2list(filename, all_cols=False, delimiter="\t"):
+    # Conversion d'un fichier en liste (ou liste de listes)
+    liste = []
+    if filename.startswith("http"):
+        file = request.urlopen(filename)
+        for line in file:
+            liste.append(line.decode(encoding="utf-8").replace("\n", "").replace("\r", "").split(delimiter))
+    else:
+        try:
+            file = open(filename, encoding="utf-8")
+            content = csv.reader(file, delimiter=delimiter)
+            for row in content:
+                if row:
+                    if all_cols:
+                        liste.append(row)
+                    else:
+                        liste.append(row[0])
+            file.close()
+        except FileNotFoundError:
+            pass
+    return liste
+
 
 
 def chunks(lst, n):
