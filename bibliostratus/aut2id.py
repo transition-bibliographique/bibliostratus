@@ -363,10 +363,6 @@ def align_from_aut_alignment(input_record, parametres):
     if (ark == "" and parametres["isni_option"] == 1):
         ark = accesspoint2isniorg(input_record, parametres)
     alignment_result = funcs.Alignment_result(input_record, ark, parametres)
-    if ark == "Pb FRBNF":
-        parametres["stats"]["Pb FRBNF"] += 1
-    else:
-        parametres["stats"][alignment_result.nb_ids] += 1
     return alignment_result
 
 
@@ -433,6 +429,10 @@ def align_aut_file(form, entry_filename, liste_reports, parametres):
             for alignment_result in alignment_results:
                 alignment_result2output(alignment_result, alignment_result.input_record,
                                         parametres, liste_reports, n)
+                if alignment_result.ids_str == "Pb FRBNF":
+                    parametres["stats"]["Pb FRBNF"] += 1
+                else:
+                    parametres["stats"][alignment_result.nb_ids] += 1
                 n += 1
         # for row in entry_file:
         #     align_from_aut_item(row, n, form, parametres, liste_reports)
@@ -504,10 +504,7 @@ def align_from_bib_alignment(input_record, parametres):
 
     alignment_result = funcs.Alignment_result(input_record, ark_trouve,
                                               parametres)
-    if (ark_trouve == "Pb FRBNF"):
-        parametres["stats"]["Pb FRBNF"] += 1
-    else:
-        parametres["stats"][alignment_result.nb_ids] += 1
+
     return alignment_result
 
 

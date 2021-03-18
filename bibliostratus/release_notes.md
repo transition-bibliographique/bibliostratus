@@ -1,4 +1,6 @@
 ### version 1.32
+- Modules blancs [alignements Autorités et Bibliographiques] :
+	- correction d'un bug sur le fichier des statistiques d'alignement, qui restait vide (suite à la parallélisation des tâches)
 - Module blanc [Bibliographique]
 	- correction d'un bug sur les ISBN se terminant par X, pour les alignements avec le Sudoc
 	- Possibilité de charger un fichier Excel dans le cadre d'un projet Gallica Marque Blanche	

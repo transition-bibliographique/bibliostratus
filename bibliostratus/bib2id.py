@@ -2332,10 +2332,10 @@ def item_alignement(input_record, parametres):
             bibid = item2ark_by_keywords(input_record, parametres)
     
     alignment_result = funcs.Alignment_result(input_record, bibid, parametres)
-    if bibid == "Pb FRBNF":
+    """if bibid == "Pb FRBNF":
         parametres["stats"]["Pb FRBNF"] += 1
     else:
-        parametres["stats"][alignment_result.nb_ids] += 1
+        parametres["stats"][alignment_result.nb_ids] += 1"""
     return alignment_result
 
 
@@ -2425,6 +2425,9 @@ def file2row(form_bib2ark, entry_filename, liste_reports, parametres):
             for alignment_result in alignment_results:
                 alignment_result2output(alignment_result, alignment_result.input_record,
                                         parametres, liste_reports, n)
+                parametres["stats"][alignment_result.nb_ids] += 1
+                if "Pb FRBNF" in alignment_result.ids_str:
+                    parametres["stats"]["Pb FRBNF"] += 1
                 n += 1
 
 
@@ -2488,7 +2491,7 @@ def launch(entry_filename,
     main.check_file_name(form_bib2ark, entry_filename)
     liste_reports = create_reports(funcs.id_traitement2path(id_traitement), file_nb)
     file2row(form_bib2ark, entry_filename, liste_reports, parametres)
-
+    #print(parametres["stats"])
     fin_traitements(form_bib2ark, liste_reports, parametres["stats"])
 
 #
@@ -2509,7 +2512,7 @@ def fin_traitements(form_bib2ark, liste_reports, nb_notices_nb_ARK):
 
 def stats_extraction(liste_reports, nb_notices_nb_ARK):
     """Ecriture des rapports de statistiques générales d'alignements"""
-    for key in nb_notices_nb_ARK:
+    for key in sorted(nb_notices_nb_ARK):
         liste_reports[-1].write(str(key) + "\t" + str(nb_notices_nb_ARK[key]) + "\n")
 
 
