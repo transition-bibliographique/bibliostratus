@@ -45,6 +45,13 @@ header_columns_init_aut2aut = [
     'N° Notice AUT', 'FRBNF', 'ARK', 'ISNI', 'Nom', 'Prénom',
     'Date de début', 'Date de fin'
 ]
+
+
+header_columns_init_aut2aut_org = [
+    'N° Notice AUT', 'FRBNF', 'ARK', 'ISNI', 'Nom', 'Complément nom',
+    'Date de début', 'Date de fin'
+]
+
 header_columns_init_bib2aut = [
     "N° Notice AUT", "N° notice BIB", "ARK Bib", "FRBNF Bib", "ISBN/EAN", "Titre",
     "Date de publication", "ISNI", "Nom", "Prénom", "Dates auteur"
@@ -55,7 +62,7 @@ header_columns_init_rameau = [
 ]
 
 aligntype2headers = {1: header_columns_init_aut2aut,
-                     2: header_columns_init_aut2aut,
+                     2: header_columns_init_aut2aut_org,
                      3: header_columns_init_bib2aut,
                      4: header_columns_init_rameau}
 

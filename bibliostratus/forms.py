@@ -414,6 +414,12 @@ header_columns_init_aut2aut = [
     'N° Notice AUT', 'FRBNF', 'ARK', 'ISNI', 'Nom', 'Prénom',
     'Date de début', 'Date de fin'
 ]
+
+header_columns_init_aut2aut_org = [
+    'N° Notice AUT', 'FRBNF', 'ARK', 'ISNI', 'Nom', 'Complément nom',
+    'Date de début', 'Date de fin'
+]
+
 header_columns_init_bib2aut = [
     "N° Notice AUT", "N° notice BIB", "ARK Bib", "FRBNF Bib", "ISBN/EAN", "Titre",
     "Date de publication", "ISNI", "Nom", "Prénom", "Dates auteur"
@@ -430,7 +436,7 @@ aut2id_input_data_type = {1:
                                  },
                           2:
                             {"line1": "[ORG] Liste de notices Organisations",
-                             "line2": display_headers_in_form(header_columns_init_aut2aut),
+                             "line2": display_headers_in_form(header_columns_init_aut2aut_org),
                              "link": ""},
                           3:
                             {"line1": "Liste de notices bibliographiques",
