@@ -70,7 +70,7 @@ def csv2bbs(input_filename, params_gmb):
         new_row = []
         for attribute in params_gmb:
             value = ""
-            if params_gmb[attribute] == -1:
+            if params_gmb[attribute] == "":
                 value = ""
             elif type(params_gmb[attribute]) == int:
                 colnr = params_gmb[attribute]
@@ -102,21 +102,22 @@ def csv2bbs(input_filename, params_gmb):
 
 
 def load_preferences():
-    params_gmb_file_name = 'main/files/params_gmb.txt'
-    params_gmb = {"NumNot": 0,
-                  "FRBNF": -1,
-                  "ARK": -1,
-                  "ISBN": -1,
-                  "EAN": -1,
+    params_gmb_file_name = 'main/files/params_gmb.tsv'
+    params_gmb = {"NumNot": -1,
+                  "FRBNF": "",
+                  "ARK": "",
+                  "ISBN": "",
+                  "EAN": "",
                   "Titre": [0,1,2,3],
                   "Auteurs": [4,5,6,12,13,17,18,22,23],
                   "Date": 30,
-                  "Tome-Volume": -1,
+                  "Tome-Volume": "",
                   "Editeur": 28,
                  }
     try:
         with open(params_gmb_file_name, encoding="utf-8") as params_gmb_file:
             params_gmb = csv2dict(csv.reader(params_gmb_file, delimiter="\t"), params_gmb)
+            
     except FileNotFoundError:
         print("Tentative pour ouvrir le fichier de préférences", params_gmb_file_name)
         print("Fichier non trouvé, les valeurs par défaut seront appliquées")
@@ -136,6 +137,8 @@ def csv2dict(table, params_gmb):
             if "," in value:
                 value = [int(val) for val in value.split(",") if funcs.RepresentsInt(val)]
                 params_gmb[key] = value
+            elif value == "":
+                params_gmb[key] = ""
             elif funcs.RepresentsInt(value):
                 params_gmb[key] = int(value)
     return params_gmb
