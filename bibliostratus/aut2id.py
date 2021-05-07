@@ -500,6 +500,8 @@ def align_from_bib_alignment(input_record, parametres):
         if (ark_trouve == "" and input_record.lastname != ""):
             ark_trouve = bib2ppnAUT(input_record, parametres)
     else:
+        if (ark_trouve == "" and input_record.isbn_bib.propre != ""):
+            ark_trouve = isbnBib2ppnAut(input_record, parametres)
         if (ark_trouve == "" and input_record.lastname != ""):
             ark_trouve = bib2ppnAUT(input_record, parametres)
         if (ark_trouve == "" and input_record.ark_bib_init != ""):
@@ -644,6 +646,24 @@ def isbnBib2arkAut(input_record, parametres):
     if (listeArk != ""):
         input_record.alignment_method.append("ISBN bib > ARK")
     return listeArk
+
+
+def isbnBib2ppnAut(input_record, parametres):
+    """Recherche de l'identifiant d'auteur à partir d'une recherche ISBN + nom d'auteur :
+        """
+    listePPN = []
+    bib_record = funcs.Bib_record([input_record.NumNot, input_record.frbnf_bib.init,
+                                   "", input_record.isbn_bib.init, "", input_record.titre.init,
+                                   input_record.lastname.propre + " ", "", "", ""], 
+                                   1)
+    listePPN_bib = bib2id.isbn2sudoc(bib_record, parametres)
+    for ppn in listePPN_bib.split(","):
+        test, record = bib2id.ppn2recordSudoc(ppn)
+        listePPN.extend(extractARKautfromBIB(input_record, record, "sudoc"))
+    listePPN = ",".join(set(listePPN))
+    if (listePPN != ""):
+        input_record.alignment_method.append("ISBN bib > PPN")
+    return listePPN
 
 # Si le FRBNF n'a pas été trouvé, on le recherche comme numéro système ->
 # pour ça on extrait le n° système
