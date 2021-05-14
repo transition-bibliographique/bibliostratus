@@ -131,11 +131,15 @@ def row2file(liste_metadonnees, liste_reports):
     liste_reports[0].write("\t".join(liste_metadonnees_to_report) + "\n")
 
 
-def row2files(liste_metadonnees, liste_reports):
+def row2files(liste_metadonnees, liste_reports, headers=False):
     liste_metadonnees_to_report = [str(el) for el in liste_metadonnees]
     nbARK = liste_metadonnees[1]
     ark = liste_metadonnees[2]
-    if (ark == "Pb FRBNF"):
+    if headers:
+        liste_reports[1].write("\t".join(liste_metadonnees_to_report) + "\n")
+        liste_reports[2].write("\t".join(liste_metadonnees_to_report) + "\n")
+        liste_reports[3].write("\t".join(liste_metadonnees_to_report) + "\n")
+    elif (ark == "Pb FRBNF"):
         liste_reports[0].write("\t".join(liste_metadonnees_to_report) + "\n")
     elif (nbARK == 0):
         liste_reports[1].write("\t".join(liste_metadonnees_to_report) + "\n")
@@ -199,7 +203,6 @@ def isni2id(input_record, parametres, origine="isni"):
     Recherche d'un identifiant ARK ou PPN à partir d'un ISNI
     """
     Liste_ids = []
-    
     if (parametres["preferences_alignement"] == 2):
         Liste_ids = aut2id_idref.isni2ppn(input_record, input_record.isni.propre,
                                              parametres,
@@ -408,11 +411,11 @@ def align_aut_file(form, entry_filename, liste_reports, parametres):
                       "Liste identifiants AUT trouvés", "Méthode"] + aligntype2headers[parametres["input_data_type"]][1:]
     if (parametres['meta_bnf'] == 1):
         header_columns.extend(
-            ["[BnF] Nom", "[BnF] Complément Nom", "[BnF] Dates", "[BnF] ISNI"])
+            ["[BnF/IdRef] Nom", "[BnF/IdRef] Complément Nom", "[BnF/IdRef] Dates", "[BnF/IdRef] ISNI"])
     if (parametres['file_nb'] == 1):
         row2file(header_columns, liste_reports)
     elif(parametres['file_nb'] == 2):
-        row2files(header_columns, liste_reports)
+        row2files(header_columns, liste_reports, headers=True)
     n = 1
     with open(entry_filename, newline='\n', encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter='\t')
@@ -809,7 +812,7 @@ def bib2arkAUT(input_record, parametres):
                 "//srw:recordData", namespaces=main.ns):
             arks = extractARKautfromBIB(input_record, record)
             if arks:
-                input_record.alignment_method.append("Référence biblio > ARK")
+                input_record.alignment_method.append("Titre-Auteur-Date > ARK Auteur")
             if (parametres["preferences_alignement"] == 2):
                 for ark in arks:
                     ppn = aut2id_idref.autArk2ppn(input_record, ark)
@@ -889,15 +892,19 @@ def bib2ppnAUT_from_sudoc(input_record, parametres):
 def bib2ppnAUT_from_isbnean(input_record, parametres):
     # Recherche de la notice BIB à partir de l'EAN
     listePPN = []
+
         # Si pas de résultats : on relance une recherche dans le Sudoc
     if (len(listePPN) == 0 and input_record.ean.propre):
         listePPN = bib2id.ean2sudoc(input_record, parametres, True).split(",")
+        listePPN = [el for el in listePPN if el]
     # Si pas de résultats : on relance une recherche dans le Sudoc avec l'EAN
     # seul
     if (len(listePPN) == 0 and input_record.ean.propre):
         listePPN = bib2id.ean2sudoc(input_record, parametres, False).split(",")
+        listePPN = [el for el in listePPN if el]
     if (len(listePPN) == 0 and input_record.isbn.propre):
-        listePPN = bib2id.isbn2sudoc(input_record, parametres)
+        listePPN = bib2id.isbn2sudoc(input_record, parametres).split(",")
+        listePPN = [el for el in listePPN if el]
     return listePPN
 
 def nna2ark(nna):
@@ -983,22 +990,23 @@ def extractARKautfromBIB(input_record, xml_record, source="bnf"):
     listeArk = []
     listeFieldsAuteur = defaultdict(dict)
     i = 0
-    for field in xml_record.xpath(".//*[@tag]"):
-        i += 1
-        if (field.get("tag")[0] == "7"):
-            listeFieldsAuteur[i]["tag"] = field.get("tag")
-            for subfield in field.xpath("*"):
-                if (subfield.get("code") == "3"):
-                    listeFieldsAuteur[i]["nna"] = subfield.text
-                if (subfield.get("code") == "a"):
-                    listeFieldsAuteur[i]["nom"] = main.clean_string(
-                        subfield.text, True, True)
-                if (subfield.get("code") == "b"):
-                    listeFieldsAuteur[i]["prenom"] = main.clean_string(
-                        subfield.text, True, True)
-                if (subfield.get("code") == "f"):
-                    listeFieldsAuteur[i]["dates"] = main.clean_string(
-                        subfield.text, True, True)
+    if xml_record is not None:
+        for field in xml_record.xpath(".//*[@tag]"):
+            i += 1
+            if (field.get("tag")[0] == "7"):
+                listeFieldsAuteur[i]["tag"] = field.get("tag")
+                for subfield in field.xpath("*"):
+                    if (subfield.get("code") == "3"):
+                        listeFieldsAuteur[i]["nna"] = subfield.text
+                    if (subfield.get("code") == "a"):
+                        listeFieldsAuteur[i]["nom"] = main.clean_string(
+                            subfield.text, True, True)
+                    if (subfield.get("code") == "b"):
+                        listeFieldsAuteur[i]["prenom"] = main.clean_string(
+                            subfield.text, True, True)
+                    if (subfield.get("code") == "f"):
+                        listeFieldsAuteur[i]["dates"] = main.clean_string(
+                            subfield.text, True, True)
     for auteur in listeFieldsAuteur:
         if (("nom" in listeFieldsAuteur[auteur])
             and (input_record.lastname.nett in listeFieldsAuteur[auteur]["nom"] or

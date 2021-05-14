@@ -689,7 +689,7 @@ def row2file(liste_metadonnees, liste_reports):
     return metas2report
 
 
-def row2files(liste_metadonnees, liste_reports):
+def row2files(liste_metadonnees, liste_reports, headers=False):
     # [
     #     "NumNot", "nbARK", "ark trouvé", "Méthode", "ark initial", "FRBNF",
     #     "ISBN", "EAN", "Titre", "auteur", "date", "Tome/Volume", "editeur"
@@ -699,7 +699,11 @@ def row2files(liste_metadonnees, liste_reports):
     liste_metadonnees_to_report = [str(el) for el in liste_metadonnees]
     nbARK = liste_metadonnees[1]
     ark = liste_metadonnees[2]
-    if ark == "Pb FRBNF":
+    if headers:
+        liste_reports[1].write("\t".join(liste_metadonnees_to_report) + "\n")
+        liste_reports[2].write("\t".join(liste_metadonnees_to_report) + "\n")
+        liste_reports[3].write("\t".join(liste_metadonnees_to_report) + "\n")
+    elif ark == "Pb FRBNF":
         liste_reports[0].write("\t".join(liste_metadonnees_to_report) + "\n")
     elif nbARK == 0:
         liste_reports[1].write("\t".join(liste_metadonnees_to_report) + "\n")
@@ -809,7 +813,6 @@ def isbn2sudoc(input_record, parametres):
     un FRBNF, auquel cas on convertit le PPN en ARK. Sinon, on garde le(s) PPN
     """
     url = "https://www.sudoc.fr/services/isbn2ppn/" + input_record.isbn.propre
-    #print(url)
     Listeppn = []
     isbnTrouve = funcs.testURLretrieve(url)
     ark = []
@@ -2401,7 +2404,7 @@ def file2row(form_bib2ark, entry_filename, liste_reports, parametres):
     if parametres["file_nb"] == 1:
         row2file(header_columns, liste_reports)
     elif parametres["file_nb"] == 2:
-        row2files(header_columns, liste_reports)
+        row2files(header_columns, liste_reports, headers=True)
     n = 1
     with open(entry_filename, newline="\n", encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter="\t")

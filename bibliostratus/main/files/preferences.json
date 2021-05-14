@@ -17,7 +17,7 @@
         },
     "marc2tables_input_format": {
         "description": "Format de données en entrée dans le module bleu (marc2tables). Par défaut : 'unimarc'. Autre valeur autorisée : 'marc21'.",
-        "value": "unimarc"
+        "value": "marc21"
         },
     "tsv_csv": {
         "description": "Lors de la production de formats Colonnes en sortie, possibilité de choisir le séparateur : CSV (virgule) ou TSV (tabulations). Valeurs autorisées : csv, tsv. Valeur par défaut : tsv",
@@ -41,5 +41,5 @@
         },
     "gmb": {
         "description": "Fichier d'alignement bibliographique : matrice Excel Gallica Marque Blanche. Valeurs : 0 [non] ou 1 [oui]",
-        "value": 1
+        "value": 0
         }}
