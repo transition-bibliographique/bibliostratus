@@ -29,7 +29,7 @@ Mode d'emploi et tutoriels
 --
 * [Voir le wiki](https://github.com/Transition-bibliographique/bibliostratus/wiki "Consulter les pages du wiki sur Github")
 * [Tutoriels vidéo](https://www.transition-bibliographique.fr/systemes-et-donnees/tutoriels-video/)
-* [Support de formation : atelier de novembre 2018 - PDF, 15 p.](https://www.transition-bibliographique.fr/wp-content/uploads/2018/11/Bibliostratus-support-atelier.pdf)
+* [Support de formation : Prezi](https://prezi.com/view/OHjLk8kA9skbEP3bJirl/)
 * [Erreurs fréquentes](https://www.transition-bibliographique.fr/systemes-et-donnees/erreurs-frequentes/)
 * [Consulter le forum utilisateurs](http://www.agorabib.fr/topic/3317-bibliostratus-mettre-en-correspondance-ses-notices-avec-celles-de-la-bnf/ "topic Agorabib")
 * [Consulter la documentation technique](https://github.com/Transition-bibliographique/bibliostratus/tree/master/doc)
