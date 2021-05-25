@@ -28,6 +28,11 @@ Mais pour cela, il faut que chaque bibliothèque ait fait un travail préalable 
 Mode d'emploi et tutoriels
 --
 * [Voir le wiki](https://github.com/Transition-bibliographique/bibliostratus/wiki "Consulter les pages du wiki sur Github")
+* [Tutoriels vidéo](https://www.transition-bibliographique.fr/systemes-et-donnees/tutoriels-video/)
+* [Support de formation : Prezi](https://prezi.com/view/OHjLk8kA9skbEP3bJirl/)
+* [Erreurs fréquentes](https://www.transition-bibliographique.fr/systemes-et-donnees/erreurs-frequentes/)
 * [Consulter le forum utilisateurs](http://www.agorabib.fr/topic/3317-bibliostratus-mettre-en-correspondance-ses-notices-avec-celles-de-la-bnf/ "topic Agorabib")
 * [Consulter la documentation technique](https://github.com/Transition-bibliographique/bibliostratus/tree/master/doc)
 * [Installer Bibliostratus sur Linux](INSTALL.md)
+
+* [Notes de version](bibliostratus/release_notes.md)
