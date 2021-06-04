@@ -34,6 +34,7 @@ import edit_preferences as settings
 from multiprocessing import freeze_support
 
 version = init.version
+version_suffix = init.version_suffix
 lastupdate = init.lastupdate
 programID = init.programID
 
@@ -779,7 +780,7 @@ def formulaire_main(access_to_network, last_version):
     edit_settings_button.pack()
 
     tk.Label(zone_notes, text="Bibliostratus - Version " +
-             str(version) + " - " + lastupdate, bg=couleur_fond).pack()
+             f"{str(version)}{version_suffix}" + " - " + lastupdate, bg=couleur_fond).pack()
 
     if last_version[1]:
         download_update = tk.Button(

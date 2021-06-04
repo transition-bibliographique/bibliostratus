@@ -492,6 +492,10 @@ def bib_metas_from_marc21(record):
             id_commercial_aud
             )
 
+
+
+
+
 def bib_metas_from_unimarc(record):
     """
     Définition des zones Marc correspondant aux différentes métadonnées
@@ -712,7 +716,18 @@ def aut_metas_from_marc21(record):
     return (ark, frbnf, isni, firstname,
             lastname, firstdate, lastdate, doc_record)
 
+
 def bibfield2autmetas(numNot, doc_record, record, field):
+    metas = []
+    if ("marc2tables_input_format" in main.prefs   
+       and main.prefs["marc2tables_input_format"]["value"] == "marc21"):
+        metas = bibfield2autmetas_from_marc21(numNot, doc_record, record, field)
+    else:
+        metas = bibfield2autmetas_from_unimarc(numNot, doc_record, record, field)
+    return metas        
+
+
+def bibfield2autmetas_from_unimarc(numNot, doc_record, record, field):
     metas = []
     no_aut = subfields2firstocc(field.get_subfields("3"))
     no_bib = numNot
@@ -730,6 +745,35 @@ def bibfield2autmetas(numNot, doc_record, record, field):
     firstname = subfields2firstocc(field.get_subfields("b"))
     lastname = subfields2firstocc(field.get_subfields("a"))
     dates_aut = subfields2firstocc(field.get_subfields("f"))
+    metas = [doc_record, no_aut, no_bib, ark, frbnf, isbn, title,
+             pubDate, isni, lastname, firstname, dates_aut]
+    return metas
+
+
+def bibfield2autmetas_from_marc21(numNot, doc_record, record, field):
+    metas = []
+    no_aut = subfields2firstocc(field.get_subfields("3"))
+    no_bib = numNot
+    ark = record2ark(record2meta(record, ["033$a"]))
+    frbnf = record2frbnf(record2meta(record, ["035$a"]))
+    isbn = record2title(
+        record2meta(record, ["020$a"], ["024$a"])
+    )
+    title = record2title(
+        record2meta(record, ["245$a", "245$e"])
+    )
+    pubDate = record2date(record2meta(record, ["008"]), record2meta(
+        record, ["264$c"]), format="marc21")
+    isni = subfields2firstocc(field.get_subfields("o"))
+    firstname = subfields2firstocc(field.get_subfields("b"))
+    lastname = subfields2firstocc(field.get_subfields("a"))
+    if ("marc2tables_input_format" in main.prefs   
+       and main.prefs["marc2tables_input_format"]["value"] == "marc21"
+       and "," in lastname and firstname == ""):
+        field_a = lastname
+        lastname = field_a.split(",")[0]
+        firstname = ", ".join(field_a.split(",")[1:])
+    dates_aut = subfields2firstocc(field.get_subfields("d"))
     metas = [doc_record, no_aut, no_bib, ark, frbnf, isbn, title,
              pubDate, isni, lastname, firstname, dates_aut]
     return metas
@@ -756,6 +800,12 @@ def bibrecord2autmetas(numNot, doc_record, record, all_metas=False):
         fields2metas.append(bibfield2autmetas(numNot, "cb", record, f711))
     for f712 in record.get_fields("712"):
         fields2metas.append(bibfield2autmetas(numNot, "cb", record, f712))
+    if ("marc2tables_input_format" in main.prefs
+       and main.prefs["marc2tables_input_format"]["value"] == "marc21"):
+        for f100 in record.get_fields("100"):
+            fields2metas.append(bibfield2autmetas(numNot, "ca", record, f100))
+        for f110 in record.get_fields("100"):
+            fields2metas.append(bibfield2autmetas(numNot, "cb", record, f110))
     return fields2metas
 
 
@@ -845,6 +895,7 @@ def record_metas2report(record_metas, doc_record, rec_format,
     """
     if (rec_format == 3):
         for aut in record_metas:
+            print(aut)
             doc_record = aut[0]
             if (doc_record in output_files_dict):
                 stats[doc_record_type[doc_record]] += 1

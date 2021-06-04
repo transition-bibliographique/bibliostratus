@@ -1,6 +1,7 @@
 # coding: utf-8
 
 version = 1.32
+version_suffix = "RC9"
 lastupdate = "07/04/2021"
 programID = "bibliostratus"
 

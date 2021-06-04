@@ -230,7 +230,7 @@ def footer(frame, couleur_fond):
     génère le pied de page dans les formulaires
     """
     tk.Label(frame, text="Bibliostratus - Version " +
-             str(main.version) + " - " + main.lastupdate, bg=couleur_fond).pack()
+             f"{str(main.version)}{main.version_suffix}" + " - " + main.lastupdate, bg=couleur_fond).pack()
 
 
 def display_headers_in_form(headers_list):
