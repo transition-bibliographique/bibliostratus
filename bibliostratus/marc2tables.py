@@ -18,6 +18,7 @@ from lxml import etree
 
 from collections import defaultdict
 import json
+from random import randrange
 
 from chardet.universaldetector import UniversalDetector
 import pymarc as mc
@@ -361,14 +362,23 @@ def detect_errors_encoding_iso(collection):
 
 
 def test_encoding_file(master, entry_filename, encoding, file_format):
+    # Récupérer le contenu du fichier en entrée
+    # Si les premiers caractères du fichier décrivent son encodage (BOM)
+    # alors on ouvre un fichier temporaire où on réécrit le contenu du fichier initial
+    # sauf le BOM qui est retiré du contenu
     test = True
     input_file = ""
+    random_nr = str(randrange(1000))
+    temp_filename = f"temp_file_sans_bom{random_nr}.txt"
+    current_dir = ""
     if (file_format == 1):
         file = open(entry_filename, "rb").read()
+        current_dir = os.path.dirname(os.path.realpath(entry_filename))        
+        temp_filename = os.path.join(current_dir, temp_filename)
         if (len(file[0:3].decode(encoding)) == 1):
             file = file[3:]
-            entry_filename = "temp_file_sans_bom.txt"
-        temp_file = open("temp_file_sans_bom.txt", "wb")
+            entry_filename = temp_filename
+        temp_file = open(temp_filename, "wb")
         temp_file.write(file)
         temp_file.close()
     try:
@@ -377,7 +387,7 @@ def test_encoding_file(master, entry_filename, encoding, file_format):
     except UnicodeDecodeError:
         main.popup_errors(master, main.errors["format_fichier_en_entree"])
     try:
-        os.remove("temp_file_sans_bom.txt")
+        os.remove(temp_filename)
     except FileNotFoundError:
         pass
         # print("Fichier temporaire UTF8-sans BOM inutile")
@@ -392,8 +402,7 @@ def iso2tables(master, entry_filename, file_format,
     encoding = "iso-8859-1"
     if (file_format == 1):
         encoding = "utf-8"
-    (test_file, input_file) = test_encoding_file(
-        master, entry_filename, encoding, file_format)
+    (test_file, input_file) = test_encoding_file(master, entry_filename, encoding, file_format)
     assert test_file
 
     temp_list = [el + u'\u001D' for el in input_file]
