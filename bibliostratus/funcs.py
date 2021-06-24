@@ -1074,6 +1074,8 @@ class Bib_Aut_record:
         self.auteur = f"{input_row[9]} {input_row[8]}"
         self.no_commercial = International_id("")
         self.titre = Titre(input_row[5])
+        self.titre_nett = nettoyageTitrePourControle(self.titre.init)
+        self.auteur_nett = nettoyageAuteur(self.auteur, False)
         self.pubdate = input_row[6]
         self.pubdate_nett = nettoyageDate(self.pubdate)
         self.date_nett = self.pubdate

@@ -894,11 +894,9 @@ def ean2sudoc(input_record, parametres, controle_titre=True):
                     # dans la notice Sudoc trouvée
                     if parametres["preferences_alignement"] == 1:
                         temp_record = funcs.Bib_record(
-                            [
-                            input_record.NumNot, "", "", "", input_record.ean.propre,
-                            input_record.titre_nett, input_record.auteur_nett,
-                            input_record.date_nett, "", ""
-                            ],
+                            [input_record.NumNot, "", "", "", input_record.ean.propre,
+                             input_record.titre_nett, input_record.auteur_nett,
+                             input_record.date_nett, "", ""],
                             parametres["type_doc_bib"]
                             )
                         ark.append(
