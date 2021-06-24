@@ -331,7 +331,6 @@ def extract1record(row, parametres, multiprocess=False):
         #print(url_record)
         if url_record:
             (test, page) = funcs.testURLetreeParse(url_record)
-            print(url_record)
             if (test):
                 nbResults = page2nbresults(page, identifier)
                 # Si on part d'un ARK

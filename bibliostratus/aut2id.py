@@ -553,7 +553,7 @@ def arkBib2arkAut(input_record, parametres):
     (test, page) = funcs.testURLetreeParse(url)
     listeArk = []
     if test:
-        for xml_record in page.xpath("//srw:recordData/*"):
+        for xml_record in page.xpath("//srw:recordData/*", namespaces=main.ns):
             arks = extractARKautfromBIB(input_record, xml_record)
             input_record.alignment_method.append("ARK notice BIB + contrôle accesspoint")
             if (parametres["preferences_alignement"] == 2):
@@ -565,6 +565,8 @@ def arkBib2arkAut(input_record, parametres):
                     listeArk.append(ark)
             else:
                 listeArk.extend(arks)
+    if type(listeArk) == list:
+        listeArk = ",".join([el for el in listeArk if el])
     return listeArk
 
 
