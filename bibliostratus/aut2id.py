@@ -488,6 +488,7 @@ def align_from_bib_alignment(input_record, parametres):
     Renvoie le résultat de l'alignement sous
     la forme d'un objet de class Alignment_result
     """
+    parametres["type_doc_bib"] = ""
     ark_trouve = ""
     if (ark_trouve == "" and input_record.isni.propre != ""):
         ark_trouve = isni2id(input_record, parametres)
