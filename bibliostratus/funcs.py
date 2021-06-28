@@ -1077,6 +1077,7 @@ class Bib_Aut_record:
         self.titre_nett = nettoyageTitrePourControle(self.titre.init)
         self.auteur_nett = nettoyageAuteur(self.auteur, False)
         self.pubdate = input_row[6]
+        self.date = input_row[6]
         self.pubdate_nett = nettoyageDate(self.pubdate)
         self.date_nett = self.pubdate
         self.tome_nett = ""
