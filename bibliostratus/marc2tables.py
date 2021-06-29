@@ -168,23 +168,30 @@ def path2value(record, field_subfield):
     value = None
     val_list = []
     # print(field_subfield)
-    if (field_subfield.find("$") > -1):
+    if ("$" in field_subfield):
         field = field_subfield.split("$")[0]
-        subfield = field_subfield.split("$")[1]
+        subfields = field_subfield.split("$")[1:]
         if (type(record) is etree._ElementTree):
-            for f in record.xpath(".//*[@tag='%s']" % field):
-                for subf in f.xpath(".//*[@code='%s']" % subfield):
-                    val_list.append(subf.text)
+            for f in record.xpath(f".//*[@tag='{field}']"):
+                field_value = []
+                for subf in subfields:
+                    for subf_occurrence in f.xpath(f"*[@code='{subf}']"):
+                        field_value.append(subf.text)
+                field_value = " ".join(field_value)
+                val_list.append(field_value)
         else:
             for f in record.get_fields(field):
-                for subf in f.get_subfields(subfield):
-                    val_list.append(subf)
-        if (val_list != []):
-            value = ";".join(val_list)
+                field_value = []
+                for subf in subfields:
+                    for subf_occurrence in f.get_subfields(subf):
+                        field_value.append(subf_occurrence)
+                field_value = " ".join(field_value)
+                val_list.append(field_value)
+        value = ";".join(val_list)
     else:
         if (type(record) is etree._ElementTree):
-            if record.find(".//*[@tag='%s']" % field_subfield):
-                value = record.find(".//*[@tag='']" % field_subfield).text
+            if record.find(f".//*[@tag='{field_subfield}']"):
+                value = record.find(f".//*[@tag='{field_subfield}']").text
         else:
             if (record[field_subfield] is not None 
                 and int(field_subfield) < 10):
@@ -192,7 +199,7 @@ def path2value(record, field_subfield):
     return value
 
 
-def record2meta(record, liste_elements, alternate_list=[]):
+def record2meta(record, liste_elements, alternate_list=[], sep=" "):
     zone = []
     for el in liste_elements:
         value = path2value(record, el)
@@ -210,7 +217,7 @@ def record2meta(record, liste_elements, alternate_list=[]):
         #     for el in alternate_list
         #     if path2value(record, el) is not None
         # ]
-    zone = " ".join(zone)
+    zone = sep.join(zone)
     # print(zone)
     return zone
 
@@ -240,19 +247,21 @@ def record2date(coded_field, f210d, format="unimarc"):
 
 def record2authors(value_fields):
     authors = clean_spaces(value_fields).strip()
-    authors = clean_punctation(authors)
+    #authors = clean_punctation(authors)
+    authors = ";".join([el for el in authors.split(";") if el])
+    print(authors)
     return authors
 
 
 def aut2keywords(authors):
-    authors = clean_punctation(authors)
+    #authors = clean_punctation(authors)
     liste_authors = authors.split(" ")
-    liste_authors = [el for el in liste_authors if el != ""]
-    authors2keywords = set()
+    liste_authors = " ".join([el for el in liste_authors if el != ""])
+    """authors2keywords = set()
     for mot in liste_authors:
         authors2keywords.add(clean_accents_case(mot).strip())
-    authors2keywords = " ".join(list(authors2keywords))
-    return authors2keywords
+    authors2keywords = " ".join(list(authors2keywords))"""
+    return liste_authors
 
 
 def record2ark(f033a):
@@ -467,16 +476,13 @@ def bib_metas_from_marc21(record):
     if (global_title == part_title):
         part_title = ""
     authors = record2authors(record2meta(record, [
-        "100$a",
-        "100$m",
-        "110$a",
-        "110$m",
-        "700$a",
-        "700$m",
-        "710$a",
-        "710$m",
+        "100$a$m",
+        "110$a$m",
+        "700$a$m",
+        "710$a$m",
     ],
-        ["245$f"])
+        ["245$f"],
+        sep=";")
     )
     authors2keywords = aut2keywords(authors)
     date = record2date(record2meta(
@@ -524,20 +530,15 @@ def bib_metas_from_unimarc(record):
     if (global_title == part_title):
         part_title = ""
     authors = record2authors(record2meta(record, [
-        "700$a",
-        "700$b",
-        "710$a",
-        "710$b",
-        "701$a",
-        "701$b",
-        "711$a",
-        "711$b",
-        "702$a",
-        "702$b",
-        "712$a",
-        "712$b"
+        "700$a$b",
+        "710$a$b",
+        "701$a$b",
+        "711$a$b",
+        "702$a$b",
+        "712$a$b",
     ],
-        ["200$f"])
+        ["200$f"],
+        sep=";")
     )
     authors2keywords = aut2keywords(authors)
     date = record2date(record2meta(record, ["100$a"]), record2meta(
