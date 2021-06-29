@@ -377,9 +377,9 @@ def test_convert_iso2tables():
         content = csv.reader(file, delimiter="\t")
         next(content)
         first_line_text = next(content)
-    wanted = ['FRBNF427031150000009', 'frbnf427031150000009',
+    wanted = ['FRBNF427031150000009', '',
               '', '', '', 'Plan de Paris 2012',
-              'paris service la topographie de documentation fonciere et',
+              'Paris Service de la topographie et de la documentation foncière',
               '2012', '', 'Mairie de Paris']
     for i in range(0, len(first_line_text)):
         wanted_i = " ".join(sorted([el for el in wanted[i].split(" ")]))

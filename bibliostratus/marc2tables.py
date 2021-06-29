@@ -176,7 +176,7 @@ def path2value(record, field_subfield):
                 field_value = []
                 for subf in subfields:
                     for subf_occurrence in f.xpath(f"*[@code='{subf}']"):
-                        field_value.append(subf.text)
+                        field_value.append(subf_occurrence.text)
                 field_value = " ".join(field_value)
                 val_list.append(field_value)
         else:
@@ -249,7 +249,6 @@ def record2authors(value_fields):
     authors = clean_spaces(value_fields).strip()
     #authors = clean_punctation(authors)
     authors = ";".join([el for el in authors.split(";") if el])
-    print(authors)
     return authors
 
 
@@ -905,7 +904,6 @@ def record_metas2report(record_metas, doc_record, rec_format,
     """
     if (rec_format == 3):
         for aut in record_metas:
-            print(aut)
             doc_record = aut[0]
             if (doc_record in output_files_dict):
                 stats[doc_record_type[doc_record]] += 1
