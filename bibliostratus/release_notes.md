@@ -1,9 +1,15 @@
 ### version 1.32
+- Module bleu [conversion Marc > tables] :
+	- meilleure prise en compte du Marc21
+	- Colonne Auteur : préservation de la mise en forme, et séparateur ";" en cas d'auteurs multiples
 - Modules blancs [alignements Autorités et Bibliographiques] :
 	- correction d'un bug sur le fichier des statistiques d'alignement, qui restait vide (suite à la parallélisation des tâches)
 - Module blanc [Bibliographique]
 	- correction d'un bug sur les ISBN se terminant par X, pour les alignements avec le Sudoc
 	- Possibilité de charger un fichier Excel dans le cadre d'un projet Gallica Marque Blanche	
+- Module blanc [Autorités] :
+	- corrections de bugs multiples sur l'alignement Notice bibliographique > identification de l'auteur
+	- Utilisation de l'ISBN pour des alignements sur Auteurs
 - Module rouge (export de notices) :
 	- prise en compte d'un message d'erreur possible du SRU de la BnF
 - Exécution de Bibliostratus en ligne de commande
