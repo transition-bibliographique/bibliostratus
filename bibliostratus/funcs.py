@@ -10,6 +10,7 @@ import http.client
 import urllib.parse
 import re
 import os
+import csv
 import sys
 import socket
 import subprocess
@@ -435,12 +436,12 @@ def ltrim(nombre_texte):
 def nettoyage_isbn(isbn):
     isbn_nett = isbn.split(";")[0].split(",")[0].split("(")[0].split("[")[0]
     isbn_nett = isbn_nett.replace("-", "").replace(" ", "").replace("°", "")
-    isbn_nett = unidecode_local(isbn_nett)
+    isbn_nett = unidecode_local(isbn_nett).lower()
     for signe in ponctuation:
         isbn_nett = isbn_nett.replace(signe, "")
-    isbn_nett = isbn_nett.lower()
     for lettre in lettres_sauf_x:
         isbn_nett = isbn_nett.replace(lettre, "")
+    isbn_nett = isbn_nett.replace("x", "X")
     return isbn_nett
 
 
@@ -1073,8 +1074,13 @@ class Bib_Aut_record:
         self.auteur = f"{input_row[9]} {input_row[8]}"
         self.no_commercial = International_id("")
         self.titre = Titre(input_row[5])
+        self.titre_nett = nettoyageTitrePourControle(self.titre.init)
+        self.auteur_nett = nettoyageAuteur(self.auteur, False)
         self.pubdate = input_row[6]
+        self.date = input_row[6]
         self.pubdate_nett = nettoyageDate(self.pubdate)
+        self.date_nett = self.pubdate
+        self.tome_nett = ""
         self.isni = Isni(input_row[7])
         self.lastname = Name(input_row[8])
         self.firstname = Name(input_row[9])
@@ -1112,9 +1118,9 @@ class XML2record:
     record_type: 1 = BIB, 2 = AUT
 
     """
-    def __init__(self, xml_record, record_type=1, all_metas=False):  # Notre méthode constructeur
+    def __init__(self, identifier, xml_record, record_type=1, all_metas=False):  # Notre méthode constructeur
         self.init = xml_record
-        self.pymarc_record = xml2pymarcrecord(xml_record)
+        self.pymarc_record = xml2pymarcrecord(identifier, xml_record)
         self.doc_record = None
         if (record_type == 1):
             self.metadata, self.doc_record = marc2tables.record2listemetas(self.pymarc_record, 1,
@@ -1224,7 +1230,7 @@ class Aligned_id:
 
 
 
-def xml2pymarcrecord(xml_record):
+def xml2pymarcrecord(identifier, xml_record):
     """
     Sert à récupérer un fichier en ligne, contenant
     une notice simple en XML (balise racine <record/>)
@@ -2809,6 +2815,30 @@ def cprint(thing):
     # lors du débugage du code, et pouvoir facilement retrouver
     # (et mettre en commentaire ou supprimer) ces lignes
     print(thing)
+
+
+def file2list(filename, all_cols=False, delimiter="\t"):
+    # Conversion d'un fichier en liste (ou liste de listes)
+    liste = []
+    if filename.startswith("http"):
+        file = request.urlopen(filename)
+        for line in file:
+            liste.append(line.decode(encoding="utf-8").replace("\n", "").replace("\r", "").split(delimiter))
+    else:
+        try:
+            file = open(filename, encoding="utf-8")
+            content = csv.reader(file, delimiter=delimiter)
+            for row in content:
+                if row:
+                    if all_cols:
+                        liste.append(row)
+                    else:
+                        liste.append(row[0])
+            file.close()
+        except FileNotFoundError:
+            pass
+    return liste
+
 
 
 def chunks(lst, n):

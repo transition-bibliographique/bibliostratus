@@ -55,7 +55,7 @@ dic_doctype = {"tex": 1,
                "ram": 4,
                "rameau": 4}
 
-dic_input_filetype = {"iso2708-utf8": 1,
+dic_input_filetype = {"iso2709-utf8": 1,
                       "iso2709": 1,
                       "iso2709-8859-1": 2,
                       "xml-utf8": 3,
@@ -86,6 +86,8 @@ align_prefs = {"bnf": 1,
                "abes": 2}
 
 dic_files_number = {"1": 1,
+                    "2": 2,
+                    "3": 2,
                     "mul": 2,
                     "plusieurs": 2,
                     "plus": 2}

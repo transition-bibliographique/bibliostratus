@@ -71,7 +71,7 @@ def idrefAut2arkAut(input_record, base="idref"):
         if (liste_ark == []
            and result.find("//*[@tag='035']") is not None
            and "frbn" in funcs.record2fieldvalue(result, "035$a").lower()):
-            aut_record = funcs.XML2record(result, 2).record
+            aut_record = funcs.XML2record(input_record.ppn.propre, result, 2).record
             #print(aut_record.metadata)
             liste_ark.extend(aut2id.frbnfAut2arkAut(aut_record).split(","))
             if (liste_ark):

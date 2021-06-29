@@ -34,6 +34,7 @@ import main
 import aut2id_idref
 import sru
 import forms
+import bib2id_gmb
 
 # Ajout exception SSL pour éviter
 # plantages en interrogeant les API IdRef
@@ -395,6 +396,7 @@ def comparaisonTitres(
             ark = ""
     if ark != "" and numeroTome != "":
         ark = verificationTomaison(ark, numeroTome, recordBNF)
+        
     if ark != "" and date != "":
         if (
             "ISBN" in origineComparaison
@@ -687,7 +689,7 @@ def row2file(liste_metadonnees, liste_reports):
     return metas2report
 
 
-def row2files(liste_metadonnees, liste_reports):
+def row2files(liste_metadonnees, liste_reports, headers=False):
     # [
     #     "NumNot", "nbARK", "ark trouvé", "Méthode", "ark initial", "FRBNF",
     #     "ISBN", "EAN", "Titre", "auteur", "date", "Tome/Volume", "editeur"
@@ -697,7 +699,11 @@ def row2files(liste_metadonnees, liste_reports):
     liste_metadonnees_to_report = [str(el) for el in liste_metadonnees]
     nbARK = liste_metadonnees[1]
     ark = liste_metadonnees[2]
-    if ark == "Pb FRBNF":
+    if headers:
+        liste_reports[1].write("\t".join(liste_metadonnees_to_report) + "\n")
+        liste_reports[2].write("\t".join(liste_metadonnees_to_report) + "\n")
+        liste_reports[3].write("\t".join(liste_metadonnees_to_report) + "\n")
+    elif ark == "Pb FRBNF":
         liste_reports[0].write("\t".join(liste_metadonnees_to_report) + "\n")
     elif nbARK == 0:
         liste_reports[1].write("\t".join(liste_metadonnees_to_report) + "\n")
@@ -888,11 +894,9 @@ def ean2sudoc(input_record, parametres, controle_titre=True):
                     # dans la notice Sudoc trouvée
                     if parametres["preferences_alignement"] == 1:
                         temp_record = funcs.Bib_record(
-                            [
-                            input_record.NumNot, "", "", "", input_record.ean.propre,
-                            input_record.titre_nett, input_record.auteur_nett,
-                            input_record.date_nett, "", ""
-                            ],
+                            [input_record.NumNot, "", "", "", input_record.ean.propre,
+                             input_record.titre_nett, input_record.auteur_nett,
+                             input_record.date_nett, "", ""],
                             parametres["type_doc_bib"]
                             )
                         ark.append(
@@ -910,8 +914,7 @@ def ean2sudoc(input_record, parametres, controle_titre=True):
 
 def ppn2ark(input_record, ppn, parametres):
     ark = ""
-    ppn = ppn.replace("PPN", "")
-    url = "https://www.sudoc.fr/" + ppn + ".rdf"
+    url = "https://www.sudoc.fr/" + ppn.replace("PPN", "") + ".rdf"
     (test, record) = funcs.testURLetreeParse(url)
     if test:
         for sameAs in record.xpath("//owl:sameAs", namespaces=main.nsSudoc):
@@ -1317,7 +1320,7 @@ def tad2ark(input_record, parametres,
                             f'bib.doctype any "{input_record.intermarc_type_doc}"'
                            ]
             index = " dans toute la notice"
-
+        #print(search_query)
         # Ajout du critère Echelle pour les cartes
         if (input_record.type == "CP"
            and input_record.scale):
@@ -1390,7 +1393,7 @@ def tad2ark_date(input_record, annee_plus_trois):
 
 def tad2ark_controle_record(input_record, ark_current, 
                             auteur, date_nett, annee_plus_trois, index, 
-                            xml_record):
+                            xml_record, origine="Titre-Auteur-Date"):
     """
     Ensemble de contrôles sur une notice BnF trouvée par une recherche 
     Titre-Auteur-Date
@@ -1409,7 +1412,7 @@ def tad2ark_controle_record(input_record, ark_current,
                                     date_nett,
                                     input_record.tome_nett,
                                     xml_record,
-                                    "Titre-Auteur-Date" + index)
+                                    origine + index)
             if (ark != "" and date_nett != "-"):
                 ark = checkDate(ark, input_record.date_nett,
                                 xml_record)
@@ -1429,12 +1432,12 @@ def tad2ark_controle_record(input_record, ark_current,
                                 date_nett,
                                 "",
                                 xml_record,
-                                "Titre-Auteur-Date" + index)
-    if (ark and input_record.isbn.propre):
+                                origine + index)
+    if (ark and input_record.isbn.propre and "Titre" in origine):
         input_record.alignment_method.append("Problème ISBN non reconnu")
-    if (ark and input_record.ean.propre):
+    if (ark and input_record.ean.propre and "Titre" in origine):
         input_record.alignment_method.append("Problème EAN non reconnu")
-    if (ark and input_record.issn.propre):
+    if (ark and input_record.issn.propre and "Titre" in origine):
         input_record.alignment_method.append("Problème ISSN non reconnu")
     return ark
 
@@ -1626,23 +1629,26 @@ def tad2ppn(input_record, parametres):
     url = url.replace("ADI_MAT=B", "ADI_MAT=B&ADI_MAT=Y")
     url = url.replace("ADI_MAT=N", "ADI_MAT=N&ADI_MAT=G")
     listePPN = urlsudoc2ppn(url)
+    
     listePPN = check_sudoc_results(input_record, listePPN)
+    listePPN = ",".join([f"PPN{ppn}" for ppn in listePPN.split(",") if ppn])
     return listePPN
 
 
-def check_sudoc_results(input_record, listePPN):
+def check_sudoc_results(input_record, listePPN, origine="Titre-Auteur-Date"):
     """
     Pour une liste de PPN trouvée, vérifier ceux qui correspondent bien à la notice initiale
+    L'origine permet de préciser si l'alignement vient de isbn/ean ou titre-auteur-date (TAD)
     """
     listePPN_checked = []
     for ppn in listePPN:
-        ppn_checked = check_sudoc_result(input_record, ppn)
+        ppn_checked = check_sudoc_result(input_record, ppn, origine)
         if (ppn_checked):
             listePPN_checked.append(ppn_checked)
-    listePPN_checked = ",".join(["PPN"+el for el in listePPN_checked if el])
+    listePPN_checked = ",".join([el for el in listePPN_checked if el])
     return listePPN_checked
 
-def check_sudoc_result(input_record, ppn):
+def check_sudoc_result(input_record, ppn, origine="Titre-Auteur-Date"):
     """
     Vérification de l'adéquation entre un PPN et une notice en entrée
     """
@@ -1653,12 +1659,12 @@ def check_sudoc_result(input_record, ppn):
             ppn_checked = tad2ark_controle_record(input_record, ppn, 
                                     input_record.auteur_nett,
                                     input_record.date_nett, False, "",
-                                    xml_record)
+                                    xml_record, origine)
         elif (type(input_record) == funcs.Bib_Aut_record):
             ppn_checked = tad2ark_controle_record(input_record, ppn, 
                                     input_record.lastname.propre,
                                     input_record.pubdate_nett, False, "",
-                                    xml_record)
+                                    xml_record, origine)
     #ppn_checked = ",".join([ppn for ppn in ppn_checked if ppn])            
     return ppn_checked
 
@@ -1847,7 +1853,10 @@ def id2record(identifier, typeRecord="bib"):
 
 
 def ppn2recordSudoc(ppn):
-    record = id2record(f"PPN{ppn}", "bib")
+    if "PPN" in ppn:
+        record = id2record(ppn, "bib")
+    else:
+        record = id2record(f"PPN{ppn}", "bib")
     if record is not None:
         return True, record
     else:
@@ -1969,15 +1978,18 @@ def ark2meta_simples(ark):
     for ark in ark.split(","):
         record = id2record(ark)
         if record is not None:
-            record = funcs.XML2record(record, 1, True)
-            if metas == []:
+            try:
+                record = funcs.XML2record(ark, record, 1, True)
+                if metas == []:
+                    for el in record.metadata[3:]:
+                        metas.append([])
+                i = 0
                 for el in record.metadata[3:]:
-                    metas.append([])
-            i = 0
-            for el in record.metadata[3:]:
-                metas[i].append(el)
-                i += 1
-            doctypes.append(record.doc_record)
+                    metas[i].append(el)
+                    i += 1
+                doctypes.append(record.doc_record)
+            except IndexError:
+                pass
     i = 0
     for liste_el in metas:
         metas[i] = "|".join(liste_el)
@@ -2185,6 +2197,7 @@ def item2ppn_by_id(input_record, parametres):
         )
     return ppn
 
+
 def check_ppn_by_kw(ppn, input_record, source_alignement):
     url_sudoc_record = "https://www.sudoc.fr/" + ppn.replace("PPN", "") + ".xml"
     (test, record_sudoc) = funcs.testURLetreeParse(url_sudoc_record, display=False)
@@ -2242,7 +2255,7 @@ def item2ark_by_keywords(input_record, parametres):
                       False, False)
         if ark:
             input_record.alignment_method.append(" recherche sans mention d'opus")
-
+    
     # Si pas trouvé, on cherche l'ensemble des
     # mots dans toutes les zones indifféremment
     if ark == "" and input_record.titre.init != "":
@@ -2254,6 +2267,7 @@ def item2ark_by_keywords(input_record, parametres):
 def item2ppn_by_keywords(input_record, parametres):
     """Alignement par mots clés sur le catalogue Sudoc"""
     ppn = ""
+
     if input_record.titre.init != "":
         ppn = tad2ppn(input_record, parametres)
 
@@ -2317,11 +2331,12 @@ def item_alignement(input_record, parametres):
             bibid = item2ark_by_id(input_record, parametres)
         if bibid == "":
             bibid = item2ark_by_keywords(input_record, parametres)
+    
     alignment_result = funcs.Alignment_result(input_record, bibid, parametres)
-    if bibid == "Pb FRBNF":
+    """if bibid == "Pb FRBNF":
         parametres["stats"]["Pb FRBNF"] += 1
     else:
-        parametres["stats"][alignment_result.nb_ids] += 1
+        parametres["stats"][alignment_result.nb_ids] += 1"""
     return alignment_result
 
 
@@ -2387,7 +2402,7 @@ def file2row(form_bib2ark, entry_filename, liste_reports, parametres):
     if parametres["file_nb"] == 1:
         row2file(header_columns, liste_reports)
     elif parametres["file_nb"] == 2:
-        row2files(header_columns, liste_reports)
+        row2files(header_columns, liste_reports, headers=True)
     n = 1
     with open(entry_filename, newline="\n", encoding="utf-8") as csvfile:
         entry_file = csv.reader(csvfile, delimiter="\t")
@@ -2411,6 +2426,9 @@ def file2row(form_bib2ark, entry_filename, liste_reports, parametres):
             for alignment_result in alignment_results:
                 alignment_result2output(alignment_result, alignment_result.input_record,
                                         parametres, liste_reports, n)
+                parametres["stats"][alignment_result.nb_ids] += 1
+                if "Pb FRBNF" in alignment_result.ids_str:
+                    parametres["stats"]["Pb FRBNF"] += 1
                 n += 1
 
 
@@ -2443,6 +2461,16 @@ def launch(entry_filename,
     except ValueError as err:
         print("\n\nDonnées en entrée erronées\n")
         print(err)
+
+    params_gmb = {}
+    #print(main.prefs)
+    if main.prefs["gmb"]["value"] == 1:
+        type_doc_bib = 1
+        preferences_alignement = 1
+        kwsudoc_option = 0
+        params_gmb = bib2id_gmb.launch_gmb_program()
+        entry_filename = bib2id_gmb.csvfile2bbsfile(entry_filename, params_gmb)
+    
     header_columns_init_dic = {
         1: header_columns_init_monimpr,
         2: header_columns_init_cddvd,
@@ -2464,7 +2492,7 @@ def launch(entry_filename,
     main.check_file_name(form_bib2ark, entry_filename)
     liste_reports = create_reports(funcs.id_traitement2path(id_traitement), file_nb)
     file2row(form_bib2ark, entry_filename, liste_reports, parametres)
-
+    #print(parametres["stats"])
     fin_traitements(form_bib2ark, liste_reports, parametres["stats"])
 
 #
@@ -2485,7 +2513,7 @@ def fin_traitements(form_bib2ark, liste_reports, nb_notices_nb_ARK):
 
 def stats_extraction(liste_reports, nb_notices_nb_ARK):
     """Ecriture des rapports de statistiques générales d'alignements"""
-    for key in nb_notices_nb_ARK:
+    for key in sorted(nb_notices_nb_ARK):
         liste_reports[-1].write(str(key) + "\t" + str(nb_notices_nb_ARK[key]) + "\n")
 
 

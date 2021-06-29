@@ -1,7 +1,8 @@
 # coding: utf-8
 
-version = 1.31
-lastupdate = "13/10/2020"
+version = 1.32
+version_suffix = ""   # contenu : "RC1", "RC2", "RC3", etc.
+lastupdate = "29/06/2021"
 programID = "bibliostratus"
 
 
@@ -10,7 +11,7 @@ import os
 import json
 import re
 import smc.bibencodings
-from pkg_resources import py2_warn
+#from pkg_resources import py2_warn
 import tkinter as tk
 import webbrowser
 from tkinter import filedialog

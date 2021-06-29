@@ -18,6 +18,7 @@ from lxml import etree
 
 from collections import defaultdict
 import json
+from random import randrange
 
 from chardet.universaldetector import UniversalDetector
 import pymarc as mc
@@ -167,23 +168,30 @@ def path2value(record, field_subfield):
     value = None
     val_list = []
     # print(field_subfield)
-    if (field_subfield.find("$") > -1):
+    if ("$" in field_subfield):
         field = field_subfield.split("$")[0]
-        subfield = field_subfield.split("$")[1]
+        subfields = field_subfield.split("$")[1:]
         if (type(record) is etree._ElementTree):
-            for f in record.xpath(".//*[@tag='%s']" % field):
-                for subf in f.xpath(".//*[@code='%s']" % subfield):
-                    val_list.append(subf.text)
+            for f in record.xpath(f".//*[@tag='{field}']"):
+                field_value = []
+                for subf in subfields:
+                    for subf_occurrence in f.xpath(f"*[@code='{subf}']"):
+                        field_value.append(subf_occurrence.text)
+                field_value = " ".join(field_value)
+                val_list.append(field_value)
         else:
             for f in record.get_fields(field):
-                for subf in f.get_subfields(subfield):
-                    val_list.append(subf)
-        if (val_list != []):
-            value = ";".join(val_list)
+                field_value = []
+                for subf in subfields:
+                    for subf_occurrence in f.get_subfields(subf):
+                        field_value.append(subf_occurrence)
+                field_value = " ".join(field_value)
+                val_list.append(field_value)
+        value = ";".join(val_list)
     else:
         if (type(record) is etree._ElementTree):
-            if record.find(".//*[@tag='%s']" % field_subfield):
-                value = record.find(".//*[@tag='']" % field_subfield).text
+            if record.find(f".//*[@tag='{field_subfield}']"):
+                value = record.find(f".//*[@tag='{field_subfield}']").text
         else:
             if (record[field_subfield] is not None 
                 and int(field_subfield) < 10):
@@ -191,7 +199,7 @@ def path2value(record, field_subfield):
     return value
 
 
-def record2meta(record, liste_elements, alternate_list=[]):
+def record2meta(record, liste_elements, alternate_list=[], sep=" "):
     zone = []
     for el in liste_elements:
         value = path2value(record, el)
@@ -209,7 +217,7 @@ def record2meta(record, liste_elements, alternate_list=[]):
         #     for el in alternate_list
         #     if path2value(record, el) is not None
         # ]
-    zone = " ".join(zone)
+    zone = sep.join(zone)
     # print(zone)
     return zone
 
@@ -239,19 +247,20 @@ def record2date(coded_field, f210d, format="unimarc"):
 
 def record2authors(value_fields):
     authors = clean_spaces(value_fields).strip()
-    authors = clean_punctation(authors)
+    #authors = clean_punctation(authors)
+    authors = ";".join([el for el in authors.split(";") if el])
     return authors
 
 
 def aut2keywords(authors):
-    authors = clean_punctation(authors)
+    #authors = clean_punctation(authors)
     liste_authors = authors.split(" ")
-    liste_authors = [el for el in liste_authors if el != ""]
-    authors2keywords = set()
+    liste_authors = " ".join([el for el in liste_authors if el != ""])
+    """authors2keywords = set()
     for mot in liste_authors:
         authors2keywords.add(clean_accents_case(mot).strip())
-    authors2keywords = " ".join(list(authors2keywords))
-    return authors2keywords
+    authors2keywords = " ".join(list(authors2keywords))"""
+    return liste_authors
 
 
 def record2ark(f033a):
@@ -361,14 +370,23 @@ def detect_errors_encoding_iso(collection):
 
 
 def test_encoding_file(master, entry_filename, encoding, file_format):
+    # Récupérer le contenu du fichier en entrée
+    # Si les premiers caractères du fichier décrivent son encodage (BOM)
+    # alors on ouvre un fichier temporaire où on réécrit le contenu du fichier initial
+    # sauf le BOM qui est retiré du contenu
     test = True
     input_file = ""
+    random_nr = str(randrange(1000))
+    temp_filename = f"temp_file_sans_bom{random_nr}.txt"
+    current_dir = ""
     if (file_format == 1):
         file = open(entry_filename, "rb").read()
+        current_dir = os.path.dirname(os.path.realpath(entry_filename))        
+        temp_filename = os.path.join(current_dir, temp_filename)
         if (len(file[0:3].decode(encoding)) == 1):
             file = file[3:]
-            entry_filename = "temp_file_sans_bom.txt"
-        temp_file = open("temp_file_sans_bom.txt", "wb")
+            entry_filename = temp_filename
+        temp_file = open(temp_filename, "wb")
         temp_file.write(file)
         temp_file.close()
     try:
@@ -377,7 +395,7 @@ def test_encoding_file(master, entry_filename, encoding, file_format):
     except UnicodeDecodeError:
         main.popup_errors(master, main.errors["format_fichier_en_entree"])
     try:
-        os.remove("temp_file_sans_bom.txt")
+        os.remove(temp_filename)
     except FileNotFoundError:
         pass
         # print("Fichier temporaire UTF8-sans BOM inutile")
@@ -392,8 +410,7 @@ def iso2tables(master, entry_filename, file_format,
     encoding = "iso-8859-1"
     if (file_format == 1):
         encoding = "utf-8"
-    (test_file, input_file) = test_encoding_file(
-        master, entry_filename, encoding, file_format)
+    (test_file, input_file) = test_encoding_file(master, entry_filename, encoding, file_format)
     assert test_file
 
     temp_list = [el + u'\u001D' for el in input_file]
@@ -458,16 +475,13 @@ def bib_metas_from_marc21(record):
     if (global_title == part_title):
         part_title = ""
     authors = record2authors(record2meta(record, [
-        "100$a",
-        "100$m",
-        "110$a",
-        "110$m",
-        "700$a",
-        "700$m",
-        "710$a",
-        "710$m",
+        "100$a$m",
+        "110$a$m",
+        "700$a$m",
+        "710$a$m",
     ],
-        ["245$f"])
+        ["245$f"],
+        sep=";")
     )
     authors2keywords = aut2keywords(authors)
     date = record2date(record2meta(
@@ -492,6 +506,10 @@ def bib_metas_from_marc21(record):
             id_commercial_aud
             )
 
+
+
+
+
 def bib_metas_from_unimarc(record):
     """
     Définition des zones Marc correspondant aux différentes métadonnées
@@ -511,20 +529,15 @@ def bib_metas_from_unimarc(record):
     if (global_title == part_title):
         part_title = ""
     authors = record2authors(record2meta(record, [
-        "700$a",
-        "700$b",
-        "710$a",
-        "710$b",
-        "701$a",
-        "701$b",
-        "711$a",
-        "711$b",
-        "702$a",
-        "702$b",
-        "712$a",
-        "712$b"
+        "700$a$b",
+        "710$a$b",
+        "701$a$b",
+        "711$a$b",
+        "702$a$b",
+        "712$a$b",
     ],
-        ["200$f"])
+        ["200$f"],
+        sep=";")
     )
     authors2keywords = aut2keywords(authors)
     date = record2date(record2meta(record, ["100$a"]), record2meta(
@@ -712,7 +725,18 @@ def aut_metas_from_marc21(record):
     return (ark, frbnf, isni, firstname,
             lastname, firstdate, lastdate, doc_record)
 
+
 def bibfield2autmetas(numNot, doc_record, record, field):
+    metas = []
+    if ("marc2tables_input_format" in main.prefs   
+       and main.prefs["marc2tables_input_format"]["value"] == "marc21"):
+        metas = bibfield2autmetas_from_marc21(numNot, doc_record, record, field)
+    else:
+        metas = bibfield2autmetas_from_unimarc(numNot, doc_record, record, field)
+    return metas        
+
+
+def bibfield2autmetas_from_unimarc(numNot, doc_record, record, field):
     metas = []
     no_aut = subfields2firstocc(field.get_subfields("3"))
     no_bib = numNot
@@ -730,6 +754,35 @@ def bibfield2autmetas(numNot, doc_record, record, field):
     firstname = subfields2firstocc(field.get_subfields("b"))
     lastname = subfields2firstocc(field.get_subfields("a"))
     dates_aut = subfields2firstocc(field.get_subfields("f"))
+    metas = [doc_record, no_aut, no_bib, ark, frbnf, isbn, title,
+             pubDate, isni, lastname, firstname, dates_aut]
+    return metas
+
+
+def bibfield2autmetas_from_marc21(numNot, doc_record, record, field):
+    metas = []
+    no_aut = subfields2firstocc(field.get_subfields("3"))
+    no_bib = numNot
+    ark = record2ark(record2meta(record, ["033$a"]))
+    frbnf = record2frbnf(record2meta(record, ["035$a"]))
+    isbn = record2title(
+        record2meta(record, ["020$a"], ["024$a"])
+    )
+    title = record2title(
+        record2meta(record, ["245$a", "245$e"])
+    )
+    pubDate = record2date(record2meta(record, ["008"]), record2meta(
+        record, ["264$c"]), format="marc21")
+    isni = subfields2firstocc(field.get_subfields("o"))
+    firstname = subfields2firstocc(field.get_subfields("b"))
+    lastname = subfields2firstocc(field.get_subfields("a"))
+    if ("marc2tables_input_format" in main.prefs   
+       and main.prefs["marc2tables_input_format"]["value"] == "marc21"
+       and "," in lastname and firstname == ""):
+        field_a = lastname
+        lastname = field_a.split(",")[0]
+        firstname = ", ".join(field_a.split(",")[1:])
+    dates_aut = subfields2firstocc(field.get_subfields("d"))
     metas = [doc_record, no_aut, no_bib, ark, frbnf, isbn, title,
              pubDate, isni, lastname, firstname, dates_aut]
     return metas
@@ -756,6 +809,12 @@ def bibrecord2autmetas(numNot, doc_record, record, all_metas=False):
         fields2metas.append(bibfield2autmetas(numNot, "cb", record, f711))
     for f712 in record.get_fields("712"):
         fields2metas.append(bibfield2autmetas(numNot, "cb", record, f712))
+    if ("marc2tables_input_format" in main.prefs
+       and main.prefs["marc2tables_input_format"]["value"] == "marc21"):
+        for f100 in record.get_fields("100"):
+            fields2metas.append(bibfield2autmetas(numNot, "ca", record, f100))
+        for f110 in record.get_fields("100"):
+            fields2metas.append(bibfield2autmetas(numNot, "cb", record, f110))
     return fields2metas
 
 
