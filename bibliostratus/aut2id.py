@@ -668,8 +668,9 @@ def isbnBib2ppnAut(input_record, parametres):
                                    1)
     listePPN_bib = bib2id.isbn2sudoc(bib_record, parametres)
     for ppn in listePPN_bib.split(","):
-        test, record = bib2id.ppn2recordSudoc(ppn)
-        listePPN.extend(extractARKautfromBIB(input_record, record, "sudoc"))
+        if ppn:
+            test, record = bib2id.ppn2recordSudoc(ppn)
+            listePPN.extend(extractARKautfromBIB(input_record, record, "sudoc"))
     listePPN = ",".join(set(listePPN))
     if (listePPN != ""):
         input_record.alignment_method.append("ISBN bib > PPN")

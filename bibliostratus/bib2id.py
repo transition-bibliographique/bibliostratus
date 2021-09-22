@@ -818,7 +818,7 @@ def isbn2sudoc(input_record, parametres):
     ark = []
     if isbnTrouve:
         (test, resultats) = funcs.testURLetreeParse(url)
-        if test and resultats.find(".//ppn") is not None:
+        if test:
             for ppn in resultats.xpath("//ppn"):
                 ppn_val = check_ppn_by_kw(ppn.text, input_record, "isbn2ppn")
                 if (ppn_val):
@@ -1494,7 +1494,7 @@ def tad2ppn_from_domybiblio(input_record, parametres):
         if (test):
             page = parse(result)
         else:
-        #    print("erreur XML timeout, puis erreur HTML")
+        # print("erreur XML timeout, puis erreur HTML")
             type_page = ""
     except socket.timeout:
         type_page = "html"
@@ -1502,7 +1502,7 @@ def tad2ppn_from_domybiblio(input_record, parametres):
         if (test):
             page = parse(result)
         else:
-        #    print("erreur XML timeout, puis erreur HTML")
+        # print("erreur XML timeout, puis erreur HTML")
             type_page = ""
     except urllib.error.HTTPError:
         type_page = "html"
@@ -1511,7 +1511,7 @@ def tad2ppn_from_domybiblio(input_record, parametres):
             page = parse(result)
         else:
             type_page = ""
-        #    print("erreur XML HTTPerror, puis erreur HTML")
+        # print("erreur XML HTTPerror, puis erreur HTML")
     except urllib.error.URLError:
         type_page = "html"
         test, result = funcs.testURLurlopen(url2, display=False)
@@ -1519,7 +1519,7 @@ def tad2ppn_from_domybiblio(input_record, parametres):
             page = parse(result)
         else:
             type_page = ""
-        #    print("erreur XML HTTPerror, puis erreur HTML")
+        # print("erreur XML HTTPerror, puis erreur HTML")
     except etree.XMLSyntaxError:
         # problème de conformité XML du résultat
         # type_page = "html"
@@ -1529,7 +1529,7 @@ def tad2ppn_from_domybiblio(input_record, parametres):
             page = parse(result)
         else:
             type_page = ""
-        #    print("erreur XML SyntaxError, puis erreur HTML")
+        # print("erreur XML SyntaxError, puis erreur HTML")
         # print("erreur XML", url1)
     except http.client.RemoteDisconnected:
         type_page = ""
@@ -1647,6 +1647,7 @@ def check_sudoc_results(input_record, listePPN, origine="Titre-Auteur-Date"):
             listePPN_checked.append(ppn_checked)
     listePPN_checked = ",".join([el for el in listePPN_checked if el])
     return listePPN_checked
+
 
 def check_sudoc_result(input_record, ppn, origine="Titre-Auteur-Date"):
     """
