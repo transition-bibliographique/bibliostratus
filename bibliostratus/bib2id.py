@@ -605,12 +605,9 @@ def systemid2ark(input_record, NumNot, systemid, tronque, isbn, titre, auteur, d
 
 def rechercheNNB(input_record, nnb):
     ark = []
-    if nnb.isdigit() is False:
-        # pb_frbnf_source.write("\t".join[NumNot,nnb] + "\n")
-        ark = "Pb FRBNF"
-    elif 30000000 < int(nnb) < 50000000:
+    if nnb.isdigit() and 30000000 < int(nnb) < 50000000:
         sru_result = sru.SRU_result(f"bib.recordid any \"{nnb}\"")
-        identifier = ""
+        identifiant = ""
         if input_record.type == "TEX":
             identifiant = input_record.isbn.propre
         elif (input_record.type == "VID" 
@@ -646,7 +643,7 @@ def oldfrbnf2ark(input_record):
     """Extrait du FRBNF le numéro système, d'abord sur 9 chiffres,
     puis sur 8 si besoin, avec un contrôle des résultats sur le
     contenu du titre ou sur l'auteur"""
-    systemid = input_record.frbnf.propre.upper().replace("FRBNF","").replace("FRBNF", "")[0:8]
+    systemid = input_record.frbnf.propre.upper().replace("FRBNF","").replace("FRBN", "")[0:8]
     ark = rechercheNNB(input_record, systemid[0:8])
     if ark == "":
         ark = systemid2ark(
@@ -2514,6 +2511,10 @@ def fin_traitements(form_bib2ark, liste_reports, nb_notices_nb_ARK):
 
 def stats_extraction(liste_reports, nb_notices_nb_ARK):
     """Ecriture des rapports de statistiques générales d'alignements"""
+    for key in nb_notices_nb_ARK:
+        if main.RepresentsInt(key) is False:
+            liste_reports[-1].write(str(key) + "\t" + str(nb_notices_nb_ARK[key]) + "\n")
+            nb_notices_nb_ARK.pop(key, None)
     for key in sorted(nb_notices_nb_ARK):
         liste_reports[-1].write(str(key) + "\t" + str(nb_notices_nb_ARK[key]) + "\n")
 

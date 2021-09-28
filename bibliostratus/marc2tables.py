@@ -1001,8 +1001,9 @@ https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr
 def end_of_treatments(form, id_traitement):
     for file in output_files_dict:
         output_files_dict[file].close()
-    main.output_directory = [""]
+    id_traitement = os.path.join(main.output_directory[0], id_traitement)
     encoding_errors(id_traitement)
+    main.output_directory = [""]
     print("\n\n------------------------\n\nExtraction terminée\n\n")
     for key in stats:
         if ("Nombre" not in key):
