@@ -1,4 +1,10 @@
-### version 1.32
+### version 1.33
+- Module blanc [Bibliographique] :
+	- Correction d'un bug sur l'utilisation de FRBNF dans le fichier en entrée
+	- Correction d'un bug sur le rapport statistique
+	- Correction d'un bug sur la récupération d'une notice complète Sudoc quand 0 PPN trouvé
+
+### version 1.32 (juin 2021)
 - Module bleu [conversion Marc > tables] :
 	- meilleure prise en compte du Marc21
 	- Colonne Auteur : préservation de la mise en forme, et séparateur ";" en cas d'auteurs multiples

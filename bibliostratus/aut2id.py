@@ -165,17 +165,20 @@ def ark2meta_aut(ark):
     accesspoint_complList = []
     datesList = []
     isnis = []
+    other_ids = []
     for ark in listeARK:
         metas_ark = ark2metas_aut(ark, False)
         accesspointList.append(metas_ark[0])
         accesspoint_complList.append(metas_ark[1])
         datesList.append(metas_ark[2])
         isnis.append(metas_ark[3])
+        other_ids.append(metas_ark[4])
     accesspointList = "|".join(accesspointList)
     accesspoint_complList = "|".join(accesspoint_complList)
     datesList = "|".join(datesList)
     isnis = "|".join(isnis)
-    metas = [accesspointList, accesspoint_complList, datesList, isnis]
+    other_ids = "|".join(other_ids)
+    metas = [accesspointList, accesspoint_complList, datesList, isnis, other_ids]
     return metas
 
 
@@ -184,7 +187,7 @@ def ark2metas_aut(ark, unidec=True):
     if ("ppn" in ark.lower()):
         url = "https://www.idref.fr/" + ark[3:] + ".xml"
     (test, record) = funcs.testURLetreeParse(url)
-    accesspoint, accesspoint_compl, dates, isni = ["", "", "", ""]
+    accesspoint, accesspoint_compl, dates, isni, other_ids = ["", "", "", "", ""]
     if test:
         accesspoint = main.extract_subfield(record, "200", "a")
         if not accesspoint:
@@ -196,7 +199,8 @@ def ark2metas_aut(ark, unidec=True):
         if not dates:
             dates = main.extract_subfield(record, "210", "f")
         isni = main.extract_subfield(record, "010", "a")
-    metas = [accesspoint, accesspoint_compl, dates, isni]
+        other_ids = main.extract_subfield(record, "033", "a")
+    metas = [accesspoint, accesspoint_compl, dates, isni, other_ids]
     if unidec:
         metas = [unidecode(meta) for meta in metas]
     return metas
@@ -415,7 +419,7 @@ def align_aut_file(form, entry_filename, liste_reports, parametres):
                       "Liste identifiants AUT trouvés", "Méthode"] + aligntype2headers[parametres["input_data_type"]][1:]
     if (parametres['meta_bnf'] == 1):
         header_columns.extend(
-            ["[BnF/IdRef] Nom", "[BnF/IdRef] Complément Nom", "[BnF/IdRef] Dates", "[BnF/IdRef] ISNI"])
+            ["[BnF/IdRef] Nom", "[BnF/IdRef] Complément Nom", "[BnF/IdRef] Dates", "[BnF/IdRef] ISNI", "[BnF/IdRef] Autres ID"])
     if (parametres['file_nb'] == 1):
         row2file(header_columns, liste_reports)
     elif(parametres['file_nb'] == 2):

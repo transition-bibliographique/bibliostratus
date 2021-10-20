@@ -158,10 +158,15 @@ def record2doctype(label, rec_format=1):
 
 
 def record2recordtype(label, rec_format=1):
+    recordtype = ""
     if (rec_format == 2):
-        return label[9]
+        if main.prefs["marc2tables_input_format"]["value"] == "marc21":
+            recordtype = label[8]   # Manque de documentation pour identifier la position qualifiant le type d'autorité
+        else:
+            recordtype = label[9]
     else:
-        return label[7]
+        recordtype = label[7]
+    return recordtype
 
 
 def path2value(record, field_subfield):
@@ -711,8 +716,8 @@ def aut_metas_from_marc21(record):
     isni = record2isniAUT(record2meta(record, ["024$a"]))
     if re.fullmatch(r"\d{16}", isni) is None:
         isni = ""
-    firstname = record2lastnameAUT_marc21(record2meta(record, ["100$a"], ["110$a", "111$a"]))
-    lastname = record2firstnameAUT_marc21(record2meta(record, ["100$a"], ["110$b", "111$b"]))
+    lastname = record2lastnameAUT_marc21(record2meta(record, ["100$a"], ["110$a", "111$a"]))
+    firstname = record2firstnameAUT_marc21(record2meta(record, ["100$a"], ["110$b", "111$b"]))
     firstdate = record2firstdateAUT_marc21(record2meta(record, ["046$f"], ["046$q", "111$d"]))
     lastdate = record2lastdateAUT_marc21(record2meta(record, ["046$g"], ["046$r"]))
     if (record2meta(record, ["110$a"])

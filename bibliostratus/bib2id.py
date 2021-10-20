@@ -1985,6 +1985,7 @@ def ark2meta_simples(ark):
                 for el in record.metadata[3:]:
                     metas[i].append(el)
                     i += 1
+                
                 doctypes.append(record.doc_record)
             except IndexError:
                 pass
@@ -2395,6 +2396,7 @@ def file2row(form_bib2ark, entry_filename, liste_reports, parametres):
     header_columns.append("Type doc / Type notice")
     if parametres["meta_bib"] == 1:
         headers_add_metas = [f"[BnF/Abes] {el}" for el in headers_dict["all"][3:]]
+        headers_add_metas.extend(["[BnF/Abes] Ids pérennes BnF/Abes", "[BnF/Abes] Type notice-doct"])
         header_columns.extend(headers_add_metas)
     # Ajout des en-têtes de colonne dans les fichiers
     if parametres["file_nb"] == 1:

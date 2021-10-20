@@ -33,7 +33,7 @@
         },
     "timestamp": {
         "description": "Option (booléen True/False) pour injecter en dernière colonne des rapports d'alignement l'horodatage. Ceci pour évaluer la performance d'un alignement volumineux au fur et à mesure du traitement.",
-        "value": "True"
+        "value": "False"
         },
     "worldcat_api_key": {
         "description": "API Key OCLC pour interroger les web services Worldcat (recherche sur ISBN)",
