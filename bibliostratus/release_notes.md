@@ -1,12 +1,13 @@
 ### version 1.33
+- Modules blancs [Bib et Aut] :
+	- Récupération de la zone 033 quand on coche "Récupérer les métadonnées simples" (et correction des en-têtes de colonnes)
 - Module blanc [Bibliographique] :
 	- Correction d'un bug sur l'utilisation de FRBNF dans le fichier en entrée
 	- Correction d'un bug sur le rapport statistique
 	- Correction d'un bug sur la récupération d'une notice complète Sudoc quand 0 PPN trouvé
-- Modules blancs [Bib et Aut] :
-	- Récupération de la zone 033 quand on coche "Récupérer les métadonnées simples" (et correction des en-têtes de colonnes)
 - Module bleu [conversion Marc > tables] :
 	- Récupération conforme des notices AUT en marc21 pour en faire des tableaux
+	- Correction d'un bug : meilleure récupération des dates de naissance/mort dans le fichier Unimarc(A) en entrée
 
 
 ### version 1.32 (juin 2021)

@@ -659,9 +659,12 @@ def record2firstdateAUT_marc21(date):
     return date
     
 
-def record2lastdateAUT(f103b, f200f):
-    if (f103b[1:5] != "    "):
+def record2lastdateAUT(f103b, f103a, f200f):
+    # Récupération date de décès
+    if (len(f103b) > 4 and f103b[1:5].strip() != ""):
         return f103b[1:5]
+    elif (len(f103a) > 15 and f103a[11:15].strip() != ""):
+        return f103a[11:15]
     elif ("-" in f200f):
         return (f200f.split("-")[1])
     else:
@@ -674,7 +677,7 @@ def record2lastdateAUT_marc21(date):
 def autrecord2metas(numNot, doc_record, record,
                     pref_format_file=True,
                     all_metas=False):
-    """  Le record est une notice pymarc.Record ou en XML
+    """Le record est une notice pymarc.Record ou en XML
     Le paramètre pref_format_file permet de préciser
     que le format de préférence est à chercher dans
     le fichier preferences.json
@@ -705,7 +708,8 @@ def aut_metas_from_unimarc(record):
     firstdate = record2firstdateAUT(record2meta(
         record, ["103$a"]), record2meta(record, ["200$f"]))
     lastdate = record2lastdateAUT(record2meta(
-        record, ["103$b"]), record2meta(record, ["200$f"]))
+        record, ["103$b"]), record2meta(
+        record, ["103$a"]), record2meta(record, ["200$f"]))
     return (ark, frbnf, isni, firstname,
             lastname, firstdate, lastdate)
 
