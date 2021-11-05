@@ -648,12 +648,19 @@ def record2lastnameAUT_marc21(name):
 
 
 def record2firstdateAUT(f103a, f200f):
-    if (f103a[1:5] != "    "):
-        return f103a[1:5]
+    date_f103a = ""
+    date_f200f = ""
+    fistdate = ""
+    if (len(f103a) and f103a[1:5] != "    "):
+        date_f103a = f103a[1:5].strip()
     elif ("-" in f200f):
-        return (f200f.split("-")[0])
+        date_f200f = (f200f.split("-")[0])
+    if date_f103a:
+        firstdate = date_f103a
     else:
-        return f200f
+        firstdate = date_f200f
+    return firstdate
+    
 
 def record2firstdateAUT_marc21(date):
     return date
