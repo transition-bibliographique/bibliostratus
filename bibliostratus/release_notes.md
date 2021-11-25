@@ -1,6 +1,6 @@
 ### version 1.34
-- Modules d'alignement : 
-	- centralisation du nombre de parallélisations dans le fichier main.py
+- Modules blancs [Bib et Aut] : 
+	- Le nombre de requêtes parallélisables est modifiable dans les préférences. Cela permet à l'usager de réduire le nombre de requêtes s'il constate des problèmes de saturation de mémoire ou de réseau sur son PC, ou de l'augmenter.
 
 ### version 1.33 (novembre 2021)
 - Modules blancs [Bib et Aut] :
