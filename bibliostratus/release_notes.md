@@ -1,3 +1,7 @@
+### version 1.34
+- Modules d'alignement : 
+	- centralisation du nombre de parallélisations dans le fichier main.py
+
 ### version 1.33 (novembre 2021)
 - Modules blancs [Bib et Aut] :
 	- Récupération de la zone 033 quand on coche "Récupérer les métadonnées simples" (et correction des en-têtes de colonnes)

@@ -43,7 +43,7 @@ if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
    getattr(ssl, '_create_unverified_context', None)):
     ssl._create_default_https_context = ssl._create_unverified_context
 
-NUM_PARALLEL = 100    # Nombre de notices à aligner simultanément
+NUM_PARALLEL = main.NUM_PARALLEL    # Nombre de notices à aligner simultanément
 
 url_access_pbs = []
 
