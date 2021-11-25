@@ -11,6 +11,9 @@
         "login": "",
         "mot de passe": ""
         },
+	"num_parallel": {
+		"description": "Nombre de requêtes simultanées à envoyer aux catalogues pour réaliser des alignements.",
+		"value": 100},
     "display_message_in_progress": {
         "description": "Afficher ou non le message en rouge quand on sélectionner un fichier à charger. Par défaut : 1 = message à afficher. 0 = ne pas afficher",
         "value": 1
@@ -42,4 +45,5 @@
 	"gmb": {
         "description": "Fichier d'alignement bibliographique : matrice Excel Gallica Marque Blanche. Valeurs : 0 [non] ou 1 [oui]",
         "value": "0"
-        }}
+        }
+	}

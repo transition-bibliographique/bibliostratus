@@ -38,8 +38,6 @@ version_suffix = ["", f".RC{init.version_suffix}"][len(init.version_suffix)]  # 
 lastupdate = init.lastupdate
 programID = init.programID
 
-NUM_PARALLEL = 100
-
 # Ajout du fichier preferences.json
 
 
@@ -58,6 +56,12 @@ def load_preferences():
     return prefs, prefs_file_name
 
 prefs, prefs_file_name = load_preferences()
+
+
+NUM_PARALLEL = 100
+if "num_parallel" in prefs:
+    NUM_PARALLEL = prefs["num_parallel"]["value"]
+
 
 ns = {
     "srw": "http://www.loc.gov/zing/srw/",
