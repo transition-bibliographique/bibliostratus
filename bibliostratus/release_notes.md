@@ -1,6 +1,7 @@
 ### version 1.33 (novembre 2021)
 - Modules blancs [Bib et Aut] :
 	- Récupération de la zone 033 quand on coche "Récupérer les métadonnées simples" (et correction des en-têtes de colonnes)
+	- parallélisation : 100 requêtes simultanées
 - Module blanc [Bibliographique] :
 	- Correction d'un bug sur l'utilisation de FRBNF dans le fichier en entrée
 	- Correction d'un bug sur le rapport statistique
