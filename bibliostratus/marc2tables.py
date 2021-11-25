@@ -158,10 +158,15 @@ def record2doctype(label, rec_format=1):
 
 
 def record2recordtype(label, rec_format=1):
+    recordtype = ""
     if (rec_format == 2):
-        return label[9]
+        if main.prefs["marc2tables_input_format"]["value"] == "marc21":
+            recordtype = label[8]   # Manque de documentation pour identifier la position qualifiant le type d'autorité
+        else:
+            recordtype = label[9]
     else:
-        return label[7]
+        recordtype = label[7]
+    return recordtype
 
 
 def path2value(record, field_subfield):
@@ -643,20 +648,30 @@ def record2lastnameAUT_marc21(name):
 
 
 def record2firstdateAUT(f103a, f200f):
-    if (f103a[1:5] != "    "):
-        return f103a[1:5]
+    date_f103a = ""
+    date_f200f = ""
+    fistdate = ""
+    if (len(f103a) and f103a[1:5] != "    "):
+        date_f103a = f103a[1:5].strip()
     elif ("-" in f200f):
-        return (f200f.split("-")[0])
+        date_f200f = (f200f.split("-")[0])
+    if date_f103a:
+        firstdate = date_f103a
     else:
-        return f200f
+        firstdate = date_f200f
+    return firstdate
+    
 
 def record2firstdateAUT_marc21(date):
     return date
     
 
-def record2lastdateAUT(f103b, f200f):
-    if (f103b[1:5] != "    "):
+def record2lastdateAUT(f103b, f103a, f200f):
+    # Récupération date de décès
+    if (len(f103b) > 4 and f103b[1:5].strip() != ""):
         return f103b[1:5]
+    elif (len(f103a) > 15 and f103a[11:15].strip() != ""):
+        return f103a[11:15]
     elif ("-" in f200f):
         return (f200f.split("-")[1])
     else:
@@ -669,7 +684,7 @@ def record2lastdateAUT_marc21(date):
 def autrecord2metas(numNot, doc_record, record,
                     pref_format_file=True,
                     all_metas=False):
-    """  Le record est une notice pymarc.Record ou en XML
+    """Le record est une notice pymarc.Record ou en XML
     Le paramètre pref_format_file permet de préciser
     que le format de préférence est à chercher dans
     le fichier preferences.json
@@ -700,7 +715,8 @@ def aut_metas_from_unimarc(record):
     firstdate = record2firstdateAUT(record2meta(
         record, ["103$a"]), record2meta(record, ["200$f"]))
     lastdate = record2lastdateAUT(record2meta(
-        record, ["103$b"]), record2meta(record, ["200$f"]))
+        record, ["103$b"]), record2meta(
+        record, ["103$a"]), record2meta(record, ["200$f"]))
     return (ark, frbnf, isni, firstname,
             lastname, firstdate, lastdate)
 
@@ -711,8 +727,8 @@ def aut_metas_from_marc21(record):
     isni = record2isniAUT(record2meta(record, ["024$a"]))
     if re.fullmatch(r"\d{16}", isni) is None:
         isni = ""
-    firstname = record2lastnameAUT_marc21(record2meta(record, ["100$a"], ["110$a", "111$a"]))
-    lastname = record2firstnameAUT_marc21(record2meta(record, ["100$a"], ["110$b", "111$b"]))
+    lastname = record2lastnameAUT_marc21(record2meta(record, ["100$a"], ["110$a", "111$a"]))
+    firstname = record2firstnameAUT_marc21(record2meta(record, ["100$a"], ["110$b", "111$b"]))
     firstdate = record2firstdateAUT_marc21(record2meta(record, ["046$f"], ["046$q", "111$d"]))
     lastdate = record2lastdateAUT_marc21(record2meta(record, ["046$g"], ["046$r"]))
     if (record2meta(record, ["110$a"])
@@ -1001,8 +1017,9 @@ https://github.com/Transition-bibliographique/bibliostratus/wiki/1-%5BBleu%5D-Pr
 def end_of_treatments(form, id_traitement):
     for file in output_files_dict:
         output_files_dict[file].close()
-    main.output_directory = [""]
+    id_traitement = os.path.join(main.output_directory[0], id_traitement)
     encoding_errors(id_traitement)
+    main.output_directory = [""]
     print("\n\n------------------------\n\nExtraction terminée\n\n")
     for key in stats:
         if ("Nombre" not in key):

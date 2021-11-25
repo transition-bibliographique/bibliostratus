@@ -1,4 +1,16 @@
-### version 1.32
+### version 1.33 (novembre 2021)
+- Modules blancs [Bib et Aut] :
+	- Récupération de la zone 033 quand on coche "Récupérer les métadonnées simples" (et correction des en-têtes de colonnes)
+- Module blanc [Bibliographique] :
+	- Correction d'un bug sur l'utilisation de FRBNF dans le fichier en entrée
+	- Correction d'un bug sur le rapport statistique
+	- Correction d'un bug sur la récupération d'une notice complète Sudoc quand 0 PPN trouvé
+- Module bleu [conversion Marc > tables] :
+	- Récupération conforme des notices AUT en marc21 pour en faire des tableaux
+	- Correction d'un bug : meilleure récupération des dates de naissance/mort dans le fichier Unimarc(A) en entrée
+
+
+### version 1.32 (juin 2021)
 - Module bleu [conversion Marc > tables] :
 	- meilleure prise en compte du Marc21
 	- Colonne Auteur : préservation de la mise en forme, et séparateur ";" en cas d'auteurs multiples
@@ -15,7 +27,7 @@
 - Exécution de Bibliostratus en ligne de commande
 	- correction d'un bug sur les valeurs autorisées
 
-### version 1.31
+### version 1.31 (octobre 2020)
 - Modules blancs : correction d'un bug sur l'affichage multi-fenêtres suite à la parallélisation
 - Module blanc [Autorités] :
   - correction d'un bug pour l'alignement par références bibliographiques
@@ -25,13 +37,13 @@
   - Correction d'un bug sur l'alignement par ancien numéro de notices
 
 
-### version 1.30
+### version 1.30 (juin 2020)
 - parallélisation des alignements (par 10) dans bib2id et aut2id, et des récupérations de notices (ark2records)
 - correction d'un bug pour récupérer les PPN trouvés par recherche titre-auteur-date
 - Quand contrôle sur identifiant (EAN, ISBN, etc), vérification de la date dans la 305 aussi
 
 
-### version 1.29
+### version 1.29 (avril 2020)
 - Création d'un fichier __init__.py (conformité aux pratiques de programmes Python)
 - Lancement de Bibliostratus en ligne de commande (fichier cli.py)
 - Ajout d'un paramètre tsv_csv dans les préférences : possibilité d'avoir des fichiers CSV (avec autre séparateur que la tabulation)
@@ -43,7 +55,7 @@
   - sur le fichier preferences.default
 
 
-### version 1.28
+### version 1.28 (janvier 2020)
 - possibilité de lancer Bibliostratus en ligne de commande en exécutant le fichier bibliostratus-cli.py
 - tous modules : vérification qu'il y a bien un fichier en entrée
 - ajout d'un fichier forms.py qui gère les libellés et variables des différents paramètres pour les modules

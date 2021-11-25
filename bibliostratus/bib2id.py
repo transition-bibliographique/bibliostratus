@@ -43,7 +43,7 @@ if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
    getattr(ssl, '_create_unverified_context', None)):
     ssl._create_default_https_context = ssl._create_unverified_context
 
-NUM_PARALLEL = 10    # Nombre de notices à aligner simultanément
+NUM_PARALLEL = 100    # Nombre de notices à aligner simultanément
 
 url_access_pbs = []
 
@@ -605,12 +605,9 @@ def systemid2ark(input_record, NumNot, systemid, tronque, isbn, titre, auteur, d
 
 def rechercheNNB(input_record, nnb):
     ark = []
-    if nnb.isdigit() is False:
-        # pb_frbnf_source.write("\t".join[NumNot,nnb] + "\n")
-        ark = "Pb FRBNF"
-    elif 30000000 < int(nnb) < 50000000:
+    if nnb.isdigit() and 30000000 < int(nnb) < 50000000:
         sru_result = sru.SRU_result(f"bib.recordid any \"{nnb}\"")
-        identifier = ""
+        identifiant = ""
         if input_record.type == "TEX":
             identifiant = input_record.isbn.propre
         elif (input_record.type == "VID" 
@@ -646,7 +643,7 @@ def oldfrbnf2ark(input_record):
     """Extrait du FRBNF le numéro système, d'abord sur 9 chiffres,
     puis sur 8 si besoin, avec un contrôle des résultats sur le
     contenu du titre ou sur l'auteur"""
-    systemid = input_record.frbnf.propre.upper().replace("FRBNF","").replace("FRBNF", "")[0:8]
+    systemid = input_record.frbnf.propre.upper().replace("FRBNF","").replace("FRBN", "")[0:8]
     ark = rechercheNNB(input_record, systemid[0:8])
     if ark == "":
         ark = systemid2ark(
@@ -818,7 +815,7 @@ def isbn2sudoc(input_record, parametres):
     ark = []
     if isbnTrouve:
         (test, resultats) = funcs.testURLetreeParse(url)
-        if test and resultats.find(".//ppn") is not None:
+        if test:
             for ppn in resultats.xpath("//ppn"):
                 ppn_val = check_ppn_by_kw(ppn.text, input_record, "isbn2ppn")
                 if (ppn_val):
@@ -1494,7 +1491,7 @@ def tad2ppn_from_domybiblio(input_record, parametres):
         if (test):
             page = parse(result)
         else:
-        #    print("erreur XML timeout, puis erreur HTML")
+        # print("erreur XML timeout, puis erreur HTML")
             type_page = ""
     except socket.timeout:
         type_page = "html"
@@ -1502,7 +1499,7 @@ def tad2ppn_from_domybiblio(input_record, parametres):
         if (test):
             page = parse(result)
         else:
-        #    print("erreur XML timeout, puis erreur HTML")
+        # print("erreur XML timeout, puis erreur HTML")
             type_page = ""
     except urllib.error.HTTPError:
         type_page = "html"
@@ -1511,7 +1508,7 @@ def tad2ppn_from_domybiblio(input_record, parametres):
             page = parse(result)
         else:
             type_page = ""
-        #    print("erreur XML HTTPerror, puis erreur HTML")
+        # print("erreur XML HTTPerror, puis erreur HTML")
     except urllib.error.URLError:
         type_page = "html"
         test, result = funcs.testURLurlopen(url2, display=False)
@@ -1519,7 +1516,7 @@ def tad2ppn_from_domybiblio(input_record, parametres):
             page = parse(result)
         else:
             type_page = ""
-        #    print("erreur XML HTTPerror, puis erreur HTML")
+        # print("erreur XML HTTPerror, puis erreur HTML")
     except etree.XMLSyntaxError:
         # problème de conformité XML du résultat
         # type_page = "html"
@@ -1529,7 +1526,7 @@ def tad2ppn_from_domybiblio(input_record, parametres):
             page = parse(result)
         else:
             type_page = ""
-        #    print("erreur XML SyntaxError, puis erreur HTML")
+        # print("erreur XML SyntaxError, puis erreur HTML")
         # print("erreur XML", url1)
     except http.client.RemoteDisconnected:
         type_page = ""
@@ -1647,6 +1644,7 @@ def check_sudoc_results(input_record, listePPN, origine="Titre-Auteur-Date"):
             listePPN_checked.append(ppn_checked)
     listePPN_checked = ",".join([el for el in listePPN_checked if el])
     return listePPN_checked
+
 
 def check_sudoc_result(input_record, ppn, origine="Titre-Auteur-Date"):
     """
@@ -1987,6 +1985,7 @@ def ark2meta_simples(ark):
                 for el in record.metadata[3:]:
                     metas[i].append(el)
                     i += 1
+                
                 doctypes.append(record.doc_record)
             except IndexError:
                 pass
@@ -2397,6 +2396,7 @@ def file2row(form_bib2ark, entry_filename, liste_reports, parametres):
     header_columns.append("Type doc / Type notice")
     if parametres["meta_bib"] == 1:
         headers_add_metas = [f"[BnF/Abes] {el}" for el in headers_dict["all"][3:]]
+        headers_add_metas.extend(["[BnF/Abes] Ids pérennes BnF/Abes", "[BnF/Abes] Type notice-doct"])
         header_columns.extend(headers_add_metas)
     # Ajout des en-têtes de colonne dans les fichiers
     if parametres["file_nb"] == 1:
@@ -2415,7 +2415,7 @@ def file2row(form_bib2ark, entry_filename, liste_reports, parametres):
                 "Comment modifier l'encodage du fichier",
                 "https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e",  # noqa
             )
-        for rows in funcs.chunks_iter(entry_file, 10):
+        for rows in funcs.chunks_iter(entry_file, NUM_PARALLEL):
             if (n-1) == 0:
                 assert main.control_columns_number(
                         form_bib2ark, rows[0], parametres["header_columns_init"]
@@ -2513,6 +2513,10 @@ def fin_traitements(form_bib2ark, liste_reports, nb_notices_nb_ARK):
 
 def stats_extraction(liste_reports, nb_notices_nb_ARK):
     """Ecriture des rapports de statistiques générales d'alignements"""
+    for key in nb_notices_nb_ARK:
+        if main.RepresentsInt(key) is False:
+            liste_reports[-1].write(str(key) + "\t" + str(nb_notices_nb_ARK[key]) + "\n")
+            nb_notices_nb_ARK.pop(key, None)
     for key in sorted(nb_notices_nb_ARK):
         liste_reports[-1].write(str(key) + "\t" + str(nb_notices_nb_ARK[key]) + "\n")
 

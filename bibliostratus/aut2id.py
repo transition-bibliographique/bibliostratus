@@ -28,7 +28,7 @@ import aut2id_concepts
 import forms
 
 
-NUM_PARALLEL = 10    # Nombre de notices à aligner simultanément
+NUM_PARALLEL = 100    # Nombre de notices à aligner simultanément
 
 # Ajout exception SSL pour éviter
 # plantages en interrogeant les API IdRef
@@ -128,6 +128,10 @@ def create_reports_files(id_traitement_code):
 
 def row2file(liste_metadonnees, liste_reports):
     liste_metadonnees_to_report = [str(el) for el in liste_metadonnees]
+    if ("timestamp" in main.prefs
+       and main.prefs["timestamp"]["value"] == "True"):
+        timest = funcs.timestamp()
+        liste_metadonnees_to_report.append(timest)
     liste_reports[0].write("\t".join(liste_metadonnees_to_report) + "\n")
 
 
@@ -161,17 +165,20 @@ def ark2meta_aut(ark):
     accesspoint_complList = []
     datesList = []
     isnis = []
+    other_ids = []
     for ark in listeARK:
         metas_ark = ark2metas_aut(ark, False)
         accesspointList.append(metas_ark[0])
         accesspoint_complList.append(metas_ark[1])
         datesList.append(metas_ark[2])
         isnis.append(metas_ark[3])
+        other_ids.append(metas_ark[4])
     accesspointList = "|".join(accesspointList)
     accesspoint_complList = "|".join(accesspoint_complList)
     datesList = "|".join(datesList)
     isnis = "|".join(isnis)
-    metas = [accesspointList, accesspoint_complList, datesList, isnis]
+    other_ids = "|".join(other_ids)
+    metas = [accesspointList, accesspoint_complList, datesList, isnis, other_ids]
     return metas
 
 
@@ -180,7 +187,7 @@ def ark2metas_aut(ark, unidec=True):
     if ("ppn" in ark.lower()):
         url = "https://www.idref.fr/" + ark[3:] + ".xml"
     (test, record) = funcs.testURLetreeParse(url)
-    accesspoint, accesspoint_compl, dates, isni = ["", "", "", ""]
+    accesspoint, accesspoint_compl, dates, isni, other_ids = ["", "", "", "", ""]
     if test:
         accesspoint = main.extract_subfield(record, "200", "a")
         if not accesspoint:
@@ -192,7 +199,8 @@ def ark2metas_aut(ark, unidec=True):
         if not dates:
             dates = main.extract_subfield(record, "210", "f")
         isni = main.extract_subfield(record, "010", "a")
-    metas = [accesspoint, accesspoint_compl, dates, isni]
+        other_ids = main.extract_subfield(record, "033", "a")
+    metas = [accesspoint, accesspoint_compl, dates, isni, other_ids]
     if unidec:
         metas = [unidecode(meta) for meta in metas]
     return metas
@@ -411,7 +419,7 @@ def align_aut_file(form, entry_filename, liste_reports, parametres):
                       "Liste identifiants AUT trouvés", "Méthode"] + aligntype2headers[parametres["input_data_type"]][1:]
     if (parametres['meta_bnf'] == 1):
         header_columns.extend(
-            ["[BnF/IdRef] Nom", "[BnF/IdRef] Complément Nom", "[BnF/IdRef] Dates", "[BnF/IdRef] ISNI"])
+            ["[BnF/IdRef] Nom", "[BnF/IdRef] Complément Nom", "[BnF/IdRef] Dates", "[BnF/IdRef] ISNI", "[BnF/IdRef] Autres ID"])
     if (parametres['file_nb'] == 1):
         row2file(header_columns, liste_reports)
     elif(parametres['file_nb'] == 2):
@@ -428,7 +436,7 @@ def align_aut_file(form, entry_filename, liste_reports, parametres):
                     "Comment modifier l'encodage du fichier",
                     "https://github.com/Transition-bibliographique/bibliostratus/wiki/2-%5BBlanc%5D-:-alignement-des-donn%C3%A9es-bibliographiques-avec-la-BnF#erreur-dencodage-dans-le-fichier-en-entr%C3%A9e"  # noqa
                 )
-        for rows in funcs.chunks_iter(entry_file, 10):
+        for rows in funcs.chunks_iter(entry_file, NUM_PARALLEL):
             if ((n-1) == 0):
                 assert main.control_columns_number(form,
                                                    rows[0],
@@ -664,8 +672,9 @@ def isbnBib2ppnAut(input_record, parametres):
                                    1)
     listePPN_bib = bib2id.isbn2sudoc(bib_record, parametres)
     for ppn in listePPN_bib.split(","):
-        test, record = bib2id.ppn2recordSudoc(ppn)
-        listePPN.extend(extractARKautfromBIB(input_record, record, "sudoc"))
+        if ppn:
+            test, record = bib2id.ppn2recordSudoc(ppn)
+            listePPN.extend(extractARKautfromBIB(input_record, record, "sudoc"))
     listePPN = ",".join(set(listePPN))
     if (listePPN != ""):
         input_record.alignment_method.append("ISBN bib > PPN")

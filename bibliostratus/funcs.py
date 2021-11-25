@@ -1122,6 +1122,7 @@ class XML2record:
         self.init = xml_record
         self.pymarc_record = xml2pymarcrecord(identifier, xml_record)
         self.doc_record = None
+        self.other_ids = get_other_ids(xml_record)
         if (record_type == 1):
             self.metadata, self.doc_record = marc2tables.record2listemetas(self.pymarc_record, 1,
                                                                            all_metas)
@@ -1130,6 +1131,28 @@ class XML2record:
             self.metadata, self.doc_record = marc2tables.record2listemetas(self.pymarc_record, 2,
                                                                             )
             self.record = Aut_record(self.metadata, {"input_data_type": record_type})
+        if all_metas:
+            self.metadata.append(self.other_ids)
+
+
+def get_other_ids(xml_record):
+    # A partir d'une notice Unimarc BIB ou Autorité, 
+    # récupérer la 033$a si elle contient un identifiant BnF, IdRef ou Sudoc
+    f033 = []
+    for field_occ in xml_record.xpath("*[@tag='033']"):
+        try:
+            subfa = field_occ.find("*[@code='a']").text
+            if "bnf" in subfa or "idref" in subfa or "sudoc" in subfa:
+                pass
+            else:
+                subfa = ""
+        except ValueError:
+            subfa = ""
+        f033.append(subfa)
+    f033 = ",".join(f033)
+    return f033
+            
+
 
 
 class XMLaut2record:
