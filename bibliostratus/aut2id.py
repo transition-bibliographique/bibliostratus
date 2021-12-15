@@ -568,10 +568,10 @@ def arkBib2arkAut(input_record, parametres):
             if (parametres["preferences_alignement"] == 2):
                 for ark in arks:
                     ppn = aut2id_idref.autArk2ppn(input_record, ark)
-                if (ppn):
-                    listeArk.append(ppn)
-                else:
-                    listeArk.append(ark)
+                    if (ppn):
+                        listeArk.append(ppn)
+                    else:
+                        listeArk.append(ark)
             else:
                 listeArk.extend(arks)
     if type(listeArk) == list:
