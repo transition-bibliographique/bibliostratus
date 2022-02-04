@@ -720,6 +720,8 @@ def testURLretrieve(url):
         test = False
     except ConnectionAbortedError as err:
         test = False
+    except ConnectionResetError as err:
+        test = False
     return test
 
 
@@ -1060,7 +1062,7 @@ class Bib_Aut_record:
     avec métadonnées AUT pour un alignement de la notice d'autorité
     grâce à la combinaison Titre + Auteur"""
 
-    def __init__(self, input_row, parametres):  # Notre méthode constructeur
+    def __init__(self, input_row):  # Notre méthode constructeur
         self.metas_init = input_row[1:]
         self.NumNot = input_row[0]
         self.type = None
@@ -2860,6 +2862,7 @@ def file2list(filename, all_cols=False, delimiter="\t"):
             file.close()
         except FileNotFoundError:
             pass
+    print(liste[1])
     return liste
 
 

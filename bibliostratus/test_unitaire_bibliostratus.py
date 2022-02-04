@@ -300,8 +300,8 @@ def test_alignement_bib2aut():
     bib2aut_recordsIdRef = defaultdict(dict)
     for pep in listePEP:
         key = "PEP"+str(i)
-        bib2aut_recordsBnF[key] = {"input_record":funcs.Bib_Aut_record(pep, param_alignBnF)}
-        bib2aut_recordsIdRef[key] = {"input_record":funcs.Bib_Aut_record(pep, param_alignIdRef)}
+        bib2aut_recordsBnF[key] = {"input_record":funcs.Bib_Aut_record(pep)}
+        bib2aut_recordsIdRef[key] = {"input_record":funcs.Bib_Aut_record(pep)}
         i += 1
 
   

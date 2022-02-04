@@ -43,7 +43,30 @@ if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
    getattr(ssl, '_create_unverified_context', None)):
     ssl._create_default_https_context = ssl._create_unverified_context
 
+
+def load_preferences():
+    prefs_file_name = 'main/files/preferences.json'
+    try:
+        with open(prefs_file_name, encoding="utf-8") as prefs_file:
+            prefs = json.load(prefs_file)
+    except FileNotFoundError:
+        try:
+            prefs_file_name = 'main/files/preferences.default'
+            with open(prefs_file_name, encoding="utf-8") as prefs_file:
+                prefs = json.load(prefs_file)
+        except FileNotFoundError:
+            prefs = {}
+    return prefs, prefs_file_name
+
+
+prefs, prefs_file_name = load_preferences()
+
 NUM_PARALLEL = 100    # Nombre de notices à aligner simultanément
+if "num_parallel" in prefs:
+    try:
+        NUM_PARALLEL = int(prefs["num_parallel"]["value"])
+    except TypeError:
+        pass
 
 url_access_pbs = []
 
@@ -176,13 +199,13 @@ def create_reports(id_traitement_code, nb_fichiers_a_produire):
 
 
 def create_reports_1file(id_traitement_code):
-    unique_file_results_frbnf_isbn2ark_name = (
+    unique_file_results_bib2id_name = (
         id_traitement_code + "-" + "resultats_bib2id.txt"
     )
-    unique_file_results_frbnf_isbn2ark = open(
-        unique_file_results_frbnf_isbn2ark_name, "w", encoding="utf-8"
+    unique_file_results_bib2id = open(
+        unique_file_results_bib2id_name, "w", encoding="utf-8"
     )
-    return [unique_file_results_frbnf_isbn2ark]
+    return [unique_file_results_bib2id]
 
 
 def create_reports_files(id_traitement_code):
@@ -678,8 +701,8 @@ def frbnf2ark(input_record):
 
 def row2file(liste_metadonnees, liste_reports):
     metas2report = [str(el) for el in liste_metadonnees]
-    if ("timestamp" in main.prefs
-       and main.prefs["timestamp"]["value"] == "True"):
+    if ("timestamp" in prefs
+       and prefs["timestamp"]["value"] == "True"):
         timest = funcs.timestamp()
         metas2report.append(timest)
     liste_reports[0].write("\t".join(metas2report) + "\n")
@@ -2022,7 +2045,7 @@ def extract_cols_from_row(row, liste):
 
 def item2oclc_by_id(input_record, parametres):
     oclcn = ""
-    wskey = main.prefs["worldcat_api_key"]["value"]
+    wskey = prefs["worldcat_api_key"]["value"]
     url = "https://www.worldcat.org/isbn/"
     if wskey and input_record.isbn.propre:
         oclcn = item2oclc_by_isbn(input_record, parametres, url_oclc, wskey)
@@ -2386,18 +2409,27 @@ def alignment_result2output(alignment_result, input_record, parametres, liste_re
         row2files(alignment_result.liste_metadonnees, liste_reports)
 
 
-def file2row(form_bib2ark, entry_filename, liste_reports, parametres):
-    """Récupération du contenu du fichier et application des règles d'alignement
-    ligne à ligne"""
+def construct_headers(parametres):
     header_columns = ["NumNot", "Nb identifiants trouvés",
-                      "Liste identifiants trouvés",
-                      "Méthode d'alignement"]
+                    "Liste identifiants trouvés",
+                    "Méthode d'alignement"]
     header_columns.extend(el for el in parametres["header_columns_init"][1:])
     header_columns.append("Type doc / Type notice")
+    if parametres["gmb"]:
+        header_columns.extend(["ID auteur 1", "Nom Auteur 1", "Prenom Auteur 1",
+                               "ID auteur 2", "Nom Auteur 2", "Prenom Auteur 2",
+                               "ID auteur 3", "Nom Auteur 3", "Prenom Auteur 3",])
     if parametres["meta_bib"] == 1:
         headers_add_metas = [f"[BnF/Abes] {el}" for el in headers_dict["all"][3:]]
         headers_add_metas.extend(["[BnF/Abes] Ids pérennes BnF/Abes", "[BnF/Abes] Type notice-doct"])
         header_columns.extend(headers_add_metas)
+    return header_columns
+
+
+def file2row(form_bib2ark, entry_filename, liste_reports, parametres):
+    """Récupération du contenu du fichier et application des règles d'alignement
+    ligne à ligne"""
+    header_columns = construct_headers(parametres)
     # Ajout des en-têtes de colonne dans les fichiers
     if parametres["file_nb"] == 1:
         row2file(header_columns, liste_reports)
@@ -2461,16 +2493,6 @@ def launch(entry_filename,
     except ValueError as err:
         print("\n\nDonnées en entrée erronées\n")
         print(err)
-
-    params_gmb = {}
-    #print(main.prefs)
-    if main.prefs["gmb"]["value"] == 1:
-        type_doc_bib = 1
-        preferences_alignement = 1
-        kwsudoc_option = 0
-        params_gmb = bib2id_gmb.launch_gmb_program()
-        entry_filename = bib2id_gmb.csvfile2bbsfile(entry_filename, params_gmb)
-    
     header_columns_init_dic = {
         1: header_columns_init_monimpr,
         2: header_columns_init_cddvd,
@@ -2479,6 +2501,7 @@ def launch(entry_filename,
         5: header_columns_init_cartes,
         6: header_columns_init_partitions
     }
+
     parametres = {
         "meta_bib": meta_bib,
         "type_doc_bib": type_doc_bib,
@@ -2487,11 +2510,23 @@ def launch(entry_filename,
         "header_columns_init": header_columns_init_dic[type_doc_bib],
         "preferences_alignement": preferences_alignement,
         "kwsudoc_option": kwsudoc_option,
-        "stats": defaultdict(int)
+        "stats": defaultdict(int),
+        "gmb": [False, True][int(prefs["gmb"]["value"])]
     }
     main.check_file_name(form_bib2ark, entry_filename)
     liste_reports = create_reports(funcs.id_traitement2path(id_traitement), file_nb)
-    file2row(form_bib2ark, entry_filename, liste_reports, parametres)
+    if parametres["gmb"]:
+        # Si l'option GMB est activée :
+        # On convertit les lignes du fichier en entrée en entités Bib_record et Bib_Aut_record
+        # On lance l'alignement + écriture dans le fichier en sortie
+        params_gmb = bib2id_gmb.launch_gmb_program()
+        gmb_headers, gmb_records = bib2id_gmb.csv2entities(entry_filename, params_gmb)
+        full_headers = construct_headers(parametres) + gmb_headers
+        row2file(full_headers, liste_reports)
+        bib2id_gmb.gmb_entities2results(form_bib2ark, gmb_records, liste_reports,
+                                        parametres, params_gmb)
+    else:
+        file2row(form_bib2ark, entry_filename, liste_reports, parametres)
     #print(parametres["stats"])
     fin_traitements(form_bib2ark, liste_reports, parametres["stats"])
 

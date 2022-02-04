@@ -12,6 +12,7 @@ Alignement des données d'autorité
 import csv
 import tkinter as tk
 import urllib.parse
+import json
 from collections import defaultdict
 import os, ssl
 
@@ -28,7 +29,29 @@ import aut2id_concepts
 import forms
 
 
-NUM_PARALLEL = 100    # Nombre de notices à aligner simultanément
+def load_preferences():
+    prefs_file_name = 'main/files/preferences.json'
+    try:
+        with open(prefs_file_name, encoding="utf-8") as prefs_file:
+            prefs = json.load(prefs_file)
+    except FileNotFoundError:
+        try:
+            prefs_file_name = 'main/files/preferences.default'
+            with open(prefs_file_name, encoding="utf-8") as prefs_file:
+                prefs = json.load(prefs_file)
+        except FileNotFoundError:
+            prefs = {}
+    return prefs, prefs_file_name
+
+
+prefs, prefs_file_name = load_preferences()
+
+NUM_PARALLEL = 100  # Nombre de notices à aligner simultanément
+if "num_parallel" in prefs:
+    try:
+        NUM_PARALLEL = int(prefs["num_parallel"]["value"])
+    except TypeError:
+        pass
 
 # Ajout exception SSL pour éviter
 # plantages en interrogeant les API IdRef
@@ -128,8 +151,8 @@ def create_reports_files(id_traitement_code):
 
 def row2file(liste_metadonnees, liste_reports):
     liste_metadonnees_to_report = [str(el) for el in liste_metadonnees]
-    if ("timestamp" in main.prefs
-       and main.prefs["timestamp"]["value"] == "True"):
+    if ("timestamp" in prefs
+       and prefs["timestamp"]["value"] == "True"):
         timest = funcs.timestamp()
         liste_metadonnees_to_report.append(timest)
     liste_reports[0].write("\t".join(liste_metadonnees_to_report) + "\n")
@@ -404,7 +427,7 @@ def aut2id_item(row, n, parametres):
         input_record = funcs.Aut_record(row, parametres)
         alignment_result = align_from_aut_alignment(input_record, parametres)
     elif parametres["input_data_type"] == 3:
-        input_record = funcs.Bib_Aut_record(row, parametres)
+        input_record = funcs.Bib_Aut_record(row)
         alignment_result = align_from_bib_alignment(input_record, parametres)
     elif parametres["input_data_type"] == 4:
         input_record = funcs.Aut_record(row, parametres)
@@ -941,7 +964,7 @@ def bib2ppnAUT_from_isbnean(input_record, parametres):
 
 def nna2ark(nna):
     url = funcs.url_requete_sru(
-        'aut.recordid any ' + nna + 'and aut.status any "sparse validated"')
+        'aut.recordid any ' + nna + ' and aut.status any "sparse validated"')
     ark = ""
     (test, record) = funcs.testURLetreeParse(url)
     if (test):
