@@ -722,6 +722,8 @@ def testURLretrieve(url):
         test = False
     except ConnectionResetError as err:
         test = False
+    except except BrokenPipeError as err:
+        test = False
     return test
 
 
