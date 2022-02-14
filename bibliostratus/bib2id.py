@@ -1698,22 +1698,25 @@ def urlsudoc2ppn(url):
     listePPN = []
     (test, page) = funcs.testURLurlopen(url, display=False, timeout_def=10)
     if test:
-        page = parse(page)
-        nb_results = extract_nb_results_from_sudoc_page(page)
-        if nb_results > 100:
-            nb_results = 100
-        if nb_results == 1:
-            listePPN = [extractPPNfromrecord(page)]
-        else:
-            listePPN = extractPPNfromsudocpage(page)
-        i = 11
-        while nb_results > i:
-            url_f = url + "&FRST=" + str(i)
-            test, following_page = funcs.testURLurlopen(url_f)
-            if test:
-                following_page = parse(following_page)
-                listePPN.extend(extractPPNfromsudocpage(following_page, nb_results, i))
-            i += 10
+        try:
+            page = parse(page)
+            nb_results = extract_nb_results_from_sudoc_page(page)
+            if nb_results > 100:
+                nb_results = 100
+            if nb_results == 1:
+                listePPN = [extractPPNfromrecord(page)]
+            else:
+                listePPN = extractPPNfromsudocpage(page)
+            i = 11
+            while nb_results > i:
+                url_f = url + "&FRST=" + str(i)
+                test, following_page = funcs.testURLurlopen(url_f)
+                if test:
+                    following_page = parse(following_page)
+                    listePPN.extend(extractPPNfromsudocpage(following_page, nb_results, i))
+                i += 10
+        except socket.timeout:
+            pass
     return listePPN
 
 

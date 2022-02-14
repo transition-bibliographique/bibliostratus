@@ -718,11 +718,17 @@ def testURLretrieve(url):
         test = False
     except http.client.RemoteDisconnected as err:
         test = False
+    except http.client.InvalidURL as err:
+        test = False
     except ConnectionAbortedError as err:
         test = False
     except ConnectionResetError as err:
         test = False
-    except except BrokenPipeError as err:
+    except BrokenPipeError as err:
+        test = False
+    except UnicodeEncodeError as err:
+        test = False
+    except socket.timeout as err:
         test = False
     return test
 
