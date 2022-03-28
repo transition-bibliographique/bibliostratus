@@ -109,7 +109,7 @@ def rameau_construct_sparql_query(accesspoint, label="skos:prefLabel"):
     """
     query = """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
     PREFIX dcterms: <http://purl.org/dc/terms/>
-    select distinct ?concept ?sous_ensemble_Rameau where {
+    select distinct ?concept (GROUP_CONCAT(?sous_ensemble_Rameau;SEPARATOR=",") as ?sous_ensemble_Rameau) where {
         ?concept """ + f"{label} \"{accesspoint}\"" + """@fr.
         ?concept dcterms:isPartOf ?sous_ensemble_Rameau.
     }

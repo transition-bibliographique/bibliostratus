@@ -36,7 +36,7 @@
         },
     "timestamp": {
         "description": "Option (booléen True/False) pour injecter en dernière colonne des rapports d'alignement l'horodatage. Ceci pour évaluer la performance d'un alignement volumineux au fur et à mesure du traitement.",
-        "value": "True"
+        "value": "False"
         },
     "worldcat_api_key": {
         "description": "API Key OCLC pour interroger les web services Worldcat (recherche sur ISBN)",
@@ -44,5 +44,9 @@
         },
     "gmb": {
         "description": "Fichier d'alignement bibliographique : matrice Excel Gallica Marque Blanche. Valeurs : 0 [non] ou 1 [oui]",
-        "value": 0
-        }}
+        "value": "0"
+        },
+	"num_parallel": {
+		"description": "Nombre de requêtes réalisées simultanément pour aligner des notices avec la BnF ou IdRef/Sudoc",
+		"value": "100"}
+}

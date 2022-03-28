@@ -23,6 +23,7 @@ from udecode import udecode
 
 import __init__ as init
 
+
 import ark2records
 import funcs
 import marc2tables
@@ -39,8 +40,6 @@ lastupdate = init.lastupdate
 programID = init.programID
 
 # Ajout du fichier preferences.json
-
-
 def load_preferences():
     prefs_file_name = 'main/files/preferences.json'
     try:
@@ -54,6 +53,7 @@ def load_preferences():
         except FileNotFoundError:
             prefs = {}
     return prefs, prefs_file_name
+
 
 prefs, prefs_file_name = load_preferences()
 
@@ -787,6 +787,9 @@ def formulaire_main(access_to_network, last_version):
 
     tk.Label(zone_notes, text="Bibliostratus - Version " +
              f"{str(version)}{version_suffix}" + " - " + lastupdate, bg=couleur_fond).pack()
+    if prefs["gmb"]["value"] == "1":
+        tk.Label(zone_notes, text="Option Gallica Marque Blanche", bg="#afafaf").pack()
+
 
     if last_version[1]:
         download_update = tk.Button(

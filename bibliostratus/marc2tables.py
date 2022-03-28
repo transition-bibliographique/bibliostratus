@@ -212,6 +212,7 @@ def record2meta(record, liste_elements, alternate_list=[], sep=" "):
         if (value is not None):
             zone.append(value)
     # zone = [path2value(record, el) for el in liste_elements if path2value(record, el) is not None]
+    zone = [el for el in zone if el]
     if (zone == [] and alternate_list != []):
         for el in alternate_list:
             value = path2value(record, el)
