@@ -7,6 +7,7 @@
 *.swf
 *.mrc
 *.iso2709
+tad2ppn_solr.py
 !unicode_table.csv
 !unicode_table_full.csv
 
