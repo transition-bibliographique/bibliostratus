@@ -23,6 +23,7 @@ from udecode import udecode
 
 import __init__ as init
 
+NUM_PARALLEL = 100
 
 import ark2records
 import funcs
@@ -35,7 +36,7 @@ import edit_preferences as settings
 from multiprocessing import freeze_support
 
 version = init.version
-version_suffix = ["", f".RC{init.version_suffix}"][len(init.version_suffix)]  # Si init.version_suffix est renseigné, on l'ajoute au numéro de version avec mention ".RC"
+version_suffix = ["", f".RC{init.version_suffix}"][len(init.version_suffix) > 0]  # Si init.version_suffix est renseigné, on l'ajoute au numéro de version avec mention ".RC"
 lastupdate = init.lastupdate
 programID = init.programID
 
@@ -58,9 +59,10 @@ def load_preferences():
 prefs, prefs_file_name = load_preferences()
 
 
-NUM_PARALLEL = 100
+
 if "num_parallel" in prefs:
     NUM_PARALLEL = prefs["num_parallel"]["value"]
+
 
 
 ns = {
