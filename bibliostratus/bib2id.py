@@ -43,7 +43,10 @@ if (not os.environ.get('PYTHONHTTPSVERIFY', '') and
    getattr(ssl, '_create_unverified_context', None)):
     ssl._create_default_https_context = ssl._create_unverified_context
 
-NUM_PARALLEL = main.NUM_PARALLEL    # Nombre de notices à aligner simultanément
+try:
+    NUM_PARALLEL = main.NUM_PARALLEL  # Nombre de notices à aligner simultanément
+except AttributeError:
+    NUM_PARALLEL = 20
 
 url_access_pbs = []
 
@@ -1397,7 +1400,9 @@ def tad2ark_controle_record(input_record, ark_current,
     """
     ark = ""
     typeRecord_current = main.extract_leader(xml_record, 7)
+    #print(typeRecord_current, "//", input_record.intermarc_type_record)
     if (type(input_record) == funcs.Bib_record
+        #and typeRecord_current in ["1", "2"]):
         and typeRecord_current == input_record.intermarc_type_record):
             ark = comparaisonTitres(input_record,
                                     input_record.NumNot,

@@ -27,8 +27,10 @@ import aut2id_idref
 import aut2id_concepts
 import forms
 
-
-NUM_PARALLEL = main.NUM_PARALLEL    # Nombre de notices à aligner simultanément
+try:
+    NUM_PARALLEL = main.NUM_PARALLEL  # Nombre de notices à aligner simultanément
+except AttributeError:
+    NUM_PARALLEL = 20
 
 # Ajout exception SSL pour éviter
 # plantages en interrogeant les API IdRef
