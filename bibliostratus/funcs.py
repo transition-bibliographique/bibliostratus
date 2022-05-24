@@ -877,11 +877,27 @@ class IdRef:
         """Méthode permettant d'afficher plus joliment notre objet"""
         return "{}".format(self.init)
 
+    
+def _clean_ppn(string):
+    string = string.split("/")[-1]
+    string = string.lower().replace("ppn", "").upper()
+    return string
+
+
 class PPN:
     """Classe pour les identifiants IdRef (propriété des notices d'AUT)"""
-    def __init__(self, string):  # Notre méthode constructeur
+    def __init__(self, string, source="sudoc"):  # Notre méthode constructeur
+        if type(string) == PPN:
+            string = string.prefixppn
         self.init = string
-        self.propre = nettoyageIdRef(self.init, "sudoc.fr/")
+        self.source = source
+        self.root, self.prefixppn, self.uri, self.propre, self.output = [""]*5
+        if self.init:
+            self.root = _clean_ppn(string)
+            self.prefixppn = f"PPN{self.root}"
+            self.uri = f"https://www.{source}.fr/{self.root}"
+            self.propre = nettoyageIdRef(self.init, f"{source}.fr/")
+            self.output = self.uri
 
     def __str__(self):
         """Méthode permettant d'afficher plus joliment notre objet"""
@@ -940,7 +956,7 @@ class Bib_record:
         self.option_record = option_record
         self.NumNot = input_row[0]
         self.frbnf = FRBNF(input_row[1])
-        self.ppn = PPN(input_row[1])
+        self.ppn = PPN(input_row[1], "sudoc")
         self.ark_init = input_row[2]
         self.isbn = International_id("")
         self.ean = International_id("")
@@ -1042,7 +1058,7 @@ class Aut_record:
         self.parametres = parametres
         self.NumNot = input_row[0]
         self.frbnf = FRBNF(input_row[1])
-        self.ppn = IdRef(input_row[1])
+        self.ppn = PPN(input_row[1])
         self.ark_init = input_row[2]
         self.isni = Isni("")
         self.lastname = Name("")
@@ -1070,7 +1086,7 @@ class Bib_Aut_record:
     avec métadonnées AUT pour un alignement de la notice d'autorité
     grâce à la combinaison Titre + Auteur"""
 
-    def __init__(self, input_row):  # Notre méthode constructeur
+    def __init__(self, input_row, parametres):  # Notre méthode constructeur
         self.metas_init = input_row[1:]
         self.NumNot = input_row[0]
         self.type = None
@@ -1503,7 +1519,8 @@ def domybiblio2ppn_pages_suivantes(keywords, Listeppn,
         if test:
             for record in results.xpath("//records/record"):
                 ppn = "PPN" + record.find("identifier").text
-                Listeppn.append(ppn)
+                Listeppn.append(funcs.PPN(ppn, "sudoc").output)
+                #Listeppn.append(ppn)
         i += 1
     return Listeppn
 

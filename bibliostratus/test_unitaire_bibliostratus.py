@@ -216,15 +216,15 @@ def test_alignement_bib():
                                                                              param_alignSudoc)
     assert bib_records["TEX1"]["alignment_resultBnF"].alignment_method_str == "ISBN + contrôle Titre 200$a"
     assert bib_records["TEX1"]["alignment_resultBnF"].ids_str == "ark:/12148/cb43536110d"
-    assert bib_records["TEX1"]["alignment_resultSudoc"].ids_str == "PPN168081768"
+    assert bib_records["TEX1"]["alignment_resultSudoc"].ids_str == "https://www.sudoc.fr/168081768"
     assert bib_records["AUD1"]["alignment_resultBnF"].ids_str == "ark:/12148/cb423235808"
     assert bib_records["AUD1"]["alignment_resultSudoc"].ids_str == "ark:/12148/cb423235808"
     assert bib_records["PER1"]["alignment_resultBnF"].alignment_method_str == "ISSN"
     assert bib_records["PER1"]["alignment_resultBnF"].ids_str == "ark:/12148/cb43619642w"
-    assert bib_records["PER1"]["alignment_resultSudoc"].ids_str == "PPN174256019"
+    assert bib_records["PER1"]["alignment_resultSudoc"].ids_str == "https://www.sudoc.fr/174256019"
     assert bib_records["PER2"]["alignment_resultBnF"].ids_str == "ark:/12148/cb39121219d"
     assert bib_records["PER2"]["alignment_resultBnF"].alignment_method_str == "Numéro de notice + contrôle Titre 200$a"
-    assert bib_records["PER2"]["alignment_resultSudoc"].ids_str == "PPN077575245"
+    assert bib_records["PER2"]["alignment_resultSudoc"].ids_str == "https://www.sudoc.fr/077575245"
 
 
 
@@ -310,7 +310,7 @@ def test_alignement_bib2aut():
     for record in bib2aut_recordsIdRef:
         bib2aut_recordsIdRef[record]["alignment_result"] = aut2id.align_from_bib_alignment(bib2aut_recordsIdRef[record]["input_record"], param_alignIdRef)
     assert bib2aut_recordsBnF["PEP1"]["alignment_result"].ids_str == "ark:/12148/cb11907286n"
-    assert bib2aut_recordsIdRef["PEP2"]["alignment_result"].ids_str == "PPN027059952"
+    assert bib2aut_recordsIdRef["PEP2"]["alignment_result"].ids_str == "https://www.idref.fr/027059952"
 
 def test_ppnidref_to_row():
     """Vérifie la fonction ppn2metasAut :
@@ -343,7 +343,7 @@ def test_domybiblio_1_answer():
                               )
     param = {"preferences_alignement": 2}
     ppn = bib2id.tad2ppn(record, param)
-    assert ppn == "PPN015108805" or ppn == ""
+    assert ppn == "https://www.sudoc.fr/015108805" or ppn == ""
 
 def test_controle_011():
     """

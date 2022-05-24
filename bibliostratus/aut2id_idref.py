@@ -50,7 +50,7 @@ def autArk2ppn(input_record, ark_nett):
     if test:
         for ppn in result.xpath("//ppn"):
             Liste_ppn.append(ppn.text)    
-    Liste_ppn = ",".join(["PPN" + el for el in Liste_ppn if el])
+    Liste_ppn = ",".join([funcs.PPN(ppn, "idref").output for ppn in Liste_ppn if ppn])
     return Liste_ppn
 
 
@@ -111,7 +111,7 @@ def aut2ppn_by_accesspoint(input_record, parametres):
             ppn = check_idref_record(ppn, input_record, ppn2idrefrecord(ppn, parametres), parametres)
             if ppn:
                 Liste_ppn.append(ppn)
-    Liste_ppn = ",".join(["PPN" + el for el in Liste_ppn])
+    Liste_ppn = ",".join([funcs.PPN(ppn, "idref").output for ppn in Liste_ppn if ppn])
     if (Liste_ppn):
         input_record.alignment_method.append("Point d'accès > PPN")
     return Liste_ppn
@@ -169,7 +169,7 @@ def isni2ppn(input_record, isni_id, parametres, origine="isni"):
     if test:
         for ppn in page.xpath("//ppn"):
             Liste_ppn.append(ppn.text)
-    Liste_ppn = ",".join(["PPN"+el for el in Liste_ppn if el])
+    Liste_ppn = ",".join([funcs.PPN(ppn, "idref").output for ppn in Liste_ppn if ppn])
     if Liste_ppn:
         input_record.alignment_method.append(origine)
     return Liste_ppn
