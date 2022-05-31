@@ -213,7 +213,7 @@ def test_alignement_bib():
         bib_records[record]["alignment_resultBnF"] = bib2id.item_alignement(bib_records[record]["input_record"], 
                                                                             param_alignBnF)
         bib_records[record]["alignment_resultSudoc"] = bib2id.item_alignement(bib_records[record]["input_record"], 
-                                                                             param_alignSudoc)
+                                                                              param_alignSudoc)
     assert bib_records["TEX1"]["alignment_resultBnF"].alignment_method_str == "ISBN + contrôle Titre 200$a"
     assert bib_records["TEX1"]["alignment_resultBnF"].ids_str == "ark:/12148/cb43536110d"
     assert bib_records["TEX1"]["alignment_resultSudoc"].ids_str == "https://www.sudoc.fr/168081768"
@@ -274,7 +274,7 @@ def test_alignement_aut():
     # assert aut_records["PEP1"]["input_record"].alignment_method == ["N° sys FRBNF + Nom"]
     # assert aut_records["PEP1"]["alignment_resultBnF"].alignment_method_str == "N° sys FRBNF + Nom"
     assert aut_records_bnf["PEP1"]["alignment_result"].ids_str == "ark:/12148/cb11902332s"
-    assert aut_records_idref["PEP1"]["alignment_result"].ids_str == "PPN026859041"
+    assert aut_records_idref["PEP1"]["alignment_result"].ids_str == "https://www.idref.fr/026859041"
 
 
 def test_alignement_bib2aut():
@@ -300,8 +300,8 @@ def test_alignement_bib2aut():
     bib2aut_recordsIdRef = defaultdict(dict)
     for pep in listePEP:
         key = "PEP"+str(i)
-        bib2aut_recordsBnF[key] = {"input_record":funcs.Bib_Aut_record(pep)}
-        bib2aut_recordsIdRef[key] = {"input_record":funcs.Bib_Aut_record(pep)}
+        bib2aut_recordsBnF[key] = {"input_record":funcs.Bib_Aut_record(pep, param_alignBnF)}
+        bib2aut_recordsIdRef[key] = {"input_record":funcs.Bib_Aut_record(pep, param_alignIdRef)}
         i += 1
 
   
@@ -377,7 +377,9 @@ def test_convert_iso2tables():
         content = csv.reader(file, delimiter="\t")
         next(content)
         first_line_text = next(content)
-    wanted = ['FRBNF427031150000009', '',
+    print("first_line_text")
+    print(first_line_text)
+    wanted = ['FRBNF427031150000009', 'frbnf427031150000009',
               '', '', '', 'Plan de Paris 2012',
               'Paris Service de la topographie et de la documentation foncière',
               '2012', '', 'Mairie de Paris']

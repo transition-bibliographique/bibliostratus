@@ -718,7 +718,7 @@ def isbn2sru(input_record, NumNot, isbn, titre, auteur, date):
     for ark_current in results.dict_records:
         ark = comparaisonTitres(input_record, NumNot, ark_current,
                                 "", isbn, titre, auteur, date, "",
-                                results.dict_records[ark_current],"ISBN")
+                                results.dict_records[ark_current], "ISBN")
         # NumNotices2methode[NumNot].append("ISBN > ARK")
         listeARK.append(ark)
     if (listeARK == [""] and auteur != ""):
@@ -1298,6 +1298,7 @@ def tad2ark(input_record, parametres,
             search_query.append(f'bib.anywhere all "{input_record.scale}"')
         search_query = " and ".join(search_query)
         results = sru.SRU_result(search_query, parametres=params_sru)
+        print(1301, results.url)
         if (results.nb_results == 0):
             search_query = [f'bib.title all "{input_record.titre.recherche}"',
                             f'bib.author all "{auteur_nett}"',
