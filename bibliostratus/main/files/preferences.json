@@ -48,5 +48,8 @@
         },
 	"num_parallel": {
 		"description": "Nombre de requêtes réalisées simultanément pour aligner des notices avec la BnF ou IdRef/Sudoc",
-		"value": "100"}
+		"value": "20"},
+	"format_ppn": {
+		"description": "Mode de récupération des PPN : sous forme d'URI, ou simplement préfixé 'PPN'. Valeurs : 'ppn' ou 'uri'",
+		"value": "uri"}
 }

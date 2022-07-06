@@ -1,7 +1,9 @@
 ### version 1.34
 - Modules blancs [Bib et Aut] : 
-	- Le nombre de requêtes parallélisables est modifiable dans les préférences. Cela permet à l'usager de réduire le nombre de requêtes s'il constate des problèmes de saturation de mémoire ou de réseau sur son PC, ou de l'augmenter.
-
+	- Le nombre de requêtes parallélisables est fixé à 20 (pour permettre aux bases interrogées de répondre correctement sans saturation).
+	- Identifiants Sudoc produits lors des alignements : dans les Préférences, possibilité de choisir entre le format PPN0123456789 ("ppn") et le formation https://www.sudoc.fr/0123456789 ("uri")
+- Constitution d'un dossier "Jeu de données" à la racine de Bibliostratus (qui pour l'instant reprend le contenu du dossier main\examples)
+	
 ### version 1.33 (novembre 2021)
 - Modules blancs [Bib et Aut] :
 	- Récupération de la zone 033 quand on coche "Récupérer les métadonnées simples" (et correction des en-têtes de colonnes)

@@ -103,7 +103,6 @@ def unidecode_local(string):
 
     for char in corr_temp_dict:
         string = string.replace(char, corr_temp_dict[char])
-
     string = udecode(string)
     for char in reverse_corr_temp_dict:
         string = string.replace(char, reverse_corr_temp_dict[char])
@@ -897,7 +896,9 @@ class PPN:
             self.prefixppn = f"PPN{self.root}"
             self.uri = f"https://www.{source}.fr/{self.root}"
             self.propre = nettoyageIdRef(self.init, f"{source}.fr/")
-            self.output = self.uri
+            self.output = self.prefixppn
+            if "format_ppn" in prefs and prefs["format_ppn"]["value"].lower() == "uri":
+                self.output = self.uri
 
     def __str__(self):
         """Méthode permettant d'afficher plus joliment notre objet"""

@@ -2,8 +2,8 @@
 # coding: utf-8
 
 version = 1.34
-version_suffix = "6"   # contenu : "RC1", "RC2", "RC3", etc.
-lastupdate = "14/06/2022"
+version_suffix = "7"   # contenu : "RC1", "RC2", "RC3", etc.
+lastupdate = "06/07/2022"
 programID = "bibliostratus"
 
 

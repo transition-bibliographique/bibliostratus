@@ -114,7 +114,7 @@ def action_align():
                            choices=dic_doctype.keys())
     align_bib.add_argument("--align_pref", help="Préférences d'alignement (bnf / abes)", default="bnf",
                            choices=["bnf", "abes", "sudoc", "idref"])
-    align_bib.add_argument("--sudoc_kw", help="Recherche par mots-clés dans le Sudoc", default="non")
+    align_bib.add_argument("--sudoc_kw", help="Recherche par mots-clés dans le Sudoc", default="oui")
     align_bib.add_argument("--isni", help="Relancer la recherche dans isni.org", default="non")
     align_bib.add_argument("--headers", help="Fichier avec en-têtes", default="oui")
     align_bib.add_argument("--files_nb", help="Nombre de fichiers en sortie", default="1")

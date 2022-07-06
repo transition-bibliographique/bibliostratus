@@ -23,7 +23,7 @@ from udecode import udecode
 
 import __init__ as init
 
-NUM_PARALLEL = 100
+NUM_PARALLEL = 20
 
 import ark2records
 import funcs
@@ -60,8 +60,8 @@ prefs, prefs_file_name = load_preferences()
 
 
 
-if "num_parallel" in prefs:
-    NUM_PARALLEL = prefs["num_parallel"]["value"]
+"""if "num_parallel" in prefs:
+    NUM_PARALLEL = prefs["num_parallel"]["value"]"""
 
 
 

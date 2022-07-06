@@ -31,7 +31,7 @@ import forms
 import sru
 
 
-NUM_PARALLEL = 10    # Nombre de notices à exporter simultanément
+NUM_PARALLEL = 20    # Nombre de notices à exporter simultanément
 
 
 # Permet d'écrire dans une liste accessible au niveau général depuis le

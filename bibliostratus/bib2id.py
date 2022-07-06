@@ -506,8 +506,7 @@ def comparaisonTitres_sous_zone(
     date,
     recordBNF,
     origineComparaison,
-    sous_zone,
-):
+    sous_zone):
     ark = ""
     if ("+" in sous_zone):
         titreBNF = ""
@@ -1298,7 +1297,7 @@ def tad2ark(input_record, parametres,
             search_query.append(f'bib.anywhere all "{input_record.scale}"')
         search_query = " and ".join(search_query)
         results = sru.SRU_result(search_query, parametres=params_sru)
-        print(1301, results.url)
+        # print(1301, results.url)
         if (results.nb_results == 0):
             search_query = [f'bib.title all "{input_record.titre.recherche}"',
                             f'bib.author all "{auteur_nett}"',
@@ -1597,7 +1596,7 @@ def tad2ppn(input_record, parametres):
     url = url.replace("ADI_MAT=B", "ADI_MAT=B&ADI_MAT=Y")
     url = url.replace("ADI_MAT=N", "ADI_MAT=N&ADI_MAT=G")
     listePPN = urlsudoc2ppn(url)
-    
+    # print(url)
     listePPN = check_sudoc_results(input_record, listePPN)
     listePPN = ",".join([ppn.output for ppn in listePPN if ppn.root])
     return listePPN
@@ -2224,7 +2223,6 @@ def item2ark_by_keywords(input_record, parametres):
 def item2ppn_by_keywords(input_record, parametres):
     """Alignement par mots clés sur le catalogue Sudoc"""
     ppn = ""
-
     if input_record.titre.init != "":
         ppn = tad2ppn(input_record, parametres)
 
