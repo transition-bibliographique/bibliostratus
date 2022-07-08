@@ -81,7 +81,7 @@ lettres_sauf_x = [
 ponctuation = [
     ".", ",", ";", ":", "?", "!", "%", "$", "£", "€", "#", r"\\", '"', "&", "~",
     "{", "(", "[", "`", "_", "@", ")", "]", "}", "=", "+", "*", r"/", "<",
-    ">", ")", "}", "̊"
+    ">", ")", "}", "̊", "̨"
 ]
 
 url_access_pbs = []
@@ -214,7 +214,7 @@ def nettoyage_no_commercial(no_commercial_propre):
 def nettoyageAuteur(auteur, justeunmot=True):
     listeMots = [" par ", " avec ", " by ", " Mr. ", " M. ", " Mme ", " Mrs "]
     for mot in listeMots:
-        auteur = auteur.replace(mot, "")
+        auteur = auteur.replace(mot, " ")
     for chiffre in listeChiffres:
         auteur = auteur.replace(chiffre, "")
     auteur = nettoyage(auteur.lower(), False)
