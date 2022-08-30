@@ -455,6 +455,10 @@ def checkDate(ark, date_init, recordBNF):
     dateBNF_210d = funcs.unidecode_local(
         sru.record2fieldvalue(recordBNF, "210$d").split("~")[0].lower()
     )
+    if dateBNF_210d == "":
+        dateBNF_210d = funcs.unidecode_local(
+        sru.record2fieldvalue(recordBNF, "214$d").split("~")[0].lower()
+    )
     dateBNF_306a = funcs.unidecode_local(
         sru.record2fieldvalue(recordBNF, "306$a").split("~")[0].lower()
     )
@@ -1727,6 +1731,7 @@ def controle_keywords2ppn(input_record, ppn):
     ppn_final = None
     url_sudoc_record = "https://www.sudoc.fr/" + ppn.root + ".xml"
     (test, record_sudoc) = funcs.testURLetreeParse(url_sudoc_record)
+    
     if (test):
         ppn_final = comparaisonTitres(input_record,
                                       input_record.NumNot,
@@ -1740,8 +1745,9 @@ def controle_keywords2ppn(input_record, ppn):
                                       record_sudoc,
                                       "Titre-Auteur-Date DoMyBiblio",
                                       )
-        if (ppn_final and input_record.date_nett):
+        if (ppn_final and input_record.date_nett and main.prefs["controle_isbn2id_date"]["value"] == "True"):
             ppn_final = checkDate(ppn.prefixppn, input_record.date_nett, record_sudoc)
+            print("vérif date")
     #    if (ppn_final and input_record.auteur_nett):
     #        ppn_final = controle_auteurs(ppn, input_record, record_sudoc)
     if ppn_final:
@@ -2170,6 +2176,9 @@ def check_ppn_by_kw(ppn, input_record, source_alignement):
                                         record_sudoc,
                                         source_alignement,
                                         )
+        if (ppn_checked and input_record.date_nett
+           and ("controle_isbn2id_date" in main.prefs and main.prefs["controle_isbn2id_date"]["value"] == "True")):
+            ppn_checked = checkDate(ppn.prefixppn, input_record.date_nett, record_sudoc)
     else:
         ppn_checked = ppn.prefixppn
         input_record.alignment_method.append(f"Problème {ppn.output} : métadonnées Sudoc non vérifiées")

@@ -51,5 +51,11 @@
 		"value": "20"},
 	"format_ppn": {
 		"description": "Mode de récupération des PPN : sous forme d'URI, ou simplement préfixé 'PPN'. Valeurs : 'ppn' ou 'uri'",
-		"value": "uri"}
+		"value": "uri"},
+	"controle_isbn2id_date": {
+		"description": "Paramètre (peut-être) temporaire pour tester le contrôle sur la date dans le cas d'alignements sur ISBN ou EAN",
+		"value": "True"},
+	"controle_editeur": {
+		"description": "Paramètre (peut-être) temporaire pour tester le contrôle sur le nom d'éditeur pour les monographies",
+		"value": "True"}
 }
