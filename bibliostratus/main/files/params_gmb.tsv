@@ -1,11 +1,12 @@
 Attribut	Numéro(s) de colonne
-NumNot	-1
+NumNot	54
 FRBNF	
 ARK	
 ISBN	
 EAN	
 Titre	0,1
-Auteurs	2,3,7,8,12,13
+Auteurs	2,3
 Date	20
 Tome-Volume	
 Editeur	18
+Auteurs (nom-prénom)	(7,8),(12,13)

@@ -27,8 +27,10 @@ import aut2id_idref
 import aut2id_concepts
 import forms
 
-
-NUM_PARALLEL = 100    # Nombre de notices à aligner simultanément
+try:
+    NUM_PARALLEL = main.NUM_PARALLEL  # Nombre de notices à aligner simultanément
+except AttributeError:
+    NUM_PARALLEL = 20
 
 # Ajout exception SSL pour éviter
 # plantages en interrogeant les API IdRef
@@ -185,7 +187,9 @@ def ark2meta_aut(ark):
 def ark2metas_aut(ark, unidec=True):
     url = funcs.url_requete_sru(f'aut.persistentid any "{ark}" and aut.status any "sparse validated"')
     if ("ppn" in ark.lower()):
-        url = "https://www.idref.fr/" + ark[3:] + ".xml"
+        ppn = funcs.PPN(ark, "idref")
+        # url = "https://www.idref.fr/" + ark[3:] + ".xml"
+        url = f"{ppn.uri}.xml"
     (test, record) = funcs.testURLetreeParse(url)
     accesspoint, accesspoint_compl, dates, isni, other_ids = ["", "", "", "", ""]
     if test:
@@ -673,7 +677,7 @@ def isbnBib2ppnAut(input_record, parametres):
     listePPN_bib = bib2id.isbn2sudoc(bib_record, parametres)
     for ppn in listePPN_bib.split(","):
         if ppn:
-            test, record = bib2id.ppn2recordSudoc(ppn)
+            test, record = bib2id.ppn2recordSudoc(funcs.PPN(ppn))
             listePPN.extend(extractARKautfromBIB(input_record, record, "sudoc"))
     listePPN = ",".join(set(listePPN))
     if (listePPN != ""):
@@ -849,7 +853,7 @@ def bib2arkAUT(input_record, parametres):
                 for ark in arks:
                     ppn = aut2id_idref.autArk2ppn(input_record, ark)
                     if (ppn):
-                        listeArk.append(ppn)
+                        listeArk.append(funcs.PPN(ppn, "idref").output)
                         input_record.alignment_method.append("ARK > PPN")
                     else:
                         listeArk.append(ark)
@@ -870,10 +874,10 @@ def bib2ppnAUT(input_record, parametres):
     --> contrôles sur le nom, prénom, date de naissance de l'auteur
     """
     listePPNaut = []
-    listePPNbib = bib2ppnAUT_from_sudoc(input_record, parametres).split(",")
-    listePPNbib = [el.replace("PPN", "") for el in listePPNbib if el]                        
+    listePPNbib = bib2ppnAUT_from_sudoc(input_record, parametres)
+    # listePPNbib = [el.replace("PPN", "") for el in listePPNbib if el]                        
     for ppn in listePPNbib:
-        url = "https://www.sudoc.fr/" + ppn.replace("PPN", "") + ".xml"
+        url = f"{ppn.uri}.xml"
         (test, results) = funcs.testURLetreeParse(url)
         if (test):
             for record in results.xpath(
@@ -906,7 +910,7 @@ def bib2ppnAUT_from_sudoc(input_record, parametres):
     à partir d'un input_record d'instance Bib_Aut_record
     """
     listePPN = []
-    listePPN = ",".join(bib2ppnAUT_from_isbnean(input_record, parametres))
+    listePPN = bib2ppnAUT_from_isbnean(input_record, parametres)
     if len(listePPN) == 0:
         url = "http://www.sudoc.abes.fr//DB=2.1/SET=18/TTL=1/CMD?ACT=SRCHM\
 &MATCFILTER=Y&MATCSET=Y&NOSCAN=Y&PARSE_MNEMONICS=N&PARSE_OPWORDS=N&PARSE_OLDSETS=N\
@@ -937,6 +941,7 @@ def bib2ppnAUT_from_isbnean(input_record, parametres):
     if (len(listePPN) == 0 and input_record.isbn.propre):
         listePPN = bib2id.isbn2sudoc(input_record, parametres).split(",")
         listePPN = [el for el in listePPN if el]
+    listePPN = [funcs.PPN(ppn) for ppn in listePPN]
     return listePPN
 
 def nna2ark(nna):
@@ -1070,7 +1075,7 @@ def extractARKautfromBIB(input_record, xml_record, source="bnf"):
             listeArk.append(nna2ark(nna))
         return listeArk
     else:
-        listeNNA = ["PPN"+el for el in listeNNA]
+        listeNNA = [funcs.PPN(ppn, "idref").output for ppn in listeNNA]
         return listeNNA
 
 

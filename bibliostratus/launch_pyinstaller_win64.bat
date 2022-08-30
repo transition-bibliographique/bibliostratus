@@ -11,6 +11,7 @@ copy bibliostratus.bat dist
 xcopy /S main\files dist\main\files\
 del dist\main\files\preferences.json
 xcopy /S main\examples dist\main\examples\
+xcopy /S main\examples "dist\jeux de donnees\"
 rename dist bibliostratus
 "C:\Program Files\7-Zip\7z" a -tzip ..\bin\bibliostratus_%version%_win64_py3.6.zip bibliostratus/
 rd /s /q bibliostratus

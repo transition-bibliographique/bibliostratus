@@ -23,6 +23,8 @@ from udecode import udecode
 
 import __init__ as init
 
+NUM_PARALLEL = 20
+
 import ark2records
 import funcs
 import marc2tables
@@ -34,13 +36,11 @@ import edit_preferences as settings
 from multiprocessing import freeze_support
 
 version = init.version
-version_suffix = init.version_suffix
+version_suffix = ["", f".RC{init.version_suffix}"][len(init.version_suffix) > 0]  # Si init.version_suffix est renseigné, on l'ajoute au numéro de version avec mention ".RC"
 lastupdate = init.lastupdate
 programID = init.programID
 
 # Ajout du fichier preferences.json
-
-
 def load_preferences():
     prefs_file_name = 'main/files/preferences.json'
     try:
@@ -55,7 +55,15 @@ def load_preferences():
             prefs = {}
     return prefs, prefs_file_name
 
+
 prefs, prefs_file_name = load_preferences()
+
+
+
+"""if "num_parallel" in prefs:
+    NUM_PARALLEL = prefs["num_parallel"]["value"]"""
+
+
 
 ns = {
     "srw": "http://www.loc.gov/zing/srw/",
@@ -781,6 +789,9 @@ def formulaire_main(access_to_network, last_version):
 
     tk.Label(zone_notes, text="Bibliostratus - Version " +
              f"{str(version)}{version_suffix}" + " - " + lastupdate, bg=couleur_fond).pack()
+    if prefs["gmb"]["value"] == "1":
+        tk.Label(zone_notes, text="Option Gallica Marque Blanche", bg="#afafaf").pack()
+
 
     if last_version[1]:
         download_update = tk.Button(
