@@ -499,6 +499,32 @@ def checkDate(ark, date_init, recordBNF):
     return ark_checked
 
 
+def check_publisher(identifier, input_record_publisher_nett, xml_record):
+    # comparaison entre la mention d'éditeur en entrée (nettoyée)
+    # et la mention d'éditeur trouvée dans la notice
+    identifier_checked = identifier
+    if input_record_publisher_nett and ("controle_editeur" in main.prefs and main.prefs["controle_editeur"]["value"] == "True"):
+        identifier_checked = ""
+        record_publisher = funcs.clean_publisher(sru.record2fieldvalue(xml_record, "210$c"))
+        if record_publisher == "":
+            record_publisher = funcs.clean_publisher(sru.record2fieldvalue(xml_record, "214$c"))
+        if record_publisher:
+            if input_record_publisher_nett == record_publisher:
+                identifier_checked = identifier
+                print(identifier_checked, "éditeur identique")
+            elif input_record_publisher_nett in record_publisher:
+                identifier_checked = identifier
+                print(identifier_checked, "éditeur entrant DANS éditeur notice trouvée", input_record_publisher_nett, "//", record_publisher)
+            elif record_publisher in input_record_publisher_nett:
+                identifier_checked = identifier
+                print(identifier_checked, "éditeur notice trouvée DANS éditeur entrant", input_record_publisher_nett, "//", record_publisher)
+            else:
+                print(identifier_checked, "éditeurs différents", input_record_publisher_nett, "//", record_publisher)
+        else:
+            identifier_checked = identifier
+            print(identifier, "pas de mention d'éditeur *vs*", input_record_publisher_nett)
+    return identifier_checked
+
 def comparaisonTitres_sous_zone(
     input_record,
     NumNot,
@@ -686,8 +712,7 @@ def row2file(liste_metadonnees, liste_reports):
 
 
 def row2files(liste_metadonnees, liste_reports, headers=False):
-    # [
-    #     "NumNot", "nbARK", "ark trouvé", "Méthode", "ark initial", "FRBNF",
+    # [    #     "NumNot", "nbARK", "ark trouvé", "Méthode", "ark initial", "FRBNF",
     #     "ISBN", "EAN", "Titre", "auteur", "date", "Tome/Volume", "editeur"
     # ]
     # Le paramètre header sert à préciser s'il s'agit d'ajouter dans le fichier
@@ -719,10 +744,13 @@ def isbn2sru(input_record, NumNot, isbn, titre, auteur, date):
     results = sru.SRU_result(f'bib.isbn all "{isbn}"')
     
     for ark_current in results.dict_records:
+        xml_record = results.dict_records[ark_current]
         ark = comparaisonTitres(input_record, NumNot, ark_current,
                                 "", isbn, titre, auteur, date, "",
-                                results.dict_records[ark_current], "ISBN")
+                                xml_record, "ISBN")
         # NumNotices2methode[NumNot].append("ISBN > ARK")
+        if ark:
+            ark = check_publisher(ark, input_record.publisher_nett, xml_record)
         listeARK.append(ark)
     if (listeARK == [""] and auteur != ""):
         listeARK = isbnauteur2sru(input_record, NumNot, isbn, titre, auteur, date)
@@ -777,6 +805,8 @@ def isbn_anywhere2sru(input_record, NumNot, isbn, titre, auteur, date):
                                 isbn, titre, auteur, date, "",
                                 results.dict_records[ark_current],
                                 "ISBN dans toute la notice")
+        if ark:
+            ark = check_publisher(ark, input_record.publisher_nett, xml_record)
         if ark:
             listeARK.append(ark)
     listeARK = ",".join([ark for ark in listeARK if ark])
@@ -1390,6 +1420,8 @@ def tad2ark_controle_record(input_record, ark_current,
                                     input_record.tome_nett,
                                     xml_record,
                                     origine + index)
+            if ark:
+                ark = check_publisher(ark, input_record.publisher_nett, xml_record)
             if (ark != "" and date_nett != "-"):
                 ark = checkDate(ark, input_record.date_nett,
                                 xml_record)
@@ -1747,7 +1779,6 @@ def controle_keywords2ppn(input_record, ppn):
                                       )
         if (ppn_final and input_record.date_nett and main.prefs["controle_isbn2id_date"]["value"] == "True"):
             ppn_final = checkDate(ppn.prefixppn, input_record.date_nett, record_sudoc)
-            print("vérif date")
     #    if (ppn_final and input_record.auteur_nett):
     #        ppn_final = controle_auteurs(ppn, input_record, record_sudoc)
     if ppn_final:
@@ -2179,6 +2210,9 @@ def check_ppn_by_kw(ppn, input_record, source_alignement):
         if (ppn_checked and input_record.date_nett
            and ("controle_isbn2id_date" in main.prefs and main.prefs["controle_isbn2id_date"]["value"] == "True")):
             ppn_checked = checkDate(ppn.prefixppn, input_record.date_nett, record_sudoc)
+        
+        if ppn_checked:
+           ppn_checked = check_publisher(ppn.prefixppn, input_record.publisher_nett, record_sudoc)
     else:
         ppn_checked = ppn.prefixppn
         input_record.alignment_method.append(f"Problème {ppn.output} : métadonnées Sudoc non vérifiées")

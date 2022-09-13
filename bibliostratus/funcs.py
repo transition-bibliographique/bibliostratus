@@ -231,6 +231,13 @@ def nettoyageAuteur(auteur, justeunmot=True):
     return auteur
 
 
+def clean_publisher(publisher):
+    # nettoyage de la mention d'auteur
+    publisher_nett = nettoyageAuteur(publisher, False)
+    publisher_nett = " ".join(sorted(publisher_nett.split(" ")))
+    return publisher_nett
+
+
 def nettoyageTitrePourControle(string):
     string = nettoyage(string, True)
     return string
@@ -1036,7 +1043,7 @@ class Bib_record:
             self.no_commercial.init)
         self.date_nett = nettoyageDate(self.date)
         self.tome_nett = convert_volumes_to_int(self.tome)
-        self.publisher_nett = nettoyageAuteur(self.publisher, False)
+        self.publisher_nett = clean_publisher(self.publisher)
         if (self.publisher_nett == ""):
             self.publisher_nett = self.publisher
         self.pubPlace_nett = nettoyagePubPlace(self.pubPlace)
@@ -1044,7 +1051,6 @@ class Bib_record:
         if RepresentsInt(self.date_debut):
             self.dates_elargies_perios = elargirDatesPerios(
                 int(self.date_debut))
-
         # 11/11/2018 Nouvelle méthode (inscriptible) :
         # méthode d'alignement
         # (objectif : se passer du dictionnaire)
