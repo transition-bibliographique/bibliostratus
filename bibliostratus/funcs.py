@@ -114,7 +114,7 @@ def nettoyage(string, remplacerEspaces=True, remplacerTirets=True, remplacerApos
     suppression ponctuation, espaces (pour les titres et ISBN) et diacritiques"""
     string = unidecode_local(string.lower())
     for signe in ponctuation:
-        string = string.replace(signe, "")
+        string = string.replace(signe, " ")
     string = string.replace(r"\'", "'")
     string = " ".join([el for el in string.split(" ") if el != ""])
     if remplacerTirets:

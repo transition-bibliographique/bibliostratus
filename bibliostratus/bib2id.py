@@ -1313,13 +1313,13 @@ def tad2ark(input_record, parametres,
         if pubPlace_nett == "":
             pubPlace_nett = "-"
         search_query = [f'bib.title all "{input_record.titre.recherche}"',
-                        f'bib.author all "{auteur}"',
+                        f'bib.author all "{auteur_nett}"',
                         f'bib.date {param_date} "{date_nett}"',
                         f'bib.publisher all "{pubPlace_nett}"',
                         f'bib.doctype any "{input_record.intermarc_type_doc}"'
                        ]
         if anywhere:
-            search_query = [f'bib.anywhere all "{input_record.titre.recherche} {auteur} {pubPlace_nett}"',
+            search_query = [f'bib.anywhere all "{input_record.titre.recherche} {auteur_nett} {pubPlace_nett}"',
                             f'bib.anywhere {param_date} "{date_nett}"',
                             f'bib.doctype any "{input_record.intermarc_type_doc}"'
                            ]
@@ -1331,7 +1331,7 @@ def tad2ark(input_record, parametres,
             search_query.append(f'bib.anywhere all "{input_record.scale}"')
         search_query = " and ".join(search_query)
         results = sru.SRU_result(search_query, parametres=params_sru)
-        # print(1301, results.url)
+        
         if (results.nb_results == 0):
             search_query = [f'bib.title all "{input_record.titre.recherche}"',
                             f'bib.author all "{auteur_nett}"',
@@ -1356,9 +1356,9 @@ def tad2ark(input_record, parametres,
                           "(limite max 500)"),
                     i += 1
                 ark_validated = tad2ark_controle_record(input_record, ark_current, 
-                                                auteur, date_nett,
-                                                annee_plus_trois, index,
-                                                results.dict_records[ark_current])
+                                                        auteur, date_nett,
+                                                        annee_plus_trois, index,
+                                                        results.dict_records[ark_current])
                 listeArk.append(ark_validated)
 
     listeArk = ",".join(ark for ark in listeArk if ark)
