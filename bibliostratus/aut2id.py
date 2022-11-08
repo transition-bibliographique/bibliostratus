@@ -447,7 +447,7 @@ def align_aut_file(form, entry_filename, liste_reports, parametres):
                                                    aligntype2headers[parametres["input_data_type"]])
             if ((n-1) % 100 == 0):
                 main.check_access2apis(n, dict_check_apis)
-            alignment_results = Parallel(n_jobs=NUM_PARALLEL)(delayed(aut2id_item)(row, n, parametres) for row in rows)
+            alignment_results = Parallel(n_jobs=NUM_PARALLEL, prefer="threads")(delayed(aut2id_item)(row, n, parametres) for row in rows)
             for alignment_result in alignment_results:
                 alignment_result2output(alignment_result, alignment_result.input_record,
                                         parametres, liste_reports, n)
