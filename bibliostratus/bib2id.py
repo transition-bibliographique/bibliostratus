@@ -503,26 +503,46 @@ def check_publisher(identifier, input_record_publisher_nett, xml_record):
     # comparaison entre la mention d'éditeur en entrée (nettoyée)
     # et la mention d'éditeur trouvée dans la notice
     identifier_checked = identifier
-    if input_record_publisher_nett and ("controle_editeur" in main.prefs and main.prefs["controle_editeur"]["value"] == "True"):
-        identifier_checked = ""
+    if ("controle_editeur" in main.prefs and main.prefs["controle_editeur"]["value"] in "123"):
+        # En ce cas on réalise les contrôles
         record_publisher = funcs.clean_publisher(sru.record2fieldvalue(xml_record, "210$c"))
         if record_publisher == "":
             record_publisher = funcs.clean_publisher(sru.record2fieldvalue(xml_record, "214$c"))
-        if record_publisher:
-            if input_record_publisher_nett == record_publisher:
-                identifier_checked = identifier
-                print(identifier_checked, "éditeur identique")
-            elif input_record_publisher_nett in record_publisher:
-                identifier_checked = identifier
-                print(identifier_checked, "éditeur entrant DANS éditeur notice trouvée", input_record_publisher_nett, "//", record_publisher)
-            elif record_publisher in input_record_publisher_nett:
-                identifier_checked = identifier
-                print(identifier_checked, "éditeur notice trouvée DANS éditeur entrant", input_record_publisher_nett, "//", record_publisher)
+
+        if input_record_publisher_nett:
+            # L'éditeur en entrée est renseigné
+            identifier_checked = ""
+            if record_publisher:
+                # Si la notice trouvée a un éditeur
+                if input_record_publisher_nett == record_publisher:
+                    identifier_checked = identifier
+                    print(identifier_checked, "éditeur identique")
+                elif (input_record_publisher_nett in record_publisher) or (record_publisher in input_record_publisher_nett):
+                    print(identifier_checked, "éditeur initial DANS éditeur notice trouvée -- ou l'inverse", input_record_publisher_nett, "//", record_publisher)
+                    if main.prefs["controle_editeur"]["value"] in "12":
+                        identifier_checked = identifier
+                    elif main.prefs["controle_editeur"]["value"] == "3":
+                        identifier_checked = ""
+                else:
+                    print(identifier_checked, "éditeurs différents", input_record_publisher_nett, "//", record_publisher)
             else:
-                print(identifier_checked, "éditeurs différents", input_record_publisher_nett, "//", record_publisher)
+                # Si la notice trouvée n'a pas d'éditeur
+                print(identifier, "pas de mention d'éditeur *vs*", input_record_publisher_nett)
+                if main.prefs["controle_editeur"]["value"] in "1":
+                    identifier_checked = identifier
+                if main.prefs["controle_editeur"]["value"] in "23":
+                    identifier_checked = ""
         else:
-            identifier_checked = identifier
-            print(identifier, "pas de mention d'éditeur *vs*", input_record_publisher_nett)
+            if record_publisher != "":
+                # L'éditeur de la notice en entrée est vide et celui de la notice trouvée est renseigné
+                if main.prefs["controle_editeur"]["value"] in "1":
+                    # Contrôles de niveau 1 ou 2
+                    identifier_checked = identifier
+                elif main.prefs["controle_editeur"]["value"] in "23":
+                    identifier_checked = ""
+            else:
+                identifier_checked = identifier
+                print(identifier, "Les 2 éditeurs sont vides")
     return identifier_checked
 
 def comparaisonTitres_sous_zone(
@@ -801,9 +821,10 @@ def isbn_anywhere2sru(input_record, NumNot, isbn, titre, auteur, date):
     listeARK = []
     results = sru.SRU_result(f'bib.anywhere all "{isbn}"')
     for ark_current in results.dict_records:
+        xml_record = results.dict_records[ark_current]
         ark = comparaisonTitres(input_record, NumNot, ark_current, "",
                                 isbn, titre, auteur, date, "",
-                                results.dict_records[ark_current],
+                                xml_record,
                                 "ISBN dans toute la notice")
         if ark:
             ark = check_publisher(ark, input_record.publisher_nett, xml_record)
