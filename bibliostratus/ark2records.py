@@ -471,7 +471,7 @@ def file2extract(filename, parametres, files, master_form, ark2records_form):
             if j == 0:
                 check_nb_colonnes(rows[0], parametres, master_form)
                 j += 1
-            records = Parallel(n_jobs=NUM_PARALLEL)(delayed(extract1record)(row, parametres, True) for row in rows)
+            records = Parallel(n_jobs=NUM_PARALLEL, prefer="threads")(delayed(extract1record)(row, parametres, True) for row in rows)
             for identifier, xml_record, linked_aut_records in records:
                 print(str(j) + ". " + identifier.aligned_id.clean)
                 try:

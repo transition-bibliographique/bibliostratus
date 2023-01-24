@@ -11,6 +11,7 @@ tad2ppn_solr.py
 !unicode_table.csv
 !unicode_table_full.csv
 
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -112,3 +113,4 @@ ENV/
 .mypy_cache/
 bibliostratus/30000 alignements - temps de traitement
 *.xlsx
+!Controles_editeurs_(test_1-35).xlsx

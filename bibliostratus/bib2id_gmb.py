@@ -141,7 +141,7 @@ def file2row(form_bib2ark, entry_filename, liste_reports, parametres):
                         )
             if (n-1) % 100 == 0:
                 main.check_access2apis(n, dict_check_apis)
-            alignment_results = Parallel(n_jobs=NUM_PARALLEL)(delayed(item2id)(row, n, parametres) for row in rows)
+            alignment_results = Parallel(n_jobs=NUM_PARALLEL, prefer="threads")(delayed(item2id)(row, n, parametres) for row in rows)
             for alignment_result in alignment_results:
                 alignment_result2output(alignment_result, alignment_result.input_record,
                                         parametres, liste_reports, n)

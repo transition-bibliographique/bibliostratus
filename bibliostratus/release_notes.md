@@ -1,3 +1,8 @@
+### version 1.35
+- Module blanc Bib :
+	- Métadonnées éditeurs : expérimentation pour contrôler les informations trouvées concernant les éditeurs
+	- Métadonnées dates : ajout paramétrable de la date comme contrôle quand alignement sur l'ISBN ou l'EAN
+
 ### version 1.34
 - Modules blancs [Bib et Aut] : 
 	- Le nombre de requêtes parallélisables est fixé à 20 (pour permettre aux bases interrogées de répondre correctement sans saturation).

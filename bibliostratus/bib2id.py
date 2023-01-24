@@ -455,6 +455,10 @@ def checkDate(ark, date_init, recordBNF):
     dateBNF_210d = funcs.unidecode_local(
         sru.record2fieldvalue(recordBNF, "210$d").split("~")[0].lower()
     )
+    if dateBNF_210d == "":
+        dateBNF_210d = funcs.unidecode_local(
+        sru.record2fieldvalue(recordBNF, "214$d").split("~")[0].lower()
+    )
     dateBNF_306a = funcs.unidecode_local(
         sru.record2fieldvalue(recordBNF, "306$a").split("~")[0].lower()
     )
@@ -494,6 +498,52 @@ def checkDate(ark, date_init, recordBNF):
         ark_checked = ark
     return ark_checked
 
+
+def check_publisher(identifier, input_record_publisher_nett, xml_record):
+    # comparaison entre la mention d'éditeur en entrée (nettoyée)
+    # et la mention d'éditeur trouvée dans la notice
+    identifier_checked = identifier
+    if ("controle_editeur" in main.prefs and main.prefs["controle_editeur"]["value"] in "123"):
+        # En ce cas on réalise les contrôles
+        record_publisher = funcs.clean_publisher(sru.record2fieldvalue(xml_record, "210$c"))
+        if record_publisher == "":
+            record_publisher = funcs.clean_publisher(sru.record2fieldvalue(xml_record, "214$c"))
+
+        if input_record_publisher_nett:
+            # L'éditeur en entrée est renseigné
+            identifier_checked = ""
+            if record_publisher:
+                # Si la notice trouvée a un éditeur
+                if input_record_publisher_nett == record_publisher:
+                    identifier_checked = identifier
+                    print(identifier_checked, "éditeur identique")
+                elif (input_record_publisher_nett in record_publisher) or (record_publisher in input_record_publisher_nett):
+                    print(identifier_checked, "éditeur initial DANS éditeur notice trouvée -- ou l'inverse", input_record_publisher_nett, "//", record_publisher)
+                    if main.prefs["controle_editeur"]["value"] in "12":
+                        identifier_checked = identifier
+                    elif main.prefs["controle_editeur"]["value"] == "3":
+                        identifier_checked = ""
+                else:
+                    print(identifier_checked, "éditeurs différents", input_record_publisher_nett, "//", record_publisher)
+            else:
+                # Si la notice trouvée n'a pas d'éditeur
+                print(identifier, "pas de mention d'éditeur *vs*", input_record_publisher_nett)
+                if main.prefs["controle_editeur"]["value"] in "1":
+                    identifier_checked = identifier
+                if main.prefs["controle_editeur"]["value"] in "23":
+                    identifier_checked = ""
+        else:
+            if record_publisher != "":
+                # L'éditeur de la notice en entrée est vide et celui de la notice trouvée est renseigné
+                if main.prefs["controle_editeur"]["value"] in "1":
+                    # Contrôles de niveau 1 ou 2
+                    identifier_checked = identifier
+                elif main.prefs["controle_editeur"]["value"] in "23":
+                    identifier_checked = ""
+            else:
+                identifier_checked = identifier
+                print(identifier, "Les 2 éditeurs sont vides")
+    return identifier_checked
 
 def comparaisonTitres_sous_zone(
     input_record,
@@ -682,8 +732,7 @@ def row2file(liste_metadonnees, liste_reports):
 
 
 def row2files(liste_metadonnees, liste_reports, headers=False):
-    # [
-    #     "NumNot", "nbARK", "ark trouvé", "Méthode", "ark initial", "FRBNF",
+    # [    #     "NumNot", "nbARK", "ark trouvé", "Méthode", "ark initial", "FRBNF",
     #     "ISBN", "EAN", "Titre", "auteur", "date", "Tome/Volume", "editeur"
     # ]
     # Le paramètre header sert à préciser s'il s'agit d'ajouter dans le fichier
@@ -715,10 +764,13 @@ def isbn2sru(input_record, NumNot, isbn, titre, auteur, date):
     results = sru.SRU_result(f'bib.isbn all "{isbn}"')
     
     for ark_current in results.dict_records:
+        xml_record = results.dict_records[ark_current]
         ark = comparaisonTitres(input_record, NumNot, ark_current,
                                 "", isbn, titre, auteur, date, "",
-                                results.dict_records[ark_current], "ISBN")
+                                xml_record, "ISBN")
         # NumNotices2methode[NumNot].append("ISBN > ARK")
+        if ark:
+            ark = check_publisher(ark, input_record.publisher_nett, xml_record)
         listeARK.append(ark)
     if (listeARK == [""] and auteur != ""):
         listeARK = isbnauteur2sru(input_record, NumNot, isbn, titre, auteur, date)
@@ -769,10 +821,13 @@ def isbn_anywhere2sru(input_record, NumNot, isbn, titre, auteur, date):
     listeARK = []
     results = sru.SRU_result(f'bib.anywhere all "{isbn}"')
     for ark_current in results.dict_records:
+        xml_record = results.dict_records[ark_current]
         ark = comparaisonTitres(input_record, NumNot, ark_current, "",
                                 isbn, titre, auteur, date, "",
-                                results.dict_records[ark_current],
+                                xml_record,
                                 "ISBN dans toute la notice")
+        if ark:
+            ark = check_publisher(ark, input_record.publisher_nett, xml_record)
         if ark:
             listeARK.append(ark)
     listeARK = ",".join([ark for ark in listeARK if ark])
@@ -1279,13 +1334,13 @@ def tad2ark(input_record, parametres,
         if pubPlace_nett == "":
             pubPlace_nett = "-"
         search_query = [f'bib.title all "{input_record.titre.recherche}"',
-                        f'bib.author all "{auteur}"',
+                        f'bib.author all "{auteur_nett}"',
                         f'bib.date {param_date} "{date_nett}"',
                         f'bib.publisher all "{pubPlace_nett}"',
                         f'bib.doctype any "{input_record.intermarc_type_doc}"'
                        ]
         if anywhere:
-            search_query = [f'bib.anywhere all "{input_record.titre.recherche} {auteur} {pubPlace_nett}"',
+            search_query = [f'bib.anywhere all "{input_record.titre.recherche} {auteur_nett} {pubPlace_nett}"',
                             f'bib.anywhere {param_date} "{date_nett}"',
                             f'bib.doctype any "{input_record.intermarc_type_doc}"'
                            ]
@@ -1297,7 +1352,7 @@ def tad2ark(input_record, parametres,
             search_query.append(f'bib.anywhere all "{input_record.scale}"')
         search_query = " and ".join(search_query)
         results = sru.SRU_result(search_query, parametres=params_sru)
-        # print(1301, results.url)
+        
         if (results.nb_results == 0):
             search_query = [f'bib.title all "{input_record.titre.recherche}"',
                             f'bib.author all "{auteur_nett}"',
@@ -1322,9 +1377,9 @@ def tad2ark(input_record, parametres,
                           "(limite max 500)"),
                     i += 1
                 ark_validated = tad2ark_controle_record(input_record, ark_current, 
-                                                auteur, date_nett,
-                                                annee_plus_trois, index,
-                                                results.dict_records[ark_current])
+                                                        auteur, date_nett,
+                                                        annee_plus_trois, index,
+                                                        results.dict_records[ark_current])
                 listeArk.append(ark_validated)
 
     listeArk = ",".join(ark for ark in listeArk if ark)
@@ -1386,6 +1441,8 @@ def tad2ark_controle_record(input_record, ark_current,
                                     input_record.tome_nett,
                                     xml_record,
                                     origine + index)
+            if ark:
+                ark = check_publisher(ark, input_record.publisher_nett, xml_record)
             if (ark != "" and date_nett != "-"):
                 ark = checkDate(ark, input_record.date_nett,
                                 xml_record)
@@ -1727,6 +1784,7 @@ def controle_keywords2ppn(input_record, ppn):
     ppn_final = None
     url_sudoc_record = "https://www.sudoc.fr/" + ppn.root + ".xml"
     (test, record_sudoc) = funcs.testURLetreeParse(url_sudoc_record)
+    
     if (test):
         ppn_final = comparaisonTitres(input_record,
                                       input_record.NumNot,
@@ -1740,7 +1798,7 @@ def controle_keywords2ppn(input_record, ppn):
                                       record_sudoc,
                                       "Titre-Auteur-Date DoMyBiblio",
                                       )
-        if (ppn_final and input_record.date_nett):
+        if (ppn_final and input_record.date_nett and main.prefs["controle_isbn2id_date"]["value"] == "True"):
             ppn_final = checkDate(ppn.prefixppn, input_record.date_nett, record_sudoc)
     #    if (ppn_final and input_record.auteur_nett):
     #        ppn_final = controle_auteurs(ppn, input_record, record_sudoc)
@@ -2170,6 +2228,12 @@ def check_ppn_by_kw(ppn, input_record, source_alignement):
                                         record_sudoc,
                                         source_alignement,
                                         )
+        if (ppn_checked and input_record.date_nett
+           and ("controle_isbn2id_date" in main.prefs and main.prefs["controle_isbn2id_date"]["value"] == "True")):
+            ppn_checked = checkDate(ppn.prefixppn, input_record.date_nett, record_sudoc)
+        
+        if ppn_checked:
+           ppn_checked = check_publisher(ppn.prefixppn, input_record.publisher_nett, record_sudoc)
     else:
         ppn_checked = ppn.prefixppn
         input_record.alignment_method.append(f"Problème {ppn.output} : métadonnées Sudoc non vérifiées")
@@ -2378,7 +2442,7 @@ def file2row(form_bib2ark, entry_filename, liste_reports, parametres):
                         )
             if (n-1) % 100 == 0:
                 main.check_access2apis(n, dict_check_apis)
-            alignment_results = Parallel(n_jobs=NUM_PARALLEL)(delayed(item2id)(row, n, parametres) for row in rows)
+            alignment_results = Parallel(n_jobs=NUM_PARALLEL, prefer="threads")(delayed(item2id)(row, n, parametres) for row in rows)
             for alignment_result in alignment_results:
                 alignment_result2output(alignment_result, alignment_result.input_record,
                                         parametres, liste_reports, n)
