@@ -1,9 +1,10 @@
-### version 1.35
+### version 1.35 (janvier 2023)
 - Module blanc Bib :
-	- Métadonnées éditeurs : expérimentation pour contrôler les informations trouvées concernant les éditeurs
-	- Métadonnées dates : ajout paramétrable de la date comme contrôle quand alignement sur l'ISBN ou l'EAN
-
-### version 1.34
+	- Débugage dans la recherche d'alignement par Titre-Auteur-Date : dans la recherche Titre-Auteur-Date, l'auteur était dans sa forme non nettoyée
+	- Contrôle de date sur un alignement par ISBN : en plus du contrôle sur le titre, l'alignement est aussi contrôlé sur la date de publication (à 1 an près)
+	- paramétrage possible pour activer un contrôle sur le nom de l'éditeur : dans les préférences, possibilité de demander un niveau de contrôle plus ou moins fort (0 : pas de contrôle ; 3 : valeurs strictement identiques) sur les données Editeur pour les monographies imprimées. Se référer à la documentation.
+	
+### version 1.34 (août 2022)
 - Modules blancs [Bib et Aut] : 
 	- Le nombre de requêtes parallélisables est fixé à 20 (pour permettre aux bases interrogées de répondre correctement sans saturation).
 	- Identifiants Sudoc produits lors des alignements : dans les Préférences, possibilité de choisir entre le format PPN0123456789 ("ppn") et le formation https://www.sudoc.fr/0123456789 ("uri")
