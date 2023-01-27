@@ -54,5 +54,8 @@
 		"value": "True"},
 	"controle_editeur": {
 		"description": "Paramètre (peut-être) temporaire pour tester le contrôle sur le nom d'éditeur pour les monographies (valeurs 0 : aucun contrôle ; 1 : valeur de l'un présente dans l'autre ; 2 : valeur strictement identique (sauf si l'un est vide et l'autre renseigné) ; 3 : valeur strictement identique)",
+		"value": "0"},
+	"AUT_valeur_stricte": {
+		"description": "0 : alignement normal (sur recherche par mots clé ; 1 : point d'accès (nettoyé) strictement identique",
 		"value": "0"}
 }

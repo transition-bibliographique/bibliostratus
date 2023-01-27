@@ -384,6 +384,7 @@ def align_from_aut_alignment(input_record, parametres):
 
     if (ark == "" and parametres["isni_option"] == 1):
         ark = accesspoint2isniorg(input_record, parametres)
+    
     alignment_result = funcs.Alignment_result(input_record, ark, parametres)
     return alignment_result
 
@@ -823,10 +824,27 @@ def aut2ark_by_accesspoint(input_record, NumNot, nom_nett, prenom_nett,
                 listeArk.append(ark)
                 input_record.alignment_method.append("Point d'accès avec date de début")
             else:
-                listeArk.append(ark)
-                input_record.alignment_method.append("Point d'accès")
-    listeArk = ",".join(listeArk)
+                if parametres["input_data_type"] == 2:
+                    ark = controle_valeurstricte_accesspoint(ark, " ".join([input_record.lastname.propre, input_record.firstname.propre]), record)
+                if ark:
+                    listeArk.append(ark)
+                    input_record.alignment_method.append("Point d'accès")
+    listeArk = ",".join([el for el in listeArk if el])
     return listeArk
+
+
+def controle_valeurstricte_accesspoint(recordid, input_accesspoint, xml_record):
+    # Contrôle d'équivalence stricte du point d'accès entre la valeur entrée et la valeur trouvée (pour les ORG)
+    xml_record = funcs.XML2record(recordid, xml_record, 2, False)
+    xml_record_accesspoint = " ".join([xml_record.record.lastname.propre, xml_record.record.firstname.propre])
+    if main.prefs["AUT_valeur_stricte"] == "1":
+        if xml_record_accesspoint == input_accesspoint:
+            return recordid
+        else:
+            return ""
+    else:
+        return ""
+
 
 
 def bib2arkAUT(input_record, parametres):

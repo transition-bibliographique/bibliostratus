@@ -123,11 +123,19 @@ def check_idref_record(ppn, input_record, idref_record, parametres):
     et une notice IdRef (class Aut_record aussi)
     Reprendre ici
     """
-    test = True
-    if test:
-        return ppn
+    if parametres["input_data_type"] == 2:
+        import main
+        if main.prefs["AUT_valeur_stricte"]["value"] == "1":
+            idref_record_accesspoint = " ".join([idref_record.lastname.propre, idref_record.firstname.propre]).replace("-", " ").strip()
+            input_record_accesspoint = " ".join([input_record.lastname.propre, input_record.firstname.propre]).replace("-", " ").strip()
+            if idref_record_accesspoint == input_record_accesspoint:
+                return ppn
+            else:
+                return ""
+        else:
+            return ppn
     else:
-        return ""
+        return ppn
 
 
 def ppn2idrefrecord(ppn, parametres):
