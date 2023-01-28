@@ -13,11 +13,7 @@
         },
 	"num_parallel": {
 		"description": "Nombre de requêtes simultanées à envoyer aux catalogues pour réaliser des alignements.",
-		"value": 100},
-    "display_message_in_progress": {
-        "description": "Afficher ou non le message en rouge quand on sélectionner un fichier à charger. Par défaut : 1 = message à afficher. 0 = ne pas afficher",
-        "value": 1
-        },
+		"value": 20},
     "marc2tables_input_format": {
         "description": "Format de données en entrée dans le module bleu (marc2tables). Par défaut : 'unimarc'. Autre valeur autorisée : 'marc21'.",
         "value": "unimarc"
