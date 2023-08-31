@@ -160,7 +160,7 @@ def record2doctype(label, rec_format=1):
 def record2recordtype(label, rec_format=1):
     recordtype = ""
     if (rec_format == 2):
-        if main.prefs["marc2tables_input_format"]["value"] == "marc21":
+        if "marc2tables_input_format" in main.prefs and main.prefs["marc2tables_input_format"]["value"] == "marc21":
             recordtype = label[8]   # Manque de documentation pour identifier la position qualifiant le type d'autorité
         else:
             recordtype = label[9]

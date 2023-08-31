@@ -82,7 +82,7 @@ ns_abes = {
     "skos" : "http://www.w3.org/2004/02/skos/core#"
     }
 
-srubnf_url = "http://catalogue.bnf.fr/api/SRU?"
+srubnf_url = "https://catalogue.bnf.fr/api/SRU?"
 
 class SRU_result:
     """"Résultat d'une requête SRU

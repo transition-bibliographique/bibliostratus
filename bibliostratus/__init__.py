@@ -1,9 +1,9 @@
 
 # coding: utf-8
 
-version = 1.35
+version = 1.36
 version_suffix = ""   # contenu : "RC1", "RC2", "RC3", etc.
-lastupdate = "24/01/2023"
+lastupdate = "31/08/2023"
 programID = "bibliostratus"
 
 

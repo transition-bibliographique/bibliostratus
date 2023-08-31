@@ -1119,6 +1119,7 @@ class Bib_Aut_record:
         self.firstname = Name(input_row[9])
         self.author_dates = input_row[10]
         self.alignment_method = []
+        self.publisher_nett = ""
     
         self.date_debut = self.author_dates
         if (self.date_debut.find("av") > 0):

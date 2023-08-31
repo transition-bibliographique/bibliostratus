@@ -842,6 +842,7 @@ def bib2arkAUT(input_record, parametres):
                                              "%20and%20bib.publicationdate%20all%20%22-%22",
                                              ""
                                          )
+    
     (test, results) = funcs.testURLetreeParse(url)
     if (test):
         for record in results.xpath(
@@ -874,25 +875,28 @@ def bib2ppnAUT(input_record, parametres):
     --> contrôles sur le nom, prénom, date de naissance de l'auteur
     """
     listePPNaut = []
-    listePPNbib = bib2ppnAUT_from_sudoc(input_record, parametres)
-    # listePPNbib = [el.replace("PPN", "") for el in listePPNbib if el]                        
-    for ppn in listePPNbib:
-        url = f"{ppn.uri}.xml"
-        (test, results) = funcs.testURLetreeParse(url)
-        if (test):
-            for record in results.xpath(
-                    "//record", namespaces=main.ns):
-                listePPNaut.extend(extractARKautfromBIB(input_record, record, source="sudoc"))
-    
-    if parametres["preferences_alignement"] == 1:
-        listeARKaut = []
-        for el in listePPNaut:
-            ark = idrefppn2arkAut(el)
-            if ark:
-                listeARKaut.append(ark)
-            # Reprendre ici la conversion des PPN en ARK autorités
-        if listeARKaut:
-            listePPNaut = listeARKaut
+    if "kwsudoc_option" in parametres and parametres["kwsudoc_option"] == 0:
+        pass
+    else:
+        listePPNbib = bib2ppnAUT_from_sudoc(input_record, parametres)
+        # listePPNbib = [el.replace("PPN", "") for el in listePPNbib if el]                        
+        for ppn in listePPNbib:
+            url = f"{ppn.uri}.xml"
+            (test, results) = funcs.testURLetreeParse(url)
+            if (test):
+                for record in results.xpath(
+                        "//record", namespaces=main.ns):
+                    listePPNaut.extend(extractARKautfromBIB(input_record, record, source="sudoc"))
+        
+        if parametres["preferences_alignement"] == 1:
+            listeARKaut = []
+            for el in listePPNaut:
+                ark = idrefppn2arkAut(el)
+                if ark:
+                    listeARKaut.append(ark)
+                # Reprendre ici la conversion des PPN en ARK autorités
+            if listeARKaut:
+                listePPNaut = listeARKaut
     listePPNaut = ",".join(set([el for el in listePPNaut if el]))
     return listePPNaut
 

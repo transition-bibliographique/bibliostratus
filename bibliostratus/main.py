@@ -100,7 +100,7 @@ nsisni = {
     'diag': 'http://www.loc.gov/zing/srw/diagnostic/',
     'xcql': 'http://www.loc.gov/zing/cql/xcql/'
 }
-urlSRUroot = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query="
+urlSRUroot = "https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query="
 
 url_online_help = "https://github.com/Transition-bibliographique/bibliostratus/wiki"
 texte_bouton_help = "Documentation\nen ligne"
@@ -240,7 +240,7 @@ def check_access2apis(i, dict_report):
     dict_report["testBnF"]["name"] = "API BnF"
     dict_report["testBnF"]["global"] = True
     testBnF = funcs.testURLretrieve(
-        "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.recordid%20all%20%2230000001%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")  # noqa
+        "https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=bib.recordid%20all%20%2230000001%22&recordSchema=unimarcxchange&maximumRecords=20&startRecord=1")  # noqa
     testAbes = funcs.testURLretrieve(
         "https://www.sudoc.fr/services/isbn2ppn/0195141156")
     dict_report["testAbes"][i] = testAbes

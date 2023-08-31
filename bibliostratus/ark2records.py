@@ -67,6 +67,10 @@ def ark2url(identifier, parametres):
         if (parametres["type_records"] == "aut"):
             query += ' and aut.status any "sparse validated"'
         query = urllib.parse.quote(query)
+        if "inter" in parametres["format_BIB"]:
+            parametres["format_BIB"] = "intermarcxchange"    
+        else:
+            parametres["format_BIB"] = "unimarcxchange"
         url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + \
             "&recordSchema=" + parametres["format_BIB"] + \
             "&maximumRecords=20&startRecord=1&origin=bibliostratus&type_action=extract"
@@ -328,7 +332,6 @@ def extract1record(row, parametres, multiprocess=False):
     if (len(identifier.aligned_id.clean) > 1 and identifier.aligned_id.clean not in parametres["listeARK_BIB"]):
         parametres["listeARK_BIB"].append(identifier.aligned_id.clean)
         url_record = ark2url(identifier, parametres)
-        #print(url_record)
         if url_record:
             (test, page) = funcs.testURLetreeParse(url_record)
             if (test):
@@ -479,7 +482,7 @@ def file2extract(filename, parametres, files, master_form, ark2records_form):
                             parametres["format_file"], parametres, files)
                 except ValueError as err:
                     errors_list.append([str(err), f"Problème d'accès à la notice : {identifier.aligned_id.clean}"])
-                    print(f"Pas d'accès à la notice  {identifier.aligned_id.clean}{str(err)} : consulter le fichier d'erreurs {parametres['outputID']}-errors.txt")
+                    print(f"Pas d'accès à la notice  {identifier.aligned_id.clean} {str(err)} : consulter le fichier d'erreurs {parametres['outputID']}-errors.txt")
                 if linked_aut_records is not None:
                     for identifier, xml_record in linked_aut_records:
                         record2file(identifier, etree.fromstring(xml_record), files["aut_file"],
