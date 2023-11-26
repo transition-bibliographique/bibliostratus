@@ -253,14 +253,14 @@ def sruquery2results(url, urlroot=srubnf_url):
         results = SRU_result(query, url_root, params_current)
      
 
-def testURLetreeParse(url, print_error = True):
+def testURLetreeParse(url, print_error=True):
     """Essaie d'ouvrir l'URL et attend un résultat XML
     Renvoie 2 variable : résultat du test (True / False) et le fichier
     renvoyé par l'URL"""
     test = True
     resultat = ""
     try:
-        resultat = etree.parse(request.urlopen(url))
+        resultat = etree.parse(request.urlopen(url, timeout=30))
     except etree.XMLSyntaxError as err:
         if (print_error):
             print(url)

@@ -503,7 +503,7 @@ def check_publisher(identifier, input_record_publisher_nett, xml_record):
     # comparaison entre la mention d'éditeur en entrée (nettoyée)
     # et la mention d'éditeur trouvée dans la notice
     identifier_checked = identifier
-    if ("controle_editeur" in main.prefs and main.prefs["controle_editeur"]["value"] in "123"):
+    if ("controle_editeur" in main.prefs and main.prefs["controle_editeur"]["value"] in [1, 2, 3]):
         # En ce cas on réalise les contrôles
         record_publisher = funcs.clean_publisher(sru.record2fieldvalue(xml_record, "210$c"))
         if record_publisher == "":
@@ -1627,7 +1627,61 @@ def tad2ppn_pages_suivantes(input_record, url, nb_results,
     return Listeppn
 
 
+
 def tad2ppn(input_record, parametres):
+    # Fonction intermédiaire pour préparer la bascule dans la requête Sudoc
+    # d'abord sur l'interface web
+    # et à terme sur le SRU Sudoc
+    # et à terme sur le SRU Sudoc
+    return tad2ppn_websudoc(input_record, parametres)
+    # return tad2ppn_sru(input_record, parametres)
+
+
+
+def tad2ppn_sru(input_record, parametres):
+    # Alignement sur notice Sudoc à partir du SRU du Sudoc
+    # et non plus du webscraping de l'interface publique
+    # URL racine : main.urlAbesroot
+    # recordSchema : unimarc
+    # maximumRecord : 10 (defaut) à 1000
+    # Liste des critères de recherche : https://abes.fr/wp-content/uploads/2023/05/guide-utilisation-service-sru-catalogue-sudoc.pdf
+    #   * MTI : mots du titre
+    #   * AUT : mots auteur
+    #   * APU : date de publication
+    #   * TOU : tous les mots
+    #   * TDO : type de document (b : monographie imprimé, 
+    #                             g : enregistrement sonore musical, 
+    #                             n : enregistrement sonore non musical,
+    #                             v : document audio-visuel 
+    #                             k : cartes imprimées et manuscrites,
+    #                             t : périodiques et collections (tous types de supports),
+    #                             m : partition)
+    # Ponctuation : = (contient)
+    # Ponctuation : and
+    # Intervalle de dates : APU="1995-2000"
+    typeRecordDic = {"TEX": "b", "VID": "v", 
+                     "AUD": "g n", "PER": "t",
+                     "CP": "k", "PAR": "m"}
+    title = "mti=" + ' and mti='.join(input_record.titre.recherche.split(' '))
+    query = [title]
+    if input_record.auteur_nett:
+        auteur = "aut=" + " and aut=".join(input_record.auteur_nett.split(" "))
+        query.append(auteur)
+    if input_record.date_nett:
+        date = "apu=" + " and apu=".join(input_record.date_nett.split(" "))
+        query.append(date)
+    query.append(f"tdo={typeRecordDic[input_record.type]}")
+    query = " and ".join(query)
+    result = sru.SRU_result(query, main.urlAbesroot, {"recordSchema": "unimarc", "namespaces": main.ns_sruSudoc, "version": "1.1"})
+    print(1662, result.url, result.nb_results)
+    listePPN = check_sudoc_results_sru(input_record, result.dict_records)
+    print(1666, listePPN)
+    listePPN = ",".join([ppn.output for ppn in listePPN if ppn.root])
+    return listePPN
+
+
+
+def tad2ppn_websudoc(input_record, parametres):
     """
     Recherche par mots clés dans le Sudoc en parsant les pages HTML
     """    
@@ -1657,6 +1711,43 @@ def tad2ppn(input_record, parametres):
     listePPN = check_sudoc_results(input_record, listePPN)
     listePPN = ",".join([ppn.output for ppn in listePPN if ppn.root])
     return listePPN
+
+
+def check_sudoc_results_sru(input_record, dict_record, origine="Titre-Auteur-Date"):
+    """
+    Pour une liste de PPN trouvée, vérifier ceux qui correspondent bien à la notice initiale
+    L'origine permet de préciser si l'alignement vient de isbn/ean ou titre-auteur-date (TAD)
+
+    listePPN est composée d'éléments de la classe funcs.PPN
+    """
+    listePPN_checked = []
+    for ppn in dict_record:
+        ppn_checked = check_sudoc_result_sru(input_record, ppn, dict_record[ppn], origine)
+        if (ppn_checked.root):
+            listePPN_checked.append(ppn_checked)
+    listePPN_checked = [ppn for ppn in listePPN_checked if ppn.root]
+    return listePPN_checked
+
+
+def check_sudoc_result_sru(input_record, ppn, xml_record, origine):
+    """
+    Vérification de l'adéquation entre un PPN et une notice en entrée
+    ppn est de la classe funcs.PPN
+    """
+    ppn_checked = ""
+    if (type(input_record) == funcs.Bib_record):
+        ppn_checked = tad2ark_controle_record(input_record, ppn, 
+                                              input_record.auteur_nett,
+                                              input_record.date_nett, False, "",
+                                              xml_record, origine)
+    elif (type(input_record) == funcs.Bib_Aut_record):
+        ppn_checked = tad2ark_controle_record(input_record, ppn, 
+                                              input_record.lastname.propre,
+                                              input_record.pubdate_nett, False, "",
+                                              xml_record, origine)
+    #ppn_checked = ",".join([ppn for ppn in ppn_checked if ppn])
+    ppn_checked = funcs.PPN(f"PPN{ppn_checked}")           
+    return ppn_checked
 
 
 def check_sudoc_results(input_record, listePPN, origine="Titre-Auteur-Date"):
@@ -2284,6 +2375,8 @@ def item2ark_by_keywords(input_record, parametres):
     return ark
 
 
+
+
 def item2ppn_by_keywords(input_record, parametres):
     """Alignement par mots clés sur le catalogue Sudoc"""
     ppn = ""
@@ -2336,7 +2429,7 @@ def item_alignement(input_record, parametres):
             bibid = item2ppn_by_id(input_record, parametres)
         if (bibid == "" 
             and "kwsudoc_option" in parametres
-            and parametres["kwsudoc_option"]==1):
+            and parametres["kwsudoc_option"] == 1):
             bibid = item2ppn_by_keywords(input_record, parametres)
     elif parametres["preferences_alignement"] == 3:
         bibid = item2oclc_by_id(input_record, parametres)        
