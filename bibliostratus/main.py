@@ -101,6 +101,7 @@ nsisni = {
     'xcql': 'http://www.loc.gov/zing/cql/xcql/'
 }
 urlSRUroot = "https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query="
+urlAbesroot = "https://www.sudoc.abes.fr/cbs/sru/?version=1.2&operation=searchRetrieve&query="
 
 url_online_help = "https://github.com/Transition-bibliographique/bibliostratus/wiki"
 texte_bouton_help = "Documentation\nen ligne"

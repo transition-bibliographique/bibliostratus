@@ -63,6 +63,10 @@ header_columns_init_rameau = [
     'N° Notice AUT', 'FRBNF', 'ARK', 'Point d\'accès Rameau'
 ]
 
+# Statut des notices d'autorité (exprimé dans les préférence utilisateur)
+aut_status = {"all": "sparse validated",
+              "validated": "validated"}
+
 aligntype2headers = {1: header_columns_init_aut2aut,
                      2: header_columns_init_aut2aut_org,
                      3: header_columns_init_bib2aut,
@@ -185,7 +189,7 @@ def ark2meta_aut(ark):
 
 
 def ark2metas_aut(ark, unidec=True):
-    url = funcs.url_requete_sru(f'aut.persistentid any "{ark}" and aut.status any "sparse validated"')
+    url = funcs.url_requete_sru(f'aut.persistentid any "{ark}" and aut.status any "{aut_status[main.prefs["bnf_aut_status"]["value"]]}"')
     if ("ppn" in ark.lower()):
         ppn = funcs.PPN(ark, "idref")
         # url = "https://www.idref.fr/" + ark[3:] + ".xml"
@@ -241,7 +245,7 @@ def isni2id(input_record, parametres, origine="isni"):
 def isni2ark(input_record, parametres):
     liste_ark = []
     url = funcs.url_requete_sru(
-            'aut.isni all "' + input_record.isni.propre + '" and aut.status any "sparse validated"')
+            'aut.isni all "' + input_record.isni.propre + f'" and aut.status any "{aut_status[main.prefs["bnf_aut_status"]["value"]]}"')
     (test, page) = funcs.testURLetreeParse(url)
     if test:
         for ark in page.xpath("//srw:recordIdentifier", namespaces=main.ns):
@@ -799,13 +803,13 @@ def aut2ark_by_accesspoint(input_record, NumNot, nom_nett, prenom_nett,
     listeArk = []
     url = funcs.url_requete_sru(
         'aut.accesspoint adj "' + " ".join([nom_nett, prenom_nett, date_debut]) 
-        + '" and aut.status any "sparse validated"'
+        + f'" and aut.status any "{aut_status[main.prefs["bnf_aut_status"]["value"]]}"'
         + ' and aut.type any "' + type_aut_dict[parametres["type_aut"]] + '"')
     testdatefin = False
     if (date_debut == "" and date_fin != ""):
         url = funcs.url_requete_sru('aut.accesspoint adj "' + " ".join(
             [nom_nett, prenom_nett]) + '" and aut.accesspoint all "' + date_fin 
-        + '" and aut.status any "sparse validated"'
+        + f'" and aut.status any "{aut_status[main.prefs["bnf_aut_status"]["value"]]}"'
         + ' and aut.type any "' + type_aut_dict[parametres["type_aut"]] + '"')
         testdatefin = True
     (test, results) = funcs.testURLetreeParse(url)
@@ -826,6 +830,7 @@ def aut2ark_by_accesspoint(input_record, NumNot, nom_nett, prenom_nett,
                 listeArk.append(ark)
                 input_record.alignment_method.append("Point d'accès")
     listeArk = ",".join(listeArk)
+    print(833, url)
     return listeArk
 
 
@@ -950,7 +955,7 @@ def bib2ppnAUT_from_isbnean(input_record, parametres):
 
 def nna2ark(nna):
     url = funcs.url_requete_sru(
-        'aut.recordid any ' + nna + 'and aut.status any "sparse validated"')
+        'aut.recordid any ' + nna + f'and aut.status any "{aut_status[main.prefs["bnf_aut_status"]["value"]]}"')
     ark = ""
     (test, record) = funcs.testURLetreeParse(url)
     if (test):

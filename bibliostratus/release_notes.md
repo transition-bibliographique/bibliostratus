@@ -1,3 +1,8 @@
+### version 1.36 (décembre 2023)
+
+- Alignements BIB et AUT : possibilité de demander que les requêtes dans les catalogues se fassent en HTTPS ou en HTTPS (paramètre dans les préférences utilisateur)
+- Alignement AUT dans le catalogue BnF : possibilité de n'obtenir des alignements que sur des notices d'autorité validées (valeur : validated) ou sur des notices validées ou élémentaires (valeur : all) (paramètre dans les préférences utilisateur)
+
 ### version 1.35 (janvier 2023)
 - Module blanc Bib :
 	- Débugage dans la recherche d'alignement par Titre-Auteur-Date : dans la recherche Titre-Auteur-Date, l'auteur était dans sa forme non nettoyée

@@ -45,6 +45,9 @@
 	"format_ppn": {
 		"description": "Mode de récupération des PPN : sous forme d'URI, ou simplement préfixé 'PPN'. Valeurs : 'ppn' ou 'uri'",
 		"value": "ppn"},
+	"bnf_aut_status": {
+		"description": "Niveau de validation des notices d'autorité : validated (notices validées uniquement); all",
+		"value": "all"},
 	"controle_isbn2id_date": {
 		"description": "Paramètre (peut-être) temporaire pour tester le contrôle sur la date dans le cas d'alignements sur ISBN ou EAN",
 		"value": "True"},

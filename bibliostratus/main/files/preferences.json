@@ -11,9 +11,10 @@
         "login": "",
         "mot de passe": ""
         },
-	"num_parallel": {
-		"description": "Nombre de requêtes simultanées à envoyer aux catalogues pour réaliser des alignements.",
-		"value": 20},
+    "num_parallel": {
+        "description": "Nombre de requêtes réalisées simultanément pour aligner des notices avec la BnF ou IdRef/Sudoc",
+        "value": 20
+        },
     "marc2tables_input_format": {
         "description": "Format de données en entrée dans le module bleu (marc2tables). Par défaut : 'unimarc'. Autre valeur autorisée : 'marc21'.",
         "value": "unimarc"
@@ -40,18 +41,21 @@
         },
     "gmb": {
         "description": "Fichier d'alignement bibliographique : matrice Excel Gallica Marque Blanche. Valeurs : 0 [non] ou 1 [oui]",
-        "value": "0"
+        "value": 0
         },
-	"num_parallel": {
-		"description": "Nombre de requêtes réalisées simultanément pour aligner des notices avec la BnF ou IdRef/Sudoc",
-		"value": "20"},
-	"format_ppn": {
-		"description": "Mode de récupération des PPN : sous forme d'URI, ou simplement préfixé 'PPN'. Valeurs : 'ppn' ou 'uri'",
-		"value": "uri"},
-	"controle_isbn2id_date": {
-		"description": "Paramètre (peut-être) temporaire pour tester le contrôle sur la date dans le cas d'alignements sur ISBN ou EAN",
-		"value": "True"},
-	"controle_editeur": {
-		"description": "Paramètre (peut-être) temporaire pour tester le contrôle sur le nom d'éditeur pour les monographies (valeurs 0 : aucun contrôle ; 1 : valeur de l'un présente dans l'autre ; 2 : valeur strictement identique (sauf si l'un est vide et l'autre renseigné) ; 3 : valeur strictement identique)",
-		"value": "0"}
-}
+    "format_ppn": {
+        "description": "Mode de récupération des PPN : sous forme d'URI, ou simplement préfixé 'PPN'. Valeurs : 'ppn' ou 'uri'",
+        "value": "uri"
+        },
+    "bnf_aut_status": {
+        "description": "Niveau de validation des notices d'autorité BnF : validated (notices validées uniquement); all",
+        "value": "validated"
+        },
+    "controle_isbn2id_date": {
+        "description": "Paramètre (peut-être) temporaire pour tester le contrôle sur la date dans le cas d'alignements sur ISBN ou EAN",
+        "value": "True"
+        },
+    "controle_editeur": {
+        "description": "Paramètre (peut-être) temporaire pour tester le contrôle sur le nom d'éditeur pour les monographies (valeurs 0 : aucun contrôle ; 1 : valeur de l'un présente dans l'autre ; 2 : valeur strictement identique (sauf si l'un est vide et l'autre renseigné) ; 3 : valeur strictement identique)",
+        "value": 0
+        }}
