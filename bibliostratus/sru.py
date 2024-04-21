@@ -115,6 +115,7 @@ class SRU_result:
                          for key in parametres if key != "namespaces"
                         ])
         self.url = "".join([url_sru_root, url_param])
+
         self.test, self.result_first = testURLetreeParse(self.url)
         self.result = [self.result_first]
         self.list_identifiers = []
@@ -314,7 +315,6 @@ def testURLetreeParse(url, print_error=True):
             print(url)
             print(err)
         test = False
- 
     return (test,resultat)
 
 def retrieveURL(url):

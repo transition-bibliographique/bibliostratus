@@ -12,6 +12,7 @@ import os
 import json
 import re
 import smc.bibencodings
+import SPARQLWrapper
 #from pkg_resources import py2_warn
 import tkinter as tk
 import webbrowser

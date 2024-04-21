@@ -1633,8 +1633,8 @@ def tad2ppn(input_record, parametres):
     # d'abord sur l'interface web
     # et à terme sur le SRU Sudoc
     # et à terme sur le SRU Sudoc
-    return tad2ppn_websudoc(input_record, parametres)
-    # return tad2ppn_sru(input_record, parametres)
+    # return tad2ppn_websudoc(input_record, parametres)
+    return tad2ppn_sru(input_record, parametres)
 
 
 
@@ -1672,10 +1672,14 @@ def tad2ppn_sru(input_record, parametres):
         query.append(date)
     query.append(f"tdo={typeRecordDic[input_record.type]}")
     query = " and ".join(query)
-    result = sru.SRU_result(query, main.urlAbesroot, {"recordSchema": "unimarc", "namespaces": main.ns_sruSudoc, "version": "1.1"})
-    print(1662, result.url, result.nb_results)
+    # print(query)
+    result = sru.SRU_result(query, main.urlAbesroot, parametres={"recordSchema": "unimarc", 
+                                                                 "namespaces": main.ns_sruSudoc, 
+                                                                 "version": "1.1",
+                                                                 "maximumRecords": "200"})
+    # print(1662, query, result.url, result.nb_results, etree.tostring(result.result_first))
+    print(1662, query, result.url, result.nb_results)
     listePPN = check_sudoc_results_sru(input_record, result.dict_records)
-    print(1666, listePPN)
     listePPN = ",".join([ppn.output for ppn in listePPN if ppn.root])
     return listePPN
 

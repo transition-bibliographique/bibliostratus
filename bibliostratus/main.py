@@ -95,7 +95,7 @@ nsSudoc = {
     "bnf-onto": "http://data.bnf.fr/ontology/bnf-onto/"
 }
 
-ns_sruSudoc = {"srw": "urn:z3950:ZiNG:Service", "dc": "http://purl.org/dc/elements/1.1/"}
+ns_sruSudoc = {"srw": "http://www.loc.gov/zing/srw/", "dc": "http://purl.org/dc/elements/1.1/",}
 
 nsisni = {
     'srw': 'http://www.loc.gov/zing/srw/',
@@ -104,7 +104,7 @@ nsisni = {
     'xcql': 'http://www.loc.gov/zing/cql/xcql/'
 }
 urlSRUroot = "https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query="
-urlAbesroot = "https://www.sudoc.abes.fr/cbs/sru/?version=1.2&operation=searchRetrieve&"
+urlAbesroot = "https://www.sudoc.abes.fr/cbs/sru/?"
 
 url_online_help = "https://github.com/Transition-bibliographique/bibliostratus/wiki"
 texte_bouton_help = "Documentation\nen ligne"
