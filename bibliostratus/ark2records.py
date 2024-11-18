@@ -43,7 +43,7 @@ errors_list = []
 dict_format_records = {
     1: "unimarcxchange",
     2: "unimarcxchange-anl",
-    3: "intermarcxchange",
+    3: "InterXMarc_Complet",
     4: "intermarcxchange-anl"}
 listefieldsLiensAUT = {
     "unimarc": ["700", "701", "702", "703", "709", "710", "711", "712", "713", "719", "731"],
@@ -78,6 +78,7 @@ def ark2url(identifier, parametres):
         url = "https://www.sudoc.fr/" + identifier.aligned_id.clean + ".xml"
     elif (identifier.aligned_id.type == "ppn" and parametres["type_records"] == "aut"):
         url = "https://www.idref.fr/" + identifier.aligned_id.clean + ".xml"
+    # print(url)
     return url
 
 
@@ -326,10 +327,15 @@ def page2nbresults(page, identifier):
 
 
 def extract1record(row, parametres, multiprocess=False):
+    """
+    Extraction d'une notice par son identifiant
+    """
     identifier = funcs.Id4record(row, parametres)
     xml_record = None
     linked_aut_record = None
-    if (len(identifier.aligned_id.clean) > 1 and identifier.aligned_id.clean not in parametres["listeARK_BIB"]):
+    if (len(identifier.aligned_id.clean) > 1 and (identifier.aligned_id.clean not in parametres["listeARK_BIB"] or parametres["correct_record_option"] != 1)):
+        # On cherche à récupérer la notice uniquement si l'identifiant est fourni
+        # ET (si la notice n'a pas déjà été récupérée OU c'est un fichier à 2 colonnes : alignement des 2 identifiants : origine et cible))
         parametres["listeARK_BIB"].append(identifier.aligned_id.clean)
         url_record = ark2url(identifier, parametres)
         if url_record:
@@ -425,7 +431,6 @@ def launch(filename, type_records_form,
     except ValueError as err:
         print("\n\nDonnées en entrée erronées\n")
         print(err)
-
     AUTliees = AUTlieesAUT + AUTlieesSUB + AUTlieesWORK
     format_BIB = dict_format_records[format_records]
     outputID = funcs.id_traitement2path(outputID)
@@ -474,7 +479,7 @@ def file2extract(filename, parametres, files, master_form, ark2records_form):
             if j == 0:
                 check_nb_colonnes(rows[0], parametres, master_form)
                 j += 1
-            records = Parallel(n_jobs=NUM_PARALLEL, prefer="threads")(delayed(extract1record)(row, parametres, True) for row in rows)
+            records = Parallel(n_jobs=NUM_PARALLEL, prefer="threads")(delayed(extract1record)(row, parametres, True) for row in rows)            
             for identifier, xml_record, linked_aut_records in records:
                 print(str(j) + ". " + identifier.aligned_id.clean)
                 try:
@@ -488,12 +493,7 @@ def file2extract(filename, parametres, files, master_form, ark2records_form):
                         record2file(identifier, etree.fromstring(xml_record), files["aut_file"],
                                     parametres["format_file"], parametres, files)
                 j += 1
-        """for row in entry_file:
-            if j == 0:
-                check_nb_colonnes(row, parametres, master)
-                j += 1
-            extract1record(row, j, form, headers, parametres)"""
-
+     
     
 
 def check_nb_colonnes(row, parametres, frame_master):

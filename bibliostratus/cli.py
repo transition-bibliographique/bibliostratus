@@ -62,8 +62,8 @@ dic_input_filetype = {"iso2709-utf8": 1,
                       "xml": 3}
 
 dic_output_formats = {"unimarc": 1,
-                      "intermarc": 2,
-                      "unimarc-anl": 3,
+                      "unimarc-anl": 2,
+                      "intermarc": 3,
                       "intermarc-anl": 4}
 
 dic_output_file = {"iso2709": 1,
@@ -202,6 +202,7 @@ def action_ark2records():
     args.output_file = dic_output_file[args.output_file]
     args.encoding = dic_output_encoding[args.encoding]
     main.output_directory = [args.dir]
+    
     ark2records.launch([args.file], args.recordtype, args.colnum,
                        args.headers, args.get_authors, args.get_subjects,
                        args.get_works, args.prefix, args.output_format,

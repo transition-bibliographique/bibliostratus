@@ -1,10 +1,14 @@
 ### version 1.36 (décembre 2023)
 
-- Alignements BIB et AUT : possibilité de demander que les requêtes dans les catalogues se fassent en HTTPS ou en HTTPS (paramètre dans les préférences utilisateur)
-- Alignement AUT dans le catalogue BnF : possibilité de n'obtenir des alignements que sur des notices d'autorité validées (valeur : validated) ou sur des notices validées ou élémentaires (valeur : all) (paramètre dans les préférences utilisateur)
-- Alignement biblio :
- - debug sur l'alignement Sudoc de documents sonores
+- Modules blancs :
+	- Alignements BIB et AUT : possibilité de demander que les requêtes dans les catalogues se fassent en HTTPS ou en HTTPS (paramètre dans les préférences utilisateur)
+	- Alignement AUT dans le catalogue BnF : possibilité de n'obtenir des alignements que sur des notices d'autorité validées (valeur : validated) ou sur des notices validées ou élémentaires (valeur : all) (paramètre dans les préférences utilisateur)
+	- Alignement biblio :
+	 - debug sur l'alignement Sudoc de documents sonores
  
+- module rouge (récupération des notices)
+	- débugage dans la récupération des notices à partir d'un tableau à 2 colonnes : si un même identifiant Sudoc ou BnF était présent plusieurs fois (aligné avec des notices sources différentes), alors la deuxième fois la notice ne pouvait pas être récupérée.
+
 
 ### version 1.35 (janvier 2023)
 - Module blanc Bib :
