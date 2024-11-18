@@ -821,7 +821,7 @@ def formulaire_main(access_to_network, last_version):
     tk.mainloop()
 
 def check_proxy():
-    if (prefs["http_proxy"]["URL"] or prefs["https_proxy"]["URL"]):
+    if ("http_proxy" in prefs and prefs["http_proxy"]["URL"]) or ("https_proxy" in prefs and prefs["https_proxy"]["URL"]):
         proxy_opener()
 
 if __name__ == '__main__':
