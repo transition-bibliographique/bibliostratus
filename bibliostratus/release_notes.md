@@ -1,4 +1,4 @@
-### version 1.36 (décembre 2023)
+### version 1.36 (décembre 2024)
 
 - Modules blancs :
 	- Alignements BIB et AUT : possibilité de demander que les requêtes dans les catalogues se fassent en HTTPS ou en HTTPS (paramètre dans les préférences utilisateur)
