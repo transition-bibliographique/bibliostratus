@@ -1,7 +1,7 @@
 ### version 1.36 (décembre 2024)
 
 - Modules blancs :
-	- Alignements BIB et AUT : possibilité de demander que les requêtes dans les catalogues se fassent en HTTPS ou en HTTPS (paramètre dans les préférences utilisateur)
+	- Alignements BIB et AUT : possibilité de demander que les requêtes dans les catalogues se fassent en HTTP ou en HTTPS (paramètre dans les préférences utilisateur)
 	- Alignement AUT dans le catalogue BnF : possibilité de n'obtenir des alignements que sur des notices d'autorité validées (valeur : validated) ou sur des notices validées ou élémentaires (valeur : all) (paramètre dans les préférences utilisateur)
 	- Alignement biblio :
 	 - debug sur l'alignement Sudoc de documents sonores
