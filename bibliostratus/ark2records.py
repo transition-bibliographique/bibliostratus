@@ -79,6 +79,7 @@ def ark2url(identifier, parametres):
     elif (identifier.aligned_id.type == "ppn" and parametres["type_records"] == "aut"):
         url = "https://www.idref.fr/" + identifier.aligned_id.clean + ".xml"
     # print(url)
+    url = url.replace("catalogue.bnf.fr/api/SRU", "noticesservices.bnf.fr/SRU").replace("unimarcxchange", "UnimarcXML").replace("bib.persistentid", "idPerenne")
     return url
 
 
@@ -343,18 +344,19 @@ def extract1record(row, parametres, multiprocess=False):
             if (test):
                 nbResults = page2nbresults(page, identifier)
                 # Si on part d'un ARK
-                if (nbResults == "1" and identifier.aligned_id.type == "ark"):
-                    for XMLrec in page.xpath(
+                if (nbResults in ["1", "2"] and identifier.aligned_id.type == "ark"
+                    and page.find("//srw:record/srw:recordData/mxc:record", namespaces=main.ns) is not None):
+                    XMLrec = page.xpath(
                             "//srw:record/srw:recordData/mxc:record",
-                            namespaces=main.ns):
-                        xml_record = XMLrec
-                        """record2file(identifier, XMLrec,
-                            parametres["bib_file"], 
-                            parametres["format_file"],
-                            parametres
-                        )"""
-                        if (parametres["AUTliees"] > 0):
-                            linked_aut_record = bib2aut(identifier, XMLrec, parametres, multiprocess)
+                            namespaces=main.ns)[0]
+                    xml_record = XMLrec
+                    """record2file(identifier, XMLrec,
+                        parametres["bib_file"], 
+                        parametres["format_file"],
+                        parametres
+                    )"""
+                    if (parametres["AUTliees"] > 0):
+                        linked_aut_record = bib2aut(identifier, XMLrec, parametres, multiprocess)
                 # Si on part d'un PPN
                 elif (nbResults == "1" and identifier.aligned_id.type == "ppn"):
                     for XMLrec in page.xpath("//record"):
@@ -390,7 +392,7 @@ def extract1record(row, parametres, multiprocess=False):
                                     if (parametres["AUTliees"] > 0):
                                         linked_aut_record = bib2aut(identifier, XMLrec, parametres, multiprocess)
     if multiprocess and xml_record is not None:
-        xml_record = etree.tostring(xml_record)    
+        xml_record = etree.tostring(xml_record) 
     return identifier, xml_record, linked_aut_record
 
 def update_bib_ppn(ppn):
@@ -479,7 +481,7 @@ def file2extract(filename, parametres, files, master_form, ark2records_form):
             if j == 0:
                 check_nb_colonnes(rows[0], parametres, master_form)
                 j += 1
-            records = Parallel(n_jobs=NUM_PARALLEL, prefer="threads")(delayed(extract1record)(row, parametres, True) for row in rows)            
+            records = Parallel(n_jobs=NUM_PARALLEL, prefer="threads", backend="threading")(delayed(extract1record)(row, parametres, True) for row in rows)            
             for identifier, xml_record, linked_aut_records in records:
                 print(str(j) + ". " + identifier.aligned_id.clean)
                 try:

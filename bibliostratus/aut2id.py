@@ -248,7 +248,7 @@ def isni2ark(input_record, parametres):
             'aut.isni all "' + input_record.isni.propre + f'" and aut.status any "{aut_status[main.prefs["bnf_aut_status"]["value"]]}"')
     (test, page) = funcs.testURLetreeParse(url)
     if test:
-        for ark in page.xpath("//srw:recordIdentifier", namespaces=main.ns):
+        for ark in page.xpath(".//srw:recordIdentifier", namespaces=main.ns):
             liste_ark.append(ark.text)
     return liste_ark
 
@@ -270,7 +270,7 @@ def accesspoint2isniorg(input_record, parametres):
     isnis = []
     (test, records) = funcs.testURLetreeParse(url)
     if test:
-        for rec in records.xpath("//srw:records/srw:record", namespaces=main.nsisni):
+        for rec in records.xpath(".//srw:records/srw:record", namespaces=main.nsisni):
             isni = ""
             if (rec.find("srw:recordData//isniURI",
                             namespaces=main.nsisni) is not None):
@@ -451,7 +451,7 @@ def align_aut_file(form, entry_filename, liste_reports, parametres):
                                                    aligntype2headers[parametres["input_data_type"]])
             if ((n-1) % 100 == 0):
                 main.check_access2apis(n, dict_check_apis)
-            alignment_results = Parallel(n_jobs=NUM_PARALLEL, prefer="threads")(delayed(aut2id_item)(row, n, parametres) for row in rows)
+            alignment_results = Parallel(n_jobs=NUM_PARALLEL, prefer="threads", backend="threading")(delayed(aut2id_item)(row, n, parametres) for row in rows)
             for alignment_result in alignment_results:
                 alignment_result2output(alignment_result, alignment_result.input_record,
                                         parametres, liste_reports, n)
@@ -555,8 +555,8 @@ def arkAut2arkAut(input_record, NumNot, ark):
     (test, page) = funcs.testURLetreeParse(url)
     nv_ark = ""
     if test:
-        if (page.find("//srw:recordIdentifier", namespaces=main.ns) is not None):
-            nv_ark = page.find("//srw:recordIdentifier",
+        if (page.find(".//srw:recordIdentifier", namespaces=main.ns) is not None):
+            nv_ark = page.find(".//srw:recordIdentifier",
                                namespaces=main.ns).text
             input_record.alignment_method.append("Actualisation ARK")
     return nv_ark
@@ -570,7 +570,7 @@ def arkBib2arkAut(input_record, parametres):
     (test, page) = funcs.testURLetreeParse(url)
     listeArk = []
     if test:
-        for xml_record in page.xpath("//srw:recordData/*", namespaces=main.ns):
+        for xml_record in page.xpath(".//srw:recordData/*", namespaces=main.ns):
             arks = extractARKautfromBIB(input_record, xml_record)
             input_record.alignment_method.append("ARK notice BIB + contrôle accesspoint")
             if (parametres["preferences_alignement"] == 2):
@@ -612,11 +612,11 @@ def frbnfAut2arkAut(input_record):
     (test, page) = funcs.testURLetreeParse(url)
     if test:
         nb_resultats = int(
-            page.find("//srw:numberOfRecords", namespaces=main.ns).text)
+            page.find(".//srw:numberOfRecords", namespaces=main.ns).text)
         if (nb_resultats == 0):
             ark = oldfrbnf2ark(input_record)
         elif (nb_resultats == 1):
-            ark = page.find("//srw:recordIdentifier", namespaces=main.ns).text
+            ark = page.find(".//srw:recordIdentifier", namespaces=main.ns).text
         else:
             ark = ",".join([ark.text for ark in page.xpath(
                 "//srw:recordIdentifier", namespaces=main.ns)])
@@ -637,7 +637,7 @@ def frbnfBib2arkAut(input_record, parametres):
     for ark in listeArk_bib:
         test, records = bib2id.ark2recordBNF(ark)
         if test:
-            for record in records.xpath("//srw:recordData", namespaces=main.ns):
+            for record in records.xpath(".//srw:recordData", namespaces=main.ns):
                 listeArk.extend(extractARKautfromBIB(input_record, record))
     listeArk = ",".join(set(listeArk))
     if (listeArk != ""):
@@ -662,7 +662,7 @@ def isbnBib2arkAut(input_record, parametres):
     for ark in listeArk_bib.split(","):
         test, records = bib2id.ark2recordBNF(ark)
         if test:
-            for record in records.xpath("//srw:recordData", namespaces=main.ns):
+            for record in records.xpath(".//srw:recordData", namespaces=main.ns):
                 listeArk.extend(extractARKautfromBIB(input_record, record))
     listeArk = ",".join(set(listeArk))
     if (listeArk != ""):
@@ -814,7 +814,7 @@ def aut2ark_by_accesspoint(input_record, NumNot, nom_nett, prenom_nett,
         testdatefin = True
     (test, results) = funcs.testURLetreeParse(url)
     if (test):
-        for record in results.xpath("//srw:records/srw:record", namespaces=main.ns):
+        for record in results.xpath(".//srw:records/srw:record", namespaces=main.ns):
             ark = record.find("srw:recordIdentifier", namespaces=main.ns).text
             if testdatefin:
                 f103a_datefin = main.extract_subfield(record, "103", "a")
@@ -959,8 +959,8 @@ def nna2ark(nna):
     ark = ""
     (test, record) = funcs.testURLetreeParse(url)
     if (test):
-        if (record.find("//srw:recordIdentifier", namespaces=main.ns) is not None):
-            ark = record.find("//srw:recordIdentifier",
+        if (record.find(".//srw:recordIdentifier", namespaces=main.ns) is not None):
+            ark = record.find(".//srw:recordIdentifier",
                               namespaces=main.ns).text
     return ark
 

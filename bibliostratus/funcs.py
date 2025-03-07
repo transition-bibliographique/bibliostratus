@@ -1283,9 +1283,7 @@ class Aligned_id:
             self.agency = "BNF"
             self.type = "ark"
             self.clean = init[init.find("ark"):]
-
-
-
+            
 
 def xml2pymarcrecord(identifier, xml_record):
     """

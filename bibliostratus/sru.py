@@ -127,9 +127,9 @@ class SRU_result:
 #==============================================================================
 #             Récupération des erreurs éventuelles dans la requête
 #==============================================================================
-            if (self.result[0].find("//srw:diagnostics",
+            if (self.result[0].find(".//srw:diagnostics",
                 namespaces=parametres["namespaces"]) is not None):
-                for err in self.result[0].xpath("//srw:diagnostics/srw:diagnostic",
+                for err in self.result[0].xpath(".//srw:diagnostics/srw:diagnostic",
                                                 namespaces=parametres["namespaces"]):
                     for el in err.xpath(".", namespaces=parametres["namespaces"]):
                         self.errors += el.tag + " : " + el.text + "\n"
@@ -142,10 +142,10 @@ class SRU_result:
 #           et la valeur le contenu du srx:recordData/*
 #==============================================================================
             self.nb_results = 0
-            if (self.result[0].find("//srw:numberOfRecords", 
+            if (self.result[0].find(".//srw:numberOfRecords", 
                                                 namespaces=parametres["namespaces"]
                                                 ) is not None):
-                self.nb_results = int(self.result[0].find("//srw:numberOfRecords", 
+                self.nb_results = int(self.result[0].find(".//srw:numberOfRecords", 
                                                 namespaces=parametres["namespaces"]
                                                 ).text)
             self.multipages = self.nb_results > (int(parametres["startRecord"])+int(parametres["maximumRecords"])-1)
@@ -166,7 +166,7 @@ class SRU_result:
 #           on stocke dans le dict_records l'ensemble des résultats
 #==============================================================================
             for page in self.result:
-                for record in page.xpath("//srw:record", 
+                for record in page.xpath(".//srw:record", 
                                                     namespaces=parametres["namespaces"]):
                     identifier = ""
                     if (record.find("srw:recordIdentifier", 
@@ -655,13 +655,13 @@ def ark2meta(recordId,IDtype,parametres):
     
     (test,page) = testURLetreeParse(urlSRU)    
     if (test):
-        if (IDtype == "NN" and page.find("//srw:recordIdentifier",namespaces=ns_bnf) is not None):
-            ark = page.find("//srw:recordIdentifier",namespaces=ns_bnf).text
-        if (page.find("//srw:recordData/oai_dc:dc", namespaces=ns_bnf) is not None):
-            record = page.xpath("//srw:recordData/oai_dc:dc",namespaces=ns_bnf)[0]
+        if (IDtype == "NN" and page.find(".//srw:recordIdentifier",namespaces=ns_bnf) is not None):
+            ark = page.find(".//srw:recordIdentifier",namespaces=ns_bnf).text
+        if (page.find(".//srw:recordData/oai_dc:dc", namespaces=ns_bnf) is not None):
+            record = page.xpath(".//srw:recordData/oai_dc:dc",namespaces=ns_bnf)[0]
             line_resultats = bnfrecord2meta(ark,record,parametres)
-        if (page.find("//srw:recordData/mxc:record", namespaces=ns_bnf) is not None):
-            record = page.xpath("//srw:recordData/mxc:record",namespaces=ns_bnf)[0]
+        if (page.find(".//srw:recordData/mxc:record", namespaces=ns_bnf) is not None):
+            record = page.xpath(".//srw:recordData/mxc:record",namespaces=ns_bnf)[0]
             line_resultats = bnfrecord2meta(ark,record,parametres)
 
     return line_resultats

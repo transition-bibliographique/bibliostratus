@@ -503,7 +503,7 @@ def check_publisher(identifier, input_record_publisher_nett, xml_record):
     # comparaison entre la mention d'éditeur en entrée (nettoyée)
     # et la mention d'éditeur trouvée dans la notice
     identifier_checked = identifier
-    if ("controle_editeur" in main.prefs and main.prefs["controle_editeur"]["value"] in [1, 2, 3]):
+    if ("controle_editeur" in main.prefs and main.prefs["controle_editeur"]["value"] in [1, 2, 3, "1", "2", "3"]):
         # En ce cas on réalise les contrôles
         record_publisher = funcs.clean_publisher(sru.record2fieldvalue(xml_record, "210$c"))
         if record_publisher == "":
@@ -519,26 +519,26 @@ def check_publisher(identifier, input_record_publisher_nett, xml_record):
                     print(identifier_checked, "éditeur identique")
                 elif (input_record_publisher_nett in record_publisher) or (record_publisher in input_record_publisher_nett):
                     print(identifier_checked, "éditeur initial DANS éditeur notice trouvée -- ou l'inverse", input_record_publisher_nett, "//", record_publisher)
-                    if main.prefs["controle_editeur"]["value"] in "12":
+                    if main.prefs["controle_editeur"]["value"] in [1, 2, "1", "2"]:
                         identifier_checked = identifier
-                    elif main.prefs["controle_editeur"]["value"] == "3":
+                    elif main.prefs["controle_editeur"]["value"] in [3, "3"]:
                         identifier_checked = ""
                 else:
                     print(identifier_checked, "éditeurs différents", input_record_publisher_nett, "//", record_publisher)
             else:
                 # Si la notice trouvée n'a pas d'éditeur
                 print(identifier, "pas de mention d'éditeur *vs*", input_record_publisher_nett)
-                if main.prefs["controle_editeur"]["value"] in "1":
+                if main.prefs["controle_editeur"]["value"] in [1, "1"]:
                     identifier_checked = identifier
-                if main.prefs["controle_editeur"]["value"] in "23":
+                if main.prefs["controle_editeur"]["value"] in [2, 3, "2", "3"]:
                     identifier_checked = ""
         else:
             if record_publisher != "":
                 # L'éditeur de la notice en entrée est vide et celui de la notice trouvée est renseigné
-                if main.prefs["controle_editeur"]["value"] in "1":
+                if main.prefs["controle_editeur"]["value"] in [1, "1"]:
                     # Contrôles de niveau 1 ou 2
                     identifier_checked = identifier
-                elif main.prefs["controle_editeur"]["value"] in "23":
+                elif main.prefs["controle_editeur"]["value"] in [2, 3, "2", "3"]:
                     identifier_checked = ""
             else:
                 identifier_checked = identifier
@@ -847,7 +847,7 @@ def isbn2sudoc(input_record, parametres):
     if isbnTrouve:
         (test, resultats) = funcs.testURLetreeParse(url)
         if test:
-            for ppn in resultats.xpath("//ppn"):
+            for ppn in resultats.xpath(".//ppn"):
                 ppn_val = check_ppn_by_kw(funcs.PPN(ppn.text), input_record, "isbn2ppn")
                 if (ppn_val):
                     ppn = funcs.PPN(ppn_val, "sudoc")
@@ -865,7 +865,7 @@ def isbn2sudoc(input_record, parametres):
                 if isbnTrouve:
                     (test, resultats) = funcs.testURLetreeParse(url)
                     if test:
-                        for ppn in resultats.xpath("//ppn"):
+                        for ppn in resultats.xpath(".//ppn"):
                             ppn_val = funcs.PPN(ppn.text, "sudoc")
                             Listeppn.append(ppn_val)
                             # Si BnF > Sudoc : on cherche l'ARK
@@ -907,7 +907,7 @@ def ean2sudoc(input_record, parametres, controle_titre=True):
     if eanTrouve:
         (test, resultats) = funcs.testURLetreeParse(url)
         if test:
-            for ppn in resultats.xpath("//ppn"):
+            for ppn in resultats.xpath(".//ppn"):
                 ppn_val = check_ppn_by_kw(funcs.PPN(ppn.text), input_record, "ean2ppn")
                 if (ppn_val):
                     ppn = funcs.PPN(ppn_val, "sudoc")
@@ -941,7 +941,7 @@ def ppn2ark(input_record, ppn, parametres):
     url = "https://www.sudoc.fr/" + ppn.root + ".rdf"
     (test, record) = funcs.testURLetreeParse(url)
     if test:
-        for sameAs in record.xpath("//owl:sameAs", namespaces=main.nsSudoc):
+        for sameAs in record.xpath(".//owl:sameAs", namespaces=main.nsSudoc):
             resource = sameAs.get(
                 "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}resource"
             )
@@ -950,7 +950,7 @@ def ppn2ark(input_record, ppn, parametres):
                 # NumNotices2methode[input_record.NumNot].append("PPN > ARK")
                 input_record.alignment_method.append("PPN > ARK")
         if ark == "":
-            for frbnf in record.xpath("//bnf-onto:FRBNF",
+            for frbnf in record.xpath(".//bnf-onto:FRBNF",
                                       namespaces=main.nsSudoc):
                 frbnf_val = frbnf.text
                 # NumNotices2methode[input_record.NumNot].append("PPN > FRBNF")
@@ -1070,10 +1070,10 @@ def issn2sudoc(input_record, NumNot, issn_init, issn_nett,
     if issnTrouve:
         (test, resultats) = funcs.testURLetreeParse(url)
         if test:
-            # if resultats.find("//ppn") is not None:
+            # if resultats.find(".//ppn") is not None:
                 # NumNotices2methode[NumNot].append("ISSN > PPN")
                 # input_record.alignment_method.append("ISSN > PPN")
-            for ppn in resultats.xpath("//ppn"):
+            for ppn in resultats.xpath(".//ppn"):
                 ppn_val = check_ppn_by_kw(funcs.PPN(ppn.text), input_record, "issn2ppn")
                 if (ppn_val):
                     ppn = funcs.PPN(ppn_val, "sudoc")
@@ -1267,20 +1267,20 @@ def issn2sudoc(input_record, NumNot, issn_init, issn_nett,
     premierauteurNom = ""
     tousauteurs = ""
     if test:
-        if record.find("//dc:title", namespaces=main.nsSudoc) is not None:
+        if record.find(".//dc:title", namespaces=main.nsSudoc) is not None:
             titre = (
-                funcs.unidecode_local(record.find("//dc:title",
+                funcs.unidecode_local(record.find(".//dc:title",
                                       namespaces=main.nsSudoc).text)
                 .split("[")[0]
                 .split("/")[0]
             )
             tousauteurs = funcs.unidecode_local(
-                record.find("//dc:title", namespaces=main.nsSudoc).text
+                record.find(".//dc:title", namespaces=main.nsSudoc).text
             ).split("/")[1]
             if titre[0:5] == tousauteurs[0:5]:
                 tousauteurs = ""
         if (
-            record.find("//marcrel:aut/foaf:Person/foaf:name", namespaces=main.nsSudoc)
+            record.find(".//marcrel:aut/foaf:Person/foaf:name", namespaces=main.nsSudoc)
             is not None
         ):
             premierauteurNom = funcs.unidecode_local(
@@ -1565,7 +1565,7 @@ def tad2ppn_from_domybiblio(input_record, parametres):
         type_page = ""
         # print("erreur connexion DoMyBiblio", url1)
     if (type_page == "html"):
-        liste_resultats = page.xpath("//li[@class='list-group-item']/a")
+        liste_resultats = page.xpath(".//li[@class='list-group-item']/a")
         for lien in liste_resultats:
             href = lien.get("href")
             ppn = "PPN" + href.split("/")[-1].split("&")[0].strip()
@@ -1575,7 +1575,7 @@ def tad2ppn_from_domybiblio(input_record, parametres):
             ppn = controle_keywords2ppn(input_record, ppn)
             Listeppn.append(ppn)
     elif (type_page == "xml"):
-        liste_resultats = page.xpath("//records/record")
+        liste_resultats = page.xpath(".//records/record")
         nb_results = int(page.find(".//results").text)
         for record in liste_resultats:
             ppn = record.find("identifier").text
@@ -1615,7 +1615,7 @@ def tad2ppn_pages_suivantes(input_record, url, nb_results,
     url = url + "pageID=" + str(pageID)
     (test, results) = funcs.testURLetreeParse(url)
     if test:
-        for record in results.xpath("//records/record"):
+        for record in results.xpath(".//records/record"):
             ppn = "PPN" + record.find("identifier").text
             ppn = funcs.PPN(ppn, "sudoc")
             ppn = controle_keywords2ppn(input_record, ppn)
@@ -1826,7 +1826,7 @@ def extractPPNfromrecord(page):
     Si un seul résultat : l'URL Sudoc ouvre la notice détaillée
     --> on récupère le PPN dans le permalien
     """
-    link = page.find("//link[@rel='canonical']").get("href")
+    link = page.find(".//link[@rel='canonical']").get("href")
     ppn = link.split("/")[-1]
     ppn = funcs.PPN(ppn, "sudoc")
     return ppn
@@ -1841,7 +1841,7 @@ def extract_nb_results_from_sudoc_page(html_page):
     nb_results = 0
     ligne_info = ""
     try:
-        ligne_info = etree.tostring(html_page.find("//table[@summary='query info']/tr")).decode(encoding="utf-8")
+        ligne_info = etree.tostring(html_page.find(".//table[@summary='query info']/tr")).decode(encoding="utf-8")
     except ValueError:
         pass
     except TypeError:
@@ -1859,7 +1859,7 @@ def extractPPNfromsudocpage(html_page, nb_results=0, i=0):
     html_page est le contenu parsé (avec lxml.html.parse()) d'une page HTML
     """
     listePPN = []
-    for inp in html_page.xpath("//input[@name]"):
+    for inp in html_page.xpath(".//input[@name]"):
         if inp.get("name").startswith("ppn"):
             ppn = inp.get("value")
             listePPN.append(funcs.PPN(ppn, "sudoc"))
@@ -2539,7 +2539,7 @@ def file2row(form_bib2ark, entry_filename, liste_reports, parametres):
                         )
             if (n-1) % 100 == 0:
                 main.check_access2apis(n, dict_check_apis)
-            alignment_results = Parallel(n_jobs=NUM_PARALLEL, prefer="threads")(delayed(item2id)(row, n, parametres) for row in rows)
+            alignment_results = Parallel(n_jobs=NUM_PARALLEL, prefer="threads", backend="threading")(delayed(item2id)(row, n, parametres) for row in rows)
             for alignment_result in alignment_results:
                 alignment_result2output(alignment_result, alignment_result.input_record,
                                         parametres, liste_reports, n)
