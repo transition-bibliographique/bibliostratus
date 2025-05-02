@@ -43,7 +43,7 @@ errors_list = []
 dict_format_records = {
     1: "unimarcxchange",
     2: "unimarcxchange-anl",
-    3: "InterXMarc_Complet",
+    3: "intermarcxchange",
     4: "intermarcxchange-anl"}
 listefieldsLiensAUT = {
     "unimarc": ["700", "701", "702", "703", "709", "710", "711", "712", "713", "719", "731"],
@@ -79,7 +79,7 @@ def ark2url(identifier, parametres):
     elif (identifier.aligned_id.type == "ppn" and parametres["type_records"] == "aut"):
         url = "https://www.idref.fr/" + identifier.aligned_id.clean + ".xml"
     # print(url)
-    url = url.replace("catalogue.bnf.fr/api/SRU", "noticesservices.bnf.fr/SRU").replace("unimarcxchange", "UnimarcXML").replace("bib.persistentid", "idPerenne")
+    
     return url
 
 
