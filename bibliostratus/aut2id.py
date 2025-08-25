@@ -619,7 +619,7 @@ def frbnfAut2arkAut(input_record):
             ark = page.find(".//srw:recordIdentifier", namespaces=main.ns).text
         else:
             ark = ",".join([ark.text for ark in page.xpath(
-                "//srw:recordIdentifier", namespaces=main.ns)])
+                ".//srw:recordIdentifier", namespaces=main.ns)])
     if (ark):
         input_record.alignment_method.append("FRBNF")
     return ark
@@ -718,7 +718,7 @@ def rechercheNNA(input_record, NumNot, nna, nom):
         (test, page) = funcs.testURLetreeParse(url)
         if test:
             for record in page.xpath(
-                    "//srw:records/srw:record", namespaces=main.ns):
+                    ".//srw:records/srw:record", namespaces=main.ns):
                 ark_current = record.find(
                     "srw:recordIdentifier", namespaces=main.ns).text
                 ark = comparerAutBnf(input_record, NumNot, ark_current,
@@ -741,7 +741,7 @@ def systemid2ark(input_record, NumNot, systemid, tronque, nom):
     (test, page) = funcs.testURLetreeParse(url)
     if (test):
         for record in page.xpath(
-                "//srw:records/srw:record", namespaces=main.ns):
+                ".//srw:records/srw:record", namespaces=main.ns):
             ark_current = record.find(
                 "srw:recordIdentifier", namespaces=main.ns).text
             if (nom != ""):
@@ -783,7 +783,7 @@ def relancerNNA_nomAuteur(input_record, NumNot, systemid, nom):
         (test, pageSRU) = funcs.testURLetreeParse(urlSRU)
         if test:
             for record in pageSRU.xpath(
-                    "//srw:records/srw:record", namespaces=main.ns):
+                    ".//srw:records/srw:record", namespaces=main.ns):
                 ark = record.find("srw:recordIdentifier",
                                   namespaces=main.ns).text
                 input_record.alignment_method.append("N° sys FRBNF + Nom")
@@ -801,6 +801,12 @@ def aut2ark_by_accesspoint(input_record, NumNot, nom_nett, prenom_nett,
                      "a b": "PEP ORG"}
 
     listeArk = []
+
+    prefs = main.prefs
+    prefs_file_name = ""
+    if prefs == {}:
+        prefs, prefs_file_name = main.load_preferences() 
+    # print(prefs, prefs_file_name)
     url = funcs.url_requete_sru(
         'aut.accesspoint adj "' + " ".join([nom_nett, prenom_nett, date_debut]) 
         + f'" and aut.status any "{aut_status[main.prefs["bnf_aut_status"]["value"]]}"'
@@ -830,7 +836,6 @@ def aut2ark_by_accesspoint(input_record, NumNot, nom_nett, prenom_nett,
                 listeArk.append(ark)
                 input_record.alignment_method.append("Point d'accès")
     listeArk = ",".join(listeArk)
-    print(833, url)
     return listeArk
 
 
@@ -851,7 +856,7 @@ def bib2arkAUT(input_record, parametres):
     (test, results) = funcs.testURLetreeParse(url)
     if (test):
         for record in results.xpath(
-                "//srw:recordData", namespaces=main.ns):
+                ".//srw:recordData", namespaces=main.ns):
             arks = extractARKautfromBIB(input_record, record)
             if arks:
                 input_record.alignment_method.append("Titre-Auteur-Date > ARK Auteur")
@@ -890,7 +895,7 @@ def bib2ppnAUT(input_record, parametres):
             (test, results) = funcs.testURLetreeParse(url)
             if (test):
                 for record in results.xpath(
-                        "//record", namespaces=main.ns):
+                        ".//record", namespaces=main.ns):
                     listePPNaut.extend(extractARKautfromBIB(input_record, record, source="sudoc"))
         
         if parametres["preferences_alignement"] == 1:

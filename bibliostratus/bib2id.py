@@ -1678,7 +1678,7 @@ def tad2ppn_sru(input_record, parametres):
                                                                  "version": "1.1",
                                                                  "maximumRecords": "200"})
     # print(1662, query, result.url, result.nb_results, etree.tostring(result.result_first))
-    print(1662, query, result.url, result.nb_results)
+    # print(1662, query, result.url, result.nb_results)
     listePPN = check_sudoc_results_sru(input_record, result.dict_records)
     listePPN = ",".join([ppn.output for ppn in listePPN if ppn.root])
     return listePPN

@@ -208,7 +208,7 @@ class Record2metas:
               or "idref" in identifier
               or "ppn" in identifier.lower()):
             self.source = "abes"
-        elif(re.fullmatch("\d\d\d\d\d\d\d\d", identifier) is not None):
+        elif(re.fullmatch(r"\d\d\d\d\d\d\d\d", identifier) is not None):
             self.source = "bnf"
             
         if (self.source == "bnf" and self.format == "marc"):
@@ -568,7 +568,7 @@ def extract_abes_meta_marc(record,zone):
 def extract_abes_meta_dc(record,zone):
     #Pour chaque zone indiquée dans le formulaire, séparée par un point-virgule, on applique le traitement ci-dessous
     value = []
-    zone = "//" + zone
+    zone = ".//" + zone
     for element in record.xpath(zone, namespaces=ns_abes):
         value.append(element.text)
     value = "~".join(value)
@@ -579,7 +579,7 @@ def nna2bibliees(ark):
     nbBIBliees = "0"
     url = "http://catalogue.bnf.fr/" + ark
     page = parse(url)
-    hrefPath = "//a[@title='Voir toutes les notices liées']"
+    hrefPath = ".//a[@title='Voir toutes les notices liées']"
     if (page.xpath(hrefPath) is not None):
         if (len(page.xpath(hrefPath)) > 0):
             nbBIBliees = str(page.xpath(hrefPath)[0].text)
@@ -747,7 +747,7 @@ def url2format_records(url):
 
 def query2nbresults(url):
     if ("&maximumRecords" in url):
-        url = re.sub("maximumRecords=(\d+)", "maximumRecords=1", url)
+        url = re.sub(r"maximumRecords=(\d+)", "maximumRecords=1", url)
     else:
         url += "&maximumRecords=1"
     query, url_root, params = url2params(url)

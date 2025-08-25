@@ -218,11 +218,11 @@ def bib2aut(identifier, XMLrecord, parametres, multiprocess):
         url = nn2url(nna, "aut", parametres, source)
         (test, record) = funcs.testURLetreeParse(url)
         if (test and source == "bnf" and record.find(
-                "//srw:recordData/mxc:record", namespaces=main.ns) is not None):
+                ".//srw:recordData/mxc:record", namespaces=main.ns) is not None):
             XMLrec = record.xpath(
                 ".//srw:recordData/mxc:record", namespaces=main.ns
             )[0]
-            linked_identifier = funcs.Id4record([record.find("//srw:recordIdentifier", namespaces=main.ns).text])
+            linked_identifier = funcs.Id4record([record.find(".//srw:recordIdentifier", namespaces=main.ns).text])
             # record2file(linked_identifier, XMLrec, parametres["aut_file"],
             #             parametres["format_file"], parametres)
             linked_aut_record.append([linked_identifier, XMLrec])
@@ -320,10 +320,10 @@ def record2file(identifier, XMLrec, file, format_file, parametres, dict_files):
 def page2nbresults(page, identifier):
     nbresults = "0"
     if (identifier.aligned_id.type == "ppn"):
-        if (page.find("//leader") is not None):
+        if (page.find(".//leader") is not None):
             nbresults = "1"
-    elif (page.find("//srw:numberOfRecords", namespaces=main.ns) is not None):
-        nbresults = page.find("//srw:numberOfRecords", namespaces=main.ns).text
+    elif (page.find(".//srw:numberOfRecords", namespaces=main.ns) is not None):
+        nbresults = page.find(".//srw:numberOfRecords", namespaces=main.ns).text
     return nbresults
 
 
@@ -345,9 +345,9 @@ def extract1record(row, parametres, multiprocess=False):
                 nbResults = page2nbresults(page, identifier)
                 # Si on part d'un ARK
                 if (nbResults in ["1", "2"] and identifier.aligned_id.type == "ark"
-                    and page.find("//srw:record/srw:recordData/mxc:record", namespaces=main.ns) is not None):
+                    and page.find(".//srw:record/srw:recordData/mxc:record", namespaces=main.ns) is not None):
                     XMLrec = page.xpath(
-                            "//srw:record/srw:recordData/mxc:record",
+                            ".//srw:record/srw:recordData/mxc:record",
                             namespaces=main.ns)[0]
                     xml_record = XMLrec
                     """record2file(identifier, XMLrec,
@@ -359,7 +359,7 @@ def extract1record(row, parametres, multiprocess=False):
                         linked_aut_record = bib2aut(identifier, XMLrec, parametres, multiprocess)
                 # Si on part d'un PPN
                 elif (nbResults == "1" and identifier.aligned_id.type == "ppn"):
-                    for XMLrec in page.xpath("//record"):
+                    for XMLrec in page.xpath(".//record"):
                         xml_record = XMLrec
                         """record2file(identifier, XMLrec,
                                     parametres["bib_file"],
@@ -383,7 +383,7 @@ def extract1record(row, parametres, multiprocess=False):
                         if (test):
                             nbResults = page2nbresults(page, identifier)
                             if (nbResults == "1"):
-                                for XMLrec in page.xpath("//record"):
+                                for XMLrec in page.xpath(".//record"):
                                     xml_record = XMLrec
                                     """record2file(identifier, XMLrec,
                                                 parametres["bib_file"],
@@ -399,8 +399,8 @@ def update_bib_ppn(ppn):
     url = f"https://www.sudoc.fr/services/merged/{ppn}"
     test, result = funcs.testURLetreeParse(url)
     if (test
-       and result.find("//result/ppn") is not None):
-        new_ppn = result.find("//result/ppn").text
+       and result.find(".//result/ppn") is not None):
+        new_ppn = result.find(".//result/ppn").text
         return new_ppn
     else:
         return None
