@@ -20,7 +20,7 @@ from collections import defaultdict
 import json
 from random import randrange
 
-from chardet.universaldetector import UniversalDetector
+# from chardet.universaldetector import UniversalDetector
 import pymarc as mc
 from unidecode import unidecode
 
@@ -342,7 +342,7 @@ def download_last_update():
     webbrowser.open(url)
 
 
-def testchardet(filename):
+"""def testchardet(filename):
     detector = UniversalDetector()
     for line in open(filename, 'rb'):
         detector.feed(line)
@@ -351,7 +351,7 @@ def testchardet(filename):
     detector.close()
     print("detector\n\n")
     print(detector.result)
-
+"""
 
 def alerte_bom(err):
     if ("\xef\xbb\xbf" in err.lower()):

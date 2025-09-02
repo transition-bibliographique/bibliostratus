@@ -22,7 +22,7 @@ import multiprocessing
 
 import pymarc as mc
 from lxml import etree
-import smc.bibencodings
+# import smc.bibencodings
 
 import funcs
 import main
