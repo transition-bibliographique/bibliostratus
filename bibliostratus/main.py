@@ -798,7 +798,7 @@ def formulaire_main(access_to_network, last_version):
 
     tk.Label(zone_notes, text="Bibliostratus - Version " +
              f"{str(version)}{version_suffix}" + " - " + lastupdate, bg=couleur_fond).pack()
-    if prefs["gmb"]["value"] == "1":
+    if "gmb" in prefs and prefs["gmb"]["value"] == "1":
         tk.Label(zone_notes, text="Option Gallica Marque Blanche", bg="#afafaf").pack()
 
 
