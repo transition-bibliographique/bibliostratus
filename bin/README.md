@@ -7,6 +7,11 @@ Les noms des fichiers contiennent :
 - le système d'exploitation (windows 64 bits, windows 32 bits)
 - la version Python utilisée
 
+Depuis la migration vers Python 3.10, les nouveaux paquets suivent la convention
+`bibliostratus_<version>_win64_py3.10.zip`. Les scripts batch
+`launch_pyinstaller_winXX.bat` se chargent automatiquement de cette nouvelle
+nomination après la compilation avec PyInstaller.
+
 Cliquez sur le nom du fichier qui vous convient, puis sur le bouton Download
 
 ![Télécharger le logiciel](https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/img/telecharger_logiciel.png)

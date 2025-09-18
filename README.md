@@ -1,7 +1,7 @@
 Bibliostratus : STRatégie d'Alignement d'URIs pour la Transition bibliographique
 ==
 
-[![alt Télécharger Bibliostratus : Windows 64 bit - Dernière version](https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/img/bouton_telecharger_bibliostratus.png)](https://github.com/Transition-bibliographique/bibliostratus/raw/master/bin/bibliostratus_latest_win64_py3.6.zip)
+[![alt Télécharger Bibliostratus : Windows 64 bit - Dernière version](https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/img/bouton_telecharger_bibliostratus.png)](https://github.com/Transition-bibliographique/bibliostratus/raw/master/bin/bibliostratus_latest_win64_py3.10.zip)
 
 [Autres configurations](https://github.com/Transition-bibliographique/bibliostratus/tree/master/bin)
 
@@ -34,5 +34,33 @@ Mode d'emploi et tutoriels
 * [Consulter le forum utilisateurs](http://www.agorabib.fr/topic/3317-bibliostratus-mettre-en-correspondance-ses-notices-avec-celles-de-la-bnf/ "topic Agorabib")
 * [Consulter la documentation technique](https://github.com/Transition-bibliographique/bibliostratus/tree/master/doc)
 * [Installer Bibliostratus sur Linux](INSTALL.md)
+
+Compilation de l'exécutable Windows
+--
+
+Une version précompilée est disponible dans le répertoire [`bin`](bin), mais il est
+parfois nécessaire de générer une nouvelle archive lorsque les dépendances
+évoluent. Le script [`scripts/build_executable.py`](scripts/build_executable.py)
+automatise l'appel à PyInstaller et vérifie que l'interpréteur Python
+utilisé expose bien les bibliothèques Tcl/Tk nécessaires à `tkinter`.
+
+1. Installer Python 3.10 depuis [python.org](https://www.python.org/downloads/),
+   en sélectionnant l'option qui inclut Tcl/Tk.
+2. Installer les dépendances :
+   ```bash
+   uv pip install -r requirements.txt
+   ```
+3. Depuis la racine du dépôt, lancer la compilation :
+   ```bash
+   python scripts/build_executable.py
+   ```
+4. Pour reproduire la chaîne historique (copie des fichiers de configuration et
+   création de l'archive), exécuter ensuite le script batch adapté à votre
+   architecture (`launch_pyinstaller_win64.bat` ou
+   `launch_pyinstaller_win32.bat`). Ces scripts utilisent automatiquement le
+   nouvel utilitaire Python.
+
+En cas d'absence des bibliothèques Tcl/Tk, la compilation est arrêtée avec un
+message explicite plutôt que de produire un exécutable incomplet.
 
 * [Notes de version](bibliostratus/release_notes.md)
