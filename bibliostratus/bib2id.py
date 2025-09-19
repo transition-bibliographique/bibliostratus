@@ -2581,7 +2581,7 @@ def launch(entry_filename,
 
     params_gmb = {}
     #print(main.prefs)
-    if main.prefs["gmb"]["value"] == 1:
+    if "gmb" in main.prefs and main.prefs["gmb"]["value"] == 1:
         type_doc_bib = 1
         preferences_alignement = 1
         kwsudoc_option = 0
