@@ -71,15 +71,15 @@ def ark2url(identifier, parametres):
             parametres["format_BIB"] = "intermarcxchange"    
         else:
             parametres["format_BIB"] = "unimarcxchange"
-        url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + \
+        url = "https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + \
             "&recordSchema=" + parametres["format_BIB"] + \
             "&maximumRecords=20&startRecord=1&origin=bibliostratus&type_action=extract"
+        
     elif (identifier.aligned_id.type == "ppn" and parametres["type_records"] == "bib"):
         url = "https://www.sudoc.fr/" + identifier.aligned_id.clean + ".xml"
     elif (identifier.aligned_id.type == "ppn" and parametres["type_records"] == "aut"):
         url = "https://www.idref.fr/" + identifier.aligned_id.clean + ".xml"
     # print(url)
-    
     return url
 
 
@@ -89,7 +89,7 @@ def nn2url(nn, type_record, parametres, source="bnf"):
         if (type_record == "aut"):
             query += ' and aut.status any "sparse validated"'
         query = urllib.parse.quote(query)
-        url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + \
+        url = "https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + \
             query + "&recordSchema=" + \
             parametres["format_BIB"] + "&maximumRecords=20&startRecord=1"
     elif (source == "sudoc"):
@@ -484,6 +484,8 @@ def file2extract(filename, parametres, files, master_form, ark2records_form):
             records = Parallel(n_jobs=NUM_PARALLEL, prefer="threads", backend="threading")(delayed(extract1record)(row, parametres, True) for row in rows)            
             for identifier, xml_record, linked_aut_records in records:
                 print(str(j) + ". " + identifier.aligned_id.clean)
+                if isinstance(xml_record, bytes):
+                    xml_record = xml_record.decode("utf-8")
                 try:
                     record2file(identifier, etree.fromstring(xml_record), files["bib_file"], 
                             parametres["format_file"], parametres, files)
