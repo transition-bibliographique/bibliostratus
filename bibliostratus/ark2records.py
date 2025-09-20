@@ -483,21 +483,22 @@ def file2extract(filename, parametres, files, master_form, ark2records_form):
                 j += 1
             records = Parallel(n_jobs=NUM_PARALLEL, prefer="threads", backend="threading")(delayed(extract1record)(row, parametres, True) for row in rows)            
             for identifier, xml_record, linked_aut_records in records:
-                print(str(j) + ". " + identifier.aligned_id.clean)
-                if isinstance(xml_record, bytes):
-                    xml_record = xml_record.decode("utf-8")
-                try:
-                    record2file(identifier, etree.fromstring(xml_record), files["bib_file"], 
-                            parametres["format_file"], parametres, files)
-                except ValueError as err:
-                    errors_list.append([str(err), f"Problème d'accès à la notice : {identifier.aligned_id.clean}"])
-                    print(f"Pas d'accès à la notice  {identifier.aligned_id.clean} {str(err)} : consulter le fichier d'erreurs {parametres['outputID']}-errors.txt")
-                if linked_aut_records is not None:
-                    for identifier, xml_record in linked_aut_records:
-                        record2file(identifier, etree.fromstring(xml_record), files["aut_file"],
+                if xml_record is not None:
+                    print(str(j) + ". " + identifier.aligned_id.clean)
+                    if isinstance(xml_record, bytes):
+                        xml_record = xml_record.decode("utf-8")
+                    try:
+                        record2file(identifier, etree.fromstring(xml_record), files["bib_file"], 
                                     parametres["format_file"], parametres, files)
-                j += 1
-     
+                    except ValueError as err:
+                        errors_list.append([str(err), f"Problème d'accès à la notice : {identifier.aligned_id.clean}"])
+                        print(f"Pas d'accès à la notice  {identifier.aligned_id.clean} {str(err)} : consulter le fichier d'erreurs {parametres['outputID']}-errors.txt")
+                    if linked_aut_records is not None:
+                        for identifier, xml_record in linked_aut_records:
+                            record2file(identifier, etree.fromstring(xml_record), files["aut_file"],
+                                        parametres["format_file"], parametres, files)
+                    j += 1
+        
     
 
 def check_nb_colonnes(row, parametres, frame_master):
