@@ -1,7 +1,7 @@
 Bibliostratus : STRatégie d'Alignement d'URIs pour la Transition bibliographique
 ==
 
-[![alt Télécharger Bibliostratus : Windows 64 bit - Dernière version](https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/img/bouton_telecharger_bibliostratus.png)](https://github.com/Transition-bibliographique/bibliostratus/raw/master/bin/bibliostratus_latest_win64_py3.6.zip)
+[![alt Télécharger Bibliostratus : Windows 64 bit - Dernière version](https://raw.githubusercontent.com/Transition-bibliographique/bibliostratus/master/img/bouton_telecharger_bibliostratus.png)](https://github.com/Transition-bibliographique/bibliostratus/raw/master/bin/bibliostratus_latest_win64_py3.10.zip)
 
 [Autres configurations](https://github.com/Transition-bibliographique/bibliostratus/tree/master/bin)
 
@@ -39,7 +39,8 @@ Mode d'emploi et tutoriels
 
 
 Compilation
-__
+--
+
 Environnement virtuel (18/09/2025) :
 
 Python 3.10.10 + fichier requirements.txt
@@ -52,7 +53,7 @@ Puis
 pyinstaller main.spec
 
 Contenu du fichier main.spec :
-___
+---
 
 ```
 
