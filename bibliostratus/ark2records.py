@@ -22,7 +22,7 @@ import multiprocessing
 
 import pymarc as mc
 from lxml import etree
-import smc.bibencodings
+# import smc.bibencodings
 
 import funcs
 import main
@@ -71,15 +71,15 @@ def ark2url(identifier, parametres):
             parametres["format_BIB"] = "intermarcxchange"    
         else:
             parametres["format_BIB"] = "unimarcxchange"
-        url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + \
+        url = "https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + query + \
             "&recordSchema=" + parametres["format_BIB"] + \
             "&maximumRecords=20&startRecord=1&origin=bibliostratus&type_action=extract"
+        
     elif (identifier.aligned_id.type == "ppn" and parametres["type_records"] == "bib"):
         url = "https://www.sudoc.fr/" + identifier.aligned_id.clean + ".xml"
     elif (identifier.aligned_id.type == "ppn" and parametres["type_records"] == "aut"):
         url = "https://www.idref.fr/" + identifier.aligned_id.clean + ".xml"
     # print(url)
-    
     return url
 
 
@@ -89,7 +89,7 @@ def nn2url(nn, type_record, parametres, source="bnf"):
         if (type_record == "aut"):
             query += ' and aut.status any "sparse validated"'
         query = urllib.parse.quote(query)
-        url = "http://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + \
+        url = "https://catalogue.bnf.fr/api/SRU?version=1.2&operation=searchRetrieve&query=" + \
             query + "&recordSchema=" + \
             parametres["format_BIB"] + "&maximumRecords=20&startRecord=1"
     elif (source == "sudoc"):
@@ -218,11 +218,11 @@ def bib2aut(identifier, XMLrecord, parametres, multiprocess):
         url = nn2url(nna, "aut", parametres, source)
         (test, record) = funcs.testURLetreeParse(url)
         if (test and source == "bnf" and record.find(
-                "//srw:recordData/mxc:record", namespaces=main.ns) is not None):
+                ".//srw:recordData/mxc:record", namespaces=main.ns) is not None):
             XMLrec = record.xpath(
                 ".//srw:recordData/mxc:record", namespaces=main.ns
             )[0]
-            linked_identifier = funcs.Id4record([record.find("//srw:recordIdentifier", namespaces=main.ns).text])
+            linked_identifier = funcs.Id4record([record.find(".//srw:recordIdentifier", namespaces=main.ns).text])
             # record2file(linked_identifier, XMLrec, parametres["aut_file"],
             #             parametres["format_file"], parametres)
             linked_aut_record.append([linked_identifier, XMLrec])
@@ -320,10 +320,10 @@ def record2file(identifier, XMLrec, file, format_file, parametres, dict_files):
 def page2nbresults(page, identifier):
     nbresults = "0"
     if (identifier.aligned_id.type == "ppn"):
-        if (page.find("//leader") is not None):
+        if (page.find(".//leader") is not None):
             nbresults = "1"
-    elif (page.find("//srw:numberOfRecords", namespaces=main.ns) is not None):
-        nbresults = page.find("//srw:numberOfRecords", namespaces=main.ns).text
+    elif (page.find(".//srw:numberOfRecords", namespaces=main.ns) is not None):
+        nbresults = page.find(".//srw:numberOfRecords", namespaces=main.ns).text
     return nbresults
 
 
@@ -345,9 +345,9 @@ def extract1record(row, parametres, multiprocess=False):
                 nbResults = page2nbresults(page, identifier)
                 # Si on part d'un ARK
                 if (nbResults in ["1", "2"] and identifier.aligned_id.type == "ark"
-                    and page.find("//srw:record/srw:recordData/mxc:record", namespaces=main.ns) is not None):
+                    and page.find(".//srw:record/srw:recordData/mxc:record", namespaces=main.ns) is not None):
                     XMLrec = page.xpath(
-                            "//srw:record/srw:recordData/mxc:record",
+                            ".//srw:record/srw:recordData/mxc:record",
                             namespaces=main.ns)[0]
                     xml_record = XMLrec
                     """record2file(identifier, XMLrec,
@@ -359,7 +359,7 @@ def extract1record(row, parametres, multiprocess=False):
                         linked_aut_record = bib2aut(identifier, XMLrec, parametres, multiprocess)
                 # Si on part d'un PPN
                 elif (nbResults == "1" and identifier.aligned_id.type == "ppn"):
-                    for XMLrec in page.xpath("//record"):
+                    for XMLrec in page.xpath(".//record"):
                         xml_record = XMLrec
                         """record2file(identifier, XMLrec,
                                     parametres["bib_file"],
@@ -383,7 +383,7 @@ def extract1record(row, parametres, multiprocess=False):
                         if (test):
                             nbResults = page2nbresults(page, identifier)
                             if (nbResults == "1"):
-                                for XMLrec in page.xpath("//record"):
+                                for XMLrec in page.xpath(".//record"):
                                     xml_record = XMLrec
                                     """record2file(identifier, XMLrec,
                                                 parametres["bib_file"],
@@ -399,8 +399,8 @@ def update_bib_ppn(ppn):
     url = f"https://www.sudoc.fr/services/merged/{ppn}"
     test, result = funcs.testURLetreeParse(url)
     if (test
-       and result.find("//result/ppn") is not None):
-        new_ppn = result.find("//result/ppn").text
+       and result.find(".//result/ppn") is not None):
+        new_ppn = result.find(".//result/ppn").text
         return new_ppn
     else:
         return None
@@ -483,19 +483,22 @@ def file2extract(filename, parametres, files, master_form, ark2records_form):
                 j += 1
             records = Parallel(n_jobs=NUM_PARALLEL, prefer="threads", backend="threading")(delayed(extract1record)(row, parametres, True) for row in rows)            
             for identifier, xml_record, linked_aut_records in records:
-                print(str(j) + ". " + identifier.aligned_id.clean)
-                try:
-                    record2file(identifier, etree.fromstring(xml_record), files["bib_file"], 
-                            parametres["format_file"], parametres, files)
-                except ValueError as err:
-                    errors_list.append([str(err), f"Problème d'accès à la notice : {identifier.aligned_id.clean}"])
-                    print(f"Pas d'accès à la notice  {identifier.aligned_id.clean} {str(err)} : consulter le fichier d'erreurs {parametres['outputID']}-errors.txt")
-                if linked_aut_records is not None:
-                    for identifier, xml_record in linked_aut_records:
-                        record2file(identifier, etree.fromstring(xml_record), files["aut_file"],
+                if xml_record is not None:
+                    print(str(j) + ". " + identifier.aligned_id.clean)
+                    if isinstance(xml_record, bytes):
+                        xml_record = xml_record.decode("utf-8")
+                    try:
+                        record2file(identifier, etree.fromstring(xml_record), files["bib_file"], 
                                     parametres["format_file"], parametres, files)
-                j += 1
-     
+                    except ValueError as err:
+                        errors_list.append([str(err), f"Problème d'accès à la notice : {identifier.aligned_id.clean}"])
+                        print(f"Pas d'accès à la notice  {identifier.aligned_id.clean} {str(err)} : consulter le fichier d'erreurs {parametres['outputID']}-errors.txt")
+                    if linked_aut_records is not None:
+                        for identifier, xml_record in linked_aut_records:
+                            record2file(identifier, etree.fromstring(xml_record), files["aut_file"],
+                                        parametres["format_file"], parametres, files)
+                    j += 1
+        
     
 
 def check_nb_colonnes(row, parametres, frame_master):

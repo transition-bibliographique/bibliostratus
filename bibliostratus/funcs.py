@@ -1395,7 +1395,7 @@ def domybiblio2ppn(keywords, date="", type_doc="", parametres={}):
     except http.client.RemoteDisconnected:
         type_page = ""
     if (type_page == "html"):
-        liste_resultats = page.xpath("//li[@class='list-group-item']/a")
+        liste_resultats = page.xpath(".//li[@class='list-group-item']/a")
         for lien in liste_resultats:
             href = lien.get("href")
             ppn = "PPN" + href.split("/")[-1].split("&")[0].strip()
@@ -1403,7 +1403,7 @@ def domybiblio2ppn(keywords, date="", type_doc="", parametres={}):
                 ppn = ppn[ppn.find("id="):].replace("id=", "").split("&")[0].strip()
             Listeppn.append(ppn)
     elif (type_page == "xml"):
-        liste_resultats = page.xpath("//records/record")
+        liste_resultats = page.xpath(".//records/record")
         nb_results = int(page.find(".//results").text)
         for record in liste_resultats:
             ppn = record.find("identifier").text
@@ -1523,7 +1523,7 @@ def domybiblio2ppn_pages_suivantes(keywords, Listeppn,
             )
         (test, results) = testURLetreeParse(url)
         if test:
-            for record in results.xpath("//records/record"):
+            for record in results.xpath(".//records/record"):
                 ppn = "PPN" + record.find("identifier").text
                 Listeppn.append(funcs.PPN(ppn, "sudoc").output)
                 #Listeppn.append(ppn)

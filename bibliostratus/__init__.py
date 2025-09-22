@@ -1,9 +1,9 @@
 
 # coding: utf-8
 
-version = 1.36
-version_suffix = ""   # contenu : "RC1", "RC2", "RC3", etc.
-lastupdate = "07/03/2025"
+version = 1.37
+version_suffix = "3"   # contenu : "RC1", "RC2", "RC3", etc.
+lastupdate = "19/09/2025"
 programID = "bibliostratus"
 
 
@@ -11,7 +11,7 @@ import codecs
 import os
 import json
 import re
-import smc.bibencodings
+# import smc.bibencodings
 import SPARQLWrapper
 #from pkg_resources import py2_warn
 import tkinter as tk

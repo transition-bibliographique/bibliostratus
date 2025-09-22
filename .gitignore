@@ -10,6 +10,7 @@
 tad2ppn_solr.py
 !unicode_table.csv
 !unicode_table_full.csv
+!requirements.txt
 
 
 # Byte-compiled / optimized / DLL files

@@ -42,13 +42,18 @@ programID = init.programID
 
 # Ajout du fichier preferences.json
 def load_preferences():
-    prefs_file_name = 'main/files/preferences.json'
+    current_dir = os.path.abspath(__file__)
+    if "/" in current_dir:
+        current_dir = "/".join(current_dir.split("/")[:-1])
+    elif "\\" in current_dir:
+        current_dir = "\\".join(current_dir.split("\\")[:-1])
+    prefs_file_name = os.path.join(current_dir, 'main/files/preferences.json')
     try:
         with open(prefs_file_name, encoding="utf-8") as prefs_file:
             prefs = json.load(prefs_file)
     except FileNotFoundError:
         try:
-            prefs_file_name = 'main/files/preferences.default'
+            prefs_file_name = os.path.join(current_dir, 'main/files/preferences.default')
             with open(prefs_file_name, encoding="utf-8") as prefs_file:
                 prefs = json.load(prefs_file)
         except FileNotFoundError:
@@ -793,7 +798,7 @@ def formulaire_main(access_to_network, last_version):
 
     tk.Label(zone_notes, text="Bibliostratus - Version " +
              f"{str(version)}{version_suffix}" + " - " + lastupdate, bg=couleur_fond).pack()
-    if prefs["gmb"]["value"] == "1":
+    if "gmb" in prefs and prefs["gmb"]["value"] == "1":
         tk.Label(zone_notes, text="Option Gallica Marque Blanche", bg="#afafaf").pack()
 
 

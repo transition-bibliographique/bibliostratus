@@ -174,7 +174,7 @@ and aut.type all RAM"
         test = False
         for acc in f2XX:
             if test is False:
-                acc = main.clean_string(re.sub(" \$. ", " ", acc[3:]), False, True)
+                acc = main.clean_string(re.sub(r" \$. ", " ", acc[3:]), False, True)
                 if acc == accesspoint:
                     arks.append(ark)
                     methode.append("SRU forme retenue")
@@ -183,7 +183,7 @@ and aut.type all RAM"
                     add_type_rameau(ark, tag, parametres)
         for acc in f4XX:
             if test is False:
-                acc = main.clean_string(re.sub(" \$. ", " ", acc[3:]), False, True)
+                acc = main.clean_string(re.sub(r" \$. ", " ", acc[3:]), False, True)
                 if acc == accesspoint:
                     arks.append(ark)
                     methode.append("SRU forme rejetée")

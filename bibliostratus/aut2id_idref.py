@@ -48,7 +48,7 @@ def autArk2ppn(input_record, ark_nett):
     url = f"https://www.idref.fr/services/ark2idref/http://catalogue.bnf.fr/{ark_nett}"
     (test, result) = funcs.testURLetreeParse(url, display=False)
     if test:
-        for ppn in result.xpath("//ppn"):
+        for ppn in result.xpath(".//ppn"):
             Liste_ppn.append(ppn.text)    
     Liste_ppn = ",".join([funcs.PPN(ppn, "idref").output for ppn in Liste_ppn if ppn])
     return Liste_ppn
@@ -61,7 +61,7 @@ def idrefAut2arkAut(input_record, base="idref"):
     (test, result) = funcs.testURLetreeParse(url, display=False)
     
     if test:
-        for f033 in result.xpath("//*[@tag='033']"):
+        for f033 in result.xpath(".//*[@tag='033']"):
             val = funcs.field2subfield(f033, "a")
             if ("ark:/12148/" in val):
                 val = val[val.find("ark:/12148/"):]
@@ -69,7 +69,7 @@ def idrefAut2arkAut(input_record, base="idref"):
         if (liste_ark):
             input_record.alignment_method.append("PPN > ARK")
         if (liste_ark == []
-           and result.find("//*[@tag='035']") is not None
+           and result.find(".//*[@tag='035']") is not None
            and "frbn" in funcs.record2fieldvalue(result, "035$a").lower()):
             aut_record = funcs.XML2record(input_record.ppn.propre, result, 2).record
             #print(aut_record.metadata)
@@ -106,7 +106,7 @@ def aut2ppn_by_accesspoint(input_record, parametres):
                    "%20AND%20recordtype_z:" + parametres["type_aut"] + "&sort=score%20desc&version=2.2&start=0&rows=1000"])
     (test, results) = funcs.testURLetreeParse(url)
     if test:
-        for record in results.xpath("//doc"):
+        for record in results.xpath(".//doc"):
             ppn = record.find("str[@name='ppn_z']").text
             ppn = check_idref_record(ppn, input_record, ppn2idrefrecord(ppn, parametres), parametres)
             if ppn:
@@ -167,7 +167,7 @@ def isni2ppn(input_record, isni_id, parametres, origine="isni"):
     url = "https://www.idref.fr/services/isni2idref/" + isni_id
     (test, page) = funcs.testURLetreeParse(url, display=False)
     if test:
-        for ppn in page.xpath("//ppn"):
+        for ppn in page.xpath(".//ppn"):
             Liste_ppn.append(ppn.text)
     Liste_ppn = ",".join([funcs.PPN(ppn, "idref").output for ppn in Liste_ppn if ppn])
     if Liste_ppn:

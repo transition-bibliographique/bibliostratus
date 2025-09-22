@@ -36,3 +36,65 @@ Mode d'emploi et tutoriels
 * [Installer Bibliostratus sur Linux](INSTALL.md)
 
 * [Notes de version](bibliostratus/release_notes.md)
+
+
+Compilation
+__
+Environnement virtuel (18/09/2025) :
+
+Python 3.10.10 + fichier requirements.txt
+
+Avant lancement de l'environnement virtuel, ajout dans le fichier Scripts\activate.bat des lignes :
+set PATH=%VIRTUAL_ENV%\Scripts
+set PYTHONPATH=%VIRTUAL_ENV%\Lib\site-packages;%VIRTUAL_ENV%\bibliostratus
+
+Puis
+pyinstaller main.spec
+
+Contenu du fichier main.spec :
+___
+
+```
+
+a = Analysis(
+    ['main.py', 'udecode.py'],
+    pathex=[],
+    binaries=[("dll/api-ms-win-core-console-l1-1-0.dll", "."), ("dll/api-ms-win-core-datetime-l1-1-0.dll", "."), ("dll/api-ms-win-core-debug-l1-1-0.dll", "."), ("dll/api-ms-win-core-errorhandling-l1-1-0.dll", "."), ("dll/api-ms-win-core-file-l1-1-0.dll", "."), ("dll/api-ms-win-core-file-l1-2-0.dll", "."), ("dll/api-ms-win-core-file-l2-1-0.dll", "."), ("dll/api-ms-win-core-handle-l1-1-0.dll", "."), ("dll/api-ms-win-core-heap-l1-1-0.dll", "."), ("dll/api-ms-win-core-interlocked-l1-1-0.dll", "."), ("dll/api-ms-win-core-libraryloader-l1-1-0.dll", "."), ("dll/api-ms-win-core-localization-l1-2-0.dll", "."), ("dll/api-ms-win-core-memory-l1-1-0.dll", "."), ("dll/api-ms-win-core-namedpipe-l1-1-0.dll", "."), ("dll/api-ms-win-core-processenvironment-l1-1-0.dll", "."), ("dll/api-ms-win-core-processthreads-l1-1-0.dll", "."), ("dll/api-ms-win-core-processthreads-l1-1-1.dll", "."), ("dll/api-ms-win-core-profile-l1-1-0.dll", "."), ("dll/api-ms-win-core-rtlsupport-l1-1-0.dll", "."), ("dll/api-ms-win-core-string-l1-1-0.dll", "."), ("dll/api-ms-win-core-synch-l1-1-0.dll", "."), ("dll/api-ms-win-core-synch-l1-2-0.dll", "."), ("dll/api-ms-win-core-sysinfo-l1-1-0.dll", "."), ("dll/api-ms-win-core-timezone-l1-1-0.dll", "."), ("dll/api-ms-win-core-util-l1-1-0.dll", "."), ("dll/api-ms-win-crt-conio-l1-1-0.dll", "."), ("dll/api-ms-win-crt-convert-l1-1-0.dll", "."), ("dll/api-ms-win-crt-environment-l1-1-0.dll", "."), ("dll/api-ms-win-crt-filesystem-l1-1-0.dll", "."), ("dll/api-ms-win-crt-heap-l1-1-0.dll", "."), ("dll/api-ms-win-crt-locale-l1-1-0.dll", "."), ("dll/api-ms-win-crt-math-l1-1-0.dll", "."), ("dll/api-ms-win-crt-multibyte-l1-1-0.dll", "."), ("dll/api-ms-win-crt-private-l1-1-0.dll", "."), ("dll/api-ms-win-crt-process-l1-1-0.dll", "."), ("dll/api-ms-win-crt-runtime-l1-1-0.dll", "."), ("dll/api-ms-win-crt-stdio-l1-1-0.dll", "."), ("dll/api-ms-win-crt-string-l1-1-0.dll", "."), ("dll/api-ms-win-crt-time-l1-1-0.dll", "."), ("dll/api-ms-win-crt-utility-l1-1-0.dll", "."), ("dll/bzip2.dll", "."), ("dll/concrt140.dll", "."), ("dll/ffi-7.dll", "."), ("dll/ffi-8.dll", "."), ("dll/ffi.dll", "."), ("dll/libbz2.dll", "."), ("dll/libcrypto-1_1-x64.dll", "."), ("dll/libffi-7.dll", "."), ("dll/liblzma.dll", "."), ("dll/libopenblas64__v0.3.23-293-gc2f4bdbb-gcc_10_3_0-2bde3a66a51006b2b53eb373ff767a3f.dll", "."), ("dll/libscipy_openblas64_-43e11ff0749b8cbe0a615c9cf6737e0e.dll", "."), ("dll/libssl-1_1-x64.dll", "."), ("dll/msvcp140-263139962577ecda4cd9469ca360a746.dll", "."), ("dll/msvcp140.dll", "."), ("dll/msvcp140_1.dll", "."), ("dll/msvcp140_2.dll", "."), ("dll/msvcp140_codecvt_ids.dll", "."), ("dll/python3.dll", "."), ("dll/python310.dll", "."), ("dll/sqlite3.dll", "."), ("dll/tcl86t.dll", "."), ("dll/tk86t.dll", "."), ("dll/ucrtbase.dll", "."), ("dll/vccorlib140.dll", "."), ("dll/vcomp140.dll", "."), ("dll/vcruntime140.dll", "."), ("dll/vcruntime140_1.dll", "."), ("dll/zlib.dll", "."), ("dll/_ssl.pyd", "."), ("dll/libcrypto-3-x64.dll", "."), ("dll/libssl-3-x64.dll", "."), ("dll/python313.dll", ".")],
+    datas=[],
+    hiddenimports=["tkinter", "_tkinter"],
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=['numpy', 'pandas', 'scipy', 'notebook', 'matplotlib'],
+    noarchive=False,
+)
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+
+exe = EXE(
+    pyz,
+    a.scripts,
+    [],
+    exclude_binaries=True,
+    name='main',
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,
+    console=True,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
+)
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name='main',
+)
+```
