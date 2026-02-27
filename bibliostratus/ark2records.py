@@ -359,14 +359,15 @@ def extract1record(row, parametres, multiprocess=False):
                         linked_aut_record = bib2aut(identifier, XMLrec, parametres, multiprocess)
                 # Si on part d'un PPN
                 elif (nbResults == "1" and identifier.aligned_id.type == "ppn"):
-                    for XMLrec in page.xpath(".//record"):
-                        xml_record = XMLrec
-                        """record2file(identifier, XMLrec,
-                                    parametres["bib_file"],
-                                    parametres["format_file"],
-                                    parametres)"""
-                        if (parametres["AUTliees"] > 0):
-                            linked_aut_record = bib2aut(identifier, XMLrec, parametres, multiprocess)
+                    # print(362, "PPN", page.getroot().xpath("record"))
+                    # for XMLrec in page.getroot():
+                    xml_record = page
+                    """record2file(identifier, XMLrec,
+                                parametres["bib_file"],
+                                parametres["format_file"],
+                                parametres)"""
+                    if (parametres["AUTliees"] > 0):
+                        linked_aut_record = bib2aut(identifier, XMLrec, parametres, multiprocess)
             elif (identifier.aligned_id.type == "ppn"
                   and parametres["type_records"] == "bib"):
                 ppn_updated = update_bib_ppn(identifier.aligned_id.clean)
